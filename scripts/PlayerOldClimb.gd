@@ -41,11 +41,12 @@ func _physics_process(delta):
 	fullscreen()
 	rayAttack()
 	showEnemyStats()
+	matchAnimationStates()
 	animations()
-	animationsAll(delta)
 	attack()
 	doubleAttack(delta)
 	fallDamage()
+	
 #_______________________________________________Basic Movement______________________________________
 
 var h_rot 
@@ -109,11 +110,6 @@ func walk(delta):
 			is_aiming = false
 			is_attacking = true 
 			movement_speed = 3
-#		elif is_in_combat and barehanded_mode:
-#			if can_move: 
-#				movement_speed = 7
-#			else:
-#				movement_speed = 0 
 		elif health < (max_health * 0.1):
 			movement_speed = walk_speed * 0.5
 		else: # Walk State and speed
@@ -138,48 +134,34 @@ var is_swimming = false
 var wall_incline
 var is_wall_in_range = false
 var is_climbing = false
-
-var gravity_enabled = true
-onready var still_on_wall_check = $Mesh/HeadRay
-onready var wall_check = $Mesh/ClimbRay
-onready var stick_point_holder = $Mesh/HeadRay/Position3D
-onready var stick_point = $Mesh/HeadRay/Position3D2
+onready var head_ray = $Mesh/HeadRay
+onready var climb_ray = $Mesh/ClimbRay
 func climbing():
-	#check if player is able to climb
-	if wall_check.is_colliding():
-		if still_on_wall_check.is_colliding():
-			if Input.is_action_pressed("jump"):
-				if is_on_floor():
-					is_climbing  = false
-				else:
+	if not is_swimming and strength > 0.99:
+		if climb_ray.is_colliding() and is_on_wall():
+			if Input.is_action_pressed("forward"):
+					checkWallInclination()
 					is_climbing = true
+					is_swimming = false
+					if not head_ray.is_colliding() and not is_wall_in_range:#vaulting
+						animation_state = "vaulting"
+						vertical_velocity = Vector3.UP * 3 
+					elif not is_wall_in_range:#normal climb
+						animation_state = "climbing"
+						vertical_velocity = Vector3.UP * 3 
+					else:
+						vertical_velocity = Vector3.UP * (strength * 1.25 + (agility * 0.15))
+						horizontal_velocity = direction * walk_speed
+						if strength < 2:
+							pass
+							#animation_player_top.play("crawl incline cycle", blend)
+						else:
+							pass
+							#animation_player_top.play("walk cycle", blend)
 			else:
 				is_climbing = false
 		else:
 			is_climbing = false
-	else:
-		is_climbing = false
-	
-	
-	if is_climbing:
-		#if player is climbing disable gravity
-		gravity_enabled = false
-		movement_speed = 3
-		direction = Vector3.ZERO
-		#sticks player to the wall
-		stick_point_holder.global_transform.origin = wall_check.get_collision_point()
-		self.global_transform.origin.x = stick_point.global_transform.origin.x
-		self.global_transform.origin.z = stick_point.global_transform.origin.z
-		
-		#move player relative to the walls normal
-		var rot = -(atan2(wall_check.get_collision_normal().z, wall_check.get_collision_normal().x) - PI/2)
-		var f_input = Input.get_action_strength("forward") - Input.get_action_strength("back")
-		var h_input = Input.get_action_strength("right") - Input.get_action_strength("left")
-		direction = Vector3(h_input, f_input, 0).rotated(Vector3.UP, rot).normalized() 
-	else:
-		movement_speed = run_speed
-		gravity_enabled = true
-
 func checkWallInclination():
 	if get_slide_count() > 0:
 		var collision_info = get_slide_collision(0)
@@ -231,14 +213,16 @@ var fall_damage = 0
 var fall_distance = 0
 var minimum_fall_distance = 0.5
 func fallDamage():
-	if animation_state == "fall":
+	if animation_state == "fall" and !is_climbing:
 		#print("fall damage " + str(fall_damage))
 		#print("fall distance " + str(fall_distance))
 		fall_distance += 0.015
 		if fall_distance > minimum_fall_distance: 
-			fall_damage += 2.5 +(0.01 * max_health)
+			fall_damage += (2.5 +(0.01 * max_health)) / agility
 	else:
-		health -= fall_damage
+		if fall_distance > minimum_fall_distance: 
+			takeDamage(fall_damage, 100, self, 0, "blunt")
+			shake_camera(0.4,0.035,0.5,0.3)
 		#print("hp " + str(health))
 		fall_damage = 0
 		fall_distance = 0 
@@ -365,21 +349,9 @@ var v_acceleration = 10
 var touch_start_position = Vector2.ZERO
 var zoom_speed = 0.1
 var mouse_sense = 0.1
+
 func shake_camera(duration: float, intensity: float, rand_x, rand_y):
-	var original_pos = camera_v.global_transform.origin
-	
-	var shake_timer = 0.0
-	
-	while shake_timer < duration:
-		var noise_x = rand_range(-rand_x, rand_x) * intensity
-		var noise_y = rand_range(-rand_y, rand_y) * intensity
-		
-		camera_v.global_translate(Vector3(noise_x, noise_y, 0))
-		
-		shake_timer += get_process_delta_time()
-		yield(get_tree(), "idle_frame")
-	
-	camera_v.global_transform.origin = original_pos
+	pass
 
 func Zoom(zoom_direction):
 	# Adjust the camera's position based on the zoom direction
@@ -479,7 +451,7 @@ func lifesteal(damage):
 
 
 #___________________________________________Save data system________________________________________
-var entity_name = "esdai"
+var entity_name = "dai"
 const SAVE_DIR = "user://saves/"
 var save_path = SAVE_DIR + entity_name + "save.dat"
 func savePlayerData():
@@ -570,22 +542,19 @@ func showEnemyStats():
 		#print(str(fade_duration))
 
 #______________________________________________Animations___________________________________________
+var weapon_type = "fist"
+
 var animation_state = "idle"
-func animations():
+func matchAnimationStates():
 	match animation_state:
-#combat 
+#_______________________________attacking states________________________________
 		"slide":
 			var slide_blend = 0.333
 			animation.play("slide",slide_blend)
 			var slide_mov_speed = 15 + slide_blend + rand_range(3, 6)
 			horizontal_velocity = direction * slide_mov_speed
 			movement_speed = int(slide_mov_speed)
-		"guarding barehand":
-			animation.play("guard",0.3)
-		"guarding barehand walking":
-			animation.play("walk guard barehand cycle")
-			
-		"punching":
+		"base attack":
 			animation.play("full combo cycle",0.3,1)
 			if can_move == true:
 				horizontal_velocity = direction * 3
@@ -593,16 +562,8 @@ func animations():
 			elif can_move == false:
 				horizontal_velocity = direction * 0
 				movement_speed = 0
-		"stomp":
-			animation.play("stomp cycle",0.55,1)
-			if can_move and !is_on_wall():
-				horizontal_velocity = direction * 2
-				movement_speed = 2
-			else:
-				horizontal_velocity = direction * 0.01
-				movement_speed = 0
-		"heavy attack":
-			if barehanded_mode:
+		"double attack":
+			if weapon_type == "fist":
 				animation.play("high kick",0.3,1)
 			if can_move and !is_on_wall():
 				horizontal_velocity = direction * 7
@@ -610,101 +571,110 @@ func animations():
 			else:
 				horizontal_velocity = direction * 0.3
 				movement_speed = 0
-		"walk combat":
-			if barehanded_mode:
-				animation.play("combat walk cycle",0,1)
-				if can_move and !is_on_wall():
-					horizontal_velocity = direction * 3
-					movement_speed = 3
-				else:
-					horizontal_velocity = direction * 0.66
-					movement_speed = 0
-		"idle combat":
-			if barehanded_mode:
-				animation.play("barehanded idle",0.2,1) # to replace
+		"guard attack":
+			animation.play("stomp cycle",0.55,1)
+			if can_move and !is_on_wall():
+				horizontal_velocity = direction * 2
+				movement_speed = 2
+			else:
+				horizontal_velocity = direction * 0.01
+				movement_speed = 0
+		"run attack":
+			animation.play("low kick",0.3)#placeholder
+			if can_move and !is_on_wall():
+				horizontal_velocity = direction * 2
+				movement_speed = 2
+			else:
+				horizontal_velocity = direction * 0.01
+				movement_speed = 0
+		"sprint attack":
+			animation.play("stomp kick",0.3)#placeholder
+			if can_move and !is_on_wall():
+				horizontal_velocity = direction * 2
+				movement_speed = 2
+			else:
+				horizontal_velocity = direction * 0.01
+				movement_speed = 0
+#__________________________________guarding states______________________________
+		"guard":
+			animation.play("guard",0.3)
+		"guard walk":
+			pass
+#_________________________________walking states________________________________
+		"walk":
+			if is_in_combat:
+				if weapon_type == "fist":
+					animation.play("combat walk cycle",0,1)
+					if can_move and !is_on_wall():
+						horizontal_velocity = direction * 3
+						movement_speed = 3
+					else:
+						horizontal_velocity = direction * 0.66
+						movement_speed = 0
+			else:
+				animation.play("walk cycle")
+		"crouch walking":
+			animation.play("walk crouch cycle")
 #movement 
 		"sprint":
 			animation.play("run cycle", 0, sprint_animation_speed)
 		"run":
 			animation.play("run cycle")
-		"walk":
-			animation.play("walk cycle")
-		"walk combat":
-			animation.play("walk combat barehand cycle")
 		"crouch":
 			animation.play("crouch idle",0.4)
-		"crouch walking":
-			animation.play("walk crouch cycle")
 		"jump":
 			animation.play("jump",0.2, 1)
 		"fall":
 			animation.play("fall",0.3)
+		"climbing":
+			animation.play("climb cycle",blend, strength)
+		"vaulting":
+			animation.play("vaulting",0.7, strength)
+		"landing":
+			pass
 		"crawl":
-			animation.play("crawl dying begin cycle")
+			animation.play("crawl cycle")
 		"crawl limit":
 			animation.play("crawl dying limit cycle")
 		"idle downed":
 			animation.play("idle downed", 0.35)
 		"idle":
-			animation.play("idle cycle")
+			if is_in_combat:
+				if weapon_type == "fist":
+					animation.play("barehanded idle",0.2,1)
+			else:
+				animation.play("idle cycle")
 
 var sprint_animation_speed = 1
-func animationOutOfCombat(): #normal
-	#dodge section is prioritized
-	if  dodge_animation_duration > 0:
-		animation_state = "slide"
-	elif !is_on_floor() and !is_climbing and !is_swimming and !is_climbing:
-		animation_state = "fall"
-	elif jump_animation_duration != 0:
-		animation_state = "jump"
-	elif is_attacking:
-		if !is_sprinting and !is_running and !is_swimming and !is_climbing and !is_walking:
-			pass
-		elif is_walking:
-			pass
-	elif  !is_swimming and is_on_floor():
-		if is_sprinting:
-			animation_state = "sprint"
-		elif is_running:
-			animation_state = "run"
-		elif is_walking and is_crouching:
-			animation_state = "crouch walking"
-		elif is_running and Input.is_action_pressed("crouch"):
-			animation_state = "crouch running"
-		elif is_walking:
-			if health < (max_health * 0.1):
-				animation_state = "crawl"
-			elif health < (max_health * 0.05):
-				animation_state = "crawl limit"
-			else:
-				animation_state = "walk"
-		elif Input.is_action_pressed("crouch"):
-			animation_state = "crouch"
-		#elif has_axe2 and  Input.is_action_pressed("attack"):
-		#		animation_state = "chopping trees"
+func animations():
+#on water
+	if is_swimming:
+		if is_walking:
+			animation_state = "swim"
 		else:
-			if health < (max_health * 0.1):
-				animation_state = "idle downed"
-			else:
-				animation_state = "idle"
-var has_axe = false
-func animationsBarehanded():
-	if  dodge_animation_duration > 0:
+			animation_state = "idle water"
+#on land
+	elif  dodge_animation_duration > 0:
 		animation_state = "slide"
+	elif not is_on_floor() and not is_climbing and not is_swimming:
+		animation_state = "fall"
 	elif double_atk_animation_duration > 0: 
-		animation_state = "heavy attack"
+		animation_state = "double attack"
 	elif Input.is_action_pressed("rclick") and Input.is_action_pressed("attack"):
-			animation_state = "stomp"
+		animation_state = "guard attack"
 	elif Input.is_action_pressed("rclick"):
 		if !is_walking:
-			animation_state = "guarding barehand"
+			animation_state = "guard"
 		else:
-			animation_state = "guarding barehand walking"
+			animation_state = "guard walk"
+#attacks________________________________________________________________________
+	elif Input.is_action_pressed("attack") and Input.is_action_pressed("run"): 
+		animation_state = "run attack"
+	elif Input.is_action_pressed("attack") and Input.is_action_pressed("sprint"): 
+		animation_state = "sprint attack"
 	elif Input.is_action_pressed("attack"):
-		if has_axe:
-			animation_state = "choping wood"
-		else:
-			animation_state = "punching"
+			animation_state = "base attack"
+#_______________________________________________________________________________
 	elif is_sprinting:
 			animation_state = "sprint"
 	elif is_running:
@@ -712,34 +682,11 @@ func animationsBarehanded():
 	elif is_walking and is_crouching:
 			animation_state = "crouch walking"
 	elif is_walking:
-			animation_state = "walk combat"
+			animation_state = "walk"
 	elif jump_animation_duration != 0:
 		animation_state = "jump"
 	else:
-		animation_state = "idle combat"
-		
-		
-func animationStrafe():
-	pass
-	
-var barehanded_mode = true 
-func animationsAll(delta):
-	if is_in_combat:
-		if barehanded_mode:
-			animationsBarehanded()	
-	else:
-		if not is_swimming:
-			if is_aiming:
-				animationStrafe()
-			else:
-				animationOutOfCombat()	
-	if is_swimming:
-		if is_walking:
-			animation_state = "swim"
-		else:
-			animation_state = "idle water"
-	if not is_on_floor() and not is_climbing and not is_swimming:
-		animation_state = "fall"
+		animation_state = "idle"
 
 
 #_______________________________________________Combat______________________________________________
@@ -749,7 +696,7 @@ func attack():
 		is_attacking = true
 	else:
 		is_attacking = false
-		
+#Double click to heavy attack_______________________________________________________________________
 var double_atk_count: int = 0
 var double_atk_timer: float = 0.0
 var double_atk_animation_duration = 0
@@ -879,7 +826,7 @@ func PunchDealDamage3():
 						enemy.takeDamage(damage *2 ,aggro_power,self,stagger_chance,damage_type)
 var jump_force = 10
 func jumpUp():#called on animation
-	vertical_velocity = Vector3.UP * jump_force
+	vertical_velocity = Vector3.UP * jump_force 
 func jumpDown():#called on animation
 	vertical_velocity = Vector3.UP * -jump_force
 
@@ -934,7 +881,7 @@ var intelligence = 1
 var willpower = 1
 
 var power = 1
-var strength = 1.5
+var strength = 1
 var impact = 1
 var resistance = 1
 var tenacity = 1
@@ -982,13 +929,11 @@ var stagger_resistance = 0.5
 var deflection_chance = 0.33
 
 var staggered = 0 
-
 var floatingtext_damage = preload("res://UI/floatingtext.tscn")
 onready var take_damage_view  = $Mesh/TakeDamageView/Viewport
 func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
 	var random = randf()
 	var damage_to_take = damage
-
 	var text = floatingtext_damage.instance()
 	if damage_type == "slash":
 		var mitigation = slash_resistance / (slash_resistance + 100.0)

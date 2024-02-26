@@ -427,3 +427,22 @@ var radiant_resistance = 25
 
 var stagger_resistance = 0.5
 var deflection_chance = 0.33
+
+
+var critical_chance = 0.3
+var critical_strength = 2
+var stagger_chance = 0.3
+func slash():
+	var damage_type = "slash"
+	var damage = 2.5
+	var aggro_power = damage + 20
+	var enemies = $Area.get_overlapping_bodies()
+	for enemy in enemies:
+		if enemy.is_in_group("Player"):
+			if enemy.has_method("takeDamage"):
+					#insert sound effect here
+					if randf() <= critical_chance:
+						var critical_damage = damage * critical_strength
+						enemy.takeDamage(critical_damage,aggro_power,self,stagger_chance,"heat")
+					else:
+						enemy.takeDamage(damage,aggro_power,self,stagger_chance,damage_type)
