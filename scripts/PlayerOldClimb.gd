@@ -555,7 +555,7 @@ func matchAnimationStates():
 			horizontal_velocity = direction * slide_mov_speed
 			movement_speed = int(slide_mov_speed)
 		"base attack":
-			animation.play("full combo cycle",0.3,1)
+			animation.play("full combo cycle",0.3,1.25)
 			if can_move == true:
 				horizontal_velocity = direction * 3
 				movement_speed = 3
@@ -982,7 +982,13 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
 		if random < stagger_chance - stagger_resistance:
 			staggered += 0.5
 			text.status = "Staggered"
-	health -= damage_to_take
-	text.amount =round(damage_to_take * 100)/ 100
-	text.state = damage_type
+	if animation_state == "guard":
+		health -= (damage_to_take * 0.3)
+		text.amount = ((damage_to_take * 0.3) * 100)/ 100
+		text.status = "Guarded"
+		text.state = damage_type
+	else:
+		health -= damage_to_take
+		text.amount =round(damage_to_take * 100)/ 100
+		text.state = damage_type
 	take_damage_view.add_child(text)
