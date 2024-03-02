@@ -1,18 +1,18 @@
  extends Control
 
-onready var skill_slot1 = $background/M/GridContainer/Slot1
-onready var skill_slot2 = $background/M/GridContainer/Slot2
-onready var skill_slot3 = $background/M/GridContainer/Slot3
-onready var skill_slot4 = $background/M/GridContainer/Slot4
-onready var skill_slot5 = $background/M/GridContainer/Slot5
-onready var skill_slot6 = $background/M/GridContainer/Slot6
+onready var skill_slot1 = $GridContainer/Slot1
+onready var skill_slot2 = $GridContainer/Slot2
+onready var skill_slot3 = $GridContainer/Slot3
+onready var skill_slot4 = $GridContainer/Slot4
+onready var skill_slot5 = $GridContainer/Slot5
+onready var skill_slot6 = $GridContainer/Slot6
 
-onready var skill_slot_label_1 = $background/M/GridContainer/Slot1/Label
-onready var skill_slot_label_2 = $background/M/GridContainer/Slot2/Label
-onready var skill_slot_label_3 = $background/M/GridContainer/Slot3/Label
-onready var skill_slot_label_4 = $background/M/GridContainer/Slot4/Label
-onready var skill_slot_label_5 = $background/M/GridContainer/Slot5/Label
-onready var skill_slot_label_6 = $background/M/GridContainer/Slot6/Label
+onready var skill_slot_label_1 = $GridContainer/Slot1/Label
+onready var skill_slot_label_2 = $GridContainer/Slot2/Label 
+onready var skill_slot_label_3 = $GridContainer/Slot3/Label 
+onready var skill_slot_label_4 = $GridContainer/Slot4/Label
+onready var skill_slot_label_5 = $GridContainer/Slot5/Label 
+onready var skill_slot_label_6 = $GridContainer/Slot6/Label
 
 var capturing_input1 = false
 var capturing_input2 = false
