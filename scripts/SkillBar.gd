@@ -77,32 +77,32 @@ func handle_input_event(event, action_name, label):
 
 
 func _on_Slot1_pressed():
-	if !skilltree.dragging:
+	#if !skilltree.dragging:
 		capturing_input1 = true
 		skill_slot_label_1.text = "..."
 	
 func _on_Slot2_pressed():
-	if !skilltree.dragging:
+	#if !skilltree.dragging:
 		capturing_input2 = true
 		skill_slot_label_2.text = "..."
 
 func _on_Slot3_pressed():
-	if !skilltree.dragging:
+#	if !skilltree.dragging:
 		capturing_input3 = true
 		skill_slot_label_3.text = "..."
 
 func _on_Slot4_pressed():
-	if !skilltree.dragging:
+#	if !skilltree.dragging:
 		capturing_input4 = true
 		skill_slot_label_4.text = "..."
 
 func _on_Slot5_pressed():
-	if !skilltree.dragging:
+#	if !skilltree.dragging:
 		capturing_input5 = true
 		skill_slot_label_5.text = "..."
 
 func _on_Slot6_pressed():
-	if !skilltree.dragging:
+#	if !skilltree.dragging:
 		capturing_input6 = true
 		skill_slot_label_6.text = "..."
 
