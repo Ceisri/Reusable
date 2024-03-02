@@ -1049,6 +1049,8 @@ onready var character_sheet = $UI/GUI/CharacterSheet
 func skillUserInterfaceInputs():
 	if Input.is_action_just_pressed("skills"):
 		skill_tree.visible = !skill_tree.visible
+		if skill_tree.visible:
+			is_cursor = true 
 	if Input.is_action_just_pressed("Character"):
 		character_sheet.visible = !character_sheet.visible		
 onready var skills_list1 = $UI/GUI/SkillTrees/Background/SylvanSkills
