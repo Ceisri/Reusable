@@ -17,9 +17,9 @@ func _ready():
 	direction = Vector3.BACK.rotated(Vector3.UP, $Camroot/h.global_transform.basis.get_euler().y)
 
 func _physics_process(delta):
-	$Label.text = str(health)
+	$hp.text = str(health)
 	
-	if Input.is_action_just_pressed("ui_focus_next"):
+	if Input.is_action_just_pressed("tab"):
 		is_in_combat = !is_in_combat
 	$Debug.text = animation_state
 	speedlabel()
@@ -46,6 +46,7 @@ func _physics_process(delta):
 	attack()
 	doubleAttack(delta)
 	fallDamage()
+	skillUserInterfaceInputs()
 	
 #_______________________________________________Basic Movement______________________________________
 
@@ -213,7 +214,7 @@ var fall_damage = 0
 var fall_distance = 0
 var minimum_fall_distance = 0.5
 func fallDamage():
-	if animation_state == "fall" and !is_climbing:
+	if animation_state == "fall" and !is_climbing and !is_on_wall():
 		#print("fall damage " + str(fall_damage))
 		#print("fall distance " + str(fall_distance))
 		fall_distance += 0.015
@@ -376,13 +377,14 @@ func _input(event):
 		camrot_v += event.relative.y * v_sensitivity
 		if minimap_rotate:
 			minimap_camera.rotate_y(deg2rad(-event.relative.x * mouse_sense))
-	#Scrollwheel zoom in and out 		
-	if event is InputEventMouseButton and event.button_index == BUTTON_WHEEL_UP:
-		# Zoom in when scrolling up
-		Zoom(-1)
-	elif event is InputEventMouseButton and event.button_index == BUTTON_WHEEL_DOWN:
-		# Zoom out when scrolling down
-		Zoom(1)
+	if !skill_tree.visible:
+		#Scrollwheel zoom in and out 		
+		if event is InputEventMouseButton and event.button_index == BUTTON_WHEEL_UP:
+			# Zoom in when scrolling up
+			Zoom(-1)
+		elif event is InputEventMouseButton and event.button_index == BUTTON_WHEEL_DOWN:
+			# Zoom out when scrolling down
+			Zoom(1)
 var mouse = false
 func mouseMode():
 #	if Input.is_action_pressed("rclick") and !is_sprinting and !is_crouching and !is_running and !is_swimming and !is_climbing:
@@ -552,7 +554,8 @@ func matchAnimationStates():
 			var slide_blend = 0.333
 			animation.play("slide",slide_blend)
 			var slide_mov_speed = 15 + slide_blend + rand_range(3, 6)
-			horizontal_velocity = direction * slide_mov_speed
+			if !is_on_wall():
+				horizontal_velocity = direction * slide_mov_speed
 			movement_speed = int(slide_mov_speed)
 		"base attack":
 			animation.play("full combo cycle",0.3,1.25)
@@ -604,24 +607,18 @@ func matchAnimationStates():
 		"walk":
 			if is_in_combat:
 				if weapon_type == "fist":
-					animation.play("combat walk cycle",0,1)
-					if can_move and !is_on_wall():
-						horizontal_velocity = direction * 3
-						movement_speed = 3
-					else:
-						horizontal_velocity = direction * 0.66
-						movement_speed = 0
+					animation.play("walk fist cycle",0,1)
 			else:
 				animation.play("walk cycle")
-		"crouch walking":
+		"crouch walk":
 			animation.play("walk crouch cycle")
+		"crouch":
+			animation.play("idle crouch",0.4)
 #movement 
 		"sprint":
 			animation.play("run cycle", 0, sprint_animation_speed)
 		"run":
 			animation.play("run cycle")
-		"crouch":
-			animation.play("crouch idle",0.4)
 		"jump":
 			animation.play("jump",0.2, 1)
 		"fall":
@@ -645,6 +642,11 @@ func matchAnimationStates():
 			else:
 				animation.play("idle cycle")
 
+		#skillbar stuff
+		"test1":
+			animation.play("combo attack 2hander cycle", 0.35)
+
+
 var sprint_animation_speed = 1
 func animations():
 #on water
@@ -653,9 +655,53 @@ func animations():
 			animation_state = "swim"
 		else:
 			animation_state = "idle water"
+			
 #on land
-	elif  dodge_animation_duration > 0:
+	elif dodge_animation_duration > 0:
 		animation_state = "slide"
+#skills 
+	elif Input.is_action_pressed("1"):
+		animation_state = "test1"
+	elif Input.is_action_pressed("2"):
+		animation_state = "test2"
+	elif Input.is_action_pressed("3"):
+		animation_state = "test3"
+	elif Input.is_action_pressed("4"):
+		animation_state = "test4"
+	elif Input.is_action_pressed("5"):
+		animation_state = "test5"
+	elif Input.is_action_pressed("6"):
+		animation_state = "test6"
+	elif Input.is_action_pressed("7"):
+		animation_state = "test7"
+	elif Input.is_action_pressed("8"):
+		animation_state = "test8"
+	elif Input.is_action_pressed("9"):
+		animation_state = "test9"
+	elif Input.is_action_pressed("0"):
+		animation_state = "test0"
+	elif Input.is_action_pressed("Q"):
+		animation_state = "testQ"
+	elif Input.is_action_pressed("E"):
+		animation_state = "testE"
+	elif Input.is_action_pressed("R"):
+		animation_state = "testR"
+	elif Input.is_action_pressed("F"):
+		animation_state = "testF"
+	elif Input.is_action_pressed("R"):
+		animation_state = "testR"
+	elif Input.is_action_pressed("T"):
+		animation_state = "testT"
+	elif Input.is_action_pressed("G"):
+		animation_state = "testG"
+	elif Input.is_action_pressed("H"):
+		animation_state = "testY"
+	elif Input.is_action_pressed("V"):
+		animation_state = "testV"
+	elif Input.is_action_pressed("B"):
+		animation_state = "testB"
+
+
 	elif not is_on_floor() and not is_climbing and not is_swimming:
 		animation_state = "fall"
 	elif double_atk_animation_duration > 0: 
@@ -679,12 +725,16 @@ func animations():
 			animation_state = "sprint"
 	elif is_running:
 			animation_state = "run"
-	elif is_walking and is_crouching:
-			animation_state = "crouch walking"
+	elif Input.is_action_pressed("crouch"):
+		if is_walking:
+			animation_state = "crouch walk"
+		else:
+			animation_state = "crouch"
 	elif is_walking:
 			animation_state = "walk"
 	elif jump_animation_duration != 0:
 		animation_state = "jump"
+
 	else:
 		animation_state = "idle"
 
@@ -992,3 +1042,16 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
 		text.amount =round(damage_to_take * 100)/ 100
 		text.state = damage_type
 	take_damage_view.add_child(text)
+
+
+onready var skill_tree = $UI/GUI/SkillTrees
+onready var character_sheet = $UI/GUI/CharacterSheet
+func skillUserInterfaceInputs():
+	if Input.is_action_just_pressed("skills"):
+		skill_tree.visible = !skill_tree.visible
+	if Input.is_action_just_pressed("Character"):
+		character_sheet.visible = !character_sheet.visible		
+onready var skills_list1 = $UI/GUI/SkillTrees/Background/SylvanSkills
+func _on_SkillTree1_pressed():
+	skills_list1.visible = !skills_list1.visible
+	
