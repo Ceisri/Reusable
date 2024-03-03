@@ -644,7 +644,18 @@ func matchAnimationStates():
 
 		#skillbar stuff
 		"test1":
-			animation.play("combo attack 2hander cycle", 0.35)
+			var slot1 =  $UI/SkillBar/GridContainer/Slot1/Icon
+			if slot1.texture != null:
+				if slot1.texture.resource_path == "res://UI/graphics/SkillIcons/rush.png":
+					animation.play("combo attack 2hander cycle", 0.35)
+				elif slot1.texture.resource_path == "res://UI/graphics/SkillIcons/selfheal.png":
+					animation.play("crawl cycle", 0.35)
+				print(slot1.texture.resource_path)
+			else:
+				print("Texture is null")
+
+
+
 
 
 var sprint_animation_speed = 1
