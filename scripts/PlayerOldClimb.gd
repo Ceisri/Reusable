@@ -18,13 +18,11 @@ func _ready():
 
 func _physics_process(delta):
 	$hp.text = str(health)
-	
-	if Input.is_action_just_pressed("tab"):
-		is_in_combat = !is_in_combat
 	$Debug.text = animation_state
+	displayClock()
+	frameRate()
 	speedlabel()
 	cameraRotation(delta)
-	mouseMode()
 	crossHair()
 	crossHairResize()
 	minimapFollow()
@@ -330,7 +328,6 @@ func dodgeRight(delta):#Dodge when in strafe mode
 			elif dodge_animation_duration < 0: 
 					dodge_animation_duration = 0
 	#_____________________________________________________Camera_______________________________________
-var is_cursor = false
 var is_aiming = false
 var camrot_h = 0
 var camrot_v = 0
@@ -340,7 +337,7 @@ export var cam_v_min = -125 # -55 recommended
 onready var camera_v =$Camroot/h/v
 onready var camera_h =$Camroot/h
 onready var camera = $Camroot/h/v/Camera
-onready var minimap_camera = $Minimap/Viewport/Camera
+onready var minimap_camera = $UI/GUI/Minimap/Viewport/Camera
 var minimap_rotate = false
 var h_sensitivity = 0.1
 var v_sensitivity = 0.1
@@ -366,7 +363,7 @@ func _on_SensitivityMin_pressed():
 	h_sensitivity -= 0.025
 	$Minimap/sensitivity_label.text = "cam sens: " + str(h_sensitivity)
 func cameraRotation(delta):
-	if not is_cursor:
+	if not cursor_visible:
 		camrot_v = clamp(camrot_v, cam_v_min, cam_v_max)
 		#MOUSE CAMERA
 		camera_h.rotation_degrees.y = lerp(camera_h.rotation_degrees.y, camrot_h, delta * h_acceleration)
@@ -385,19 +382,6 @@ func _input(event):
 		elif event is InputEventMouseButton and event.button_index == BUTTON_WHEEL_DOWN:
 			# Zoom out when scrolling down
 			Zoom(1)
-var mouse = false
-func mouseMode():
-#	if Input.is_action_pressed("rclick") and !is_sprinting and !is_crouching and !is_running and !is_swimming and !is_climbing:
-#		is_aiming = true
-#	else:
-#		is_aiming = false	
-	if Input.is_action_just_pressed("mousemode") or Input.is_action_just_pressed("ui_cancel"):	# Toggle mouse mode
-		is_cursor =!is_cursor
-		mouse =!mouse
-	if !mouse:
-		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
-	else:
-		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 func stiffCamera(delta):
 	if is_aiming and !is_climbing:
 		player_mesh.rotation.y = lerp_angle(player_mesh.rotation.y, $Camroot/h.rotation.y, delta * angular_acceleration)
@@ -486,6 +470,28 @@ func loadPlayerData():
 func _on_Timer_timeout():
 	savePlayerData()
 	
+	$UI/GUI/SkillBar/GridContainer/Slot1/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/Slot2/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/Slot3/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/Slot4/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/Slot5/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/Slot6/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/Slot7/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/Slot8/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/Slot9/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/Slot10/Icon.savedata()
+
+	$UI/GUI/SkillBar/GridContainer/SlotUP1/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/SlotUP2/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/SlotUP3/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/SlotUP4/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/SlotUP5/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/SlotUP6/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/SlotUP7/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/SlotUP8/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/SlotUP9/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/SlotUP10/Icon.savedata()
+
 var is_fullscreen = false
 func fullscreen():
 	if Input.is_action_just_pressed("fullscreen"):
@@ -641,10 +647,9 @@ func matchAnimationStates():
 					animation.play("barehanded idle",0.2,1)
 			else:
 				animation.play("idle cycle")
-
 		#skillbar stuff
 		"test1":
-			var slot1 =  $UI/SkillBar/GridContainer/Slot1/Icon
+			var slot1 = $UI/GUI/SkillBar/GridContainer/Slot1/Icon
 			if slot1.texture != null:
 				if slot1.texture.resource_path == "res://UI/graphics/SkillIcons/rush.png":
 					animation.play("combo attack 2hander cycle", 0.35)
@@ -653,8 +658,6 @@ func matchAnimationStates():
 				print(slot1.texture.resource_path)
 			else:
 				print("Texture is null")
-
-
 
 
 
@@ -671,6 +674,7 @@ func animations():
 	elif dodge_animation_duration > 0:
 		animation_state = "slide"
 #skills 
+
 	elif Input.is_action_pressed("1"):
 		animation_state = "test1"
 	elif Input.is_action_pressed("2"):
@@ -715,21 +719,21 @@ func animations():
 
 	elif not is_on_floor() and not is_climbing and not is_swimming:
 		animation_state = "fall"
-	elif double_atk_animation_duration > 0: 
+	elif double_atk_animation_duration > 0 and !cursor_visible: 
 		animation_state = "double attack"
-	elif Input.is_action_pressed("rclick") and Input.is_action_pressed("attack"):
+	elif Input.is_action_pressed("rclick") and Input.is_action_pressed("attack") and !cursor_visible:
 		animation_state = "guard attack"
-	elif Input.is_action_pressed("rclick"):
+	elif Input.is_action_pressed("rclick") and !cursor_visible:
 		if !is_walking:
 			animation_state = "guard"
 		else:
 			animation_state = "guard walk"
 #attacks________________________________________________________________________
-	elif Input.is_action_pressed("attack") and Input.is_action_pressed("run"): 
+	elif Input.is_action_pressed("attack") and Input.is_action_pressed("run") and !cursor_visible: 
 		animation_state = "run attack"
-	elif Input.is_action_pressed("attack") and Input.is_action_pressed("sprint"): 
+	elif Input.is_action_pressed("attack") and Input.is_action_pressed("sprint") and !cursor_visible: 
 		animation_state = "sprint attack"
-	elif Input.is_action_pressed("attack"):
+	elif Input.is_action_pressed("attack") and !cursor_visible:
 			animation_state = "base attack"
 #_______________________________________________________________________________
 	elif is_sprinting:
@@ -1055,16 +1059,70 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
 	take_damage_view.add_child(text)
 
 
-onready var skill_tree = $UI/GUI/SkillTrees
-onready var character_sheet = $UI/GUI/CharacterSheet
+
+
+
+
+onready var skill_tree = $UI/GUI/Skills
+#onready var character_sheet = $UI/GUI/CharacterSheet
+onready var keybinds = $UI/GUI/Keybinds
+func _on_CloseSkillsTrees_pressed():
+	skill_tree.visible = false
+
+
+var cursor_visible = false
 func skillUserInterfaceInputs():
 	if Input.is_action_just_pressed("skills"):
 		skill_tree.visible = !skill_tree.visible
-		if skill_tree.visible:
-			is_cursor = true 
-	if Input.is_action_just_pressed("Character"):
-		character_sheet.visible = !character_sheet.visible		
-onready var skills_list1 = $UI/GUI/SkillTrees/Background/SylvanSkills
+	if skill_tree.visible:
+		cursor_visible = true 
+#	if Input.is_action_just_pressed("Character"):
+#		character_sheet.visible = !character_sheet.visible	
+#	if character_sheet.visible:
+#		cursor_visible = true 
+	if Input.is_action_just_pressed("tab"):
+		is_in_combat = !is_in_combat
+	if Input.is_action_just_pressed("mousemode") or Input.is_action_just_pressed("ui_cancel"):	# Toggle mouse mode
+		cursor_visible =!cursor_visible
+	if !cursor_visible:
+		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	else:
+		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+#_____________________________________more GUI stuff________________________________________________
+onready var fps_label = $UI/GUI/Minimap/FPSLabel
+func frameRate():
+	fps_label.text = "%d" % Engine.get_frames_per_second()
+func _on_FPS_pressed():
+	var current_fps = Engine.get_target_fps()
+	# Define FPS mapping
+	var fps_mapping = {
+		10: 12,
+		12: 15,
+		15: 17,
+		17: 20,
+		20: 22,
+		22: 25,
+		25: 30,
+		30: 35,
+		35: 40,
+		40: 60,
+		60: 80,
+		80: 15  # Wrap back to 15 if 80 FPS is reached
+	}
+	# Set target FPS
+	if fps_mapping.has(current_fps):
+		Engine.set_target_fps(fps_mapping[current_fps])
+		
+onready var time_label = $UI/GUI/Minimap/Time
+
+func displayClock():
+	# Get the current date and time
+	var datetime = OS.get_datetime()
+	# Display hour and minute in the label
+	time_label.text = "Time: %02d:%02d" % [datetime.hour, datetime.minute]	
+
+onready var skills_list1 = $UI/GUI/Skills/SylvanSkills
 func _on_SkillTree1_pressed():
 	skills_list1.visible = !skills_list1.visible
 	
+

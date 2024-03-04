@@ -1,15 +1,13 @@
 extends TextureRect
 
-onready var player = $"../../../../.."
+onready var player = $"../../../../../.."
 var savedTexture : Texture
 
 func _ready():
 	loaddata()
 
-func _physics_process(delta):
-	savedata()
 
-func savedata():
+func savedata(): #I'm calling this function in the player script on a timer to save the data, alternativelly connect a timer here
 	savedTexture = texture
 	var parentName = get_parent().get_name()  # Get the name of the parent node
 	var savePath = "user://" + player.entity_name + parentName + "_saved_texture_data.txt"  # Construct the save path based on parent name
