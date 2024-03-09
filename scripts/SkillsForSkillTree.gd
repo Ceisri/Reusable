@@ -3,7 +3,6 @@ extends TextureButton
 var DRAGPREVIEW = preload("res://Sprite.tscn")
 onready var icon = $Icon
 
-onready var inventory_grid = $"../../../../../../Inventory/VScrollBar/InventoryGrid"
 
 
 func get_drag_data(position: Vector2):

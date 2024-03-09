@@ -8,7 +8,7 @@ func _on_Edit_pressed():
 	print(edit)
 
 #lower row of shortcut keybinds 
-onready var skilltree = $"../GUI/SkillTrees/Background/SylvanSkills"
+onready var skilltree = $"../SkillTrees/Background/SylvanSkills"
 onready var skill_slot1 = $GridContainer/Slot1
 onready var skill_slot2 = $GridContainer/Slot2
 onready var skill_slot3 = $GridContainer/Slot3
@@ -18,7 +18,7 @@ onready var skill_slot6 = $GridContainer/Slot6
 onready var skill_slot7 = $GridContainer/Slot7
 onready var skill_slot8 = $GridContainer/Slot8
 onready var skill_slot9 = $GridContainer/Slot9
-onready var skill_slot10 = $GridContainer/Slot0
+onready var skill_slot10 = $GridContainer/Slot10
 
 onready var skill_slot_label_1 = $GridContainer/Slot1/Label
 onready var skill_slot_label_2 = $GridContainer/Slot2/Label 
@@ -92,7 +92,7 @@ onready var skill_slot6UP = $GridContainer/SlotUP6
 onready var skill_slot7UP = $GridContainer/SlotUP7
 onready var skill_slot8UP = $GridContainer/SlotUP8
 onready var skill_slot9UP = $GridContainer/SlotUP9
-onready var skill_slot10UP = $GridContainer/SlotUP10
+onready var skill_slot10UP = $GridContainer/SlotUP0
 
 onready var skill_slot_label_1UP = $GridContainer/SlotUP1/Label
 onready var skill_slot_label_2UP = $GridContainer/SlotUP2/Label
@@ -103,7 +103,7 @@ onready var skill_slot_label_6UP = $GridContainer/SlotUP6/Label
 onready var skill_slot_label_7UP = $GridContainer/SlotUP7/Label
 onready var skill_slot_label_8UP = $GridContainer/SlotUP8/Label
 onready var skill_slot_label_9UP = $GridContainer/SlotUP9/Label
-onready var skill_slot_label_10UP = $GridContainer/SlotUP10/Label
+onready var skill_slot_label_10UP = $GridContainer/SlotUP0/Label
 
 var capturing_input1UP = false
 var capturing_input2UP = false

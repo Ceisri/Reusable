@@ -45,6 +45,7 @@ func _physics_process(delta):
 	doubleAttack(delta)
 	fallDamage()
 	skillUserInterfaceInputs()
+	addItemToInventory()
 	
 #_______________________________________________Basic Movement______________________________________
 
@@ -423,7 +424,7 @@ func crossHairResize():
 	crosshair_tween.interpolate_property(crosshair, "rect_scale", crosshair.rect_scale, Vector2(target_scale, target_scale), 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
 	crosshair_tween.start()
 
-onready var minimap = $Minimap
+onready var minimap = $UI/GUI/Minimap
 func miniMapVisibility():
 	if Input.is_action_just_pressed("minimap"):
 		minimap.visible = !minimap.visible
@@ -467,9 +468,9 @@ func loadPlayerData():
 				camera.translation.y = player_data["camera.translation.y"]
 			if "camera.translation.z" in player_data:
 				camera.translation.z = player_data["camera.translation.z"]
+
 func _on_Timer_timeout():
 	savePlayerData()
-	
 	
 	$UI/GUI/SkillBar/GridContainer/Slot1/Icon.savedata()
 	$UI/GUI/SkillBar/GridContainer/Slot2/Icon.savedata()
@@ -481,7 +482,6 @@ func _on_Timer_timeout():
 	$UI/GUI/SkillBar/GridContainer/Slot8/Icon.savedata()
 	$UI/GUI/SkillBar/GridContainer/Slot9/Icon.savedata()
 	$UI/GUI/SkillBar/GridContainer/Slot10/Icon.savedata()
-
 	$UI/GUI/SkillBar/GridContainer/SlotUP1/Icon.savedata()
 	$UI/GUI/SkillBar/GridContainer/SlotUP2/Icon.savedata()
 	$UI/GUI/SkillBar/GridContainer/SlotUP3/Icon.savedata()
@@ -492,6 +492,16 @@ func _on_Timer_timeout():
 	$UI/GUI/SkillBar/GridContainer/SlotUP8/Icon.savedata()
 	$UI/GUI/SkillBar/GridContainer/SlotUP9/Icon.savedata()
 	$UI/GUI/SkillBar/GridContainer/SlotUP0/Icon.savedata()
+
+	var inventory_grid = $UI/GUI/Inventory/ScrollContainer/InventoryGrid
+
+	# Call savedata() function on each child of inventory_grid that belongs to the group "Inventory"
+	for child in inventory_grid.get_children():
+		if child.is_in_group("Inventory"):
+			if child.get_node("Icon").has_method("savedata"):
+				child.get_node("Icon").savedata()
+
+
 
 var is_fullscreen = false
 func fullscreen():
@@ -1122,10 +1132,40 @@ func displayClock():
 	# Display hour and minute in the label
 	time_label.text = "Time: %02d:%02d" % [datetime.hour, datetime.minute]	
 
-onready var skills_list1 = $UI/GUI/Skills/SylvanSkills
+onready var skills_list1 = $UI/GUI/SkillTrees/Background/SylvanSkills
 func _on_SkillTree1_pressed():
 	skills_list1.visible = !skills_list1.visible
 	
 
 
 
+
+
+
+func addItemToInventory():
+	var inventory_grid = $UI/GUI/Inventory/ScrollContainer/InventoryGrid
+	var items = $Mesh/Detector.get_overlapping_bodies()
+	
+	for item in items:
+		if item.is_in_group("Mushroom1"):
+			for child in inventory_grid.get_children():
+				if child.is_in_group("Inventory"):
+					var icon = child.get_node("Icon")
+					if icon.texture == null:
+						icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/1.png")
+						child.quantity += 1
+						break
+					elif icon.texture.get_path() == "res://UI/graphics/mushrooms/PNG/background/1.png":
+						child.quantity += 1
+						break
+		if item.is_in_group("Mushroom2"):
+			for child in inventory_grid.get_children():
+				if child.is_in_group("Inventory"):
+					var icon = child.get_node("Icon")
+					if icon.texture == null:
+						icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/2.png")
+						child.quantity += 1
+						break
+					elif icon.texture.get_path() == "res://UI/graphics/mushrooms/PNG/background/2.png":
+						child.quantity += 1
+						break

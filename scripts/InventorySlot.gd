@@ -21,7 +21,7 @@ func displayQuantity():
 	elif quantity == 0:
 		quantity_label.text = ""
 		icon.texture = null
-		print("zeroed out")
+
 	
 	if icon.texture == null:
 		quantity = 0
@@ -42,10 +42,6 @@ func get_drag_data(position: Vector2):
 	var dragPreview = DRAG_PREVIEW.instance()
 	dragPreview.texture = icon.texture
 	add_child(dragPreview)
-
-	# Remove the icon from its original place
-	#icon.texture = null
-	#quantity = 0
 	displayQuantity()
 	print("Item type:", item)
 	return data

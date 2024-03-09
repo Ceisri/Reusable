@@ -323,7 +323,7 @@ func teleportBehindPlayer():
 			global_transform.origin = teleport_position
 func pushPlayerBackNULL():
 	var target = findTargetWithHighestAggro()
-	var player_mesh = target.player.find_node("Mesh")  # Assuming "Mesh" is a direct child of the player
+	#var player_mesh = target.player.find_node("Mesh")  # Assuming "Mesh" is a direct child of the player
 	var player_camera = target.player.find_node("Camera")  # Assuming "Camera" is a direct child of the player
 	if player_camera:
 		var camera_transform = player_camera.global_transform
