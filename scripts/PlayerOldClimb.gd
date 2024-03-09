@@ -470,6 +470,7 @@ func loadPlayerData():
 func _on_Timer_timeout():
 	savePlayerData()
 	
+	
 	$UI/GUI/SkillBar/GridContainer/Slot1/Icon.savedata()
 	$UI/GUI/SkillBar/GridContainer/Slot2/Icon.savedata()
 	$UI/GUI/SkillBar/GridContainer/Slot3/Icon.savedata()
@@ -490,7 +491,7 @@ func _on_Timer_timeout():
 	$UI/GUI/SkillBar/GridContainer/SlotUP7/Icon.savedata()
 	$UI/GUI/SkillBar/GridContainer/SlotUP8/Icon.savedata()
 	$UI/GUI/SkillBar/GridContainer/SlotUP9/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/SlotUP10/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/SlotUP0/Icon.savedata()
 
 var is_fullscreen = false
 func fullscreen():
@@ -519,13 +520,13 @@ func _on_Detector_body_entered(body):
 
 
 #__________________________________Entitygraphical interface________________________________________
-onready var entity_graphic_interface = $EnemyUI
+onready var entity_graphic_interface = $UI/GUI/EnemyUI
 onready var entity_inspector 
-onready var enemy_ui_tween = $EnemyUI/Tween
-onready var enemy_health_bar = $EnemyUI/HP
-onready var enemy_health_label = $EnemyUI/HP/HPlab
-onready var enemy_energy_bar = $EnemyUI/EN
-onready var enemy_energy_label = $EnemyUI/EN/ENlab
+onready var enemy_ui_tween =$UI/GUI/EnemyUI/Tween
+onready var enemy_health_bar = $UI/GUI/EnemyUI/HP
+onready var enemy_health_label = $UI/GUI/EnemyUI/HP/HPlab
+onready var enemy_energy_bar = $UI/GUI/EnemyUI/EN
+onready var enemy_energy_label =$UI/GUI/EnemyUI/EN/ENlab
 var fade_duration = 0.3
 func showEnemyStats():
 	if ray.is_colliding():
@@ -1063,7 +1064,7 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
 
 
 
-onready var skill_tree = $UI/GUI/Skills
+onready var skill_tree = $UI/GUI/SkillTrees
 #onready var character_sheet = $UI/GUI/CharacterSheet
 onready var keybinds = $UI/GUI/Keybinds
 func _on_CloseSkillsTrees_pressed():
@@ -1125,4 +1126,6 @@ onready var skills_list1 = $UI/GUI/Skills/SylvanSkills
 func _on_SkillTree1_pressed():
 	skills_list1.visible = !skills_list1.visible
 	
+
+
 

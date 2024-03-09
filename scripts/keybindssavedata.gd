@@ -178,3 +178,5 @@ func load_keybind(action_name, button, input_action, config):
 	button.text = key_name
 
 
+func _on_Slot6_pressed():
+	pass # Replace with function body.

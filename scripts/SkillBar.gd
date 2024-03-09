@@ -430,3 +430,6 @@ func load_keybind(action_name, button, input_action, config):
 
 
 
+
+func _on_SlotUP10_pressed():
+	pass # Replace with function body.
