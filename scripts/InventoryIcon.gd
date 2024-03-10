@@ -7,6 +7,8 @@ var savedQuantity : int
 func _ready():
 	loaddata()
 
+
+
 func savedata():
 	savedTexture = texture
 	savedQuantity = get_parent().quantity  # Save the quantity of the parent

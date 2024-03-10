@@ -471,37 +471,6 @@ func loadPlayerData():
 
 func _on_Timer_timeout():
 	savePlayerData()
-	
-	$UI/GUI/SkillBar/GridContainer/Slot1/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/Slot2/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/Slot3/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/Slot4/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/Slot5/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/Slot6/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/Slot7/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/Slot8/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/Slot9/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/Slot10/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/SlotUP1/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/SlotUP2/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/SlotUP3/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/SlotUP4/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/SlotUP5/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/SlotUP6/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/SlotUP7/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/SlotUP8/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/SlotUP9/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/SlotUP0/Icon.savedata()
-
-	var inventory_grid = $UI/GUI/Inventory/ScrollContainer/InventoryGrid
-
-	# Call savedata() function on each child of inventory_grid that belongs to the group "Inventory"
-	for child in inventory_grid.get_children():
-		if child.is_in_group("Inventory"):
-			if child.get_node("Icon").has_method("savedata"):
-				child.get_node("Icon").savedata()
-
-
 
 var is_fullscreen = false
 func fullscreen():
@@ -1085,6 +1054,7 @@ var cursor_visible = false
 func skillUserInterfaceInputs():
 	if Input.is_action_just_pressed("skills"):
 		skill_tree.visible = !skill_tree.visible
+		saveSkillBarData()
 	if skill_tree.visible:
 		cursor_visible = true 
 #	if Input.is_action_just_pressed("Character"):
@@ -1093,12 +1063,24 @@ func skillUserInterfaceInputs():
 #		cursor_visible = true 
 	if Input.is_action_just_pressed("tab"):
 		is_in_combat = !is_in_combat
+		saveSkillBarData()
 	if Input.is_action_just_pressed("mousemode") or Input.is_action_just_pressed("ui_cancel"):	# Toggle mouse mode
+		saveInventoryData()
+		saveSkillBarData()
 		cursor_visible =!cursor_visible
 	if !cursor_visible:
 		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	else:
 		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+		
+	if Input.is_action_just_pressed("Inventory"):
+		$UI/GUI/Inventory.visible = !$UI/GUI/Inventory.visible
+		saveInventoryData()
+		saveSkillBarData()
+	if Input.is_action_just_pressed("Crafting"):
+		$UI/GUI/Crafting.visible = !$UI/GUI/Crafting.visible
+		saveInventoryData()
+		saveSkillBarData()
 #_____________________________________more GUI stuff________________________________________________
 onready var fps_label = $UI/GUI/Minimap/FPSLabel
 func frameRate():
@@ -1135,9 +1117,8 @@ func displayClock():
 onready var skills_list1 = $UI/GUI/SkillTrees/Background/SylvanSkills
 func _on_SkillTree1_pressed():
 	skills_list1.visible = !skills_list1.visible
+	saveSkillBarData()
 	
-
-
 
 
 
@@ -1169,3 +1150,45 @@ func addItemToInventory():
 					elif icon.texture.get_path() == "res://UI/graphics/mushrooms/PNG/background/2.png":
 						child.quantity += 1
 						break
+
+
+func _on_CraftingCloseButton_pressed():
+	$UI/GUI/Crafting.visible = false
+func _on_InventoryCloseButton_pressed():
+	$UI/GUI/Inventory.visible = false
+func _on_InventoryOpenCraftingSystemButton_pressed():
+	$UI/GUI/Crafting.visible = !$UI/GUI/Crafting.visible
+	saveSkillBarData()
+
+func _on_InventorySaveButton_pressed():
+	saveInventoryData()
+	saveSkillBarData()
+func saveInventoryData():
+	var inventory_grid = $UI/GUI/Inventory/ScrollContainer/InventoryGrid
+	# Call savedata() function on each child of inventory_grid that belongs to the group "Inventory"
+	for child in inventory_grid.get_children():
+		if child.is_in_group("Inventory"):
+			if child.get_node("Icon").has_method("savedata"):
+				child.get_node("Icon").savedata()
+func saveSkillBarData():
+	$UI/GUI/SkillBar/GridContainer/Slot1/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/Slot2/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/Slot3/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/Slot4/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/Slot5/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/Slot6/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/Slot7/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/Slot8/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/Slot9/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/Slot10/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/SlotUP1/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/SlotUP2/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/SlotUP3/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/SlotUP4/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/SlotUP5/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/SlotUP6/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/SlotUP7/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/SlotUP8/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/SlotUP9/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/SlotUP0/Icon.savedata()
+	

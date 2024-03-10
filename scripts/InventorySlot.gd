@@ -29,7 +29,6 @@ func displayQuantity():
 
 func get_drag_data(position: Vector2):
 	matchItemTypeToIcon()
-	
 	var slot = get_parent().get_name()
 	var data = {
 		"origin_node": self,
