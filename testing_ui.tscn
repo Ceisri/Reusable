@@ -1,0 +1,5995 @@
+[gd_scene load_steps=25 format=2]
+
+[ext_resource path="res://player/CraftingResultSlot.gd" type="Script" id=1]
+[ext_resource path="res://player/Crafting.gd" type="Script" id=2]
+[ext_resource path="res://UI/fonts/base.tres" type="DynamicFont" id=3]
+[ext_resource path="res://UI/graphics/SkillIcons/empty.png" type="Texture" id=4]
+[ext_resource path="res://scripts/IconSkillBar.gd" type="Script" id=5]
+[ext_resource path="res://scripts/SkillsForSkillbar.gd" type="Script" id=6]
+[ext_resource path="res://scripts/SkillBar.gd" type="Script" id=7]
+[ext_resource path="res://scripts/InventoryIcon.gd" type="Script" id=8]
+[ext_resource path="res://scripts/InventorySlot.gd" type="Script" id=9]
+[ext_resource path="res://scripts/SkillsForSkillTree.gd" type="Script" id=10]
+[ext_resource path="res://scripts/keybindssavedata.gd" type="Script" id=11]
+[ext_resource path="res://UI/graphics/background.jpg" type="Texture" id=12]
+[ext_resource path="res://UI/graphics/barcolor.png" type="Texture" id=13]
+[ext_resource path="res://Inventory/rpg_ui/elements/window_stash.png" type="Texture" id=14]
+[ext_resource path="res://UI/graphics/banner.png" type="Texture" id=15]
+[ext_resource path="res://Inventory/rpg_ui/elements/bar_globe_resource_set.png" type="Texture" id=16]
+[ext_resource path="res://UI/graphics/circle.png" type="Texture" id=17]
+[ext_resource path="res://UI/graphics/SkillIcons/flee.png" type="Texture" id=18]
+[ext_resource path="res://Inventory/rpg_ui/elements/window_message_box.png" type="Texture" id=19]
+[ext_resource path="res://UI/graphics/SkillIcons/rush.png" type="Texture" id=20]
+[ext_resource path="res://UI/graphics/X.png" type="Texture" id=21]
+[ext_resource path="res://UI/graphics/SkillIcons/fist.png" type="Texture" id=22]
+[ext_resource path="res://UI/graphics/SkillIcons/selfheal.png" type="Texture" id=23]
+
+[sub_resource type="StreamTexture" id=1]
+flags = 4
+load_path = "res://.import/icon.png-487276ed1e3a0c39cad0279d744ee560.stex"
+
+[node name="Node" type="Node"]
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="GUI" type="Control" parent="UI"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Keybinds" type="Control" parent="UI/GUI"]
+visible = false
+margin_left = 52.0
+margin_top = 302.0
+margin_right = 92.0
+margin_bottom = 342.0
+script = ExtResource( 11 )
+
+[node name="GridContainer" type="GridContainer" parent="UI/GUI/Keybinds"]
+margin_bottom = -6.0
+rect_scale = Vector2( 2.5862, 2.28852 )
+columns = 2
+
+[node name="ForwardKeybind" type="Button" parent="UI/GUI/Keybinds/GridContainer"]
+margin_right = 69.0
+margin_bottom = 20.0
+text = "W"
+
+[node name="Label" type="Label" parent="UI/GUI/Keybinds/GridContainer"]
+margin_left = 73.0
+margin_top = 3.0
+margin_right = 120.0
+margin_bottom = 17.0
+text = "forward"
+
+[node name="BackKeybind" type="Button" parent="UI/GUI/Keybinds/GridContainer"]
+margin_top = 24.0
+margin_right = 69.0
+margin_bottom = 44.0
+text = "S"
+
+[node name="Label2" type="Label" parent="UI/GUI/Keybinds/GridContainer"]
+margin_left = 73.0
+margin_top = 27.0
+margin_right = 120.0
+margin_bottom = 41.0
+text = "back"
+
+[node name="LeftKeybind" type="Button" parent="UI/GUI/Keybinds/GridContainer"]
+margin_top = 48.0
+margin_right = 69.0
+margin_bottom = 68.0
+text = "A"
+
+[node name="Label3" type="Label" parent="UI/GUI/Keybinds/GridContainer"]
+margin_left = 73.0
+margin_top = 51.0
+margin_right = 120.0
+margin_bottom = 65.0
+text = "left"
+
+[node name="RightKeybind" type="Button" parent="UI/GUI/Keybinds/GridContainer"]
+margin_top = 72.0
+margin_right = 69.0
+margin_bottom = 92.0
+text = "D"
+
+[node name="Label4" type="Label" parent="UI/GUI/Keybinds/GridContainer"]
+margin_left = 73.0
+margin_top = 75.0
+margin_right = 120.0
+margin_bottom = 89.0
+text = "Right"
+
+[node name="SprintKeybind" type="Button" parent="UI/GUI/Keybinds/GridContainer"]
+margin_top = 96.0
+margin_right = 69.0
+margin_bottom = 116.0
+text = "alt"
+
+[node name="Label5" type="Label" parent="UI/GUI/Keybinds/GridContainer"]
+margin_left = 73.0
+margin_top = 99.0
+margin_right = 120.0
+margin_bottom = 113.0
+text = "Sprint"
+
+[node name="RunKeybind" type="Button" parent="UI/GUI/Keybinds/GridContainer"]
+margin_top = 120.0
+margin_right = 69.0
+margin_bottom = 140.0
+text = "shit"
+
+[node name="Label6" type="Label" parent="UI/GUI/Keybinds/GridContainer"]
+margin_left = 73.0
+margin_top = 123.0
+margin_right = 120.0
+margin_bottom = 137.0
+text = "run"
+
+[node name="JumpKeybind" type="Button" parent="UI/GUI/Keybinds/GridContainer"]
+margin_top = 144.0
+margin_right = 69.0
+margin_bottom = 164.0
+text = "spacebar"
+
+[node name="Label7" type="Label" parent="UI/GUI/Keybinds/GridContainer"]
+margin_left = 73.0
+margin_top = 147.0
+margin_right = 120.0
+margin_bottom = 161.0
+text = "Jump"
+
+[node name="CrouchKeybind" type="Button" parent="UI/GUI/Keybinds/GridContainer"]
+margin_top = 168.0
+margin_right = 69.0
+margin_bottom = 188.0
+text = "c"
+
+[node name="Label8" type="Label" parent="UI/GUI/Keybinds/GridContainer"]
+margin_left = 73.0
+margin_top = 171.0
+margin_right = 120.0
+margin_bottom = 185.0
+text = "crouch"
+
+[node name="TabKeybind" type="Button" parent="UI/GUI/Keybinds/GridContainer"]
+margin_top = 192.0
+margin_right = 69.0
+margin_bottom = 212.0
+text = "tab"
+
+[node name="Label9" type="Label" parent="UI/GUI/Keybinds/GridContainer"]
+margin_left = 73.0
+margin_top = 195.0
+margin_right = 120.0
+margin_bottom = 209.0
+text = "tab"
+
+[node name="SkillsKeybind" type="Button" parent="UI/GUI/Keybinds/GridContainer"]
+margin_top = 216.0
+margin_right = 69.0
+margin_bottom = 236.0
+text = "k"
+
+[node name="Label10" type="Label" parent="UI/GUI/Keybinds/GridContainer"]
+margin_left = 73.0
+margin_top = 219.0
+margin_right = 120.0
+margin_bottom = 233.0
+text = "skills"
+
+[node name="Minimap" type="ViewportContainer" parent="UI/GUI"]
+anchor_left = 1.0
+anchor_right = 1.0
+margin_left = -200.0
+margin_bottom = 200.0
+
+[node name="Viewport" type="Viewport" parent="UI/GUI/Minimap"]
+size = Vector2( 200, 200 )
+handle_input_locally = false
+render_target_update_mode = 3
+
+[node name="Camera" type="Camera" parent="UI/GUI/Minimap/Viewport"]
+transform = Transform( 1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 30, 0 )
+projection = 1
+size = 100.0
+far = 750.0
+
+[node name="MinimapRotation" type="Button" parent="UI/GUI/Minimap"]
+margin_left = 135.0
+margin_top = 200.0
+margin_right = 200.0
+margin_bottom = 220.0
+text = "Rotation"
+
+[node name="FPS" type="Button" parent="UI/GUI/Minimap"]
+margin_left = 35.0
+margin_top = 200.0
+margin_right = 69.0
+margin_bottom = 220.0
+text = "FPS"
+
+[node name="Unstcuk" type="Button" parent="UI/GUI/Minimap"]
+margin_left = 70.0
+margin_top = 200.0
+margin_right = 12.0
+margin_bottom = 20.0
+text = "Unstuck"
+
+[node name="OneSecondTimer" type="Timer" parent="UI/GUI/Minimap/Unstcuk"]
+autostart = true
+
+[node name="FPSLabel" type="Label" parent="UI/GUI/Minimap"]
+margin_left = 15.0
+margin_top = 200.0
+margin_right = 31.0
+margin_bottom = 214.0
+text = "60"
+
+[node name="UnstuckCDProgressBar" type="TextureProgress" parent="UI/GUI/Minimap"]
+visible = false
+anchor_left = 0.339
+anchor_right = 0.422
+anchor_bottom = 0.101
+margin_left = -3.79987
+margin_top = 200.0
+margin_right = 55.0541
+margin_bottom = 262.586
+rect_scale = Vector2( 1.10392, 0.304759 )
+value = 100.0
+texture_progress = SubResource( 1 )
+tint_progress = Color( 1, 0, 0, 1 )
+
+[node name="CdLabel" type="Label" parent="UI/GUI/Minimap/UnstuckCDProgressBar"]
+margin_left = 5.43506
+margin_top = 9.84381
+margin_right = 67.4351
+margin_bottom = 23.8438
+rect_scale = Vector2( 0.991277, 3.30434 )
+text = "test"
+
+[node name="sensitivity_label" type="Label" parent="UI/GUI/Minimap"]
+anchor_left = 1.0
+anchor_right = 1.0
+margin_left = -200.0
+margin_top = 220.0
+margin_right = -82.0
+margin_bottom = 251.0
+text = "Cam Sens"
+
+[node name="Sensitivity+" type="Button" parent="UI/GUI/Minimap"]
+margin_left = 160.0
+margin_top = 220.0
+margin_right = 200.0
+margin_bottom = 260.0
+text = "+"
+
+[node name="SensitivityMin" type="Button" parent="UI/GUI/Minimap"]
+margin_left = 120.0
+margin_top = 220.0
+margin_right = 160.0
+margin_bottom = 260.0
+text = "-"
+
+[node name="Coordinates" type="Label" parent="UI/GUI/Minimap"]
+margin_right = 40.0
+margin_bottom = 14.0
+
+[node name="Time" type="Label" parent="UI/GUI/Minimap"]
+margin_left = 115.0
+margin_top = 185.0
+margin_right = 40.0
+margin_bottom = 14.0
+text = "time"
+
+[node name="Edit" type="Button" parent="UI/GUI/Minimap"]
+margin_top = 239.0
+margin_right = 12.0
+margin_bottom = 20.0
+text = "Edit Character"
+
+[node name="MobileControls" type="Button" parent="UI/GUI/Minimap"]
+margin_top = 261.0
+margin_right = 80.0
+margin_bottom = 281.0
+text = "Mobile/Pc"
+
+[node name="C" type="Button" parent="UI/GUI/Minimap"]
+margin_right = 12.0
+margin_bottom = 20.0
+text = "o"
+
+[node name="SkillBar" type="Control" parent="UI/GUI"]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -134.0
+margin_top = -83.0
+margin_right = -93.9999
+margin_bottom = -43.0
+rect_scale = Vector2( 1.14474, 1.1384 )
+script = ExtResource( 7 )
+
+[node name="background" type="TextureRect" parent="UI/GUI/SkillBar"]
+margin_left = 286.0
+margin_top = 369.817
+margin_right = 774.0
+margin_bottom = 881.817
+rect_scale = Vector2( 1.09351, 0.200273 )
+texture = ExtResource( 15 )
+expand = true
+
+[node name="GridContainer" type="GridContainer" parent="UI/GUI/SkillBar"]
+margin_left = 301.0
+margin_top = 381.0
+margin_right = 726.0
+margin_bottom = 865.0
+rect_scale = Vector2( 1.1934, 0.177077 )
+size_flags_horizontal = 3
+size_flags_vertical = 3
+columns = 11
+
+[node name="LClickSlot" type="TextureButton" parent="UI/GUI/SkillBar/GridContainer" groups=["Shortcut"]]
+margin_right = 35.0
+margin_bottom = 240.0
+rect_min_size = Vector2( 35, 240 )
+texture_normal = ExtResource( 19 )
+expand = true
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/SkillBar/GridContainer/LClickSlot"]
+margin_left = 1.86932
+margin_top = 18.9954
+margin_right = 31.8693
+margin_bottom = 48.9954
+rect_scale = Vector2( 1.01631, 6.81778 )
+texture = ExtResource( 22 )
+expand = true
+
+[node name="Label" type="Label" parent="UI/GUI/SkillBar/GridContainer/LClickSlot"]
+margin_left = 2.05566
+margin_top = 125.347
+margin_right = 116.056
+margin_bottom = 158.347
+rect_scale = Vector2( 0.321644, 3.34053 )
+custom_fonts/font = ExtResource( 3 )
+text = "L-click"
+
+[node name="Slot1" type="TextureButton" parent="UI/GUI/SkillBar/GridContainer"]
+margin_left = 39.0
+margin_right = 74.0
+margin_bottom = 240.0
+rect_min_size = Vector2( 35, 240 )
+texture_normal = ExtResource( 19 )
+expand = true
+script = ExtResource( 6 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/SkillBar/GridContainer/Slot1"]
+margin_left = 1.86932
+margin_top = 18.9954
+margin_right = 31.8693
+margin_bottom = 48.9954
+rect_scale = Vector2( 1.01631, 6.81778 )
+texture = ExtResource( 4 )
+expand = true
+script = ExtResource( 5 )
+
+[node name="Label" type="Label" parent="UI/GUI/SkillBar/GridContainer/Slot1"]
+margin_left = 28.3573
+margin_top = 112.483
+margin_right = 142.358
+margin_bottom = 145.483
+rect_scale = Vector2( 0.287648, 3.67259 )
+custom_fonts/font = ExtResource( 3 )
+text = "Q"
+
+[node name="Slot2" type="TextureButton" parent="UI/GUI/SkillBar/GridContainer"]
+margin_left = 78.0
+margin_right = 113.0
+margin_bottom = 240.0
+rect_min_size = Vector2( 35, 240 )
+texture_normal = ExtResource( 19 )
+expand = true
+script = ExtResource( 6 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/SkillBar/GridContainer/Slot2"]
+margin_left = 1.86932
+margin_top = 18.9954
+margin_right = 31.8693
+margin_bottom = 48.9954
+rect_scale = Vector2( 1.01631, 6.81778 )
+texture = ExtResource( 4 )
+expand = true
+script = ExtResource( 5 )
+
+[node name="Label" type="Label" parent="UI/GUI/SkillBar/GridContainer/Slot2"]
+margin_left = 28.3573
+margin_top = 112.483
+margin_right = 142.358
+margin_bottom = 145.483
+rect_scale = Vector2( 0.287648, 3.67259 )
+custom_fonts/font = ExtResource( 3 )
+text = "E"
+
+[node name="Slot3" type="TextureButton" parent="UI/GUI/SkillBar/GridContainer"]
+margin_left = 117.0
+margin_right = 152.0
+margin_bottom = 240.0
+rect_min_size = Vector2( 35, 240 )
+texture_normal = ExtResource( 19 )
+expand = true
+script = ExtResource( 6 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/SkillBar/GridContainer/Slot3"]
+margin_left = 1.86932
+margin_top = 18.9954
+margin_right = 31.8693
+margin_bottom = 48.9954
+rect_scale = Vector2( 1.01631, 6.81778 )
+texture = ExtResource( 4 )
+expand = true
+script = ExtResource( 5 )
+
+[node name="Label" type="Label" parent="UI/GUI/SkillBar/GridContainer/Slot3"]
+margin_left = 28.3573
+margin_top = 112.483
+margin_right = 142.358
+margin_bottom = 145.483
+rect_scale = Vector2( 0.287648, 3.67259 )
+custom_fonts/font = ExtResource( 3 )
+text = "R"
+
+[node name="Slot4" type="TextureButton" parent="UI/GUI/SkillBar/GridContainer"]
+margin_left = 156.0
+margin_right = 191.0
+margin_bottom = 240.0
+rect_min_size = Vector2( 35, 240 )
+texture_normal = ExtResource( 19 )
+expand = true
+script = ExtResource( 6 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/SkillBar/GridContainer/Slot4"]
+margin_left = 1.86932
+margin_top = 18.9954
+margin_right = 31.8693
+margin_bottom = 48.9954
+rect_scale = Vector2( 1.01631, 6.81778 )
+texture = ExtResource( 4 )
+expand = true
+script = ExtResource( 5 )
+
+[node name="Label" type="Label" parent="UI/GUI/SkillBar/GridContainer/Slot4"]
+margin_left = 28.3573
+margin_top = 112.483
+margin_right = 142.358
+margin_bottom = 145.483
+rect_scale = Vector2( 0.287648, 3.67259 )
+custom_fonts/font = ExtResource( 3 )
+text = "T"
+
+[node name="Slot5" type="TextureButton" parent="UI/GUI/SkillBar/GridContainer"]
+margin_left = 195.0
+margin_right = 230.0
+margin_bottom = 240.0
+rect_min_size = Vector2( 35, 240 )
+texture_normal = ExtResource( 19 )
+expand = true
+script = ExtResource( 6 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/SkillBar/GridContainer/Slot5"]
+margin_left = 1.86932
+margin_top = 18.9954
+margin_right = 31.8693
+margin_bottom = 48.9954
+rect_scale = Vector2( 1.01631, 6.81778 )
+texture = ExtResource( 4 )
+expand = true
+script = ExtResource( 5 )
+
+[node name="Label" type="Label" parent="UI/GUI/SkillBar/GridContainer/Slot5"]
+margin_left = 28.3573
+margin_top = 112.483
+margin_right = 142.358
+margin_bottom = 145.483
+rect_scale = Vector2( 0.287648, 3.67259 )
+custom_fonts/font = ExtResource( 3 )
+text = "F"
+
+[node name="Slot6" type="TextureButton" parent="UI/GUI/SkillBar/GridContainer"]
+margin_left = 234.0
+margin_right = 269.0
+margin_bottom = 240.0
+rect_min_size = Vector2( 35, 240 )
+texture_normal = ExtResource( 19 )
+expand = true
+script = ExtResource( 6 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/SkillBar/GridContainer/Slot6"]
+margin_left = 1.86932
+margin_top = 18.9954
+margin_right = 31.8693
+margin_bottom = 48.9954
+rect_scale = Vector2( 1.01631, 6.81778 )
+texture = ExtResource( 4 )
+expand = true
+script = ExtResource( 5 )
+
+[node name="Label" type="Label" parent="UI/GUI/SkillBar/GridContainer/Slot6"]
+margin_left = 28.3573
+margin_top = 112.483
+margin_right = 142.358
+margin_bottom = 145.483
+rect_scale = Vector2( 0.287648, 3.67259 )
+custom_fonts/font = ExtResource( 3 )
+text = "G"
+
+[node name="Slot7" type="TextureButton" parent="UI/GUI/SkillBar/GridContainer"]
+margin_left = 273.0
+margin_right = 308.0
+margin_bottom = 240.0
+rect_min_size = Vector2( 35, 240 )
+texture_normal = ExtResource( 19 )
+expand = true
+script = ExtResource( 6 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/SkillBar/GridContainer/Slot7"]
+margin_left = 1.86932
+margin_top = 18.9954
+margin_right = 31.8693
+margin_bottom = 48.9954
+rect_scale = Vector2( 1.01631, 6.81778 )
+texture = ExtResource( 4 )
+expand = true
+script = ExtResource( 5 )
+
+[node name="Label" type="Label" parent="UI/GUI/SkillBar/GridContainer/Slot7"]
+margin_left = 28.3573
+margin_top = 112.483
+margin_right = 142.358
+margin_bottom = 145.483
+rect_scale = Vector2( 0.287648, 3.67259 )
+custom_fonts/font = ExtResource( 3 )
+text = "Y"
+
+[node name="Slot8" type="TextureButton" parent="UI/GUI/SkillBar/GridContainer"]
+margin_left = 312.0
+margin_right = 347.0
+margin_bottom = 240.0
+rect_min_size = Vector2( 35, 240 )
+texture_normal = ExtResource( 19 )
+expand = true
+script = ExtResource( 6 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/SkillBar/GridContainer/Slot8"]
+margin_left = 1.86932
+margin_top = 18.9954
+margin_right = 31.8693
+margin_bottom = 48.9954
+rect_scale = Vector2( 1.01631, 6.81778 )
+texture = ExtResource( 4 )
+expand = true
+script = ExtResource( 5 )
+
+[node name="Label" type="Label" parent="UI/GUI/SkillBar/GridContainer/Slot8"]
+margin_left = 28.3573
+margin_top = 112.483
+margin_right = 142.358
+margin_bottom = 145.483
+rect_scale = Vector2( 0.287648, 3.67259 )
+custom_fonts/font = ExtResource( 3 )
+text = "H"
+
+[node name="Slot9" type="TextureButton" parent="UI/GUI/SkillBar/GridContainer"]
+margin_left = 351.0
+margin_right = 386.0
+margin_bottom = 240.0
+rect_min_size = Vector2( 35, 240 )
+texture_normal = ExtResource( 19 )
+expand = true
+script = ExtResource( 6 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/SkillBar/GridContainer/Slot9"]
+margin_left = 1.86932
+margin_top = 18.9954
+margin_right = 31.8693
+margin_bottom = 48.9954
+rect_scale = Vector2( 1.01631, 6.81778 )
+texture = ExtResource( 4 )
+expand = true
+script = ExtResource( 5 )
+
+[node name="Label" type="Label" parent="UI/GUI/SkillBar/GridContainer/Slot9"]
+margin_left = 28.3573
+margin_top = 112.483
+margin_right = 142.358
+margin_bottom = 145.483
+rect_scale = Vector2( 0.287648, 3.67259 )
+custom_fonts/font = ExtResource( 3 )
+text = "V"
+
+[node name="Slot10" type="TextureButton" parent="UI/GUI/SkillBar/GridContainer"]
+margin_left = 390.0
+margin_right = 425.0
+margin_bottom = 240.0
+rect_min_size = Vector2( 35, 240 )
+texture_normal = ExtResource( 19 )
+expand = true
+script = ExtResource( 6 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/SkillBar/GridContainer/Slot10"]
+margin_left = 1.86932
+margin_top = 18.9954
+margin_right = 31.8693
+margin_bottom = 48.9954
+rect_scale = Vector2( 1.01631, 6.81778 )
+texture = ExtResource( 4 )
+expand = true
+script = ExtResource( 5 )
+
+[node name="Label" type="Label" parent="UI/GUI/SkillBar/GridContainer/Slot10"]
+margin_left = 28.3573
+margin_top = 112.483
+margin_right = 142.358
+margin_bottom = 145.483
+rect_scale = Vector2( 0.287648, 3.67259 )
+custom_fonts/font = ExtResource( 3 )
+text = "B"
+
+[node name="RClickSlot" type="TextureButton" parent="UI/GUI/SkillBar/GridContainer"]
+margin_top = 244.0
+margin_right = 35.0
+margin_bottom = 484.0
+rect_min_size = Vector2( 35, 240 )
+texture_normal = ExtResource( 19 )
+expand = true
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/SkillBar/GridContainer/RClickSlot"]
+margin_left = 1.86932
+margin_top = 18.9954
+margin_right = 31.8693
+margin_bottom = 48.9954
+rect_scale = Vector2( 1.01631, 6.81778 )
+texture = ExtResource( 18 )
+expand = true
+
+[node name="Label" type="Label" parent="UI/GUI/SkillBar/GridContainer/RClickSlot"]
+margin_left = 2.05566
+margin_top = 134.341
+margin_right = 116.056
+margin_bottom = 167.341
+rect_scale = Vector2( 0.324696, 2.96046 )
+custom_fonts/font = ExtResource( 3 )
+text = "R-click"
+
+[node name="SlotUP1" type="TextureButton" parent="UI/GUI/SkillBar/GridContainer"]
+margin_left = 39.0
+margin_top = 244.0
+margin_right = 74.0
+margin_bottom = 484.0
+rect_min_size = Vector2( 35, 240 )
+texture_normal = ExtResource( 19 )
+expand = true
+script = ExtResource( 6 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/SkillBar/GridContainer/SlotUP1"]
+margin_left = 1.86932
+margin_top = 18.9954
+margin_right = 31.8693
+margin_bottom = 48.9954
+rect_scale = Vector2( 1.01631, 6.81778 )
+texture = ExtResource( 4 )
+expand = true
+script = ExtResource( 5 )
+
+[node name="Label" type="Label" parent="UI/GUI/SkillBar/GridContainer/SlotUP1"]
+margin_left = 28.3573
+margin_top = 112.483
+margin_right = 142.358
+margin_bottom = 145.483
+rect_scale = Vector2( 0.287648, 3.67259 )
+custom_fonts/font = ExtResource( 3 )
+text = "1"
+
+[node name="SlotUP2" type="TextureButton" parent="UI/GUI/SkillBar/GridContainer"]
+margin_left = 78.0
+margin_top = 244.0
+margin_right = 113.0
+margin_bottom = 484.0
+rect_min_size = Vector2( 35, 240 )
+texture_normal = ExtResource( 19 )
+expand = true
+script = ExtResource( 6 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/SkillBar/GridContainer/SlotUP2"]
+margin_left = 1.86932
+margin_top = 18.9954
+margin_right = 31.8693
+margin_bottom = 48.9954
+rect_scale = Vector2( 1.01631, 6.81778 )
+texture = ExtResource( 4 )
+expand = true
+script = ExtResource( 5 )
+
+[node name="Label" type="Label" parent="UI/GUI/SkillBar/GridContainer/SlotUP2"]
+margin_left = 28.3573
+margin_top = 112.483
+margin_right = 142.358
+margin_bottom = 145.483
+rect_scale = Vector2( 0.287648, 3.67259 )
+custom_fonts/font = ExtResource( 3 )
+text = "2"
+
+[node name="SlotUP3" type="TextureButton" parent="UI/GUI/SkillBar/GridContainer"]
+margin_left = 117.0
+margin_top = 244.0
+margin_right = 152.0
+margin_bottom = 484.0
+rect_min_size = Vector2( 35, 240 )
+texture_normal = ExtResource( 19 )
+expand = true
+script = ExtResource( 6 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/SkillBar/GridContainer/SlotUP3"]
+margin_left = 1.86932
+margin_top = 18.9954
+margin_right = 31.8693
+margin_bottom = 48.9954
+rect_scale = Vector2( 1.01631, 6.81778 )
+texture = ExtResource( 4 )
+expand = true
+script = ExtResource( 5 )
+
+[node name="Label" type="Label" parent="UI/GUI/SkillBar/GridContainer/SlotUP3"]
+margin_left = 28.3573
+margin_top = 112.483
+margin_right = 142.358
+margin_bottom = 145.483
+rect_scale = Vector2( 0.287648, 3.67259 )
+custom_fonts/font = ExtResource( 3 )
+text = "3"
+
+[node name="SlotUP4" type="TextureButton" parent="UI/GUI/SkillBar/GridContainer"]
+margin_left = 156.0
+margin_top = 244.0
+margin_right = 191.0
+margin_bottom = 484.0
+rect_min_size = Vector2( 35, 240 )
+texture_normal = ExtResource( 19 )
+expand = true
+script = ExtResource( 6 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/SkillBar/GridContainer/SlotUP4"]
+margin_left = 1.86932
+margin_top = 18.9954
+margin_right = 31.8693
+margin_bottom = 48.9954
+rect_scale = Vector2( 1.01631, 6.81778 )
+texture = ExtResource( 4 )
+expand = true
+script = ExtResource( 5 )
+
+[node name="Label" type="Label" parent="UI/GUI/SkillBar/GridContainer/SlotUP4"]
+margin_left = 28.3573
+margin_top = 112.483
+margin_right = 142.358
+margin_bottom = 145.483
+rect_scale = Vector2( 0.287648, 3.67259 )
+custom_fonts/font = ExtResource( 3 )
+text = "4"
+
+[node name="SlotUP5" type="TextureButton" parent="UI/GUI/SkillBar/GridContainer"]
+margin_left = 195.0
+margin_top = 244.0
+margin_right = 230.0
+margin_bottom = 484.0
+rect_min_size = Vector2( 35, 240 )
+texture_normal = ExtResource( 19 )
+expand = true
+script = ExtResource( 6 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/SkillBar/GridContainer/SlotUP5"]
+margin_left = 1.86932
+margin_top = 18.9954
+margin_right = 31.8693
+margin_bottom = 48.9954
+rect_scale = Vector2( 1.01631, 6.81778 )
+texture = ExtResource( 4 )
+expand = true
+script = ExtResource( 5 )
+
+[node name="Label" type="Label" parent="UI/GUI/SkillBar/GridContainer/SlotUP5"]
+margin_left = 28.3573
+margin_top = 112.483
+margin_right = 142.358
+margin_bottom = 145.483
+rect_scale = Vector2( 0.287648, 3.67259 )
+custom_fonts/font = ExtResource( 3 )
+text = "5"
+
+[node name="SlotUP6" type="TextureButton" parent="UI/GUI/SkillBar/GridContainer"]
+margin_left = 234.0
+margin_top = 244.0
+margin_right = 269.0
+margin_bottom = 484.0
+rect_min_size = Vector2( 35, 240 )
+texture_normal = ExtResource( 19 )
+expand = true
+script = ExtResource( 6 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/SkillBar/GridContainer/SlotUP6"]
+margin_left = 1.86932
+margin_top = 18.9954
+margin_right = 31.8693
+margin_bottom = 48.9954
+rect_scale = Vector2( 1.01631, 6.81778 )
+texture = ExtResource( 4 )
+expand = true
+script = ExtResource( 5 )
+
+[node name="Label" type="Label" parent="UI/GUI/SkillBar/GridContainer/SlotUP6"]
+margin_left = 28.3573
+margin_top = 112.483
+margin_right = 142.358
+margin_bottom = 145.483
+rect_scale = Vector2( 0.287648, 3.67259 )
+custom_fonts/font = ExtResource( 3 )
+text = "6"
+
+[node name="SlotUP7" type="TextureButton" parent="UI/GUI/SkillBar/GridContainer"]
+margin_left = 273.0
+margin_top = 244.0
+margin_right = 308.0
+margin_bottom = 484.0
+rect_min_size = Vector2( 35, 240 )
+texture_normal = ExtResource( 19 )
+expand = true
+script = ExtResource( 6 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/SkillBar/GridContainer/SlotUP7"]
+margin_left = 1.86932
+margin_top = 18.9954
+margin_right = 31.8693
+margin_bottom = 48.9954
+rect_scale = Vector2( 1.01631, 6.81778 )
+texture = ExtResource( 4 )
+expand = true
+script = ExtResource( 5 )
+
+[node name="Label" type="Label" parent="UI/GUI/SkillBar/GridContainer/SlotUP7"]
+margin_left = 28.3573
+margin_top = 112.483
+margin_right = 142.358
+margin_bottom = 145.483
+rect_scale = Vector2( 0.287648, 3.67259 )
+custom_fonts/font = ExtResource( 3 )
+text = "7"
+
+[node name="SlotUP8" type="TextureButton" parent="UI/GUI/SkillBar/GridContainer"]
+margin_left = 312.0
+margin_top = 244.0
+margin_right = 347.0
+margin_bottom = 484.0
+rect_min_size = Vector2( 35, 240 )
+texture_normal = ExtResource( 19 )
+expand = true
+script = ExtResource( 6 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/SkillBar/GridContainer/SlotUP8"]
+margin_left = 1.86932
+margin_top = 18.9954
+margin_right = 31.8693
+margin_bottom = 48.9954
+rect_scale = Vector2( 1.01631, 6.81778 )
+texture = ExtResource( 4 )
+expand = true
+script = ExtResource( 5 )
+
+[node name="Label" type="Label" parent="UI/GUI/SkillBar/GridContainer/SlotUP8"]
+margin_left = 28.3573
+margin_top = 112.483
+margin_right = 142.358
+margin_bottom = 145.483
+rect_scale = Vector2( 0.287648, 3.67259 )
+custom_fonts/font = ExtResource( 3 )
+text = "8"
+
+[node name="SlotUP9" type="TextureButton" parent="UI/GUI/SkillBar/GridContainer"]
+margin_left = 351.0
+margin_top = 244.0
+margin_right = 386.0
+margin_bottom = 484.0
+rect_min_size = Vector2( 35, 240 )
+texture_normal = ExtResource( 19 )
+expand = true
+script = ExtResource( 6 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/SkillBar/GridContainer/SlotUP9"]
+margin_left = 1.86932
+margin_top = 18.9954
+margin_right = 31.8693
+margin_bottom = 48.9954
+rect_scale = Vector2( 1.01631, 6.81778 )
+texture = ExtResource( 4 )
+expand = true
+script = ExtResource( 5 )
+
+[node name="Label" type="Label" parent="UI/GUI/SkillBar/GridContainer/SlotUP9"]
+margin_left = 28.3573
+margin_top = 112.483
+margin_right = 142.358
+margin_bottom = 145.483
+rect_scale = Vector2( 0.287648, 3.67259 )
+custom_fonts/font = ExtResource( 3 )
+text = "9"
+
+[node name="SlotUP0" type="TextureButton" parent="UI/GUI/SkillBar/GridContainer"]
+margin_left = 390.0
+margin_top = 244.0
+margin_right = 425.0
+margin_bottom = 484.0
+rect_min_size = Vector2( 35, 240 )
+texture_normal = ExtResource( 19 )
+expand = true
+script = ExtResource( 6 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/SkillBar/GridContainer/SlotUP0"]
+margin_left = 1.86932
+margin_top = 18.9954
+margin_right = 31.8693
+margin_bottom = 48.9954
+rect_scale = Vector2( 1.01631, 6.81778 )
+texture = ExtResource( 4 )
+expand = true
+script = ExtResource( 5 )
+
+[node name="Label" type="Label" parent="UI/GUI/SkillBar/GridContainer/SlotUP0"]
+margin_left = 28.3573
+margin_top = 112.483
+margin_right = 142.358
+margin_bottom = 145.483
+rect_scale = Vector2( 0.287648, 3.67259 )
+custom_fonts/font = ExtResource( 3 )
+text = "0"
+
+[node name="EnemyUI" type="Control" parent="UI/GUI"]
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+margin_left = -433.0
+margin_top = -293.0
+margin_right = -393.0
+margin_bottom = -253.0
+rect_scale = Vector2( 0.933566, 0.816445 )
+mouse_default_cursor_shape = 2
+size_flags_horizontal = 15
+size_flags_vertical = 15
+
+[node name="BG" type="TextureRect" parent="UI/GUI/EnemyUI"]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -176.0
+margin_top = -20.0
+margin_right = -137.0
+margin_bottom = 20.0
+rect_scale = Vector2( 9.08538, 3.37641 )
+texture = ExtResource( 12 )
+expand = true
+stretch_mode = 7
+
+[node name="HP" type="TextureProgress" parent="UI/GUI/EnemyUI"]
+margin_left = -148.0
+margin_top = 18.0
+margin_right = -108.0
+margin_bottom = 58.0
+rect_scale = Vector2( 6.10421, 0.459562 )
+value = 66.0
+texture_under = ExtResource( 13 )
+texture_progress = ExtResource( 13 )
+tint_under = Color( 0.0196078, 0.0156863, 0.0156863, 1 )
+tint_progress = Color( 0.968627, 0, 0, 1 )
+nine_patch_stretch = true
+
+[node name="HPlab" type="Label" parent="UI/GUI/EnemyUI/HP"]
+margin_left = 1.89572
+margin_right = 41.8957
+margin_bottom = 14.0
+rect_scale = Vector2( 0.111748, 1.19751 )
+custom_fonts/font = ExtResource( 3 )
+text = "1300/1300"
+
+[node name="EN" type="TextureProgress" parent="UI/GUI/EnemyUI"]
+margin_left = -148.0
+margin_top = 39.0
+margin_right = -108.0
+margin_bottom = 79.0
+rect_scale = Vector2( 6.10421, 0.459562 )
+value = 66.0
+texture_under = ExtResource( 13 )
+texture_progress = ExtResource( 13 )
+tint_under = Color( 0.0196078, 0.0156863, 0.0156863, 1 )
+tint_progress = Color( 0, 0.764706, 0.968627, 1 )
+nine_patch_stretch = true
+
+[node name="ENlab" type="Label" parent="UI/GUI/EnemyUI/EN"]
+margin_left = 1.89572
+margin_right = 41.8957
+margin_bottom = 14.0
+rect_scale = Vector2( 0.111748, 1.19751 )
+custom_fonts/font = ExtResource( 3 )
+text = "1300/1300"
+
+[node name="RE" type="TextureProgress" parent="UI/GUI/EnemyUI"]
+margin_left = -148.0
+margin_top = 61.0
+margin_right = -108.0
+margin_bottom = 101.0
+rect_scale = Vector2( 6.10421, 0.459562 )
+value = 66.0
+texture_under = ExtResource( 13 )
+texture_progress = ExtResource( 13 )
+tint_under = Color( 0.0196078, 0.0156863, 0.0156863, 1 )
+tint_progress = Color( 0, 0.968627, 0.717647, 1 )
+nine_patch_stretch = true
+
+[node name="RElab" type="Label" parent="UI/GUI/EnemyUI/RE"]
+margin_left = 1.89572
+margin_right = 41.8957
+margin_bottom = 14.0
+rect_scale = Vector2( 0.111748, 1.19751 )
+custom_fonts/font = ExtResource( 3 )
+text = "1300/1300"
+
+[node name="Stats" type="Label" parent="UI/GUI/EnemyUI"]
+margin_left = -148.0
+margin_top = 84.0
+margin_right = -24.0
+margin_bottom = 117.0
+rect_scale = Vector2( 0.60139, 0.562462 )
+custom_fonts/font = ExtResource( 3 )
+text = "Loyalty         1.3"
+
+[node name="Aggro" type="Label" parent="UI/GUI/EnemyUI"]
+margin_left = -31.0637
+margin_top = 82.0631
+margin_right = 132.936
+margin_bottom = 115.063
+rect_scale = Vector2( 0.60139, 0.562462 )
+custom_fonts/font = ExtResource( 3 )
+text = "player: aggro "
+
+[node name="Lvl" type="Label" parent="UI/GUI/EnemyUI"]
+margin_left = -148.0
+margin_top = 1.0
+margin_right = -24.0
+margin_bottom = 34.0
+rect_scale = Vector2( 0.632998, 0.500004 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="Tween" type="Tween" parent="UI/GUI/EnemyUI"]
+
+[node name="SkillTrees" type="Control" parent="UI/GUI"]
+visible = false
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -501.0
+margin_top = -218.0
+margin_right = 365.0
+margin_bottom = 427.0
+rect_scale = Vector2( 0.806239, 0.730248 )
+
+[node name="Background" type="NinePatchRect" parent="UI/GUI/SkillTrees"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+texture = ExtResource( 15 )
+
+[node name="M" type="MarginContainer" parent="UI/GUI/SkillTrees/Background"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 38.4501
+margin_top = 61.6229
+margin_right = 38.4501
+margin_bottom = 61.6229
+rect_scale = Vector2( 0.90663, 0.92491 )
+custom_constants/margin_right = 19
+custom_constants/margin_top = 14
+custom_constants/margin_left = 19
+custom_constants/margin_bottom = 14
+
+[node name="V" type="VBoxContainer" parent="UI/GUI/SkillTrees/Background/M"]
+margin_left = 19.0
+margin_top = 14.0
+margin_right = 847.0
+margin_bottom = 631.0
+
+[node name="ScrollContainer" type="ScrollContainer" parent="UI/GUI/SkillTrees/Background/M/V"]
+margin_right = 828.0
+margin_bottom = 617.0
+size_flags_vertical = 3
+
+[node name="GridContainer" type="GridContainer" parent="UI/GUI/SkillTrees/Background/M/V/ScrollContainer"]
+margin_right = 959.0
+margin_bottom = 617.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+columns = 68
+
+[node name="SkillTree1" type="TextureButton" parent="UI/GUI/SkillTrees/Background/M/V/ScrollContainer/GridContainer"]
+margin_right = 70.0
+margin_bottom = 75.0
+rect_min_size = Vector2( 70, 75 )
+texture_normal = ExtResource( 19 )
+expand = true
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/SkillTrees/Background/M/V/ScrollContainer/GridContainer/SkillTree1"]
+margin_left = 6.36871
+margin_top = 12.8157
+margin_right = 36.3687
+margin_bottom = 42.8157
+rect_scale = Vector2( 1.91687, 1.79762 )
+texture = ExtResource( 16 )
+expand = true
+
+[node name="Label" type="Label" parent="UI/GUI/SkillTrees/Background/M/V/ScrollContainer/GridContainer/SkillTree1"]
+margin_left = 10.7806
+margin_top = 73.3622
+margin_right = 124.781
+margin_bottom = 106.362
+rect_scale = Vector2( 0.635123, 0.696227 )
+custom_fonts/font = ExtResource( 3 )
+text = "Sylvan"
+
+[node name="spacing" type="Label" parent="UI/GUI/SkillTrees/Background/M/V/ScrollContainer/GridContainer"]
+margin_left = 74.0
+margin_top = 30.0
+margin_right = 103.0
+margin_bottom = 44.0
+text = "spac"
+percent_visible = 0.0
+
+[node name="SkillTree2" type="TextureButton" parent="UI/GUI/SkillTrees/Background/M/V/ScrollContainer/GridContainer"]
+margin_left = 107.0
+margin_right = 177.0
+margin_bottom = 75.0
+rect_min_size = Vector2( 70, 75 )
+texture_normal = ExtResource( 19 )
+expand = true
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/SkillTrees/Background/M/V/ScrollContainer/GridContainer/SkillTree2"]
+margin_left = 6.36871
+margin_top = 12.8157
+margin_right = 36.3687
+margin_bottom = 42.8157
+rect_scale = Vector2( 1.91687, 1.79762 )
+texture = ExtResource( 16 )
+expand = true
+
+[node name="Label" type="Label" parent="UI/GUI/SkillTrees/Background/M/V/ScrollContainer/GridContainer/SkillTree2"]
+margin_left = -0.249207
+margin_top = 73.3622
+margin_right = 113.751
+margin_bottom = 106.362
+rect_scale = Vector2( 0.635123, 0.696227 )
+custom_fonts/font = ExtResource( 3 )
+text = "Agrarian"
+
+[node name="spacing2" type="Label" parent="UI/GUI/SkillTrees/Background/M/V/ScrollContainer/GridContainer"]
+margin_left = 181.0
+margin_top = 30.0
+margin_right = 210.0
+margin_bottom = 44.0
+text = "spac"
+percent_visible = 0.0
+
+[node name="SkillTree3" type="TextureButton" parent="UI/GUI/SkillTrees/Background/M/V/ScrollContainer/GridContainer"]
+margin_left = 214.0
+margin_right = 284.0
+margin_bottom = 75.0
+rect_min_size = Vector2( 70, 75 )
+texture_normal = ExtResource( 19 )
+expand = true
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/SkillTrees/Background/M/V/ScrollContainer/GridContainer/SkillTree3"]
+margin_left = 6.36871
+margin_top = 12.8157
+margin_right = 36.3687
+margin_bottom = 42.8157
+rect_scale = Vector2( 1.91687, 1.79762 )
+texture = ExtResource( 16 )
+expand = true
+
+[node name="Label" type="Label" parent="UI/GUI/SkillTrees/Background/M/V/ScrollContainer/GridContainer/SkillTree3"]
+margin_left = -5.78485
+margin_top = 73.3622
+margin_right = 128.215
+margin_bottom = 106.362
+rect_scale = Vector2( 0.635123, 0.696227 )
+custom_fonts/font = ExtResource( 3 )
+text = "Lumberjack"
+
+[node name="spacing3" type="Label" parent="UI/GUI/SkillTrees/Background/M/V/ScrollContainer/GridContainer"]
+margin_left = 288.0
+margin_top = 30.0
+margin_right = 317.0
+margin_bottom = 44.0
+text = "spac"
+percent_visible = 0.0
+
+[node name="SkillTree4" type="TextureButton" parent="UI/GUI/SkillTrees/Background/M/V/ScrollContainer/GridContainer"]
+margin_left = 321.0
+margin_right = 391.0
+margin_bottom = 75.0
+rect_min_size = Vector2( 70, 75 )
+texture_normal = ExtResource( 19 )
+expand = true
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/SkillTrees/Background/M/V/ScrollContainer/GridContainer/SkillTree4"]
+margin_left = 6.36871
+margin_top = 12.8157
+margin_right = 36.3687
+margin_bottom = 42.8157
+rect_scale = Vector2( 1.91687, 1.79762 )
+texture = ExtResource( 16 )
+expand = true
+
+[node name="Label" type="Label" parent="UI/GUI/SkillTrees/Background/M/V/ScrollContainer/GridContainer/SkillTree4"]
+margin_left = -5.78485
+margin_top = 73.3622
+margin_right = 128.215
+margin_bottom = 106.362
+rect_scale = Vector2( 0.635123, 0.696227 )
+custom_fonts/font = ExtResource( 3 )
+text = "Lumberjack"
+
+[node name="spacing4" type="Label" parent="UI/GUI/SkillTrees/Background/M/V/ScrollContainer/GridContainer"]
+margin_left = 395.0
+margin_top = 30.0
+margin_right = 424.0
+margin_bottom = 44.0
+text = "spac"
+percent_visible = 0.0
+
+[node name="SkillTree5" type="TextureButton" parent="UI/GUI/SkillTrees/Background/M/V/ScrollContainer/GridContainer"]
+margin_left = 428.0
+margin_right = 498.0
+margin_bottom = 75.0
+rect_min_size = Vector2( 70, 75 )
+texture_normal = ExtResource( 19 )
+expand = true
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/SkillTrees/Background/M/V/ScrollContainer/GridContainer/SkillTree5"]
+margin_left = 6.36871
+margin_top = 12.8157
+margin_right = 36.3687
+margin_bottom = 42.8157
+rect_scale = Vector2( 1.91687, 1.79762 )
+texture = ExtResource( 16 )
+expand = true
+
+[node name="Label" type="Label" parent="UI/GUI/SkillTrees/Background/M/V/ScrollContainer/GridContainer/SkillTree5"]
+margin_left = -5.78485
+margin_top = 73.3622
+margin_right = 128.215
+margin_bottom = 106.362
+rect_scale = Vector2( 0.635123, 0.696227 )
+custom_fonts/font = ExtResource( 3 )
+text = "Lumberjack"
+
+[node name="spacing5" type="Label" parent="UI/GUI/SkillTrees/Background/M/V/ScrollContainer/GridContainer"]
+margin_left = 502.0
+margin_top = 30.0
+margin_right = 531.0
+margin_bottom = 44.0
+text = "spac"
+percent_visible = 0.0
+
+[node name="SkillTree6" type="TextureButton" parent="UI/GUI/SkillTrees/Background/M/V/ScrollContainer/GridContainer"]
+margin_left = 535.0
+margin_right = 605.0
+margin_bottom = 75.0
+rect_min_size = Vector2( 70, 75 )
+texture_normal = ExtResource( 19 )
+expand = true
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/SkillTrees/Background/M/V/ScrollContainer/GridContainer/SkillTree6"]
+margin_left = 6.36871
+margin_top = 12.8157
+margin_right = 36.3687
+margin_bottom = 42.8157
+rect_scale = Vector2( 1.91687, 1.79762 )
+texture = ExtResource( 16 )
+expand = true
+
+[node name="Label" type="Label" parent="UI/GUI/SkillTrees/Background/M/V/ScrollContainer/GridContainer/SkillTree6"]
+margin_left = -5.78485
+margin_top = 73.3622
+margin_right = 128.215
+margin_bottom = 106.362
+rect_scale = Vector2( 0.635123, 0.696227 )
+custom_fonts/font = ExtResource( 3 )
+text = "Lumberjack"
+
+[node name="spacing6" type="Label" parent="UI/GUI/SkillTrees/Background/M/V/ScrollContainer/GridContainer"]
+margin_left = 609.0
+margin_top = 30.0
+margin_right = 638.0
+margin_bottom = 44.0
+text = "spac"
+percent_visible = 0.0
+
+[node name="SkillTree7" type="TextureButton" parent="UI/GUI/SkillTrees/Background/M/V/ScrollContainer/GridContainer"]
+margin_left = 642.0
+margin_right = 712.0
+margin_bottom = 75.0
+rect_min_size = Vector2( 70, 75 )
+texture_normal = ExtResource( 19 )
+expand = true
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/SkillTrees/Background/M/V/ScrollContainer/GridContainer/SkillTree7"]
+margin_left = 6.36871
+margin_top = 12.8157
+margin_right = 36.3687
+margin_bottom = 42.8157
+rect_scale = Vector2( 1.91687, 1.79762 )
+texture = ExtResource( 16 )
+expand = true
+
+[node name="Label" type="Label" parent="UI/GUI/SkillTrees/Background/M/V/ScrollContainer/GridContainer/SkillTree7"]
+margin_left = -5.78485
+margin_top = 73.3622
+margin_right = 128.215
+margin_bottom = 106.362
+rect_scale = Vector2( 0.635123, 0.696227 )
+custom_fonts/font = ExtResource( 3 )
+text = "Lumberjack"
+
+[node name="spacing7" type="Label" parent="UI/GUI/SkillTrees/Background/M/V/ScrollContainer/GridContainer"]
+margin_left = 716.0
+margin_top = 30.0
+margin_right = 745.0
+margin_bottom = 44.0
+text = "spac"
+percent_visible = 0.0
+
+[node name="SkillTree8" type="TextureButton" parent="UI/GUI/SkillTrees/Background/M/V/ScrollContainer/GridContainer"]
+margin_left = 749.0
+margin_right = 819.0
+margin_bottom = 75.0
+rect_min_size = Vector2( 70, 75 )
+texture_normal = ExtResource( 19 )
+expand = true
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/SkillTrees/Background/M/V/ScrollContainer/GridContainer/SkillTree8"]
+margin_left = 6.36871
+margin_top = 12.8157
+margin_right = 36.3687
+margin_bottom = 42.8157
+rect_scale = Vector2( 1.91687, 1.79762 )
+texture = ExtResource( 16 )
+expand = true
+
+[node name="Label" type="Label" parent="UI/GUI/SkillTrees/Background/M/V/ScrollContainer/GridContainer/SkillTree8"]
+margin_left = -5.78485
+margin_top = 73.3622
+margin_right = 128.215
+margin_bottom = 106.362
+rect_scale = Vector2( 0.635123, 0.696227 )
+custom_fonts/font = ExtResource( 3 )
+text = "Lumberjack"
+
+[node name="spacing8" type="Label" parent="UI/GUI/SkillTrees/Background/M/V/ScrollContainer/GridContainer"]
+margin_left = 823.0
+margin_top = 30.0
+margin_right = 852.0
+margin_bottom = 44.0
+text = "spac"
+percent_visible = 0.0
+
+[node name="SkillTree9" type="TextureButton" parent="UI/GUI/SkillTrees/Background/M/V/ScrollContainer/GridContainer"]
+margin_left = 856.0
+margin_right = 926.0
+margin_bottom = 75.0
+rect_min_size = Vector2( 70, 75 )
+texture_normal = ExtResource( 19 )
+expand = true
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/SkillTrees/Background/M/V/ScrollContainer/GridContainer/SkillTree9"]
+margin_left = 6.36871
+margin_top = 12.8157
+margin_right = 36.3687
+margin_bottom = 42.8157
+rect_scale = Vector2( 1.91687, 1.79762 )
+texture = ExtResource( 16 )
+expand = true
+
+[node name="Label" type="Label" parent="UI/GUI/SkillTrees/Background/M/V/ScrollContainer/GridContainer/SkillTree9"]
+margin_left = -5.78485
+margin_top = 73.3622
+margin_right = 128.215
+margin_bottom = 106.362
+rect_scale = Vector2( 0.635123, 0.696227 )
+custom_fonts/font = ExtResource( 3 )
+text = "Lumberjack"
+
+[node name="spacing9" type="Label" parent="UI/GUI/SkillTrees/Background/M/V/ScrollContainer/GridContainer"]
+margin_left = 930.0
+margin_top = 30.0
+margin_right = 959.0
+margin_bottom = 44.0
+text = "spac"
+percent_visible = 0.0
+
+[node name="SylvanSkills" type="MarginContainer" parent="UI/GUI/SkillTrees/Background"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 38.4501
+margin_top = 171.684
+margin_right = 38.4501
+margin_bottom = 171.684
+rect_scale = Vector2( 0.90663, 0.92491 )
+custom_constants/margin_right = 19
+custom_constants/margin_top = 14
+custom_constants/margin_left = 19
+custom_constants/margin_bottom = 14
+
+[node name="GridContainer" type="GridContainer" parent="UI/GUI/SkillTrees/Background/SylvanSkills"]
+margin_left = 19.0
+margin_top = 14.0
+margin_right = 847.0
+margin_bottom = 631.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+columns = 68
+
+[node name="CenterContainer" type="CenterContainer" parent="UI/GUI/SkillTrees/Background/SylvanSkills/GridContainer"]
+margin_right = 70.0
+margin_bottom = 75.0
+
+[node name="skill1" type="TextureButton" parent="UI/GUI/SkillTrees/Background/SylvanSkills/GridContainer/CenterContainer" groups=["Skill", "skill"]]
+margin_right = 70.0
+margin_bottom = 75.0
+rect_min_size = Vector2( 70, 75 )
+texture_normal = ExtResource( 19 )
+expand = true
+script = ExtResource( 10 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/SkillTrees/Background/SylvanSkills/GridContainer/CenterContainer/skill1"]
+margin_left = 1.80246
+margin_top = 4.06293
+margin_right = 31.8024
+margin_bottom = 34.0629
+rect_scale = Vector2( 2.19721, 2.2253 )
+texture = ExtResource( 23 )
+expand = true
+
+[node name="Label" type="Label" parent="UI/GUI/SkillTrees/Background/SylvanSkills/GridContainer/CenterContainer/skill1"]
+margin_left = 10.7806
+margin_top = 73.3622
+margin_right = 124.781
+margin_bottom = 106.362
+rect_scale = Vector2( 0.635123, 0.696227 )
+custom_fonts/font = ExtResource( 3 )
+text = "Sylvan"
+
+[node name="CenterContainer2" type="CenterContainer" parent="UI/GUI/SkillTrees/Background/SylvanSkills/GridContainer"]
+margin_left = 74.0
+margin_right = 144.0
+margin_bottom = 75.0
+
+[node name="skill1" type="TextureButton" parent="UI/GUI/SkillTrees/Background/SylvanSkills/GridContainer/CenterContainer2" groups=["Skill", "skill"]]
+margin_right = 70.0
+margin_bottom = 75.0
+rect_min_size = Vector2( 70, 75 )
+texture_normal = ExtResource( 19 )
+expand = true
+script = ExtResource( 10 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/SkillTrees/Background/SylvanSkills/GridContainer/CenterContainer2/skill1"]
+margin_left = 1.80246
+margin_top = 4.06293
+margin_right = 31.8024
+margin_bottom = 34.0629
+rect_scale = Vector2( 2.19721, 2.2253 )
+texture = ExtResource( 20 )
+expand = true
+
+[node name="Label" type="Label" parent="UI/GUI/SkillTrees/Background/SylvanSkills/GridContainer/CenterContainer2/skill1"]
+margin_left = 10.7806
+margin_top = 73.3622
+margin_right = 124.781
+margin_bottom = 106.362
+rect_scale = Vector2( 0.635123, 0.696227 )
+custom_fonts/font = ExtResource( 3 )
+text = "Sylvan"
+
+[node name="CenterContainer3" type="CenterContainer" parent="UI/GUI/SkillTrees/Background/SylvanSkills/GridContainer"]
+margin_left = 148.0
+margin_right = 218.0
+margin_bottom = 75.0
+
+[node name="skill1" type="TextureButton" parent="UI/GUI/SkillTrees/Background/SylvanSkills/GridContainer/CenterContainer3" groups=["Skill", "skill"]]
+margin_right = 70.0
+margin_bottom = 75.0
+rect_min_size = Vector2( 70, 75 )
+texture_normal = ExtResource( 19 )
+expand = true
+script = ExtResource( 10 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/SkillTrees/Background/SylvanSkills/GridContainer/CenterContainer3/skill1"]
+margin_left = 1.80246
+margin_top = 4.06293
+margin_right = 31.8024
+margin_bottom = 34.0629
+rect_scale = Vector2( 2.19721, 2.2253 )
+texture = ExtResource( 22 )
+expand = true
+
+[node name="Label" type="Label" parent="UI/GUI/SkillTrees/Background/SylvanSkills/GridContainer/CenterContainer3/skill1"]
+margin_left = 10.7806
+margin_top = 73.3622
+margin_right = 124.781
+margin_bottom = 106.362
+rect_scale = Vector2( 0.635123, 0.696227 )
+custom_fonts/font = ExtResource( 3 )
+text = "Sylvan"
+
+[node name="Crafting" type="Control" parent="UI/GUI"]
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+margin_left = -981.0
+margin_top = -127.0
+margin_right = -731.0
+margin_bottom = 53.0
+rect_min_size = Vector2( 250, 180 )
+rect_clip_content = true
+script = ExtResource( 2 )
+
+[node name="CraftingBackground" type="NinePatchRect" parent="UI/GUI/Crafting"]
+margin_left = -1.0
+margin_top = -3.0
+margin_right = 467.0
+margin_bottom = 197.0
+rect_min_size = Vector2( 200, 200 )
+rect_scale = Vector2( 0.521073, 0.936114 )
+texture = ExtResource( 15 )
+patch_margin_left = 468
+patch_margin_bottom = 163
+
+[node name="CraftingResultSlot" type="TextureButton" parent="UI/GUI/Crafting" groups=["Inventory"]]
+margin_left = 177.0
+margin_top = 66.0
+margin_right = 227.0
+margin_bottom = 116.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 1 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Crafting/CraftingResultSlot"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+texture = ExtResource( 4 )
+expand = true
+
+[node name="Quantity" type="Label" parent="UI/GUI/Crafting/CraftingResultSlot"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="CraftingGrid" type="GridContainer" parent="UI/GUI/Crafting"]
+margin_left = 13.0
+margin_top = 17.0
+margin_right = 225.0
+margin_bottom = 229.0
+rect_min_size = Vector2( 125, 100 )
+rect_scale = Vector2( 0.741057, 0.69014 )
+columns = 4
+
+[node name="craftingSlot1" type="TextureButton" parent="UI/GUI/Crafting/CraftingGrid" groups=["Inventory"]]
+margin_right = 50.0
+margin_bottom = 50.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Crafting/CraftingGrid/craftingSlot1"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Crafting/CraftingGrid/craftingSlot1"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="craftingSlot2" type="TextureButton" parent="UI/GUI/Crafting/CraftingGrid" groups=["Inventory"]]
+margin_left = 54.0
+margin_right = 104.0
+margin_bottom = 50.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Crafting/CraftingGrid/craftingSlot2"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Crafting/CraftingGrid/craftingSlot2"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="craftingSlot3" type="TextureButton" parent="UI/GUI/Crafting/CraftingGrid" groups=["Inventory"]]
+margin_left = 108.0
+margin_right = 158.0
+margin_bottom = 50.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Crafting/CraftingGrid/craftingSlot3"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Crafting/CraftingGrid/craftingSlot3"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="craftingSlot4" type="TextureButton" parent="UI/GUI/Crafting/CraftingGrid" groups=["Inventory"]]
+margin_left = 162.0
+margin_right = 212.0
+margin_bottom = 50.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Crafting/CraftingGrid/craftingSlot4"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Crafting/CraftingGrid/craftingSlot4"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="craftingSlot5" type="TextureButton" parent="UI/GUI/Crafting/CraftingGrid" groups=["Inventory"]]
+margin_top = 54.0
+margin_right = 50.0
+margin_bottom = 104.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Crafting/CraftingGrid/craftingSlot5"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Crafting/CraftingGrid/craftingSlot5"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="craftingSlot6" type="TextureButton" parent="UI/GUI/Crafting/CraftingGrid" groups=["Inventory"]]
+margin_left = 54.0
+margin_top = 54.0
+margin_right = 104.0
+margin_bottom = 104.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Crafting/CraftingGrid/craftingSlot6"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Crafting/CraftingGrid/craftingSlot6"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="craftingSlot7" type="TextureButton" parent="UI/GUI/Crafting/CraftingGrid" groups=["Inventory"]]
+margin_left = 108.0
+margin_top = 54.0
+margin_right = 158.0
+margin_bottom = 104.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Crafting/CraftingGrid/craftingSlot7"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Crafting/CraftingGrid/craftingSlot7"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="craftingSlot8" type="TextureButton" parent="UI/GUI/Crafting/CraftingGrid" groups=["Inventory"]]
+margin_left = 162.0
+margin_top = 54.0
+margin_right = 212.0
+margin_bottom = 104.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Crafting/CraftingGrid/craftingSlot8"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Crafting/CraftingGrid/craftingSlot8"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="craftingSlot9" type="TextureButton" parent="UI/GUI/Crafting/CraftingGrid" groups=["Inventory"]]
+margin_top = 108.0
+margin_right = 50.0
+margin_bottom = 158.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Crafting/CraftingGrid/craftingSlot9"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Crafting/CraftingGrid/craftingSlot9"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="craftingSlot10" type="TextureButton" parent="UI/GUI/Crafting/CraftingGrid" groups=["Inventory"]]
+margin_left = 54.0
+margin_top = 108.0
+margin_right = 104.0
+margin_bottom = 158.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Crafting/CraftingGrid/craftingSlot10"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Crafting/CraftingGrid/craftingSlot10"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="craftingSlot11" type="TextureButton" parent="UI/GUI/Crafting/CraftingGrid" groups=["Inventory"]]
+margin_left = 108.0
+margin_top = 108.0
+margin_right = 158.0
+margin_bottom = 158.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Crafting/CraftingGrid/craftingSlot11"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Crafting/CraftingGrid/craftingSlot11"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="craftingSlot12" type="TextureButton" parent="UI/GUI/Crafting/CraftingGrid" groups=["Inventory"]]
+margin_left = 162.0
+margin_top = 108.0
+margin_right = 212.0
+margin_bottom = 158.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Crafting/CraftingGrid/craftingSlot12"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Crafting/CraftingGrid/craftingSlot12"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="craftingSlot13" type="TextureButton" parent="UI/GUI/Crafting/CraftingGrid" groups=["Inventory"]]
+margin_top = 162.0
+margin_right = 50.0
+margin_bottom = 212.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Crafting/CraftingGrid/craftingSlot13"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Crafting/CraftingGrid/craftingSlot13"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="craftingSlot14" type="TextureButton" parent="UI/GUI/Crafting/CraftingGrid" groups=["Inventory"]]
+margin_left = 54.0
+margin_top = 162.0
+margin_right = 104.0
+margin_bottom = 212.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Crafting/CraftingGrid/craftingSlot14"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Crafting/CraftingGrid/craftingSlot14"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="craftingSlot15" type="TextureButton" parent="UI/GUI/Crafting/CraftingGrid" groups=["Inventory"]]
+margin_left = 108.0
+margin_top = 162.0
+margin_right = 158.0
+margin_bottom = 212.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Crafting/CraftingGrid/craftingSlot15"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Crafting/CraftingGrid/craftingSlot15"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="craftingSlot16" type="TextureButton" parent="UI/GUI/Crafting/CraftingGrid" groups=["Inventory"]]
+margin_left = 162.0
+margin_top = 162.0
+margin_right = 212.0
+margin_bottom = 212.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Crafting/CraftingGrid/craftingSlot16"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Crafting/CraftingGrid/craftingSlot16"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="CraftingCloseButton" type="TextureButton" parent="UI/GUI/Crafting"]
+modulate = Color( 0.815686, 0.278431, 0.278431, 1 )
+margin_left = 219.0
+margin_top = -2.0
+margin_right = 269.0
+margin_bottom = 48.0
+rect_min_size = Vector2( 50, 50 )
+rect_scale = Vector2( 0.633684, 0.604248 )
+texture_normal = ExtResource( 21 )
+expand = true
+
+[node name="Inventory" type="Control" parent="UI/GUI"]
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+margin_left = -521.0
+margin_top = 52.0
+margin_right = -21.0
+margin_bottom = 352.0
+rect_min_size = Vector2( 500, 300 )
+
+[node name="InventoryBackground" type="NinePatchRect" parent="UI/GUI/Inventory"]
+margin_left = 3.0
+margin_top = 11.0
+margin_right = 503.0
+margin_bottom = 331.0
+rect_min_size = Vector2( 500, 300 )
+rect_scale = Vector2( 1.01787, 0.912399 )
+rect_clip_content = true
+texture = ExtResource( 15 )
+patch_margin_top = 218
+patch_margin_bottom = 102
+
+[node name="ScrollContainer" type="ScrollContainer" parent="UI/GUI/Inventory"]
+margin_left = 18.0
+margin_top = 45.0
+margin_right = 568.0
+margin_bottom = 305.0
+rect_min_size = Vector2( 550, 250 )
+rect_scale = Vector2( 0.861, 0.861 )
+
+[node name="InventoryGrid" type="GridContainer" parent="UI/GUI/Inventory/ScrollContainer"]
+margin_right = 536.0
+margin_bottom = 806.0
+rect_min_size = Vector2( 490, 260 )
+columns = 10
+
+[node name="InventorySlot1" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_right = 50.0
+margin_bottom = 50.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot1"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot1"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot2" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 54.0
+margin_right = 104.0
+margin_bottom = 50.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot2"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot2"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot3" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 108.0
+margin_right = 158.0
+margin_bottom = 50.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot3"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot3"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot4" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 162.0
+margin_right = 212.0
+margin_bottom = 50.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot4"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot4"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot5" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 216.0
+margin_right = 266.0
+margin_bottom = 50.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot5"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot5"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot6" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 270.0
+margin_right = 320.0
+margin_bottom = 50.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot6"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot6"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot7" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 324.0
+margin_right = 374.0
+margin_bottom = 50.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot7"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot7"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot8" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 378.0
+margin_right = 428.0
+margin_bottom = 50.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot8"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot8"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot9" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 432.0
+margin_right = 482.0
+margin_bottom = 50.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot9"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot9"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot10" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 486.0
+margin_right = 536.0
+margin_bottom = 50.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot10"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot10"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot11" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_top = 54.0
+margin_right = 50.0
+margin_bottom = 104.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot11"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot11"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot12" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 54.0
+margin_top = 54.0
+margin_right = 104.0
+margin_bottom = 104.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot12"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot12"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot13" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 108.0
+margin_top = 54.0
+margin_right = 158.0
+margin_bottom = 104.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot13"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot13"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot14" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 162.0
+margin_top = 54.0
+margin_right = 212.0
+margin_bottom = 104.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot14"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot14"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot15" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 216.0
+margin_top = 54.0
+margin_right = 266.0
+margin_bottom = 104.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot15"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot15"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot16" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 270.0
+margin_top = 54.0
+margin_right = 320.0
+margin_bottom = 104.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot16"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot16"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot17" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 324.0
+margin_top = 54.0
+margin_right = 374.0
+margin_bottom = 104.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot17"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot17"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot18" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 378.0
+margin_top = 54.0
+margin_right = 428.0
+margin_bottom = 104.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot18"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot18"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot19" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 432.0
+margin_top = 54.0
+margin_right = 482.0
+margin_bottom = 104.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot19"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot19"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot20" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 486.0
+margin_top = 54.0
+margin_right = 536.0
+margin_bottom = 104.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot20"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot20"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot21" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_top = 108.0
+margin_right = 50.0
+margin_bottom = 158.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot21"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot21"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot22" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 54.0
+margin_top = 108.0
+margin_right = 104.0
+margin_bottom = 158.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot22"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot22"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot23" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 108.0
+margin_top = 108.0
+margin_right = 158.0
+margin_bottom = 158.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot23"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot23"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot24" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 162.0
+margin_top = 108.0
+margin_right = 212.0
+margin_bottom = 158.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot24"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot24"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot25" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 216.0
+margin_top = 108.0
+margin_right = 266.0
+margin_bottom = 158.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot25"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot25"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot26" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 270.0
+margin_top = 108.0
+margin_right = 320.0
+margin_bottom = 158.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot26"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot26"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot27" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 324.0
+margin_top = 108.0
+margin_right = 374.0
+margin_bottom = 158.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot27"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot27"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot28" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 378.0
+margin_top = 108.0
+margin_right = 428.0
+margin_bottom = 158.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot28"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot28"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot29" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 432.0
+margin_top = 108.0
+margin_right = 482.0
+margin_bottom = 158.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot29"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot29"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot30" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 486.0
+margin_top = 108.0
+margin_right = 536.0
+margin_bottom = 158.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot30"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot30"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot31" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_top = 162.0
+margin_right = 50.0
+margin_bottom = 212.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot31"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot31"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot32" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 54.0
+margin_top = 162.0
+margin_right = 104.0
+margin_bottom = 212.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot32"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot32"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot33" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 108.0
+margin_top = 162.0
+margin_right = 158.0
+margin_bottom = 212.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot33"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot33"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot34" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 162.0
+margin_top = 162.0
+margin_right = 212.0
+margin_bottom = 212.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot34"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot34"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot35" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 216.0
+margin_top = 162.0
+margin_right = 266.0
+margin_bottom = 212.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot35"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot35"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot36" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 270.0
+margin_top = 162.0
+margin_right = 320.0
+margin_bottom = 212.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot36"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot36"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot37" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 324.0
+margin_top = 162.0
+margin_right = 374.0
+margin_bottom = 212.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot37"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot37"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot38" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 378.0
+margin_top = 162.0
+margin_right = 428.0
+margin_bottom = 212.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot38"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot38"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot39" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 432.0
+margin_top = 162.0
+margin_right = 482.0
+margin_bottom = 212.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot39"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot39"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot40" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 486.0
+margin_top = 162.0
+margin_right = 536.0
+margin_bottom = 212.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot40"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot40"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot41" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_top = 216.0
+margin_right = 50.0
+margin_bottom = 266.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot41"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot41"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot42" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 54.0
+margin_top = 216.0
+margin_right = 104.0
+margin_bottom = 266.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot42"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot42"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot43" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 108.0
+margin_top = 216.0
+margin_right = 158.0
+margin_bottom = 266.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot43"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot43"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot44" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 162.0
+margin_top = 216.0
+margin_right = 212.0
+margin_bottom = 266.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot44"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot44"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot45" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 216.0
+margin_top = 216.0
+margin_right = 266.0
+margin_bottom = 266.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot45"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot45"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot46" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 270.0
+margin_top = 216.0
+margin_right = 320.0
+margin_bottom = 266.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot46"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot46"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot47" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 324.0
+margin_top = 216.0
+margin_right = 374.0
+margin_bottom = 266.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot47"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot47"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot48" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 378.0
+margin_top = 216.0
+margin_right = 428.0
+margin_bottom = 266.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot48"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot48"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot49" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 432.0
+margin_top = 216.0
+margin_right = 482.0
+margin_bottom = 266.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot49"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot49"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot50" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 486.0
+margin_top = 216.0
+margin_right = 536.0
+margin_bottom = 266.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot50"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot50"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot51" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_top = 270.0
+margin_right = 50.0
+margin_bottom = 320.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot51"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot51"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot52" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 54.0
+margin_top = 270.0
+margin_right = 104.0
+margin_bottom = 320.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot52"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot52"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot53" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 108.0
+margin_top = 270.0
+margin_right = 158.0
+margin_bottom = 320.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot53"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot53"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot54" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 162.0
+margin_top = 270.0
+margin_right = 212.0
+margin_bottom = 320.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot54"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot54"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot55" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 216.0
+margin_top = 270.0
+margin_right = 266.0
+margin_bottom = 320.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot55"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot55"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot56" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 270.0
+margin_top = 270.0
+margin_right = 320.0
+margin_bottom = 320.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot56"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot56"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot57" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 324.0
+margin_top = 270.0
+margin_right = 374.0
+margin_bottom = 320.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot57"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot57"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot58" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 378.0
+margin_top = 270.0
+margin_right = 428.0
+margin_bottom = 320.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot58"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot58"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot59" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 432.0
+margin_top = 270.0
+margin_right = 482.0
+margin_bottom = 320.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot59"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot59"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot60" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 486.0
+margin_top = 270.0
+margin_right = 536.0
+margin_bottom = 320.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot60"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot60"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot61" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_top = 324.0
+margin_right = 50.0
+margin_bottom = 374.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot61"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot61"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot62" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 54.0
+margin_top = 324.0
+margin_right = 104.0
+margin_bottom = 374.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot62"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot62"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot63" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 108.0
+margin_top = 324.0
+margin_right = 158.0
+margin_bottom = 374.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot63"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot63"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot64" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 162.0
+margin_top = 324.0
+margin_right = 212.0
+margin_bottom = 374.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot64"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot64"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot65" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 216.0
+margin_top = 324.0
+margin_right = 266.0
+margin_bottom = 374.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot65"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot65"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot66" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 270.0
+margin_top = 324.0
+margin_right = 320.0
+margin_bottom = 374.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot66"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot66"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot67" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 324.0
+margin_top = 324.0
+margin_right = 374.0
+margin_bottom = 374.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot67"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot67"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot68" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 378.0
+margin_top = 324.0
+margin_right = 428.0
+margin_bottom = 374.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot68"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot68"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot69" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 432.0
+margin_top = 324.0
+margin_right = 482.0
+margin_bottom = 374.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot69"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot69"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot70" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 486.0
+margin_top = 324.0
+margin_right = 536.0
+margin_bottom = 374.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot70"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot70"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot71" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_top = 378.0
+margin_right = 50.0
+margin_bottom = 428.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot71"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot71"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot72" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 54.0
+margin_top = 378.0
+margin_right = 104.0
+margin_bottom = 428.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot72"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot72"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot73" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 108.0
+margin_top = 378.0
+margin_right = 158.0
+margin_bottom = 428.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot73"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot73"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot74" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 162.0
+margin_top = 378.0
+margin_right = 212.0
+margin_bottom = 428.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot74"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot74"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot75" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 216.0
+margin_top = 378.0
+margin_right = 266.0
+margin_bottom = 428.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot75"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot75"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot76" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 270.0
+margin_top = 378.0
+margin_right = 320.0
+margin_bottom = 428.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot76"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot76"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot77" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 324.0
+margin_top = 378.0
+margin_right = 374.0
+margin_bottom = 428.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot77"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot77"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot78" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 378.0
+margin_top = 378.0
+margin_right = 428.0
+margin_bottom = 428.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot78"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot78"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot79" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 432.0
+margin_top = 378.0
+margin_right = 482.0
+margin_bottom = 428.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot79"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot79"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot80" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 486.0
+margin_top = 378.0
+margin_right = 536.0
+margin_bottom = 428.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot80"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot80"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot81" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_top = 432.0
+margin_right = 50.0
+margin_bottom = 482.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot81"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot81"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot82" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 54.0
+margin_top = 432.0
+margin_right = 104.0
+margin_bottom = 482.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot82"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot82"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot83" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 108.0
+margin_top = 432.0
+margin_right = 158.0
+margin_bottom = 482.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot83"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot83"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot84" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 162.0
+margin_top = 432.0
+margin_right = 212.0
+margin_bottom = 482.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot84"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot84"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot85" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 216.0
+margin_top = 432.0
+margin_right = 266.0
+margin_bottom = 482.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot85"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot85"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot86" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 270.0
+margin_top = 432.0
+margin_right = 320.0
+margin_bottom = 482.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot86"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot86"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot87" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 324.0
+margin_top = 432.0
+margin_right = 374.0
+margin_bottom = 482.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot87"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot87"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot88" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 378.0
+margin_top = 432.0
+margin_right = 428.0
+margin_bottom = 482.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot88"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot88"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot89" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 432.0
+margin_top = 432.0
+margin_right = 482.0
+margin_bottom = 482.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot89"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot89"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot90" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 486.0
+margin_top = 432.0
+margin_right = 536.0
+margin_bottom = 482.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot90"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot90"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot91" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_top = 486.0
+margin_right = 50.0
+margin_bottom = 536.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot91"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot91"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot92" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 54.0
+margin_top = 486.0
+margin_right = 104.0
+margin_bottom = 536.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot92"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot92"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot93" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 108.0
+margin_top = 486.0
+margin_right = 158.0
+margin_bottom = 536.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot93"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot93"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot94" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 162.0
+margin_top = 486.0
+margin_right = 212.0
+margin_bottom = 536.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot94"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot94"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot95" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 216.0
+margin_top = 486.0
+margin_right = 266.0
+margin_bottom = 536.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot95"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot95"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot96" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 270.0
+margin_top = 486.0
+margin_right = 320.0
+margin_bottom = 536.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot96"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot96"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot97" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 324.0
+margin_top = 486.0
+margin_right = 374.0
+margin_bottom = 536.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot97"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot97"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot98" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 378.0
+margin_top = 486.0
+margin_right = 428.0
+margin_bottom = 536.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot98"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot98"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot99" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 432.0
+margin_top = 486.0
+margin_right = 482.0
+margin_bottom = 536.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot99"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot99"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot100" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 486.0
+margin_top = 486.0
+margin_right = 536.0
+margin_bottom = 536.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot100"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot100"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot101" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_top = 540.0
+margin_right = 50.0
+margin_bottom = 590.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot101"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot101"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot102" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 54.0
+margin_top = 540.0
+margin_right = 104.0
+margin_bottom = 590.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot102"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot102"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot103" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 108.0
+margin_top = 540.0
+margin_right = 158.0
+margin_bottom = 590.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot103"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot103"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot104" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 162.0
+margin_top = 540.0
+margin_right = 212.0
+margin_bottom = 590.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot104"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot104"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot105" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 216.0
+margin_top = 540.0
+margin_right = 266.0
+margin_bottom = 590.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot105"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot105"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot106" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 270.0
+margin_top = 540.0
+margin_right = 320.0
+margin_bottom = 590.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot106"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot106"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot107" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 324.0
+margin_top = 540.0
+margin_right = 374.0
+margin_bottom = 590.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot107"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot107"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot108" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 378.0
+margin_top = 540.0
+margin_right = 428.0
+margin_bottom = 590.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot108"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot108"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot109" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 432.0
+margin_top = 540.0
+margin_right = 482.0
+margin_bottom = 590.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot109"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot109"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot110" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 486.0
+margin_top = 540.0
+margin_right = 536.0
+margin_bottom = 590.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot110"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot110"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot111" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_top = 594.0
+margin_right = 50.0
+margin_bottom = 644.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot111"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot111"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot112" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 54.0
+margin_top = 594.0
+margin_right = 104.0
+margin_bottom = 644.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot112"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot112"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot113" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 108.0
+margin_top = 594.0
+margin_right = 158.0
+margin_bottom = 644.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot113"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot113"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot114" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 162.0
+margin_top = 594.0
+margin_right = 212.0
+margin_bottom = 644.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot114"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot114"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot115" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 216.0
+margin_top = 594.0
+margin_right = 266.0
+margin_bottom = 644.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot115"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot115"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot116" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 270.0
+margin_top = 594.0
+margin_right = 320.0
+margin_bottom = 644.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot116"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot116"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot117" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 324.0
+margin_top = 594.0
+margin_right = 374.0
+margin_bottom = 644.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot117"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot117"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot118" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 378.0
+margin_top = 594.0
+margin_right = 428.0
+margin_bottom = 644.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot118"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot118"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot119" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 432.0
+margin_top = 594.0
+margin_right = 482.0
+margin_bottom = 644.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot119"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot119"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot120" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 486.0
+margin_top = 594.0
+margin_right = 536.0
+margin_bottom = 644.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot120"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot120"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot121" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_top = 648.0
+margin_right = 50.0
+margin_bottom = 698.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot121"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot121"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot122" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 54.0
+margin_top = 648.0
+margin_right = 104.0
+margin_bottom = 698.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot122"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot122"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot123" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 108.0
+margin_top = 648.0
+margin_right = 158.0
+margin_bottom = 698.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot123"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot123"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot124" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 162.0
+margin_top = 648.0
+margin_right = 212.0
+margin_bottom = 698.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot124"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot124"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot125" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 216.0
+margin_top = 648.0
+margin_right = 266.0
+margin_bottom = 698.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot125"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot125"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot126" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 270.0
+margin_top = 648.0
+margin_right = 320.0
+margin_bottom = 698.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot126"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot126"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot127" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 324.0
+margin_top = 648.0
+margin_right = 374.0
+margin_bottom = 698.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot127"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot127"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot128" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 378.0
+margin_top = 648.0
+margin_right = 428.0
+margin_bottom = 698.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot128"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot128"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot129" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 432.0
+margin_top = 648.0
+margin_right = 482.0
+margin_bottom = 698.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot129"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot129"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot130" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 486.0
+margin_top = 648.0
+margin_right = 536.0
+margin_bottom = 698.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot130"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot130"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot131" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_top = 702.0
+margin_right = 50.0
+margin_bottom = 752.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot131"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot131"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot132" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 54.0
+margin_top = 702.0
+margin_right = 104.0
+margin_bottom = 752.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot132"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot132"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot133" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 108.0
+margin_top = 702.0
+margin_right = 158.0
+margin_bottom = 752.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot133"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot133"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot134" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 162.0
+margin_top = 702.0
+margin_right = 212.0
+margin_bottom = 752.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot134"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot134"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot135" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 216.0
+margin_top = 702.0
+margin_right = 266.0
+margin_bottom = 752.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot135"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot135"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot136" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 270.0
+margin_top = 702.0
+margin_right = 320.0
+margin_bottom = 752.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot136"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot136"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot137" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 324.0
+margin_top = 702.0
+margin_right = 374.0
+margin_bottom = 752.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot137"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot137"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot138" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 378.0
+margin_top = 702.0
+margin_right = 428.0
+margin_bottom = 752.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot138"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot138"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot139" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 432.0
+margin_top = 702.0
+margin_right = 482.0
+margin_bottom = 752.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot139"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot139"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot140" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 486.0
+margin_top = 702.0
+margin_right = 536.0
+margin_bottom = 752.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot140"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot140"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot141" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_top = 756.0
+margin_right = 50.0
+margin_bottom = 806.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot141"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot141"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot142" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 54.0
+margin_top = 756.0
+margin_right = 104.0
+margin_bottom = 806.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot142"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot142"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot143" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 108.0
+margin_top = 756.0
+margin_right = 158.0
+margin_bottom = 806.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot143"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot143"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot144" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 162.0
+margin_top = 756.0
+margin_right = 212.0
+margin_bottom = 806.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot144"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot144"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot145" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 216.0
+margin_top = 756.0
+margin_right = 266.0
+margin_bottom = 806.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot145"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot145"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot146" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 270.0
+margin_top = 756.0
+margin_right = 320.0
+margin_bottom = 806.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot146"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot146"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot147" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 324.0
+margin_top = 756.0
+margin_right = 374.0
+margin_bottom = 806.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot147"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot147"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot148" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 378.0
+margin_top = 756.0
+margin_right = 428.0
+margin_bottom = 806.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot148"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot148"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot149" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 432.0
+margin_top = 756.0
+margin_right = 482.0
+margin_bottom = 806.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot149"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot149"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventorySlot150" type="TextureButton" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid" groups=["Inventory"]]
+margin_left = 486.0
+margin_top = 756.0
+margin_right = 536.0
+margin_bottom = 806.0
+rect_min_size = Vector2( 50, 50 )
+texture_normal = ExtResource( 14 )
+expand = true
+script = ExtResource( 9 )
+
+[node name="Icon" type="TextureRect" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot150"]
+margin_left = 3.0
+margin_top = 3.0
+margin_right = 48.0
+margin_bottom = 48.0
+expand = true
+script = ExtResource( 8 )
+
+[node name="Quantity" type="Label" parent="UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot150"]
+margin_left = 13.0
+margin_top = 30.0
+margin_right = 72.0
+margin_bottom = 63.0
+rect_scale = Vector2( 0.625062, 0.514003 )
+custom_fonts/font = ExtResource( 3 )
+
+[node name="InventoryCloseButton" type="TextureButton" parent="UI/GUI/Inventory"]
+modulate = Color( 0.815686, 0.278431, 0.278431, 1 )
+margin_left = 478.0
+margin_top = 17.0
+margin_right = 528.0
+margin_bottom = 67.0
+rect_min_size = Vector2( 50, 50 )
+rect_scale = Vector2( 0.633684, 0.604248 )
+texture_normal = ExtResource( 21 )
+expand = true
+
+[node name="InventorySaveButton" type="TextureButton" parent="UI/GUI/Inventory"]
+modulate = Color( 0.815686, 0.278431, 0.278431, 1 )
+margin_left = 4.0
+margin_top = 15.0
+margin_right = 54.0
+margin_bottom = 65.0
+rect_min_size = Vector2( 50, 50 )
+rect_scale = Vector2( 0.633684, 0.604248 )
+texture_normal = ExtResource( 17 )
+expand = true
+
+[node name="InventoryOpenCraftingSystemButton" type="TextureButton" parent="UI/GUI/Inventory"]
+modulate = Color( 0.815686, 0.278431, 0.278431, 1 )
+margin_left = 33.0
+margin_top = 15.0
+margin_right = 83.0
+margin_bottom = 65.0
+rect_min_size = Vector2( 50, 50 )
+rect_scale = Vector2( 0.633684, 0.604248 )
+texture_normal = ExtResource( 17 )
+expand = true
+
+[connection signal="pressed" from="UI/GUI/Keybinds/GridContainer/ForwardKeybind" to="UI/GUI/Keybinds" method="_on_ForwardKeybind_pressed"]
+[connection signal="pressed" from="UI/GUI/Keybinds/GridContainer/BackKeybind" to="UI/GUI/Keybinds" method="_on_BackKeybind_pressed"]
+[connection signal="pressed" from="UI/GUI/Keybinds/GridContainer/LeftKeybind" to="UI/GUI/Keybinds" method="_on_LeftKeybind_pressed"]
+[connection signal="pressed" from="UI/GUI/Keybinds/GridContainer/RightKeybind" to="UI/GUI/Keybinds" method="_on_RightKeybind_pressed"]
+[connection signal="pressed" from="UI/GUI/Keybinds/GridContainer/SprintKeybind" to="UI/GUI/Keybinds" method="_on_SprintKeybind_pressed"]
+[connection signal="pressed" from="UI/GUI/Keybinds/GridContainer/RunKeybind" to="UI/GUI/Keybinds" method="_on_RunKeybind_pressed"]
+[connection signal="pressed" from="UI/GUI/Keybinds/GridContainer/JumpKeybind" to="UI/GUI/Keybinds" method="_on_JumpKeybind_pressed"]
+[connection signal="pressed" from="UI/GUI/Keybinds/GridContainer/CrouchKeybind" to="UI/GUI/Keybinds" method="_on_crouchKeybind_pressed"]
+[connection signal="pressed" from="UI/GUI/Keybinds/GridContainer/TabKeybind" to="UI/GUI/Keybinds" method="_on_TabKeybind_pressed"]
+[connection signal="pressed" from="UI/GUI/Keybinds/GridContainer/SkillsKeybind" to="UI/GUI/Keybinds" method="_on_SkillsKeybind_pressed"]
+[connection signal="pressed" from="UI/GUI/SkillBar/GridContainer/Slot1" to="UI/GUI/SkillBar" method="_on_Slot1_pressed"]
+[connection signal="pressed" from="UI/GUI/SkillBar/GridContainer/Slot2" to="UI/GUI/SkillBar" method="_on_Slot2_pressed"]
+[connection signal="pressed" from="UI/GUI/SkillBar/GridContainer/Slot3" to="UI/GUI/SkillBar" method="_on_Slot3_pressed"]
+[connection signal="pressed" from="UI/GUI/SkillBar/GridContainer/Slot4" to="UI/GUI/SkillBar" method="_on_Slot4_pressed"]
+[connection signal="pressed" from="UI/GUI/SkillBar/GridContainer/Slot5" to="UI/GUI/SkillBar" method="_on_Slot5_pressed"]
+[connection signal="pressed" from="UI/GUI/SkillBar/GridContainer/Slot6" to="UI/GUI/SkillBar" method="_on_Slot6_pressed"]
+[connection signal="pressed" from="UI/GUI/SkillBar/GridContainer/Slot7" to="UI/GUI/SkillBar" method="_on_Slot7_pressed"]
+[connection signal="pressed" from="UI/GUI/SkillBar/GridContainer/Slot8" to="UI/GUI/SkillBar" method="_on_Slot8_pressed"]
+[connection signal="pressed" from="UI/GUI/SkillBar/GridContainer/Slot9" to="UI/GUI/SkillBar" method="_on_Slot9_pressed"]
+[connection signal="pressed" from="UI/GUI/SkillBar/GridContainer/Slot10" to="UI/GUI/SkillBar" method="_on_Slot10_pressed"]
+[connection signal="pressed" from="UI/GUI/SkillBar/GridContainer/SlotUP1" to="UI/GUI/SkillBar" method="_on_SlotUP1_pressed"]
+[connection signal="pressed" from="UI/GUI/SkillBar/GridContainer/SlotUP2" to="UI/GUI/SkillBar" method="_on_SlotUP2_pressed"]
+[connection signal="pressed" from="UI/GUI/SkillBar/GridContainer/SlotUP3" to="UI/GUI/SkillBar" method="_on_SlotUP3_pressed"]
+[connection signal="pressed" from="UI/GUI/SkillBar/GridContainer/SlotUP4" to="UI/GUI/SkillBar" method="_on_SlotUP4_pressed"]
+[connection signal="pressed" from="UI/GUI/SkillBar/GridContainer/SlotUP5" to="UI/GUI/SkillBar" method="_on_SlotUP5_pressed"]
+[connection signal="pressed" from="UI/GUI/SkillBar/GridContainer/SlotUP6" to="UI/GUI/SkillBar" method="_on_SlotUP6_pressed"]
+[connection signal="pressed" from="UI/GUI/SkillBar/GridContainer/SlotUP7" to="UI/GUI/SkillBar" method="_on_SlotUP7_pressed"]
+[connection signal="pressed" from="UI/GUI/SkillBar/GridContainer/SlotUP8" to="UI/GUI/SkillBar" method="_on_SlotUP8_pressed"]
+[connection signal="pressed" from="UI/GUI/SkillBar/GridContainer/SlotUP9" to="UI/GUI/SkillBar" method="_on_SlotUP9_pressed"]
+[connection signal="pressed" from="UI/GUI/SkillBar/GridContainer/SlotUP0" to="UI/GUI/SkillBar" method="_on_SlotUP0_pressed"]
+[connection signal="pressed" from="UI/GUI/SkillTrees/Background/SylvanSkills/GridContainer/CenterContainer/skill1" to="UI/GUI/SkillTrees/Background/SylvanSkills" method="_on_skill1_pressed"]
+[connection signal="pressed" from="UI/GUI/SkillTrees/Background/SylvanSkills/GridContainer/CenterContainer2/skill1" to="UI/GUI/SkillTrees/Background/SylvanSkills" method="_on_skill1_pressed"]
+[connection signal="pressed" from="UI/GUI/SkillTrees/Background/SylvanSkills/GridContainer/CenterContainer3/skill1" to="UI/GUI/SkillTrees/Background/SylvanSkills" method="_on_skill1_pressed"]
