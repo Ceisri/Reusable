@@ -10,10 +10,11 @@ var type = "item"
 func _ready():
 	displayQuantity()
 	matchItemTypeToIcon()
-
+	matchTextureToItem()
 func _physics_process(delta):
 	displayQuantity()
 	matchItemTypeToIcon()
+	matchTextureToItem()
 
 
 func displayQuantity():
@@ -139,6 +140,7 @@ func matchItemTypeToIcon():
 		preload("res://UI/graphics/mushrooms/PNG/background/48.png"): "mushroom 48",
 		preload("res://UI/graphics/mushrooms/PNG/background/49.png"): "mushroom 49",
 		preload("res://UI/graphics/mushrooms/PNG/background/50.png"): "mushroom 50",
+		preload("res://0.png"): "sword 0",
 		preload("res://UI/graphics/SkillIcons/empty.png"): "empty"
 	}
 	if icon.texture in texture_to_item:
@@ -148,4 +150,112 @@ func matchItemTypeToIcon():
 	else:
 		item = "unknown"
 
+func matchTextureToItem():
+	match item:
+		"mushroom 1":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/1.png")
+		"mushroom 2":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/2.png")
+		"mushroom 3":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/3.png")
+		"mushroom 4":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/4.png")
+		"mushroom 5":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/5.png")
+		"mushroom 6":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/6.png")
+		"mushroom 7":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/7.png")
+		"mushroom 8":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/8.png")
+		"mushroom 9":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/9.png")
+		"mushroom 10":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/10.png")
+		"mushroom 11":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/11.png")
+		"mushroom 12":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/12.png")
+		"mushroom 13":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/13.png")
+		"mushroom 14":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/14.png")
+		"mushroom 15":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/15.png")
+		"mushroom 16":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/16.png")
+		"mushroom 17":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/17.png")
+		"mushroom 18":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/18.png")
+		"mushroom 19":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/19.png")
+		"mushroom 20":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/20.png")
+		"mushroom 21":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/21.png")
+		"mushroom 22":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/22.png")
+		"mushroom 23":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/23.png")
+		"mushroom 24":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/24.png")
+		"mushroom 25":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/25.png")
+		"mushroom 26":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/26.png")
+		"mushroom 27":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/27.png")
+		"mushroom 28":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/28.png")
+		"mushroom 29":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/29.png")
+		"mushroom 30":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/30.png")
+		"mushroom 31":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/31.png")
+		"mushroom 32":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/32.png")
+		"mushroom 33":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/33.png")
+		"mushroom 34":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/34.png")
+		"mushroom 35":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/35.png")
+		"mushroom 36":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/36.png")
+		"mushroom 37":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/37.png")
+		"mushroom 38":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/38.png")
+		"mushroom 39":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/39.png")
+		"mushroom 40":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/40.png")
+		"mushroom 41":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/41.png")
+		"mushroom 42":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/42.png")
+		"mushroom 43":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/43.png")
+		"mushroom 44":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/44.png")
+		"mushroom 45":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/45.png")
+		"mushroom 46":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/46.png")
+		"mushroom 47":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/47.png")
+		"mushroom 48":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/48.png")
+		"mushroom 49":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/49.png")
+		"mushroom 50":
+			icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/50.png")
 
+		"sword 0":
+			icon.texture = preload("res://0.png")
+
+		"empty":
+			icon.texture = preload("res://UI/graphics/SkillIcons/empty.png")
+	

@@ -36,17 +36,21 @@ func loaddata():
 				savedTexture = loadedTexture
 				savedQuantity = int(quantity_str)
 			else:
-				print("Failed to load texture from path:", path)
+				pass
+#				print("Failed to load texture from path:", path)
 		else:
-			print("Saved texture path is empty.")
+			pass
+#			print("Saved texture path is empty.")
 	else:
-		print("File '", savePath, "' does not exist.")
+		pass
+#		print("File '", savePath, "' does not exist.")
 	
 	if savedTexture != null:
 		texture = savedTexture
 		get_parent().quantity = savedQuantity
 	else:
-		print("No texture found for icon.")
+		pass
+#		print("No texture found for icon.")
 
 
 #this script won't work unless savadata() for every specific icon is called somewhere

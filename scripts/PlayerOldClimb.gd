@@ -46,6 +46,9 @@ func _physics_process(delta):
 	fallDamage()
 	skillUserInterfaceInputs()
 	addItemToInventory()
+	positionCoordinates()
+	
+	MainWeapon()
 	
 #_______________________________________________Basic Movement______________________________________
 
@@ -446,6 +449,7 @@ func savePlayerData():
 		"position": translation,
 		"camera.translation.y" : camera.translation.y,
 		"camera.translation.z" : camera.translation.z,
+		"main_weapon": main_weapon,
 		}
 	var dir = Directory.new()
 	if !dir.dir_exists(SAVE_DIR):
@@ -468,6 +472,8 @@ func loadPlayerData():
 				camera.translation.y = player_data["camera.translation.y"]
 			if "camera.translation.z" in player_data:
 				camera.translation.z = player_data["camera.translation.z"]
+			if "main_weapon"  in player_data:
+				main_weapon = player_data["main_weapon"]
 
 func _on_Timer_timeout():
 	savePlayerData()
@@ -1150,6 +1156,19 @@ func addItemToInventory():
 					elif icon.texture.get_path() == "res://UI/graphics/mushrooms/PNG/background/2.png":
 						child.quantity += 1
 						break
+		if item.is_in_group("sword0"):
+			for child in inventory_grid.get_children():
+				if child.is_in_group("Inventory"):
+					var icon = child.get_node("Icon")
+					if icon.texture == null:
+						icon.texture = preload("res://0.png")
+						child.quantity = 1
+						child.item = "sword 0"
+						break
+					elif icon.texture.get_path() == "res://0.png":
+						child.quantity = 1
+						child.item = "sword 0"
+						break
 
 
 func _on_CraftingCloseButton_pressed():
@@ -1192,3 +1211,212 @@ func saveSkillBarData():
 	$UI/GUI/SkillBar/GridContainer/SlotUP9/Icon.savedata()
 	$UI/GUI/SkillBar/GridContainer/SlotUP0/Icon.savedata()
 	
+
+
+
+#_______________________________Equipment system________________________________
+
+onready var coordinates = $UI/GUI/Minimap/Coordinates
+func positionCoordinates():
+	var rounded_position = Vector3(
+		round(global_transform.origin.x * 10) / 10,
+		round(global_transform.origin.y * 10) / 10,
+		round(global_transform.origin.z * 10) / 10
+	)
+	# Use %d to format integers without decimals
+	coordinates.text = "%d, %d, %d" % [rounded_position.x, rounded_position.y, rounded_position.z]
+
+
+
+
+#__________________________________________________________Weapon Management____________________________________________
+#Main Weapon____________________________________________________________________________________________________________
+onready var attachment_r = $Mesh/Race/Armature/Skeleton/HoldL
+onready var detector = $Mesh/Detector
+var sword0: PackedScene = preload("res://itemTest.tscn")
+var sword1: PackedScene = preload("res://itemTest.tscn")
+var sword2: PackedScene = preload("res://itemTest.tscn")
+var currentInstance: Node = null  
+var main_weapon = "sword 0"
+var got_weapon = false
+
+
+func fixInstance():
+	attachment_r.add_child(currentInstance)
+	currentInstance.get_node("CollisionShape").disabled = true
+	#currentInstance.scale = Vector3(100, 100, 100)
+	got_weapon = true
+func switch():
+	match main_weapon:
+		"sword 0":
+			if currentInstance == null:
+				currentInstance = sword0.instance()
+				fixInstance()
+				$UI/GUI/Character/Weapon.item = "sword 0"
+		"sword 1":    
+			if currentInstance == null:
+				currentInstance = sword1.instance()
+				fixInstance()
+		"sword 2":    
+			if currentInstance == null:
+				currentInstance = sword2.instance()
+				fixInstance()
+		"null":
+			currentInstance = null
+func drop():
+	if currentInstance != null and Input.is_action_just_pressed("drop") and got_weapon:
+		
+		attachment_r.remove_child(currentInstance)
+		# Set the drop position
+		var drop_position = global_transform.origin + direction.normalized() * 1.0
+		currentInstance.global_transform.origin = Vector3(drop_position.x - rand_range(-0.3, 1), global_transform.origin.y + 0.2, drop_position.z + rand_range(-0.5, 0.88))
+		# Set the scale of the dropped instance
+		currentInstance.scale = Vector3(1, 1, 1)
+		var collision_shape = currentInstance.get_node("CollisionShape")
+		if collision_shape != null:
+			collision_shape.disabled = false
+		get_tree().root.add_child(currentInstance)
+		# Reset variables
+		main_weapon = "null"
+		currentInstance = null
+		got_weapon = false
+		$UI/GUI/Character/Weapon.item = "null"
+		$UI/GUI/Character/Weapon/Icon.texture = null
+func pickItemsMainHand():
+	var bodies = $Mesh/Detector.get_overlapping_bodies()
+	for body in bodies:
+		if Input.is_action_pressed("attack"):
+			print(currentInstance)
+			if currentInstance == null:
+				if body.is_in_group("sword0") and not got_weapon:
+					main_weapon = "sword 0"
+					body.queue_free()  # Remove the picked-up item from the floor
+				elif body.is_in_group("sword1") and not got_weapon:
+
+
+					body.queue_free()  # Remove the picked-up item from the floor
+				elif body.is_in_group("sword3") and not got_weapon:
+
+
+					body.queue_free()  # Remove the picked-up item from the floor
+			elif currentInstance != null and sec_currentInstance == null:
+				if body.is_in_group("sword0") and not got_sec_weapon:
+
+
+					body.queue_free()  # Remove the picked-up item from the floor
+				elif body.is_in_group("sword1") and not got_sec_weapon:
+				
+				
+					body.queue_free()  # Remove the picked-up item from the floor
+				elif body.is_in_group("sword3") and not got_sec_weapon:
+
+
+					body.queue_free()  # Remove the picked-up item from the floor
+
+func MainWeapon():
+	pickItemsMainHand()
+	switch()
+	if Input.is_action_just_pressed("drop"):
+		drop()
+		main_weapon = "null"
+#Secondary__________________________________________________________________________________________
+onready var attachment_l = $Mesh/Armature020/Skeleton/HoldL
+var sec_currentInstance: Node = null  
+var has_sec_sword0 = false
+var has_sec_sword1 = false
+var has_sec_sword2 = false
+var has_sec_sword3 = false
+var got_sec_weapon = false
+
+func fixSecInstance():
+	attachment_l.add_child(sec_currentInstance)
+	sec_currentInstance.get_node("CollisionShape").disabled = true
+	sec_currentInstance.scale = Vector3(100, 100, 100)
+	got_sec_weapon = true
+func switchSec():
+	if has_sec_sword0:
+		if sec_currentInstance == null:
+			sec_currentInstance = sword0.instance()
+			fixSecInstance()
+	elif has_sec_sword1:    
+		if sec_currentInstance == null:
+			sec_currentInstance = sword1.instance()
+			fixSecInstance()
+	elif has_sec_sword2:    
+		if sec_currentInstance == null:
+			sec_currentInstance = sword2.instance()
+			fixSecInstance()
+func pickUpShield():
+	var bodies = detector.get_overlapping_bodies()
+	for body in bodies:
+		if Input.is_action_pressed("E"):
+			if shield_currentInstance == null:
+				if body.is_in_group("shield3") and not got_shield:
+					has_shield0 = true
+					got_shield = true
+					body.queue_free()
+func dropSec():
+	if sec_currentInstance != null and Input.is_action_just_pressed("drop") and got_sec_weapon:
+		attachment_l.remove_child(sec_currentInstance)
+		# Set the drop position
+		var drop_position = global_transform.origin + direction.normalized() * 1.0
+		sec_currentInstance.global_transform.origin = Vector3(drop_position.x - rand_range(-0.3, 1), global_transform.origin.y + 0.2, drop_position.z + rand_range(-0.5, 0.88))
+		# Set the scale of the dropped instance
+		sec_currentInstance.scale = Vector3(1, 1, 1)
+		var collision_shape = sec_currentInstance.get_node("CollisionShape")
+		if collision_shape != null:
+			collision_shape.disabled = false
+		get_tree().root.add_child(sec_currentInstance)
+		# Reset variables
+		has_sec_sword0 = false
+		has_sec_sword1 = false
+		has_sec_sword2 = false
+		got_sec_weapon = false
+		sec_currentInstance = null
+func SecWeapon():
+	switchSec()
+	if Input.is_action_just_pressed("drop"):
+		dropSec()
+		has_sec_sword0 = false
+		has_sec_sword1 = false
+		has_sec_sword2 = false
+#Shield_____________________________________________________________________________________________
+onready var attachment_s = $Mesh/Armature020/Skeleton/HoldL2
+var shield0: PackedScene = preload("res://itemTest.tscn")
+var shield_currentInstance: Node = null 
+var has_shield0 = false
+var got_shield = false
+
+func fixShieldInstance():
+	attachment_s.add_child(shield_currentInstance)
+	shield_currentInstance.get_node("CollisionShape").disabled = true
+	shield_currentInstance.scale = Vector3(100, 100, 100)
+	got_shield = true
+func switchShield():
+	if has_shield0:
+		if shield_currentInstance == null:
+			shield_currentInstance = shield0.instance()
+			fixShieldInstance()
+
+func dropShield():
+	if shield_currentInstance != null and Input.is_action_just_pressed("drop"):
+		attachment_s.remove_child(shield_currentInstance)
+		# Set the drop position
+		var drop_position = global_transform.origin + direction.normalized() * 1.0
+		shield_currentInstance.global_transform.origin = Vector3(drop_position.x - rand_range(-0.3, 1), global_transform.origin.y + 0.2, drop_position.z + rand_range(-0.5, 0.88))
+		# Set the scale of the dropped instance
+		shield_currentInstance.scale = Vector3(1, 1, 1)
+		var collision_shape = shield_currentInstance.get_node("CollisionShape")
+		if collision_shape != null:
+			collision_shape.disabled = false
+		get_tree().root.add_child(shield_currentInstance)
+		# Reset variables
+		has_shield0 = false
+		got_shield = false
+		shield_currentInstance = null
+func ShieldManagement():
+	pickUpShield()
+	switchShield()
+	if Input.is_action_just_pressed("drop"):
+		dropShield()
+		has_shield0 = false

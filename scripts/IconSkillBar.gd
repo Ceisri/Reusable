@@ -30,14 +30,18 @@ func loaddata():
 			if loadedTexture != null:
 				savedTexture = loadedTexture
 			else:
-				print("Failed to load texture from path:", path)
+				pass
+#				print("Failed to load texture from path:", path)
 		else:
-			print("Saved texture path is empty.")
+			pass
+#			print("Saved texture path is empty.")
 	else:
-		print("File '", savePath, "' does not exist.")
+		pass
+#		print("File '", savePath, "' does not exist.")
 	
 	if savedTexture != null:
 		texture = savedTexture
 
 	else:
-		print("No texture found for icon.")
+		pass
+#		print("No texture found for icon.")
