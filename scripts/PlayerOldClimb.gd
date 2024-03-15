@@ -1156,19 +1156,22 @@ func addItemToInventory():
 					elif icon.texture.get_path() == "res://UI/graphics/mushrooms/PNG/background/2.png":
 						child.quantity += 1
 						break
-		if item.is_in_group("sword0"):
-			for child in inventory_grid.get_children():
-				if child.is_in_group("Inventory"):
-					var icon = child.get_node("Icon")
-					if icon.texture == null:
-						icon.texture = preload("res://0.png")
-						child.quantity = 1
-						child.item = "sword 0"
-						break
-					elif icon.texture.get_path() == "res://0.png":
-						child.quantity = 1
-						child.item = "sword 0"
-						break
+#		if item.is_in_group("sword0"):
+#			for child in inventory_grid.get_children():
+#				if child.is_in_group("Inventory"):
+#					var icon = child.get_node("Icon")
+#					if icon.texture == null:
+#						icon.texture = preload("res://0.png")
+#						child.quantity = 1
+#						child.item = "sword 0"
+#						break
+#					elif icon.texture.get_path() == "res://0.png" and child.quantity == 1 and child.item == "sword 0":
+#						continue  # Move to the next slot if this one already has a sword
+#					elif icon.texture == null:
+#						icon.texture = preload("res://0.png")
+#						child.quantity = 1
+#						child.item = "sword 0"
+#						break
 
 
 func _on_CraftingCloseButton_pressed():
@@ -1241,18 +1244,29 @@ var main_weapon = "sword 0"
 var got_weapon = false
 
 
+func addItemToCharacterSheet(icon,slot,texture,item):
+
+	if icon.texture == null:
+		icon.texture = texture
+		slot.quantity = 1
+		slot.item = item
+	
 func fixInstance():
 	attachment_r.add_child(currentInstance)
 	currentInstance.get_node("CollisionShape").disabled = true
 	#currentInstance.scale = Vector3(100, 100, 100)
 	got_weapon = true
 func switch():
+	var slot = $UI/GUI/Character/Weapon
+	var icon = $UI/GUI/Character/Weapon/Icon
 	match main_weapon:
 		"sword 0":
 			if currentInstance == null:
 				currentInstance = sword0.instance()
 				fixInstance()
-				$UI/GUI/Character/Weapon.item = "sword 0"
+				
+				var sword_texture = preload("res://0.png")
+				addItemToCharacterSheet(icon,slot,sword_texture,"sword 0")
 		"sword 1":    
 			if currentInstance == null:
 				currentInstance = sword1.instance()
@@ -1263,10 +1277,11 @@ func switch():
 				fixInstance()
 		"null":
 			currentInstance = null
+func removeWeapon():
+	attachment_r.remove_child(currentInstance)
 func drop():
 	if currentInstance != null and Input.is_action_just_pressed("drop") and got_weapon:
-		
-		attachment_r.remove_child(currentInstance)
+		removeWeapon()
 		# Set the drop position
 		var drop_position = global_transform.origin + direction.normalized() * 1.0
 		currentInstance.global_transform.origin = Vector3(drop_position.x - rand_range(-0.3, 1), global_transform.origin.y + 0.2, drop_position.z + rand_range(-0.5, 0.88))
@@ -1280,8 +1295,12 @@ func drop():
 		main_weapon = "null"
 		currentInstance = null
 		got_weapon = false
+		var slot = $UI/GUI/Character/Weapon
+		var icon = $UI/GUI/Character/Weapon/Icon
+		
 		$UI/GUI/Character/Weapon.item = "null"
 		$UI/GUI/Character/Weapon/Icon.texture = null
+
 func pickItemsMainHand():
 	var bodies = $Mesh/Detector.get_overlapping_bodies()
 	for body in bodies:
