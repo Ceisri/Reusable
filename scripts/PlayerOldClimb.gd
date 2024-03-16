@@ -51,13 +51,11 @@ func _physics_process(delta):
 	MainWeapon()
 	
 #_______________________________________________Basic Movement______________________________________
-
 var h_rot 
 var blocking = false
 var is_in_combat = false
 var enabled_climbing = false
 var is_crouching = false
-
 var is_sprinting = false
 var sprint_speed = 10
 var max_sprint_speed = 25
@@ -1047,8 +1045,6 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
 
 
 
-
-
 onready var skill_tree = $UI/GUI/SkillTrees
 #onready var character_sheet = $UI/GUI/CharacterSheet
 onready var keybinds = $UI/GUI/Keybinds
@@ -1087,6 +1083,15 @@ func skillUserInterfaceInputs():
 		$UI/GUI/Crafting.visible = !$UI/GUI/Crafting.visible
 		saveInventoryData()
 		saveSkillBarData()
+	if Input.is_action_just_pressed("Character"):
+		$UI/GUI/Character.visible =!$UI/GUI/Character.visible
+	if  Input.is_action_just_pressed("UI"):
+		$UI/GUI/Character.visible =!$UI/GUI/Character.visible
+		$UI/GUI/Crafting.visible = !$UI/GUI/Crafting.visible
+		$UI/GUI/Inventory.visible = !$UI/GUI/Inventory.visible
+		$UI/GUI/SkillTrees.visible = !$UI/GUI/SkillTrees.visible
+		
+		
 #_____________________________________more GUI stuff________________________________________________
 onready var fps_label = $UI/GUI/Minimap/FPSLabel
 func frameRate():
@@ -1111,69 +1116,28 @@ func _on_FPS_pressed():
 	# Set target FPS
 	if fps_mapping.has(current_fps):
 		Engine.set_target_fps(fps_mapping[current_fps])
-		
+#_____________________________________Display Time/Location______________________________
 onready var time_label = $UI/GUI/Minimap/Time
-
 func displayClock():
 	# Get the current date and time
 	var datetime = OS.get_datetime()
 	# Display hour and minute in the label
 	time_label.text = "Time: %02d:%02d" % [datetime.hour, datetime.minute]	
-
-onready var skills_list1 = $UI/GUI/SkillTrees/Background/SylvanSkills
-func _on_SkillTree1_pressed():
-	skills_list1.visible = !skills_list1.visible
-	saveSkillBarData()
-	
-
-
-
-
-func addItemToInventory():
-	var inventory_grid = $UI/GUI/Inventory/ScrollContainer/InventoryGrid
-	var items = $Mesh/Detector.get_overlapping_bodies()
-	
-	for item in items:
-		if item.is_in_group("Mushroom1"):
-			for child in inventory_grid.get_children():
-				if child.is_in_group("Inventory"):
-					var icon = child.get_node("Icon")
-					if icon.texture == null:
-						icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/1.png")
-						child.quantity += 1
-						break
-					elif icon.texture.get_path() == "res://UI/graphics/mushrooms/PNG/background/1.png":
-						child.quantity += 1
-						break
-		if item.is_in_group("Mushroom2"):
-			for child in inventory_grid.get_children():
-				if child.is_in_group("Inventory"):
-					var icon = child.get_node("Icon")
-					if icon.texture == null:
-						icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/2.png")
-						child.quantity += 1
-						break
-					elif icon.texture.get_path() == "res://UI/graphics/mushrooms/PNG/background/2.png":
-						child.quantity += 1
-						break
-#		if item.is_in_group("sword0"):
-#			for child in inventory_grid.get_children():
-#				if child.is_in_group("Inventory"):
-#					var icon = child.get_node("Icon")
-#					if icon.texture == null:
-#						icon.texture = preload("res://0.png")
-#						child.quantity = 1
-#						child.item = "sword 0"
-#						break
-#					elif icon.texture.get_path() == "res://0.png" and child.quantity == 1 and child.item == "sword 0":
-#						continue  # Move to the next slot if this one already has a sword
-#					elif icon.texture == null:
-#						icon.texture = preload("res://0.png")
-#						child.quantity = 1
-#						child.item = "sword 0"
-#						break
+onready var coordinates = $UI/GUI/Minimap/Coordinates
+func positionCoordinates():
+	var rounded_position = Vector3(
+		round(global_transform.origin.x * 10) / 10,
+		round(global_transform.origin.y * 10) / 10,
+		round(global_transform.origin.z * 10) / 10
+	)
+	# Use %d to format integers without decimals
+	coordinates.text = "%d, %d, %d" % [rounded_position.x, rounded_position.y, rounded_position.z]
 
 
+
+
+
+#___________________________________close buttons_______________________________
 func _on_CraftingCloseButton_pressed():
 	$UI/GUI/Crafting.visible = false
 func _on_InventoryCloseButton_pressed():
@@ -1181,10 +1145,18 @@ func _on_InventoryCloseButton_pressed():
 func _on_InventoryOpenCraftingSystemButton_pressed():
 	$UI/GUI/Crafting.visible = !$UI/GUI/Crafting.visible
 	saveSkillBarData()
-
+func _on_SkillTreeCloseButton_pressed():
+	$UI/GUI/SkillTrees.visible = false
+func _on_CharacterCloseButton_pressed():
+	$UI/GUI/Character.visible = false
 func _on_InventorySaveButton_pressed():
 	saveInventoryData()
 	saveSkillBarData()
+onready var skills_list1 = $UI/GUI/SkillTrees/Background/SylvanSkills
+func _on_SkillTree1_pressed():
+	skills_list1.visible = !skills_list1.visible
+	saveSkillBarData()
+	
 func saveInventoryData():
 	var inventory_grid = $UI/GUI/Inventory/ScrollContainer/InventoryGrid
 	# Call savedata() function on each child of inventory_grid that belongs to the group "Inventory"
@@ -1213,27 +1185,97 @@ func saveSkillBarData():
 	$UI/GUI/SkillBar/GridContainer/SlotUP8/Icon.savedata()
 	$UI/GUI/SkillBar/GridContainer/SlotUP9/Icon.savedata()
 	$UI/GUI/SkillBar/GridContainer/SlotUP0/Icon.savedata()
-	
+
+#__________________________________Inventory____________________________________
+onready var inventory_grid = $UI/GUI/Inventory/ScrollContainer/InventoryGrid
+# Function to combine slots when pressed
+func _on_CombineSlots_pressed():
+	var combined_items = {}  # Dictionary to store combined items
+	for child in inventory_grid.get_children():
+		if child.is_in_group("Inventory"):
+			var icon = child.get_node("Icon")
+			if icon.texture != null:
+				var item_path = icon.texture.get_path()
+				if combined_items.has(item_path):
+					combined_items[item_path] += child.quantity
+					icon.texture = null  # Set texture to null for excess slots
+					child.quantity = 0  # Reset quantity
+				else:
+					combined_items[item_path] = child.quantity
+
+	# Update quantities based on combined_items
+	for child in inventory_grid.get_children():
+		if child.is_in_group("Inventory"):
+			var icon = child.get_node("Icon")
+			var item_path = icon.texture.get_path() if icon.texture != null else null
+			if item_path in combined_items:
+				child.quantity = combined_items[item_path]
+
+func _on_SplitFirstSlot_pressed():
+	var first_slot = $UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot1
+	if first_slot.is_in_group("Inventory"):
+		var first_icon = first_slot.get_node("Icon")
+		if first_icon.texture != null:
+			var original_quantity = first_slot.quantity
+			if original_quantity > 1:
+				var new_quantity = original_quantity / 2  # Calculate the new quantity
+				first_slot.quantity = original_quantity - new_quantity  # Update the quantity of the first slot
+				for child in inventory_grid.get_children():
+					if child.is_in_group("Inventory"):
+						var icon = child.get_node("Icon")
+						if icon.texture == null:
+							icon.texture = first_icon.texture
+							child.quantity += original_quantity / 2
+							break
+
+#________________________________Add items to inventory_________________________
+func addItemToInventory():
+	var items = $Mesh/Detector.get_overlapping_bodies()
+	for item in items:
+		if item.is_in_group("Mushroom1"):
+			for child in inventory_grid.get_children():
+				if child.is_in_group("Inventory"):
+					var icon = child.get_node("Icon")
+					if icon.texture == null:
+						icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/1.png")
+						child.quantity += 1
+						break
+					elif icon.texture.get_path() == "res://UI/graphics/mushrooms/PNG/background/1.png":
+						child.quantity += 1
+						break
+		if item.is_in_group("Mushroom2"):
+			for child in inventory_grid.get_children():
+				if child.is_in_group("Inventory"):
+					var icon = child.get_node("Icon")
+					if icon.texture == null:
+						icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/2.png")
+						child.quantity += 1
+						break
+					elif icon.texture.get_path() == "res://UI/graphics/mushrooms/PNG/background/2.png":
+						child.quantity += 1
+						break
+		if item.is_in_group("sword0"):
+			for child in inventory_grid.get_children():
+				if child.is_in_group("Inventory"):
+					var icon = child.get_node("Icon")
+					if icon.texture == null:
+						icon.texture = preload("res://0.png")
+						child.quantity = 1
+						child.item = "sword 0"
+						break
+					elif icon.texture.get_path() == "res://0.png" and child.quantity == 1 and child.item == "sword 0":
+						continue  # Move to the next slot if this one already has a sword
+					elif icon.texture == null:
+						icon.texture = preload("res://0.png")
+						child.quantity = 1
+						child.item = "sword 0"
+						break
 
 
 
-#_______________________________Equipment system________________________________
 
-onready var coordinates = $UI/GUI/Minimap/Coordinates
-func positionCoordinates():
-	var rounded_position = Vector3(
-		round(global_transform.origin.x * 10) / 10,
-		round(global_transform.origin.y * 10) / 10,
-		round(global_transform.origin.z * 10) / 10
-	)
-	# Use %d to format integers without decimals
-	coordinates.text = "%d, %d, %d" % [rounded_position.x, rounded_position.y, rounded_position.z]
-
-
-
-
-#__________________________________________________________Weapon Management____________________________________________
-#Main Weapon____________________________________________________________________________________________________________
+#__________________________________Weapon Management____________________________
+#Main Weapon____________________________________________________________________
 onready var attachment_r = $Mesh/Race/Armature/Skeleton/HoldL
 onready var detector = $Mesh/Detector
 var sword0: PackedScene = preload("res://itemTest.tscn")
@@ -1245,7 +1287,6 @@ var got_weapon = false
 
 
 func addItemToCharacterSheet(icon,slot,texture,item):
-
 	if icon.texture == null:
 		icon.texture = texture
 		slot.quantity = 1
@@ -1439,3 +1480,5 @@ func ShieldManagement():
 	if Input.is_action_just_pressed("drop"):
 		dropShield()
 		has_shield0 = false
+
+
