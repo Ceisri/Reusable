@@ -8,25 +8,28 @@ var quantity = 0
 var item = "null"
 var type = "item"
 func _ready():
+
 	displayQuantity()
 	matchItemTypeToIcon()
 
 func _physics_process(delta):
+
 	displayQuantity()
 	matchItemTypeToIcon()
 
 
 func displayQuantity():
-	if quantity != 0: 
-		quantity_label.text = str(round(quantity))
-	elif quantity == 0:
-		quantity_label.text = ""
-		icon.texture = null
 
-	
-	if icon.texture == null:
-		quantity = 0
-		quantity_label.text = ""
+		if quantity != 0: 
+			quantity_label.text = str(round(quantity))
+		elif quantity == 0:
+			quantity_label.text = ""
+			icon.texture = null
+
+		
+		if icon.texture == null:
+			quantity = 0
+			quantity_label.text = ""
 
 func get_drag_data(position: Vector2):
 	matchItemTypeToIcon()
