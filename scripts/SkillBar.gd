@@ -5,7 +5,7 @@
 var edit = false 
 func _on_Edit_pressed():
 	edit = !edit 
-	print(edit)
+
 
 #lower row of shortcut keybinds 
 onready var skilltree = $"../SkillTrees/Background/SylvanSkills"

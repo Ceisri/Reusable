@@ -20,6 +20,7 @@ func _ready():
 func _physics_process(delta):
 	$hp.text = str(health)
 	$Debug.text = animation_state
+	displayLabels()
 	displayClock()
 	frameRate()
 	speedlabel()
@@ -640,7 +641,7 @@ func matchAnimationStates():
 					animation.play("combo attack 2hander cycle", 0.35)
 				elif slot1.texture.resource_path == "res://UI/graphics/SkillIcons/selfheal.png":
 					animation.play("crawl cycle", 0.35)
-				print(slot1.texture.resource_path)
+				#print(slot1.texture.resource_path)
 			else:
 				print("Texture is null")
 
@@ -658,8 +659,41 @@ func animations():
 #on land
 	elif dodge_animation_duration > 0:
 		animation_state = "slide"
-#skills 
 
+
+	elif not is_on_floor() and not is_climbing and not is_swimming:
+		animation_state = "fall"
+	elif double_atk_animation_duration > 0 and !cursor_visible: 
+		animation_state = "double attack"
+	elif Input.is_action_pressed("rclick") and Input.is_action_pressed("attack") and !cursor_visible:
+		animation_state = "guard attack"
+	elif Input.is_action_pressed("rclick") and !cursor_visible:
+		if !is_walking:
+			animation_state = "guard"
+		else:
+			animation_state = "guard walk"
+#attacks________________________________________________________________________
+	elif Input.is_action_pressed("attack") and Input.is_action_pressed("run") and !cursor_visible: 
+		animation_state = "run attack"
+	elif Input.is_action_pressed("attack") and Input.is_action_pressed("sprint") and !cursor_visible: 
+		animation_state = "sprint attack"
+	elif Input.is_action_pressed("attack") and !cursor_visible:
+			animation_state = "base attack"
+#_______________________________________________________________________________
+	elif is_sprinting:
+			animation_state = "sprint"
+	elif is_running:
+			animation_state = "run"
+	elif Input.is_action_pressed("crouch"):
+		if is_walking:
+			animation_state = "crouch walk"
+		else:
+			animation_state = "crouch"
+	elif is_walking:
+			animation_state = "walk"
+	elif jump_animation_duration != 0:
+		animation_state = "jump"
+#skills 
 	elif Input.is_action_pressed("1"):
 		animation_state = "test1"
 	elif Input.is_action_pressed("2"):
@@ -700,41 +734,6 @@ func animations():
 		animation_state = "testV"
 	elif Input.is_action_pressed("B"):
 		animation_state = "testB"
-
-
-	elif not is_on_floor() and not is_climbing and not is_swimming:
-		animation_state = "fall"
-	elif double_atk_animation_duration > 0 and !cursor_visible: 
-		animation_state = "double attack"
-	elif Input.is_action_pressed("rclick") and Input.is_action_pressed("attack") and !cursor_visible:
-		animation_state = "guard attack"
-	elif Input.is_action_pressed("rclick") and !cursor_visible:
-		if !is_walking:
-			animation_state = "guard"
-		else:
-			animation_state = "guard walk"
-#attacks________________________________________________________________________
-	elif Input.is_action_pressed("attack") and Input.is_action_pressed("run") and !cursor_visible: 
-		animation_state = "run attack"
-	elif Input.is_action_pressed("attack") and Input.is_action_pressed("sprint") and !cursor_visible: 
-		animation_state = "sprint attack"
-	elif Input.is_action_pressed("attack") and !cursor_visible:
-			animation_state = "base attack"
-#_______________________________________________________________________________
-	elif is_sprinting:
-			animation_state = "sprint"
-	elif is_running:
-			animation_state = "run"
-	elif Input.is_action_pressed("crouch"):
-		if is_walking:
-			animation_state = "crouch walk"
-		else:
-			animation_state = "crouch"
-	elif is_walking:
-			animation_state = "walk"
-	elif jump_animation_duration != 0:
-		animation_state = "jump"
-
 	else:
 		animation_state = "idle"
 
@@ -1045,6 +1044,7 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
 
 
 
+#___________________________________close buttons/inputs_______________________________
 
 var cursor_visible = false
 onready var keybinds = $UI/GUI/Keybinds
@@ -1052,6 +1052,7 @@ onready var inventory = $UI/GUI/Inventory
 onready var crafting = $UI/GUI/Crafting
 onready var skill_trees = $UI/GUI/SkillTrees
 onready var character = $UI/GUI/Character
+onready var menu = $UI/GUI/Menu
 func skillUserInterfaceInputs():
 	if Input.is_action_just_pressed("skills"):
 		closeSwitchOpen(skill_trees)
@@ -1071,85 +1072,66 @@ func skillUserInterfaceInputs():
 		closeSwitchOpen(inventory)
 		saveInventoryData()
 		saveSkillBarData()
-	if Input.is_action_just_pressed("Crafting"):
+	elif Input.is_action_just_pressed("Crafting"):
 		closeSwitchOpen(crafting)
 		saveInventoryData()
 		saveSkillBarData()
-	if Input.is_action_just_pressed("Character"):
+	elif Input.is_action_just_pressed("Character"):
 		closeSwitchOpen(character)
-	if  Input.is_action_just_pressed("UI"):
+	elif Input.is_action_just_pressed("UI"):
 		closeSwitchOpen(character)
 		closeSwitchOpen(crafting)
 		closeSwitchOpen(inventory)
 		closeSwitchOpen(skill_trees)
+	elif Input.is_action_just_pressed("Menu"):
+		closeSwitchOpen(menu)
+#skillbar buttons
+func _on_Inventory_pressed():
+	closeSwitchOpen(inventory)
+func _on_Character_pressed():
+	closeSwitchOpen(character)
+func _on_Skills_pressed():
+	closeSwitchOpen(skill_trees)
+func _on_Menu_pressed():
+	closeSwitchOpen(menu)
+func _on_OpenAllUI_pressed():
+	closeSwitchOpen(character)
+	closeSwitchOpen(crafting)
+	closeSwitchOpen(inventory)
+	closeSwitchOpen(skill_trees)
+
+
 func closeAllUI():
 		character.visible = false 
 		crafting.visible  = false
 		inventory.visible = false
-		skill_trees.visible= false
+		skill_trees.visible = false
+		keybinds.visible = false
+		menu.visible = false
 func closeSwitchOpen(ui):
 	ui.visible = !ui.visible
-	
-#_____________________________________more GUI stuff________________________________________________
-onready var fps_label = $UI/GUI/Minimap/FPSLabel
-func frameRate():
-	fps_label.text = "%d" % Engine.get_frames_per_second()
-func _on_FPS_pressed():
-	var current_fps = Engine.get_target_fps()
-	# Define FPS mapping
-	var fps_mapping = {
-		10: 12,
-		12: 15,
-		15: 17,
-		17: 20,
-		20: 22,
-		22: 25,
-		25: 30,
-		30: 35,
-		35: 40,
-		40: 60,
-		60: 80,
-		80: 15  # Wrap back to 15 if 80 FPS is reached
-	}
-	# Set target FPS
-	if fps_mapping.has(current_fps):
-		Engine.set_target_fps(fps_mapping[current_fps])
-#_____________________________________Display Time/Location______________________________
-onready var time_label = $UI/GUI/Minimap/Time
-func displayClock():
-	# Get the current date and time
-	var datetime = OS.get_datetime()
-	# Display hour and minute in the label
-	time_label.text = "Time: %02d:%02d" % [datetime.hour, datetime.minute]	
-onready var coordinates = $UI/GUI/Minimap/Coordinates
-func positionCoordinates():
-	var rounded_position = Vector3(
-		round(global_transform.origin.x * 10) / 10,
-		round(global_transform.origin.y * 10) / 10,
-		round(global_transform.origin.z * 10) / 10
-	)
-	# Use %d to format integers without decimals
-	coordinates.text = "%d, %d, %d" % [rounded_position.x, rounded_position.y, rounded_position.z]
-
-
-
-
-
-#___________________________________close buttons_______________________________
-
 func _on_CloseSkillsTrees_pressed():
 	skill_trees.visible = false
 func _on_CraftingCloseButton_pressed():
-	$UI/GUI/Crafting.visible = false
+	crafting.visible = false
 func _on_InventoryCloseButton_pressed():
-	$UI/GUI/Inventory.visible = false
+	inventory.visible = false
 func _on_InventoryOpenCraftingSystemButton_pressed():
-	$UI/GUI/Crafting.visible = !$UI/GUI/Crafting.visible
+	crafting.visible = !$UI/GUI/Crafting.visible
 	saveSkillBarData()
 func _on_SkillTreeCloseButton_pressed():
-	$UI/GUI/SkillTrees.visible = false
+	skill_trees.visible = false
 func _on_CharacterCloseButton_pressed():
-	$UI/GUI/Character.visible = false
+	character.visible = false
+func _on_CloseMenu_pressed():
+	menu.visible = false
+func _on_Keybinds_pressed():
+	closeSwitchOpen(keybinds)
+func _on_Quit_pressed():
+	saveInventoryData()
+	savePlayerData()
+	saveSkillBarData()
+	get_tree().quit()
 func _on_InventorySaveButton_pressed():
 	saveInventoryData()
 	saveSkillBarData()
@@ -1272,6 +1254,52 @@ func addItemToInventory():
 						child.item = "sword 0"
 						break
 
+#_____________________________________more GUI stuff________________________________________________
+onready var fps_label = $UI/GUI/Minimap/FPSLabel
+func frameRate():
+	fps_label.text = "%d" % Engine.get_frames_per_second()
+func _on_FPS_pressed():
+	var current_fps = Engine.get_target_fps()
+	# Define FPS mapping
+	var fps_mapping = {
+		10: 12,
+		12: 15,
+		15: 17,
+		17: 20,
+		20: 22,
+		22: 25,
+		25: 30,
+		30: 35,
+		35: 40,
+		40: 60,
+		60: 80,
+		80: 15  # Wrap back to 15 if 80 FPS is reached
+	}
+	# Set target FPS
+	if fps_mapping.has(current_fps):
+		Engine.set_target_fps(fps_mapping[current_fps])
+#_____________________________________Display Time/Location______________________________
+onready var time_label = $UI/GUI/Minimap/Time
+func displayClock():
+	# Get the current date and time
+	var datetime = OS.get_datetime()
+	# Display hour and minute in the label
+	time_label.text = "Time: %02d:%02d" % [datetime.hour, datetime.minute]	
+onready var coordinates = $UI/GUI/Minimap/Coordinates
+func positionCoordinates():
+	var rounded_position = Vector3(
+		round(global_transform.origin.x * 10) / 10,
+		round(global_transform.origin.y * 10) / 10,
+		round(global_transform.origin.z * 10) / 10
+	)
+	# Use %d to format integers without decimals
+	coordinates.text = "%d, %d, %d" % [rounded_position.x, rounded_position.y, rounded_position.z]
+
+
+
+
+
+
 #__________________________________Weapon Management____________________________
 #Main Weapon____________________________________________________________________
 onready var attachment_r = $Mesh/Race/Armature/Skeleton/HoldL
@@ -1316,14 +1344,17 @@ func switch():
 				fixInstance()
 		"null":
 			currentInstance = null
+			got_weapon = false
 func removeWeapon():
-	attachment_r.remove_child(currentInstance)
+	if got_weapon:
+		attachment_r.remove_child(currentInstance)
+		got_weapon = false
 func drop():
 	if currentInstance != null and Input.is_action_just_pressed("drop") and got_weapon:
 		removeWeapon()
 		# Set the drop position
 		var drop_position = global_transform.origin + direction.normalized() * 1.0
-		currentInstance.global_transform.origin = Vector3(drop_position.x - rand_range(-0.3, 1), global_transform.origin.y + 0.2, drop_position.z + rand_range(-0.5, 0.88))
+		currentInstance.global_transform.origin = Vector3(drop_position.x - rand_range(-0.6, 2), global_transform.origin.y + 0.2, drop_position.z + rand_range(-0.5, 0.88))
 		# Set the scale of the dropped instance
 		currentInstance.scale = Vector3(1, 1, 1)
 		var collision_shape = currentInstance.get_node("CollisionShape")
@@ -1334,9 +1365,6 @@ func drop():
 		main_weapon = "null"
 		currentInstance = null
 		got_weapon = false
-		var slot = $UI/GUI/Character/Weapon
-		var icon = $UI/GUI/Character/Weapon/Icon
-		
 		$UI/GUI/Character/Weapon.item = "null"
 		$UI/GUI/Character/Weapon/Icon.texture = null
 
@@ -1344,7 +1372,7 @@ func pickItemsMainHand():
 	var bodies = $Mesh/Detector.get_overlapping_bodies()
 	for body in bodies:
 		if Input.is_action_pressed("attack"):
-			print(currentInstance)
+			#print(currentInstance)
 			if currentInstance == null:
 				if body.is_in_group("sword0") and not got_weapon:
 					main_weapon = "sword 0"
@@ -1480,3 +1508,22 @@ func ShieldManagement():
 		has_shield0 = false
 
 
+func displayLabels():
+	var agility_label = $UI/GUI/Character/Stats/AgiLabel
+	displayStats(agility_label,agility)
+
+func displayStats(label,value):
+	label.text = str(value)
+	
+
+var effect0_applied: bool = false
+func effectSword0(active: bool):
+	if active and not effect0_applied:
+		effect0_applied = true
+		# Apply  effect, adjust the boost values as needed
+		agility -= 0.05
+	   
+	elif not active and effect0_applied:
+		# Remove horse effect
+		agility += 0.05
+		effect0_applied = false
