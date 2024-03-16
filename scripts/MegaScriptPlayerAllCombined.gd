@@ -1354,7 +1354,7 @@ func drop():
 		removeWeapon()
 		# Set the drop position
 		var drop_position = global_transform.origin + direction.normalized() * 1.0
-		currentInstance.global_transform.origin = Vector3(drop_position.x - rand_range(-0.6, 2), global_transform.origin.y + 0.2, drop_position.z + rand_range(-0.5, 0.88))
+		currentInstance.global_transform.origin = Vector3(drop_position.x - rand_range(-0.3, 1), global_transform.origin.y + 0.2, drop_position.z + rand_range(-0.5, 0.88))
 		# Set the scale of the dropped instance
 		currentInstance.scale = Vector3(1, 1, 1)
 		var collision_shape = currentInstance.get_node("CollisionShape")
@@ -1510,20 +1510,40 @@ func ShieldManagement():
 
 func displayLabels():
 	var agility_label = $UI/GUI/Character/Stats/AgiLabel
+	var int_label = $UI/GUI/Character/Stats/AgiLabel2
 	displayStats(agility_label,agility)
+	displayStats(int_label,intelligence)
 
 func displayStats(label,value):
 	label.text = str(value)
 	
 
-var effect0_applied: bool = false
-func effectSword0(active: bool):
-	if active and not effect0_applied:
-		effect0_applied = true
-		# Apply  effect, adjust the boost values as needed
-		agility -= 0.05
-	   
-	elif not active and effect0_applied:
-		# Remove horse effect
-		agility += 0.05
-		effect0_applied = false
+# Define effects and their corresponding stat changes
+var effects = {
+	"effect0": {"stats": {"agility": -0.05, "strength": 0.1}, "applied": false},
+	"effect1": {"stats": {"health": -5, "mana": 10}, "applied": false},
+	"effect2": {"stats": {"health": -5, "mana": 10, "intelligence": 2,"agility": 0.05,}, "applied": false},
+	# Add more effects as needed
+}
+
+# Function to apply or remove effects
+func applyEffect(player: Node, effect_name: String, active: bool):
+	if effects.has(effect_name):
+		var effect = effects[effect_name]
+		if active and not effect["applied"]:
+			# Apply effect
+			for stat_name in effect["stats"].keys():
+				if stat_name in player:
+					player[stat_name] += effect["stats"][stat_name]
+			effect["applied"] = true
+		elif not active and effect["applied"]:
+			# Remove effect
+			for stat_name in effect["stats"].keys():
+				if stat_name in player:
+					player[stat_name] -= effect["stats"][stat_name]
+			effect["applied"] = false
+	else:
+		print("Effect not found:", effect_name)
+
+
+
