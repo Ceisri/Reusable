@@ -446,3 +446,98 @@ func slash():
 						enemy.takeDamage(critical_damage,aggro_power,self,stagger_chance,"heat")
 					else:
 						enemy.takeDamage(damage,aggro_power,self,stagger_chance,damage_type)
+
+
+
+	
+#___________________________________Status effects______________________________
+# Define effects and their corresponding stat changes
+var effects = {
+	"effect0": {"stats": {"agility": -0.05, "strength": 0.1}, "applied": false},
+	"effect1": {"stats": {"energy": -500000000, "mana": 10}, "applied": false},
+	"effect2": {"stats": {"health": -5, "mana": 10, "intelligence": 2,"agility": 0.05,}, "applied": false},
+	"overhydration": {"stats": {"max_health": -5,  "intelligence": -0.02,"agility": -0.05,}, "applied": false},
+	"dehydration": {"stats": {"max_health": -25, "intelligence": -0.25,"agility": -0.25,}, "applied": false},
+	"bloated": {"stats": {"max_health": -5,"intelligence": -0.02,"agility": -0.15,}, "applied": false},
+	"hungry": {"stats": {"max_health": -5,"intelligence": -0.22,"agility": -0.05,}, "applied": false},
+	"bleeding": {"stats": {}, "applied": false},
+	"stunned": {"stats": {}, "applied": false},
+	"frozen": {"stats": {}, "applied": false},
+	"blinded": {"stats": {}, "applied": false},
+	"terrorized": {"stats": {}, "applied": false},
+	"scared": {"stats": {}, "applied": false},
+	"intimidated": {"stats": {}, "applied": false},
+}
+
+# Function to apply or remove effects
+func applyEffect(player: Node, effect_name: String, active: bool):
+	if effects.has(effect_name):
+		var effect = effects[effect_name]
+		if active and not effect["applied"]:
+			# Apply effect
+			for stat_name in effect["stats"].keys():
+				if stat_name in player:
+					player[stat_name] += effect["stats"][stat_name]
+			effect["applied"] = true
+		elif not active and effect["applied"]:
+			# Remove effect
+			for stat_name in effect["stats"].keys():
+				if stat_name in player:
+					player[stat_name] -= effect["stats"][stat_name]
+			effect["applied"] = false
+	else:
+		print("Effect not found:", effect_name)
+
+onready var status_grid = $UI/GUI/Portrait/StatusGrid
+func showStatusIcon(icon1, icon2, icon3, icon4, icon5, icon6, icon7, icon8, icon9, icon10, icon11, icon12, icon13, icon14, icon15, icon16, icon17, icon18, icon19, icon20):
+#	applyEffect(self, "bleeding", true)
+#	applyEffect(self, "hungry", true)
+	applyEffect(self, "frozen", true)
+	applyEffect(self, "stunned", true)
+	applyEffect(self, "blinded", true)
+#	applyEffect(self, "terrorized", true)
+#	applyEffect(self, "scared", true)
+#	applyEffect(self, "intimidated", true)
+
+	# Reset all icons
+	var all_icons = [icon1, icon2, icon3, icon4, icon5, icon6, icon7, icon8, icon9, icon10, icon11, icon12, icon13, icon14, icon15, icon16, icon17, icon18, icon19, icon20]
+	for icon in all_icons:
+		icon.texture = null
+		icon.modulate = Color(1, 1, 1)
+
+	# Preload textures
+	var dehydration_texture = preload("res://waterbubbles.png")
+	var overhydration_texture = preload("res://waterbubbles.png")
+	var bloated_texture = preload("res://UI/graphics/mushrooms/PNG/background/28.png")
+	var hungry_texture = preload("res://DebuffIcons/Hungry.png")
+	var bleeding_texture = preload("res://DebuffIcons/bleed.png")
+	var stunned_texture = preload("res://DebuffIcons/stunned.png")
+	var frozen_texture = preload("res://DebuffIcons/frozen.png")
+	var blinded_texture = preload("res://DebuffIcons/blinded.png")
+	var terrorized_texture = preload("res://DebuffIcons/terrorized.png")
+	var scared_texture = preload("res://DebuffIcons/scared.png")
+	var intimidated_texture = preload("res://DebuffIcons/intimidated.png")
+	var effect1_texture = preload("res://DebuffIcons/bleed.png")
+	# Apply status icons based on applied effects
+	var applied_effects = [
+		{"name": "dehydration", "texture": dehydration_texture, "modulation_color": Color(1, 0, 0)},
+		{"name": "overhydration", "texture": overhydration_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "bloated", "texture": bloated_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "hungry", "texture": hungry_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "bleeding", "texture": bleeding_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "frozen", "texture": frozen_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "stunned", "texture": stunned_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "blinded", "texture": blinded_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "terrorized", "texture": terrorized_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "scared", "texture": scared_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "intimidated", "texture": intimidated_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "effect1", "texture": effect1_texture, "modulation_color": Color(1, 1, 1)}
+	]
+
+	for effect in applied_effects:
+		if effects.has(effect["name"]) and effects[effect["name"]]["applied"]:
+			for icon in all_icons:
+				if icon.texture == null:
+					icon.texture = effect["texture"]
+					icon.modulate = effect["modulation_color"]
+					break  # Exit loop after applying status to the first available icon

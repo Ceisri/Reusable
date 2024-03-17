@@ -534,6 +534,29 @@ func showEnemyStats():
 			enemy_energy_bar.value = body.energy
 			enemy_energy_bar.max_value = body.max_energy
 			enemy_energy_label.text = "EP:" + str(round(body.energy* 100) / 100) + "/" + str(body.max_energy)
+			body.showStatusIcon(
+	$UI/GUI/EnemyUI/StatusGrid/Icon1,
+	$UI/GUI/EnemyUI/StatusGrid/Icon2,
+	$UI/GUI/EnemyUI/StatusGrid/Icon3,
+	$UI/GUI/EnemyUI/StatusGrid/Icon4,
+	$UI/GUI/EnemyUI/StatusGrid/Icon5,
+	$UI/GUI/EnemyUI/StatusGrid/Icon6,
+	$UI/GUI/EnemyUI/StatusGrid/Icon7,
+	$UI/GUI/EnemyUI/StatusGrid/Icon8,
+	$UI/GUI/EnemyUI/StatusGrid/Icon9,
+	$UI/GUI/EnemyUI/StatusGrid/Icon10,
+	$UI/GUI/EnemyUI/StatusGrid/Icon11,
+	$UI/GUI/EnemyUI/StatusGrid/Icon12,
+	$UI/GUI/EnemyUI/StatusGrid/Icon13,
+	$UI/GUI/EnemyUI/StatusGrid/Icon14,
+	$UI/GUI/EnemyUI/StatusGrid/Icon15,
+	$UI/GUI/EnemyUI/StatusGrid/Icon16,
+	$UI/GUI/EnemyUI/StatusGrid/Icon17,
+	$UI/GUI/EnemyUI/StatusGrid/Icon18,
+	$UI/GUI/EnemyUI/StatusGrid/Icon19,
+	$UI/GUI/EnemyUI/StatusGrid/Icon20
+)
+
 		else:
 			# Start tween to fade out
 			enemy_ui_tween.interpolate_property(entity_graphic_interface, "modulate:a", entity_graphic_interface.modulate.a, 0.0, fade_duration, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
@@ -784,6 +807,7 @@ func stompKickDealDamage():
 	var enemies = $Mesh/Detector.get_overlapping_bodies()
 	for enemy in enemies:
 		if enemy.is_in_group("enemy"):
+			enemy.applyEffect(enemy,"effect1", true)
 			if enemy.has_method("takeDamage"):
 				if is_on_floor():
 					#insert sound effect here
@@ -1532,12 +1556,19 @@ func displayStats(label,value):
 # Define effects and their corresponding stat changes
 var effects = {
 	"effect0": {"stats": {"agility": -0.05, "strength": 0.1}, "applied": false},
-	"effect1": {"stats": {"health": -5, "mana": 10}, "applied": false},
+	"effect1": {"stats": {"energy": -500000000, "mana": 10}, "applied": false},
 	"effect2": {"stats": {"health": -5, "mana": 10, "intelligence": 2,"agility": 0.05,}, "applied": false},
 	"overhydration": {"stats": {"max_health": -5,  "intelligence": -0.02,"agility": -0.05,}, "applied": false},
 	"dehydration": {"stats": {"max_health": -25, "intelligence": -0.25,"agility": -0.25,}, "applied": false},
 	"bloated": {"stats": {"max_health": -5,"intelligence": -0.02,"agility": -0.15,}, "applied": false},
 	"hungry": {"stats": {"max_health": -5,"intelligence": -0.22,"agility": -0.05,}, "applied": false},
+	"bleeding": {"stats": {}, "applied": false},
+	"stunned": {"stats": {}, "applied": false},
+	"frozen": {"stats": {}, "applied": false},
+	"blinded": {"stats": {}, "applied": false},
+	"terrorized": {"stats": {}, "applied": false},
+	"scared": {"stats": {}, "applied": false},
+	"intimidated": {"stats": {}, "applied": false},
 }
 
 # Function to apply or remove effects
@@ -1561,6 +1592,14 @@ func applyEffect(player: Node, effect_name: String, active: bool):
 
 onready var status_grid = $UI/GUI/Portrait/StatusGrid
 func showStatusIcon():
+	applyEffect(self, "bleeding", true)
+	applyEffect(self, "hungry", true)
+	applyEffect(self, "frozen", true)
+	applyEffect(self, "stunned", true)
+	applyEffect(self, "blinded", true)
+	applyEffect(self, "terrorized", true)
+	applyEffect(self, "scared", true)
+	applyEffect(self, "intimidated", true)
 	var icon1 = $UI/GUI/Portrait/StatusGrid/Icon1
 	var icon2 = $UI/GUI/Portrait/StatusGrid/Icon2
 	var icon3 = $UI/GUI/Portrait/StatusGrid/Icon3
@@ -1571,9 +1610,18 @@ func showStatusIcon():
 	var icon8 = $UI/GUI/Portrait/StatusGrid/Icon8
 	var icon9 = $UI/GUI/Portrait/StatusGrid/Icon9
 	var icon10 = $UI/GUI/Portrait/StatusGrid/Icon10
-
+	var icon11 = $UI/GUI/Portrait/StatusGrid/Icon11
+	var icon12 = $UI/GUI/Portrait/StatusGrid/Icon12
+	var icon13 = $UI/GUI/Portrait/StatusGrid/Icon13
+	var icon14 = $UI/GUI/Portrait/StatusGrid/Icon14
+	var icon15 = $UI/GUI/Portrait/StatusGrid/Icon15
+	var icon16 = $UI/GUI/Portrait/StatusGrid/Icon16
+	var icon17 = $UI/GUI/Portrait/StatusGrid/Icon17
+	var icon18 = $UI/GUI/Portrait/StatusGrid/Icon18
+	var icon19 = $UI/GUI/Portrait/StatusGrid/Icon19
+	var icon20 = $UI/GUI/Portrait/StatusGrid/Icon20
 	# Reset all icons
-	var all_icons = [icon1, icon2, icon3, icon4, icon5, icon6, icon7, icon8, icon9, icon10]
+	var all_icons = [icon1, icon2, icon3, icon4, icon5, icon6, icon7, icon8, icon9, icon10, icon11, icon12, icon13, icon14, icon15, icon16, icon17, icon18, icon19, icon20]
 	for icon in all_icons:
 		icon.texture = null
 		icon.modulate = Color(1, 1, 1)
@@ -1583,13 +1631,26 @@ func showStatusIcon():
 	var overhydration_texture = preload("res://waterbubbles.png")
 	var bloated_texture = preload("res://UI/graphics/mushrooms/PNG/background/28.png")
 	var hungry_texture = preload("res://DebuffIcons/Hungry.png")
-
+	var bleeding_texture = preload("res://DebuffIcons/bleed.png")
+	var stunned_texture = preload("res://DebuffIcons/stunned.png")
+	var frozen_texture = preload("res://DebuffIcons/frozen.png")
+	var blinded_texture = preload("res://DebuffIcons/blinded.png")
+	var terrorized_texture = preload("res://DebuffIcons/terrorized.png")
+	var scared_texture = preload("res://DebuffIcons/scared.png")
+	var intimidated_texture = preload("res://DebuffIcons/intimidated.png")
 	# Apply status icons based on applied effects
 	var applied_effects = [
 		{"name": "dehydration", "texture": dehydration_texture, "modulation_color": Color(1, 0, 0)},
 		{"name": "overhydration", "texture": overhydration_texture, "modulation_color": Color(1, 1, 1)},
 		{"name": "bloated", "texture": bloated_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "hungry", "texture": hungry_texture, "modulation_color": Color(1, 1, 1)}
+		{"name": "hungry", "texture": hungry_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "bleeding", "texture": bleeding_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "frozen", "texture": frozen_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "stunned", "texture": stunned_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "blinded", "texture": blinded_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "terrorized", "texture": terrorized_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "scared", "texture": scared_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "intimidated", "texture": intimidated_texture, "modulation_color": Color(1, 1, 1)}
 	]
 
 	for effect in applied_effects:
@@ -1599,8 +1660,6 @@ func showStatusIcon():
 					icon.texture = effect["texture"]
 					icon.modulate = effect["modulation_color"]
 					break  # Exit loop after applying status to the first available icon
-
-
 
 #_____________________________Hunger system and stuff___________________________
 onready var kilocalories_label = $UI/GUI/Portrait/Kilocalories
@@ -1613,7 +1672,6 @@ var last_update_time: float = 0
 var kilocalories_decrease_per_second: float = 0.023148 #kilocalories consumed per second
 
 func hunger():
-	applyEffect(self, "hungry", true)
 	var current_time = OS.get_ticks_msec() / 1000.0
 	if last_update_time == 0:
 		last_update_time = current_time
