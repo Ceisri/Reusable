@@ -92,6 +92,10 @@ func drop_data(position, data):
 
 func matchItemTypeToIcon():
 	var texture_to_item = {
+		
+		preload("res://alchemy ingredients/2.png"): "rosehip",
+		preload("res://Processed ingredients/ground rosehip.png"): "ground rosehip",
+		
 		preload("res://UI/graphics/mushrooms/PNG/background/1.png"): "mushroom 1",
 		preload("res://UI/graphics/mushrooms/PNG/background/2.png"): "mushroom 2",
 		preload("res://UI/graphics/mushrooms/PNG/background/3.png"): "mushroom 3",
@@ -146,6 +150,7 @@ func matchItemTypeToIcon():
 		preload("res://UI/graphics/SkillIcons/empty.png"): "empty",
 #_______________potions_____________________________________________________________
 		preload("res://Potions/Red potion.png"): "red potion",
+		preload("res://Potions/water.png"): "water",
 		preload("res://Potions/Empty potion.png"): "empty potion",
 		
 	}

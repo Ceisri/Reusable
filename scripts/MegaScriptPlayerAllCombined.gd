@@ -1256,10 +1256,10 @@ func addItemToInventory():
 				if child.is_in_group("Inventory"):
 					var icon = child.get_node("Icon")
 					if icon.texture == null:
-						icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/1.png")
+						icon.texture = preload("res://alchemy ingredients/2.png")
 						child.quantity += 1
 						break
-					elif icon.texture.get_path() == "res://UI/graphics/mushrooms/PNG/background/1.png":
+					elif icon.texture.get_path() == "res://alchemy ingredients/2.png":
 						child.quantity += 1
 						break
 		if item.is_in_group("Mushroom2"):
@@ -1267,10 +1267,10 @@ func addItemToInventory():
 				if child.is_in_group("Inventory"):
 					var icon = child.get_node("Icon")
 					if icon.texture == null:
-						icon.texture = preload("res://Potions/Red potion.png")
+						icon.texture = preload("res://Potions/water.png")
 						child.quantity += 1
 						break
-					elif icon.texture.get_path() == "res://Potions/Red potion.png":
+					elif icon.texture.get_path() == "res://Potions/water.png":
 						child.quantity += 1
 						break
 		if item.is_in_group("sword0"):
@@ -1792,7 +1792,7 @@ var max_water = 4000
 var water = 4000
 
 var last_update_time_water: float = 0
-var water_decrease_per_second: float = 40.045 #kilocalories consumed per second
+var water_decrease_per_second: float = 0.045 #kilocalories consumed per second
 
 func hydration():
 	var current_time = OS.get_ticks_msec() / 1000.0
