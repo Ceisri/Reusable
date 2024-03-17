@@ -19,17 +19,18 @@ func _ready():
 func _on_SlowTimer_timeout():
 	allResourcesBarsAndLabels()
 	showEnemyStats()
-	hunger()
-	hydration()
 func _on_3FPS_timeout():
 	if health > max_health:
 		health = max_health
 	displayResources(hp_bar,hp_label,health,max_health,"HP")
-
+	hunger()
+	hydration()
+	showStatusIcon()
 func _physics_process(delta):
 	$Debug.text = animation_state
 	displayLabels()
 #	displayClock()
+	
 	frameRate()
 	speedlabel()
 	cameraRotation(delta)
@@ -1527,13 +1528,16 @@ func displayLabels():
 func displayStats(label,value):
 	label.text = str(value)
 	
-
+#___________________________________Status effects______________________________
 # Define effects and their corresponding stat changes
 var effects = {
 	"effect0": {"stats": {"agility": -0.05, "strength": 0.1}, "applied": false},
 	"effect1": {"stats": {"health": -5, "mana": 10}, "applied": false},
 	"effect2": {"stats": {"health": -5, "mana": 10, "intelligence": 2,"agility": 0.05,}, "applied": false},
-	# Add more effects as needed
+	"overhydration": {"stats": {"max_health": -5,  "intelligence": -0.02,"agility": -0.05,}, "applied": false},
+	"dehydration": {"stats": {"max_health": -25, "intelligence": -0.25,"agility": -0.25,}, "applied": false},
+	"bloated": {"stats": {"max_health": -5,"intelligence": -0.02,"agility": -0.15,}, "applied": false},
+	"hungry": {"stats": {"max_health": -5,"intelligence": -0.22,"agility": -0.05,}, "applied": false},
 }
 
 # Function to apply or remove effects
@@ -1555,6 +1559,47 @@ func applyEffect(player: Node, effect_name: String, active: bool):
 	else:
 		print("Effect not found:", effect_name)
 
+onready var status_grid = $UI/GUI/Portrait/StatusGrid
+func showStatusIcon():
+	var icon1 = $UI/GUI/Portrait/StatusGrid/Icon1
+	var icon2 = $UI/GUI/Portrait/StatusGrid/Icon2
+	var icon3 = $UI/GUI/Portrait/StatusGrid/Icon3
+	var icon4 = $UI/GUI/Portrait/StatusGrid/Icon4
+	var icon5 = $UI/GUI/Portrait/StatusGrid/Icon5
+	var icon6 = $UI/GUI/Portrait/StatusGrid/Icon6
+	var icon7 = $UI/GUI/Portrait/StatusGrid/Icon7
+	var icon8 = $UI/GUI/Portrait/StatusGrid/Icon8
+	var icon9 = $UI/GUI/Portrait/StatusGrid/Icon9
+	var icon10 = $UI/GUI/Portrait/StatusGrid/Icon10
+
+	# Reset all icons
+	var all_icons = [icon1, icon2, icon3, icon4, icon5, icon6, icon7, icon8, icon9, icon10]
+	for icon in all_icons:
+		icon.texture = null
+		icon.modulate = Color(1, 1, 1)
+
+	# Preload textures
+	var dehydration_texture = preload("res://waterbubbles.png")
+	var overhydration_texture = preload("res://waterbubbles.png")
+	var bloated_texture = preload("res://UI/graphics/mushrooms/PNG/background/28.png")
+	var hungry_texture = preload("res://DebuffIcons/Hungry.png")
+
+	# Apply status icons based on applied effects
+	var applied_effects = [
+		{"name": "dehydration", "texture": dehydration_texture, "modulation_color": Color(1, 0, 0)},
+		{"name": "overhydration", "texture": overhydration_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "bloated", "texture": bloated_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "hungry", "texture": hungry_texture, "modulation_color": Color(1, 1, 1)}
+	]
+
+	for effect in applied_effects:
+		if effects.has(effect["name"]) and effects[effect["name"]]["applied"]:
+			for icon in all_icons:
+				if icon.texture == null:
+					icon.texture = effect["texture"]
+					icon.modulate = effect["modulation_color"]
+					break  # Exit loop after applying status to the first available icon
+
 
 
 #_____________________________Hunger system and stuff___________________________
@@ -1568,6 +1613,7 @@ var last_update_time: float = 0
 var kilocalories_decrease_per_second: float = 0.023148 #kilocalories consumed per second
 
 func hunger():
+	applyEffect(self, "hungry", true)
 	var current_time = OS.get_ticks_msec() / 1000.0
 	if last_update_time == 0:
 		last_update_time = current_time
@@ -1594,6 +1640,11 @@ func hunger():
 		kilocalories -= decrease_amount * 6.5
 	else:
 		kilocalories -= decrease_amount
+	if kilocalories > max_kilocalories * 1.15:
+		applyEffect(self, "bloated", true)
+	else:
+		applyEffect(self, "bloated", false)
+
 
 
 onready var water_label = $UI/GUI/Portrait/HydrationLabel
@@ -1603,7 +1654,7 @@ var max_water = 4000
 var water = 4000
 
 var last_update_time_water: float = 0
-var water_decrease_per_second: float = 0.045 #kilocalories consumed per second
+var water_decrease_per_second: float = 40.045 #kilocalories consumed per second
 
 func hydration():
 	var current_time = OS.get_ticks_msec() / 1000.0
@@ -1613,25 +1664,35 @@ func hydration():
 	last_update_time_water = current_time
 	# Calculate decrease based on elapsed time
 	var decrease_amount = water_decrease_per_second * elapsed_time 
-	if not health > max_health:
-		if health > max_health * 0.5:
-			if water > 0:
-				water -= decrease_amount
-		elif health < max_health * 0.5:
-			if water > 0:
-				water -= decrease_amount
-	if is_sprinting:
-		water -= decrease_amount * 7.196
-	elif is_running:
-		water -= decrease_amount * 5.038
-	elif is_walking:
-		water -= decrease_amount * 3.594 #walking consumes usually 3.594 more calories per second
-	elif is_swimming:
-		water -= decrease_amount * 6.5
+	if water > -100:
+		if not health > max_health:
+			if health > max_health * 0.5:
+				if water > 0:
+					water -= decrease_amount
+			elif health < max_health * 0.5:
+				if water > 0:
+					water -= decrease_amount
+		if is_sprinting:
+			water -= decrease_amount * 7.196
+		elif is_running:
+			water -= decrease_amount * 5.038
+		elif is_walking:
+			water -= decrease_amount * 3.594 #walking consumes usually 3.594 more calories per second
+		elif is_swimming:
+			water -= decrease_amount * 6.5
+		else:
+			water -= decrease_amount	
+
+	if water > max_water * 1.15:
+		applyEffect(self, "overhydration", true)
+	elif water < 0:
+		health -= 10 * elapsed_time
+		applyEffect(self, "dehydration", true)
+	elif water < max_water * 0.75:
+		applyEffect(self, "dehydration", true)
 	else:
-		water -= decrease_amount	
-
-
+		applyEffect(self, "overhydration", false)
+		applyEffect(self, "dehydration", false)
 
 onready var hp_bar = $UI/GUI/Portrait/LifeBar
 onready var hp_label = $UI/GUI/Portrait/LifeLabel
