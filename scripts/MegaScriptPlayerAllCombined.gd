@@ -534,7 +534,8 @@ func showEnemyStats():
 			enemy_energy_bar.value = body.energy
 			enemy_energy_bar.max_value = body.max_energy
 			enemy_energy_label.text = "EP:" + str(round(body.energy* 100) / 100) + "/" + str(body.max_energy)
-			body.showStatusIcon(
+			if body.has_method("showStatusIcon"):
+				body.showStatusIcon(
 	$UI/GUI/EnemyUI/StatusGrid/Icon1,
 	$UI/GUI/EnemyUI/StatusGrid/Icon2,
 	$UI/GUI/EnemyUI/StatusGrid/Icon3,
@@ -1569,6 +1570,21 @@ var effects = {
 	"terrorized": {"stats": {}, "applied": false},
 	"scared": {"stats": {}, "applied": false},
 	"intimidated": {"stats": {}, "applied": false},
+	"rooted": {"stats": {}, "applied": false},
+	"blockbuffs": {"stats": {}, "applied": false},
+	"blockactive": {"stats": {}, "applied": false},
+	"blockpassive": {"stats": {}, "applied": false},
+	"brokendefense": {"stats": {}, "applied": false},
+	"healreduction": {"stats": {}, "applied": false},
+	"bomb": {"stats": {}, "applied": false},
+	"slow": {"stats": {}, "applied": false},
+	"burn": {"stats": {}, "applied": false},
+	"sleep": {"stats": {}, "applied": false},
+	"weakness": {"stats": {}, "applied": false},
+	"poisoned": {"stats": {}, "applied": false},
+	"confused": {"stats": { "intelligence": -0.75}, "applied": false},
+	"impaired": {"stats": { "dexterity": -0.25}, "applied": false},
+	"lethargy": {"stats": {}, "applied": false},
 }
 
 # Function to apply or remove effects
@@ -1600,6 +1616,21 @@ func showStatusIcon():
 	applyEffect(self, "terrorized", true)
 	applyEffect(self, "scared", true)
 	applyEffect(self, "intimidated", true)
+	applyEffect(self, "rooted", true)
+	applyEffect(self, "blockbuffs", true)
+	applyEffect(self, "blockactive", true)
+	applyEffect(self, "blockpassive", true)
+	applyEffect(self, "brokendefense", true)
+	applyEffect(self, "healreduction", true)
+	applyEffect(self, "bomb", true)
+	applyEffect(self, "slow", true)
+	applyEffect(self, "burn", true)
+	applyEffect(self, "sleep", true)
+	applyEffect(self, "weakness", true)
+	applyEffect(self, "poisoned", true)
+	applyEffect(self, "confused", true)
+	applyEffect(self, "impaired", true)
+	applyEffect(self, "lethargy", true)
 	var icon1 = $UI/GUI/Portrait/StatusGrid/Icon1
 	var icon2 = $UI/GUI/Portrait/StatusGrid/Icon2
 	var icon3 = $UI/GUI/Portrait/StatusGrid/Icon3
@@ -1620,8 +1651,12 @@ func showStatusIcon():
 	var icon18 = $UI/GUI/Portrait/StatusGrid/Icon18
 	var icon19 = $UI/GUI/Portrait/StatusGrid/Icon19
 	var icon20 = $UI/GUI/Portrait/StatusGrid/Icon20
+	var icon21 = $UI/GUI/Portrait/StatusGrid/Icon21
+	var icon22 = $UI/GUI/Portrait/StatusGrid/Icon22
+	var icon23 = $UI/GUI/Portrait/StatusGrid/Icon23
+	var icon24 = $UI/GUI/Portrait/StatusGrid/Icon24
 	# Reset all icons
-	var all_icons = [icon1, icon2, icon3, icon4, icon5, icon6, icon7, icon8, icon9, icon10, icon11, icon12, icon13, icon14, icon15, icon16, icon17, icon18, icon19, icon20]
+	var all_icons = [icon1, icon2, icon3, icon4, icon5, icon6, icon7, icon8, icon9, icon10, icon11, icon12, icon13, icon14, icon15, icon16, icon17, icon18, icon19, icon20, icon21, icon22, icon23, icon24]
 	for icon in all_icons:
 		icon.texture = null
 		icon.modulate = Color(1, 1, 1)
@@ -1638,6 +1673,21 @@ func showStatusIcon():
 	var terrorized_texture = preload("res://DebuffIcons/terrorized.png")
 	var scared_texture = preload("res://DebuffIcons/scared.png")
 	var intimidated_texture = preload("res://DebuffIcons/intimidated.png")
+	var rooted_texture = preload("res://DebuffIcons/chained.png")
+	var blockbuffs_texture = preload("res://DebuffIcons/blockbuffs.png")
+	var block_active_texture = preload("res://DebuffIcons/blockactiveskills.png") 
+	var block_passive_texture = preload("res://DebuffIcons/blockpassive.png")
+	var broken_defense_texture = preload("res://DebuffIcons/broken defense.png") 
+	var bomb_texture = preload("res://DebuffIcons/bomb.png") 
+	var heal_reduction_texture = preload("res://DebuffIcons/healreduction.png")
+	var slow_texture = preload("res://DebuffIcons/slow.png")
+	var burn_texture = preload("res://DebuffIcons/burn.png")
+	var sleep_texture = preload("res://DebuffIcons/sleep.png")
+	var weakness_texture = preload("res://DebuffIcons/weakness.png")
+	var poisoned_texture = preload("res://DebuffIcons/poisoned.png")
+	var confusion_texture = preload("res://DebuffIcons/confusion.png")
+	var impaired_texture = preload("res://DebuffIcons/impaired.png")
+	var lethargy_texture = preload("res://DebuffIcons/Cooldown increased.png")
 	# Apply status icons based on applied effects
 	var applied_effects = [
 		{"name": "dehydration", "texture": dehydration_texture, "modulation_color": Color(1, 0, 0)},
@@ -1650,7 +1700,22 @@ func showStatusIcon():
 		{"name": "blinded", "texture": blinded_texture, "modulation_color": Color(1, 1, 1)},
 		{"name": "terrorized", "texture": terrorized_texture, "modulation_color": Color(1, 1, 1)},
 		{"name": "scared", "texture": scared_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "intimidated", "texture": intimidated_texture, "modulation_color": Color(1, 1, 1)}
+		{"name": "intimidated", "texture": intimidated_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "rooted", "texture": rooted_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "blockbuffs", "texture": blockbuffs_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "blockactive", "texture": block_active_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "blockpassive", "texture": block_passive_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "brokendefense", "texture": broken_defense_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "healreduction", "texture": heal_reduction_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "bomb", "texture": bomb_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "slow", "texture": slow_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "burn", "texture": burn_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "sleep", "texture": sleep_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "weakness", "texture": weakness_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "poisoned", "texture": poisoned_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "confused", "texture": confusion_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "impaired", "texture": impaired_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "lethargy", "texture": lethargy_texture, "modulation_color": Color(1, 1, 1)},
 	]
 
 	for effect in applied_effects:
