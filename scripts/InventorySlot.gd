@@ -143,7 +143,11 @@ func matchItemTypeToIcon():
 		preload("res://UI/graphics/mushrooms/PNG/background/49.png"): "mushroom 49",
 		preload("res://UI/graphics/mushrooms/PNG/background/50.png"): "mushroom 50",
 		preload("res://0.png"): "sword 0",
-		preload("res://UI/graphics/SkillIcons/empty.png"): "empty"
+		preload("res://UI/graphics/SkillIcons/empty.png"): "empty",
+#_______________potions_____________________________________________________________
+		preload("res://Potions/Red potion.png"): "red potion",
+		preload("res://Potions/Empty potion.png"): "empty potion",
+		
 	}
 	if icon.texture in texture_to_item:
 		item = texture_to_item[icon.texture]

@@ -19,6 +19,7 @@ func _ready():
 func _on_SlowTimer_timeout():
 	allResourcesBarsAndLabels()
 	showEnemyStats()
+	potionEffects()
 func _on_3FPS_timeout():
 	if health > max_health:
 		health = max_health
@@ -1266,10 +1267,10 @@ func addItemToInventory():
 				if child.is_in_group("Inventory"):
 					var icon = child.get_node("Icon")
 					if icon.texture == null:
-						icon.texture = preload("res://UI/graphics/mushrooms/PNG/background/2.png")
+						icon.texture = preload("res://Potions/Red potion.png")
 						child.quantity += 1
 						break
-					elif icon.texture.get_path() == "res://UI/graphics/mushrooms/PNG/background/2.png":
+					elif icon.texture.get_path() == "res://Potions/Red potion.png":
 						child.quantity += 1
 						break
 		if item.is_in_group("sword0"):
@@ -1585,6 +1586,7 @@ var effects = {
 	"confused": {"stats": { "intelligence": -0.75}, "applied": false},
 	"impaired": {"stats": { "dexterity": -0.25}, "applied": false},
 	"lethargy": {"stats": {}, "applied": false},
+	"redpotion": {"stats": {}, "applied": false},
 }
 
 # Function to apply or remove effects
@@ -1608,29 +1610,29 @@ func applyEffect(player: Node, effect_name: String, active: bool):
 
 onready var status_grid = $UI/GUI/Portrait/StatusGrid
 func showStatusIcon():
-	applyEffect(self, "bleeding", true)
-	applyEffect(self, "hungry", true)
-	applyEffect(self, "frozen", true)
-	applyEffect(self, "stunned", true)
-	applyEffect(self, "blinded", true)
-	applyEffect(self, "terrorized", true)
-	applyEffect(self, "scared", true)
-	applyEffect(self, "intimidated", true)
-	applyEffect(self, "rooted", true)
-	applyEffect(self, "blockbuffs", true)
-	applyEffect(self, "blockactive", true)
-	applyEffect(self, "blockpassive", true)
-	applyEffect(self, "brokendefense", true)
-	applyEffect(self, "healreduction", true)
-	applyEffect(self, "bomb", true)
-	applyEffect(self, "slow", true)
-	applyEffect(self, "burn", true)
-	applyEffect(self, "sleep", true)
-	applyEffect(self, "weakness", true)
-	applyEffect(self, "poisoned", true)
-	applyEffect(self, "confused", true)
-	applyEffect(self, "impaired", true)
-	applyEffect(self, "lethargy", true)
+#	applyEffect(self, "bleeding", true)
+#	applyEffect(self, "hungry", true)
+#	applyEffect(self, "frozen", true)
+#	applyEffect(self, "stunned", true)
+#	applyEffect(self, "blinded", true)
+#	applyEffect(self, "terrorized", true)
+#	applyEffect(self, "scared", true)
+#	applyEffect(self, "intimidated", true)
+#	applyEffect(self, "rooted", true)
+#	applyEffect(self, "blockbuffs", true)
+#	applyEffect(self, "blockactive", true)
+#	applyEffect(self, "blockpassive", true)
+#	applyEffect(self, "brokendefense", true)
+#	applyEffect(self, "healreduction", true)
+#	applyEffect(self, "bomb", true)
+#	applyEffect(self, "slow", true)
+#	applyEffect(self, "burn", true)
+#	applyEffect(self, "sleep", true)
+#	applyEffect(self, "weakness", true)
+#	applyEffect(self, "poisoned", true)
+#	applyEffect(self, "confused", true)
+#	applyEffect(self, "impaired", true)
+#	applyEffect(self, "lethargy", true)
 	var icon1 = $UI/GUI/Portrait/StatusGrid/Icon1
 	var icon2 = $UI/GUI/Portrait/StatusGrid/Icon2
 	var icon3 = $UI/GUI/Portrait/StatusGrid/Icon3
@@ -1688,6 +1690,7 @@ func showStatusIcon():
 	var confusion_texture = preload("res://DebuffIcons/confusion.png")
 	var impaired_texture = preload("res://DebuffIcons/impaired.png")
 	var lethargy_texture = preload("res://DebuffIcons/Cooldown increased.png")
+	var red_potion_texture = preload("res://Potions/Red potion.png")
 	# Apply status icons based on applied effects
 	var applied_effects = [
 		{"name": "dehydration", "texture": dehydration_texture, "modulation_color": Color(1, 0, 0)},
@@ -1716,6 +1719,7 @@ func showStatusIcon():
 		{"name": "confused", "texture": confusion_texture, "modulation_color": Color(1, 1, 1)},
 		{"name": "impaired", "texture": impaired_texture, "modulation_color": Color(1, 1, 1)},
 		{"name": "lethargy", "texture": lethargy_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "redpotion", "texture": red_potion_texture, "modulation_color": Color(1, 1, 1)},
 	]
 
 	for effect in applied_effects:
@@ -1725,7 +1729,18 @@ func showStatusIcon():
 					icon.texture = effect["texture"]
 					icon.modulate = effect["modulation_color"]
 					break  # Exit loop after applying status to the first available icon
-
+#_________________________________Potion effects________________________________
+func potionEffects():
+	redPotion()
+	
+var red_potion_duration = 0
+func redPotion():
+	if effects.has("redpotion") and effects["redpotion"]["applied"]:
+		if red_potion_duration >0:
+			health += 10
+			red_potion_duration -= 1
+		else:
+			applyEffect(self,"redpotion",false)
 #_____________________________Hunger system and stuff___________________________
 onready var kilocalories_label = $UI/GUI/Portrait/Kilocalories
 onready var kilocalories_bar = $UI/GUI/Portrait/KilocaloriesBar
