@@ -16,12 +16,20 @@ func _ready():
 	loadPlayerData()
 	closeAllUI()
 	direction = Vector3.BACK.rotated(Vector3.UP, $Camroot/h.global_transform.basis.get_euler().y)
+func _on_SlowTimer_timeout():
+	allResourcesBarsAndLabels()
+	showEnemyStats()
+	hunger()
+	hydration()
+func _on_3FPS_timeout():
+	if health > max_health:
+		health = max_health
+	displayResources(hp_bar,hp_label,health,max_health,"HP")
 
 func _physics_process(delta):
-	$hp.text = str(health)
 	$Debug.text = animation_state
 	displayLabels()
-	displayClock()
+#	displayClock()
 	frameRate()
 	speedlabel()
 	cameraRotation(delta)
@@ -40,7 +48,7 @@ func _physics_process(delta):
 	dodgeRight(delta)
 	fullscreen()
 	rayAttack()
-	showEnemyStats()
+	#showEnemyStats()
 	matchAnimationStates()
 	animations()
 	attack()
@@ -48,8 +56,8 @@ func _physics_process(delta):
 	fallDamage()
 	skillUserInterfaceInputs()
 	addItemToInventory()
-	positionCoordinates()
-	
+#	positionCoordinates()
+#	hunger()
 	MainWeapon()
 	
 #_______________________________________________Basic Movement______________________________________
@@ -341,7 +349,7 @@ export var cam_v_min = -125 # -55 recommended
 onready var camera_v =$Camroot/h/v
 onready var camera_h =$Camroot/h
 onready var camera = $Camroot/h/v/Camera
-onready var minimap_camera = $UI/GUI/Minimap/Viewport/Camera
+onready var minimap_camera = $UI/GUI/Portrait/MinimapHolder/Minimap/Viewport/Camera
 var minimap_rotate = false
 var h_sensitivity = 0.1
 var v_sensitivity = 0.1
@@ -893,11 +901,11 @@ func startMovement():
 
 
 #Stats__________________________________________________________________________
-var level = 1
-var health = 1000
-const base_health = 1000
-var max_health = 1000
-const base_max_health = 1000
+var level = 100
+var health = 100
+const base_health = 100
+var max_health = 100
+const base_max_health = 100
 var energy = 100
 var max_energy = 100
 const base_max_energy = 100
@@ -1258,7 +1266,8 @@ func addItemToInventory():
 #_____________________________________more GUI stuff________________________________________________
 onready var fps_label = $UI/GUI/Minimap/FPSLabel
 func frameRate():
-	fps_label.text = "%d" % Engine.get_frames_per_second()
+	pass
+#	fps_label.text = "%d" % Engine.get_frames_per_second()
 func _on_FPS_pressed():
 	var current_fps = Engine.get_target_fps()
 	# Define FPS mapping
@@ -1280,22 +1289,22 @@ func _on_FPS_pressed():
 	if fps_mapping.has(current_fps):
 		Engine.set_target_fps(fps_mapping[current_fps])
 #_____________________________________Display Time/Location______________________________
-onready var time_label = $UI/GUI/Minimap/Time
-func displayClock():
-	# Get the current date and time
-	var datetime = OS.get_datetime()
-	# Display hour and minute in the label
-	time_label.text = "Time: %02d:%02d" % [datetime.hour, datetime.minute]	
-onready var coordinates = $UI/GUI/Minimap/Coordinates
-func positionCoordinates():
-	var rounded_position = Vector3(
-		round(global_transform.origin.x * 10) / 10,
-		round(global_transform.origin.y * 10) / 10,
-		round(global_transform.origin.z * 10) / 10
-	)
-	# Use %d to format integers without decimals
-	coordinates.text = "%d, %d, %d" % [rounded_position.x, rounded_position.y, rounded_position.z]
-
+#onready var time_label = $UI/GUI/Minimap/Time
+#func displayClock():
+#	# Get the current date and time
+#	var datetime = OS.get_datetime()
+#	# Display hour and minute in the label
+#	time_label.text = "Time: %02d:%02d" % [datetime.hour, datetime.minute]	
+#onready var coordinates = $UI/GUI/Minimap/Coordinates
+#func positionCoordinates():
+#	var rounded_position = Vector3(
+#		round(global_transform.origin.x * 10) / 10,
+#		round(global_transform.origin.y * 10) / 10,
+#		round(global_transform.origin.z * 10) / 10
+#	)
+#	# Use %d to format integers without decimals
+#	coordinates.text = "%d, %d, %d" % [rounded_position.x, rounded_position.y, rounded_position.z]
+#
 
 
 
@@ -1545,6 +1554,99 @@ func applyEffect(player: Node, effect_name: String, active: bool):
 			effect["applied"] = false
 	else:
 		print("Effect not found:", effect_name)
+
+
+
+#_____________________________Hunger system and stuff___________________________
+onready var kilocalories_label = $UI/GUI/Portrait/Kilocalories
+onready var kilocalories_bar = $UI/GUI/Portrait/KilocaloriesBar
+const base_kilocaries = 2000
+var max_kilocalories = 2000
+var kilocalories = 2000
+
+var last_update_time: float = 0
+var kilocalories_decrease_per_second: float = 0.023148 #kilocalories consumed per second
+
+func hunger():
+	var current_time = OS.get_ticks_msec() / 1000.0
+	if last_update_time == 0:
+		last_update_time = current_time
+	var elapsed_time = current_time - last_update_time
+	last_update_time = current_time
+	# Calculate decrease based on elapsed time
+	var decrease_amount = kilocalories_decrease_per_second * elapsed_time 
+	if not health > max_health:
+		if health > max_health * 0.5:
+			if kilocalories > 0:
+				kilocalories -= decrease_amount
+				health += decrease_amount
+		elif health < max_health * 0.5:
+			if kilocalories > 0:
+				kilocalories -= decrease_amount
+				health += decrease_amount
+	if is_sprinting:
+		kilocalories -= decrease_amount * 7.196
+	elif is_running:
+		kilocalories -= decrease_amount * 5.038
+	elif is_walking:
+		kilocalories -= decrease_amount * 3.594 #walking consumes usually 3.594 more calories per second
+	elif is_swimming:
+		kilocalories -= decrease_amount * 6.5
+	else:
+		kilocalories -= decrease_amount
+
+
+onready var water_label = $UI/GUI/Portrait/HydrationLabel
+onready var water_bar = $UI/GUI/Portrait/HydrationBar
+const base_water = 4000
+var max_water = 4000
+var water = 4000
+
+var last_update_time_water: float = 0
+var water_decrease_per_second: float = 0.045 #kilocalories consumed per second
+
+func hydration():
+	var current_time = OS.get_ticks_msec() / 1000.0
+	if last_update_time_water == 0:
+		last_update_time_water = current_time
+	var elapsed_time = current_time - last_update_time_water
+	last_update_time_water = current_time
+	# Calculate decrease based on elapsed time
+	var decrease_amount = water_decrease_per_second * elapsed_time 
+	if not health > max_health:
+		if health > max_health * 0.5:
+			if water > 0:
+				water -= decrease_amount
+		elif health < max_health * 0.5:
+			if water > 0:
+				water -= decrease_amount
+	if is_sprinting:
+		water -= decrease_amount * 7.196
+	elif is_running:
+		water -= decrease_amount * 5.038
+	elif is_walking:
+		water -= decrease_amount * 3.594 #walking consumes usually 3.594 more calories per second
+	elif is_swimming:
+		water -= decrease_amount * 6.5
+	else:
+		water -= decrease_amount	
+
+
+
+onready var hp_bar = $UI/GUI/Portrait/LifeBar
+onready var hp_label = $UI/GUI/Portrait/LifeLabel
+func allResourcesBarsAndLabels():
+	displayResourcesRound(kilocalories_bar,kilocalories_label,kilocalories,max_kilocalories,"Kc")
+	displayResourcesRound(water_bar,water_label,water,max_water,"H2O")
+func displayResources(bar,label,value,max_value,acronim):
+	label.text =  acronim + ": %.2f / %.2f" % [value,max_value]
+	bar.value = value 
+	bar.max_value = max_value 
+func displayResourcesRound(bar,label,value,max_value,acronim):
+	label.text =  acronim + str(round(value)) + "/" + str(round(max_value))
+	bar.value = value 
+	bar.max_value = max_value 
+	
 
 
 
