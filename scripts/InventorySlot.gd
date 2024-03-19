@@ -90,11 +90,17 @@ func drop_data(position, data):
 	# Update the display
 	displayQuantity()
 
+
 func matchItemTypeToIcon():
 	var texture_to_item = {
 		
-		preload("res://alchemy ingredients/2.png"): "rosehip",
+		preload("res://Alchemy ingredients/2.png"): "rosehip",
 		preload("res://Processed ingredients/ground rosehip.png"): "ground rosehip",
+		preload("res://Berries/raspberry.png"): "raspberry",
+		preload("res://Berries/strawberry.png"): "strawberry",
+		preload("res://Roots/beetroot.png"): "beetroot",
+		
+		preload("res://Alchemy ingredients/blood.png"): "blood",
 		
 		preload("res://UI/graphics/mushrooms/PNG/background/1.png"): "mushroom 1",
 		preload("res://UI/graphics/mushrooms/PNG/background/2.png"): "mushroom 2",

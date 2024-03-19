@@ -1255,22 +1255,37 @@ func addItemToInventory():
 			for child in inventory_grid.get_children():
 				if child.is_in_group("Inventory"):
 					var icon = child.get_node("Icon")
+#					if icon.texture == null:
+#						icon.texture = preload("res://Alchemy ingredients/2.png")
+#						child.quantity += 1
+#						break
+#					elif icon.texture.get_path() == "res://Alchemy ingredients/2.png":
+#						child.quantity += 1
+#						break
+#					if icon.texture == null:
+#						icon.texture = preload("res://Berries/raspberry.png")
+#						child.quantity += 1
+#						break
+#					elif icon.texture.get_path() == "res://Berries/raspberry.png":
+#						child.quantity += 1
+#						break
 					if icon.texture == null:
-						icon.texture = preload("res://alchemy ingredients/2.png")
+						icon.texture = preload("res://Berries/strawberry.png")
 						child.quantity += 1
 						break
-					elif icon.texture.get_path() == "res://alchemy ingredients/2.png":
+					elif icon.texture.get_path() == "res://Berries/strawberry.png":
 						child.quantity += 1
-						break
+						break	
+						
 		if item.is_in_group("Mushroom2"):
 			for child in inventory_grid.get_children():
 				if child.is_in_group("Inventory"):
 					var icon = child.get_node("Icon")
 					if icon.texture == null:
-						icon.texture = preload("res://Potions/water.png")
+						icon.texture = preload("res://Roots/beetroot.png")
 						child.quantity += 1
 						break
-					elif icon.texture.get_path() == "res://Potions/water.png":
+					elif icon.texture.get_path() =="res://Roots/beetroot.png":
 						child.quantity += 1
 						break
 		if item.is_in_group("sword0"):
