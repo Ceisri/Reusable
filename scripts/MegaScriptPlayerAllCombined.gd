@@ -13,9 +13,9 @@ var is_running = bool()
 
 
 func _ready(): 
+	convertStats()
 	loadPlayerData()
 	closeAllUI()
-	convertStats()
 	direction = Vector3.BACK.rotated(Vector3.UP, $Camroot/h.global_transform.basis.get_euler().y)
 func _on_SlowTimer_timeout():
 	allResourcesBarsAndLabels()
@@ -26,7 +26,7 @@ func _on_SlowTimer_timeout():
 	switchLegs()
 	convertStats()
 func _on_3FPS_timeout():
-
+	
 	displayResources(hp_bar,hp_label,health,max_health,"HP")
 	hunger()
 	hydration()
@@ -35,8 +35,10 @@ func _physics_process(delta):
 	$Debug.text = animation_state
 	displayLabels()
 #	displayClock()
+	limitStatsToMaximum()
 	frameRate()
 	speedlabel()
+	savePlayerData()
 	cameraRotation(delta)
 	crossHair()
 	crossHairResize()
@@ -65,6 +67,7 @@ func _physics_process(delta):
 #	hunger()
 	MainWeapon()
 	SecWeapon()
+	
 	
 	
 #_______________________________________________Basic Movement______________________________________
@@ -468,11 +471,17 @@ func savePlayerData():
 		"main_weapon": main_weapon,
 		
 		"health": health,
-		"max_health": health,
+		"max_health": max_health,
+		
+		"vitality":vitality,
+		
 		"kilocalories": kilocalories,
 		"max_kilocalories": max_kilocalories,
 		"water": water,
 		"max_water": max_water,
+		
+		
+		"effects": effects,
 		}
 	var dir = Directory.new()
 	if !dir.dir_exists(SAVE_DIR):
@@ -501,9 +510,12 @@ func loadPlayerData():
 			
 			if "health" in player_data:
 				health = player_data["health"]
+			if "max_health" in player_data:
+				max_health = player_data["max_health"]
 
-#			if "max_health" in player_data:
-#				max_health = player_data["max_health"]
+			if "vitality" in player_data:
+				vitality = player_data["vitality"]
+
 
 			if "kilocalories" in player_data:
 				kilocalories = player_data["kilocalories"]
@@ -516,6 +528,9 @@ func loadPlayerData():
 
 			if "max_water" in player_data:
 				max_water = player_data["max_water"]
+				
+			if "effects" in player_data:
+				effects = player_data["effects"]
 func _on_Timer_timeout():
 	savePlayerData()
 
@@ -598,7 +613,7 @@ func matchAnimationStates():
 	match animation_state:
 #_______________________________attacking states________________________________
 		"slide":
-			var slide_blend = 0.333
+			var slide_blend = 0.3
 			animation.play("slide",slide_blend)
 			var slide_mov_speed = 15 + slide_blend + rand_range(3, 6)
 			if !is_on_wall():
@@ -767,7 +782,8 @@ func animations():
 			animation_state = "idle water"
 			
 #on land
-	elif dodge_animation_duration > 0:
+	elif dodge_animation_duration > 0 and resolve >0:
+		resolve -= 0.2
 		animation_state = "slide"
 
 
@@ -1627,9 +1643,9 @@ var effects = {
 	"effect1": {"stats": {"energy": -500000000, "mana": 10}, "applied": false},
 	"effect2": {"stats": { "vitality": 2,"agility": 0.05,}, "applied": false},
 	"overhydration": {"stats": { "vitality": -0.02,"agility": -0.05,}, "applied": false},
-	"dehydration": {"stats": {"max_health": -25, "intelligence": -0.25,"agility": -0.25,}, "applied": false},
-	"bloated": {"stats": {"max_health": -5,"intelligence": -0.02,"agility": -0.15,}, "applied": false},
-	"hungry": {"stats": {"max_health": -5,"intelligence": -0.22,"agility": -0.05,}, "applied": false},
+	"dehydration": {"stats": { "intelligence": -0.25,"agility": -0.25,}, "applied": false},
+	"bloated": {"stats": {"intelligence": -0.02,"agility": -0.15,}, "applied": false},
+	"hungry": {"stats": {"intelligence": -0.22,"agility": -0.05,}, "applied": false},
 	"bleeding": {"stats": {}, "applied": false},
 	"stunned": {"stats": {}, "applied": false},
 	"frozen": {"stats": {}, "applied": false},
@@ -1653,6 +1669,7 @@ var effects = {
 	"impaired": {"stats": { "dexterity": -0.25}, "applied": false},
 	"lethargy": {"stats": {}, "applied": false},
 	"redpotion": {"stats": {}, "applied": false},
+	"test": {"stats": {"vitality": -0.25,"agility": 0.25,}, "applied": false},
 }
 
 # Function to apply or remove effects
@@ -1898,34 +1915,16 @@ func hydration():
 		applyEffect(self, "overhydration", false)
 		applyEffect(self, "dehydration", false)
 
-onready var hp_bar = $UI/GUI/Portrait/LifeBar
-onready var hp_label = $UI/GUI/Portrait/LifeLabel
-func allResourcesBarsAndLabels():
-	displayResourcesRound(kilocalories_bar,kilocalories_label,kilocalories,max_kilocalories,"Kc")
-	displayResourcesRound(water_bar,water_label,water,max_water,"H2O")
-func displayResources(bar,label,value,max_value,acronim):
-	label.text =  acronim + ": %.2f / %.2f" % [value,max_value]
-	bar.value = value 
-	bar.max_value = max_value 
-func displayResourcesRound(bar,label,value,max_value,acronim):
-	label.text =  acronim + str(round(value)) + "/" + str(round(max_value))
-	bar.value = value 
-	bar.max_value = max_value 
+
 
 
 
 #Stats__________________________________________________________________________
 var level = 100
-var health = 100
-const base_health = 100
-var max_health = 100
-const base_max_health = 100
 var energy = 100
 var max_energy = 100
 const base_max_energy = 100
-var resolve = 100
-var max_resolve = 100
-const base_max_resolve = 100
+
 
 const base_weight = 60
 var weight = 60
@@ -1942,6 +1941,41 @@ var dash_power = 20
 var attribute = 1000
 var skill_points = 1000
 var defense =  10
+
+
+
+#crude stats____________________________
+
+#magic energy systems 
+const base_max_aefis = 100
+var max_aefis = 100 
+var aefis = 100 
+#______________________
+const base_max_nefis = 100
+var max_nefis = 100 
+var nefis = 100 
+#_______________________
+const base_max_vifis = 100
+var max_vifis = 100 
+var vifis = 100 
+
+#health system 
+const base_max_health = 100
+var max_health = 100
+var health = 100
+#________________________
+const base_max_sanity = 100
+var max_sanity = 100
+var sanity = 100
+
+#additional combat energy systems
+const base_max_resolve = 100
+var max_resolve = 100
+var resolve = 100
+#__________________________
+const base_max_breath = 100
+var max_breath = 100
+var breath = 100
 
 
 #attributes 
@@ -2002,13 +2036,40 @@ var deflection_chance = 0.33
 
 var staggered = 0 
 
+func limitStatsToMaximum():
+	if health > max_health:
+		health = max_health
 
 func convertStats():
+	
 	max_health = base_max_health * vitality
 	max_sprint_speed = base_max_sprint_speed * agility
 	run_speed = base_run_speed * agility
 
+onready var hp_bar = $UI/GUI/Portrait/LifeBar
+onready var hp_label = $UI/GUI/Portrait/LifeLabel
+onready var re_bar = $UI/GUI/Portrait/ReBar
+onready var re_label = $UI/GUI/Portrait/ReLabel
+onready var br_bar = $UI/GUI/Portrait/BrBar
+onready var br_label = $UI/GUI/Portrait/BrLabel
+onready var ae_bar = $UI/GUI/Portrait/AeBar
+onready var ae_label = $UI/GUI/Portrait/AeLabel
+onready var ne_bar = $UI/GUI/Portrait/NeBar
+onready var ne_label = $UI/GUI/Portrait/NeLabel
+func allResourcesBarsAndLabels():
 
+	displayResourcesRound(ne_bar,ne_label,nefis,max_resolve,"NE : ")
+	displayResourcesRound(ae_bar,ae_label,aefis,max_resolve,"AE : ")
+	displayResourcesRound(re_bar,re_label,resolve,max_resolve,"RE : ")
+	displayResourcesRound(br_bar,br_label,breath,max_breath,"BH : ")
+func displayResources(bar,label,value,max_value,acronim):
+	label.text =  acronim + ": %.2f / %.2f" % [value,max_value]
+	bar.value = value 
+	bar.max_value = max_value 
+func displayResourcesRound(bar,label,value,max_value,acronim):
+	label.text =  acronim + str(round(value)) + "/" + str(round(max_value))
+	bar.value = value 
+	bar.max_value = max_value 
 
 var tool_tip = preload("res://tooltip.tscn")
 func _on_AgiLabel_mouse_entered():
@@ -2038,3 +2099,7 @@ func _on_PlusAgi_mouse_exited():
 	for child in gui.get_children():
 		if child.is_in_group("Tooltip"):
 			child.queue_free()
+
+
+func _on_Effect_pressed():
+	applyEffect(self, "scared", true)

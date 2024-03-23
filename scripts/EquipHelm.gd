@@ -4,15 +4,15 @@ var DRAG_PREVIEW = preload("res://Sprite.tscn")
 onready var icon = $Icon
 onready var player =$"../../../.."
 
-var quantity = 1
+var quantity : int
 var item = "null"
 var type = "pants"
 var stackable = false
 func _ready():
-	quantity = 1
 	matchItemTypeToIcon()
 
-
+func _physics_process(delta):
+	icon.savedata()
 
 
 func get_drag_data(position: Vector2):

@@ -4,15 +4,15 @@ var DRAG_PREVIEW = preload("res://Sprite.tscn")
 onready var icon = $Icon
 onready var player =$"../../../.."
 
-var quantity = 1
+var quantity : int
 var item = "null"
 var type = "chest"
 
 func _ready():
-	quantity = 1
 	matchItemTypeToIcon()
 
 func _physics_process(delta):
+	icon.savedata()
 	if item == "garment1":
 		player.torso = "garment1"
 		player.applyEffect(player, "effect1", true)
