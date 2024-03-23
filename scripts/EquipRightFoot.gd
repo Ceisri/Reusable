@@ -2,16 +2,29 @@ extends TextureButton
 
 var DRAG_PREVIEW = preload("res://Sprite.tscn")
 onready var icon = $Icon
-
+onready var player =$"../../../.."
 
 var quantity = 0
 var item = "null"
-var type = "item"
+var type = "foot"
+var stackable = false
+func _ready():
+	quantity = 1
+	matchItemTypeToIcon()
 
+func _physics_process(delta):
+	if item == "shoe1":
+		player.feet = "cloth1"
+		player.applyEffect(player, "effect1", true)
+	elif item == "null" or item == "empty":
+		player.feet = "naked"
+		player.applyEffect(player, "effect1", false)
+	matchItemTypeToIcon()
 
 
 
 func get_drag_data(position: Vector2):
+
 	var slot = get_parent().get_name()
 	var data = {
 		"origin_node": self,
@@ -24,16 +37,19 @@ func get_drag_data(position: Vector2):
 	var dragPreview = DRAG_PREVIEW.instance()
 	dragPreview.texture = icon.texture
 	add_child(dragPreview)
-	print("Item type:", item)
+	#print("Item type:", item)
 	return data
 
 func can_drop_data(position, data):
+
 	var target_slot = get_parent().get_name()
 	data["target_texture"] = icon.texture
 	data["target_quantity"] = quantity
 	data["target_item"] = item
-
-	return true
+	if data["type"] != "skill":
+		return true
+	else:
+		return false
 
 
 func drop_data(position, data):
@@ -47,11 +63,10 @@ func drop_data(position, data):
 	var origin_icon = origin_node.get_node("Icon")
 	var dragPreview = origin_node.get_node("Sprite") #find the floating image of the sprite
 	dragPreview.queue_free()# delete that floating image 
+	
+	origin_icon.texture = target_texture
+	icon.texture = origin_texture
 	icon.savedata()
-	
-	
-	if data["type"] == "skill":
-		icon.texture = origin_texture
 
 	if origin_item == target_item:
 		# Combine quantities if items are the same
@@ -61,7 +76,18 @@ func drop_data(position, data):
 		# Swap quantities if items are different
 		var temp_quantity = quantity
 		quantity = origin_quantity
-		origin_node.quantity = temp_quantity # swap quantities
-		origin_icon.texture = target_texture # swap textures
+		origin_node.quantity = temp_quantity
 
 
+
+func matchItemTypeToIcon():
+	var texture_to_item = {
+		preload("res://Equipment icons/shoe1.png"): "shoe1",
+		preload("res://UI/graphics/SkillIcons/empty.png"): "empty"
+	}
+	if icon.texture in texture_to_item:
+		item = texture_to_item[icon.texture]
+	elif icon.texture == null:
+		item = "null"
+	else:
+		item = "unknown"

@@ -7,26 +7,23 @@ onready var quantity_label = $Quantity
 var quantity = 0
 var item = "null"
 var type = "item"
+var stackable = true
+var max_quantity = 9999999999
 func _ready():
-
 	displayQuantity()
 	matchItemTypeToIcon()
 
 func _physics_process(delta):
-
 	displayQuantity()
 	matchItemTypeToIcon()
 
 
 func displayQuantity():
-
 		if quantity != 0: 
 			quantity_label.text = str(round(quantity))
 		elif quantity == 0:
 			quantity_label.text = ""
 			icon.texture = null
-
-		
 		if icon.texture == null:
 			quantity = 0
 			quantity_label.text = ""
@@ -152,13 +149,21 @@ func matchItemTypeToIcon():
 		preload("res://UI/graphics/mushrooms/PNG/background/48.png"): "mushroom 48",
 		preload("res://UI/graphics/mushrooms/PNG/background/49.png"): "mushroom 49",
 		preload("res://UI/graphics/mushrooms/PNG/background/50.png"): "mushroom 50",
-		preload("res://0.png"): "sword 0",
-		preload("res://UI/graphics/SkillIcons/empty.png"): "empty",
 #_______________potions_____________________________________________________________
 		preload("res://Potions/Red potion.png"): "red potion",
+		
 		preload("res://Potions/water.png"): "water",
 		preload("res://Potions/Empty potion.png"): "empty potion",
-		
+#_______________Equipment___________________________________________________________
+		preload("res://UI Icon pack1/128x128/Boots.png"): "shoe1",
+		preload("res://Equipment icons/pants1.png"): "pants1",
+		preload("res://Equipment icons/glove1.png"): "glove1",
+		preload("res://UI Icon pack1/128x128/armor 2.png"): "garment1",
+		preload("res://Equipment icons/shoulder1.png"): "pad1",
+		preload("res://Equipment icons/hat1.png"): "hat1",
+		preload("res://0.png"): "sword0",
+#_______________Nothing_____________________________________________________________
+		preload("res://UI/graphics/SkillIcons/empty.png"): "empty",
 	}
 	if icon.texture in texture_to_item:
 		item = texture_to_item[icon.texture]
@@ -168,3 +173,6 @@ func matchItemTypeToIcon():
 		item = "unknown"
 
 
+
+		
+		

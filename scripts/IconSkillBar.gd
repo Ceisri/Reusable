@@ -1,19 +1,24 @@
 extends TextureRect
 
+
 var savedTexture : Texture
+var savedQuantity : int
 
 func _ready():
 	loaddata()
 
 
+
 func savedata():
 	savedTexture = texture
+	savedQuantity = get_parent().quantity  # Save the quantity of the parent
 	var parentName = get_parent().get_name()  # Get the name of the parent node
 	var savePath = "user://" + parentName + "_saved_texture_data.txt"  # Construct the save path based on parent name
 	var file = File.new()
 	file.open(savePath, File.WRITE)
-	if savedTexture != null:  
-		file.store_line(savedTexture.get_path())  
+	if savedTexture != null:
+		file.store_line(savedTexture.get_path())  # Store the texture path
+		file.store_line(str(savedQuantity))  # Store the quantity as a string
 	file.close()
 
 func loaddata():
@@ -29,6 +34,7 @@ func loaddata():
 			var loadedTexture = load(path)
 			if loadedTexture != null:
 				savedTexture = loadedTexture
+				savedQuantity = int(quantity_str)
 			else:
 				pass
 #				print("Failed to load texture from path:", path)
@@ -41,7 +47,8 @@ func loaddata():
 	
 	if savedTexture != null:
 		texture = savedTexture
-
+		get_parent().quantity = savedQuantity
 	else:
 		pass
-#		print("No texture found for icon.")
+
+

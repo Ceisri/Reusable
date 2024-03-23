@@ -15,14 +15,18 @@ var is_running = bool()
 func _ready(): 
 	loadPlayerData()
 	closeAllUI()
+	convertStats()
 	direction = Vector3.BACK.rotated(Vector3.UP, $Camroot/h.global_transform.basis.get_euler().y)
 func _on_SlowTimer_timeout():
 	allResourcesBarsAndLabels()
 	showEnemyStats()
 	potionEffects()
+	switchTorso()
+	switchFeet()
+	switchLegs()
+	convertStats()
 func _on_3FPS_timeout():
-	if health > max_health:
-		health = max_health
+
 	displayResources(hp_bar,hp_label,health,max_health,"HP")
 	hunger()
 	hydration()
@@ -31,7 +35,6 @@ func _physics_process(delta):
 	$Debug.text = animation_state
 	displayLabels()
 #	displayClock()
-	
 	frameRate()
 	speedlabel()
 	cameraRotation(delta)
@@ -49,7 +52,7 @@ func _physics_process(delta):
 	dodgeLeft(delta)
 	dodgeRight(delta)
 	fullscreen()
-	rayAttack()
+
 	#showEnemyStats()
 	matchAnimationStates()
 	animations()
@@ -61,6 +64,8 @@ func _physics_process(delta):
 #	positionCoordinates()
 #	hunger()
 	MainWeapon()
+	SecWeapon()
+	
 	
 #_______________________________________________Basic Movement______________________________________
 var h_rot 
@@ -70,6 +75,7 @@ var enabled_climbing = false
 var is_crouching = false
 var is_sprinting = false
 var sprint_speed = 10
+const base_max_sprint_speed = 25
 var max_sprint_speed = 25
 var max_sprint_animation_speed = 2.5
 func walk(delta):
@@ -87,9 +93,9 @@ func walk(delta):
 	# Sprint input, state and speed
 		if (Input.is_action_pressed("sprint")) and (is_walking == true): 
 			if sprint_speed < max_sprint_speed:
-				sprint_speed += 0.005
+				sprint_speed += 0.005 * agility
 				if sprint_animation_speed < max_sprint_animation_speed:
-					sprint_animation_speed +=0.0005
+					sprint_animation_speed +=0.0005 * agility
 					#print("sprint_an_speed " + str(sprint_animation_speed))
 				elif sprint_animation_speed > max_sprint_animation_speed:
 					sprint_animation_speed = max_sprint_animation_speed 
@@ -437,7 +443,7 @@ func crossHairResize():
 	crosshair_tween.interpolate_property(crosshair, "rect_scale", crosshair.rect_scale, Vector2(target_scale, target_scale), 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
 	crosshair_tween.start()
 
-onready var minimap = $UI/GUI/Minimap
+onready var minimap = $UI/GUI/Portrait/MinimapHolder/Minimap
 func miniMapVisibility():
 	if Input.is_action_just_pressed("minimap"):
 		minimap.visible = !minimap.visible
@@ -460,6 +466,13 @@ func savePlayerData():
 		"camera.translation.y" : camera.translation.y,
 		"camera.translation.z" : camera.translation.z,
 		"main_weapon": main_weapon,
+		
+		"health": health,
+		"max_health": health,
+		"kilocalories": kilocalories,
+		"max_kilocalories": max_kilocalories,
+		"water": water,
+		"max_water": max_water,
 		}
 	var dir = Directory.new()
 	if !dir.dir_exists(SAVE_DIR):
@@ -484,7 +497,25 @@ func loadPlayerData():
 				camera.translation.z = player_data["camera.translation.z"]
 			if "main_weapon"  in player_data:
 				main_weapon = player_data["main_weapon"]
+			
+			
+			if "health" in player_data:
+				health = player_data["health"]
 
+#			if "max_health" in player_data:
+#				max_health = player_data["max_health"]
+
+			if "kilocalories" in player_data:
+				kilocalories = player_data["kilocalories"]
+
+			if "max_kilocalories" in player_data:
+				max_kilocalories = player_data["max_kilocalories"]
+
+			if "water" in player_data:
+				water = player_data["water"]
+
+			if "max_water" in player_data:
+				max_water = player_data["max_water"]
 func _on_Timer_timeout():
 	savePlayerData()
 
@@ -495,17 +526,7 @@ func fullscreen():
 		OS.set_window_fullscreen(is_fullscreen)
 
 onready var ray = $Camroot/h/v/Camera/Aim
-func rayAttack():#used for testing 
-	if ray.is_colliding():
-		var body = ray.get_collider()
-		if body.is_in_group("Entity") and body != self:
-			if Input.is_action_just_pressed("attack"):
-				body.takeDamage(5, 5, self, 0.1, "heat")
-				body.energy -= 1
-		if body.is_in_group("Spawner"):
-			if Input.is_action_just_pressed("attack"):
-				body.start()
-				#body.quantity += 20
+
 
 
 func _on_Detector_body_entered(body):
@@ -642,11 +663,11 @@ func matchAnimationStates():
 			animation.play("idle crouch",0.4)
 #movement 
 		"sprint":
-			animation.play("run cycle", 0, sprint_animation_speed)
+			animation.play("run cycle", 0, sprint_animation_speed * agility)
 		"run":
-			animation.play("run cycle")
+			animation.play("run cycle",0,agility)
 		"jump":
-			animation.play("jump",0.2, 1)
+			animation.play("jump",0.2, agility)
 		"fall":
 			animation.play("fall",0.3)
 		"climbing":
@@ -669,19 +690,73 @@ func matchAnimationStates():
 				animation.play("idle cycle")
 		#skillbar stuff
 		"test1":
-			var slot1 = $UI/GUI/SkillBar/GridContainer/SlotUP1/Icon
-			if slot1.texture != null:
-				if slot1.texture.resource_path == "res://UI/graphics/SkillIcons/rush.png":
+			var slot = $UI/GUI/SkillBar/GridContainer/SlotUP1/Icon
+			skills(slot)
+		"test2":
+			var slot = $UI/GUI/SkillBar/GridContainer/SlotUP2/Icon
+			skills(slot)
+		"test3":
+			var slot = $UI/GUI/SkillBar/GridContainer/SlotUP3/Icon
+			skills(slot)
+		"test4":
+			var slot = $UI/GUI/SkillBar/GridContainer/SlotUP4/Icon
+			skills(slot)
+		"test5":
+			var slot = $UI/GUI/SkillBar/GridContainer/SlotUP5/Icon
+			skills(slot)
+		"test6":
+			var slot = $UI/GUI/SkillBar/GridContainer/SlotUP6/Icon
+			skills(slot)
+		"test7":
+			var slot = $UI/GUI/SkillBar/GridContainer/SlotUP7/Icon
+			skills(slot)
+		"test8":
+			var slot = $UI/GUI/SkillBar/GridContainer/SlotUP8/Icon
+			skills(slot)
+		"test9":
+			var slot = $UI/GUI/SkillBar/GridContainer/SlotUP9/Icon
+			skills(slot)
+		"test0":
+			var slot = $UI/GUI/SkillBar/GridContainer/SlotUP0/Icon
+			skills(slot)
+		"testQ":
+			var slot = $UI/GUI/SkillBar/GridContainer/Slot1/Icon
+			skills(slot)
+		"testE":
+			var slot = $UI/GUI/SkillBar/GridContainer/Slot2/Icon
+			skills(slot)
+		"testR":
+			var slot = $UI/GUI/SkillBar/GridContainer/Slot3/Icon
+			skills(slot)
+		"testT":
+			var slot = $UI/GUI/SkillBar/GridContainer/Slot4/Icon
+			skills(slot)
+		"testF":
+			var slot = $UI/GUI/SkillBar/GridContainer/Slot5/Icon
+			skills(slot)
+		"testG":
+			var slot = $UI/GUI/SkillBar/GridContainer/Slot6/Icon
+			skills(slot)
+		"testY":
+			var slot = $UI/GUI/SkillBar/GridContainer/Slot7/Icon
+			skills(slot)
+		"testH":
+			var slot = $UI/GUI/SkillBar/GridContainer/Slot8/Icon
+			skills(slot)
+		"testV":
+			var slot = $UI/GUI/SkillBar/GridContainer/Slot9/Icon
+			skills(slot)
+		"testB":
+			var slot = $UI/GUI/SkillBar/GridContainer/Slot0/Icon
+			skills(slot)
+func skills(slot):
+			if slot.texture != null:
+				if slot.texture.resource_path == "res://UI/graphics/SkillIcons/rush.png":
 					animation.play("combo attack 2hander cycle", 0.35)
-				elif slot1.texture.resource_path == "res://UI/graphics/SkillIcons/selfheal.png":
+				elif slot.texture.resource_path == "res://UI/graphics/SkillIcons/selfheal.png":
 					animation.play("crawl cycle", 0.35)
 				else:
 					pass
-
-
-
-
-
 var sprint_animation_speed = 1
 func animations():
 #on water
@@ -714,21 +789,7 @@ func animations():
 		animation_state = "sprint attack"
 	elif Input.is_action_pressed("attack") and !cursor_visible:
 			animation_state = "base attack"
-#_______________________________________________________________________________
-	elif is_sprinting:
-			animation_state = "sprint"
-	elif is_running:
-			animation_state = "run"
-	elif Input.is_action_pressed("crouch"):
-		if is_walking:
-			animation_state = "crouch walk"
-		else:
-			animation_state = "crouch"
-	elif is_walking:
-			animation_state = "walk"
-	elif jump_animation_duration != 0:
-		animation_state = "jump"
-#skills 
+#skills put these below the walk elif statment in case of keybinding bugs, as of now it works so no need
 	elif Input.is_action_pressed("1"):
 		animation_state = "test1"
 	elif Input.is_action_pressed("2"):
@@ -769,6 +830,20 @@ func animations():
 		animation_state = "testV"
 	elif Input.is_action_pressed("B"):
 		animation_state = "testB"
+#_______________________________________________________________________________
+	elif is_sprinting:
+			animation_state = "sprint"
+	elif is_running:
+			animation_state = "run"
+	elif Input.is_action_pressed("crouch"):
+		if is_walking:
+			animation_state = "crouch walk"
+		else:
+			animation_state = "crouch"
+	elif is_walking:
+			animation_state = "walk"
+	elif jump_animation_duration != 0:
+		animation_state = "jump"
 	else:
 		animation_state = "idle"
 
@@ -927,93 +1002,6 @@ func startMovement():
 
 
 
-#Stats__________________________________________________________________________
-var level = 100
-var health = 100
-const base_health = 100
-var max_health = 100
-const base_max_health = 100
-var energy = 100
-var max_energy = 100
-const base_max_energy = 100
-var resolve = 100
-var max_resolve = 100
-const base_max_resolve = 100
-
-const base_weight = 60
-var weight = 60
-const base_walk_speed = 6
-var walk_speed = 3
-const base_run_speed = 7
-var run_speed = 7
-const base_crouch_speed = 2
-var crouch_speed = 2
-const base_jumping_power = 20
-var jumping_power = 20
-const base_dash_power = 20
-var dash_power = 20
-var attribute = 1000
-var skill_points = 1000
-var defense =  10
-
-
-#attributes 
-var coordination = 1
-var creativity = 1
-var wisdom = 1
-var memory = 1
-var intelligence = 1
-var willpower = 1
-
-var power = 1
-var strength = 1
-var impact = 1
-var resistance = 1
-var tenacity = 1
-
-var accuracy = 1
-var dexterity = 1
-
-var balance = 1
-var focus = 1
-
-var acrobatics = 1
-var agility = 1
-var athletics = 1
-var flexibility = 1
-var placeholder_ = 1
-
-var endurance = 1
-var stamina = 1
-var vitality = 1
-var vigor = 1
-var recovery = 1
-
-var charisma = 1
-var loyalty = 1 
-var diplomacy = 1
-var leadership = 1
-var empathy = 1
-
-#__________________________________________Defenses and stuff_______________________________________
-#resistances
-var slash_resistance = 25
-var pierce_resistance = 25
-var blunt_resistance = 25
-var sonic_resistance = 25
-var heat_resistance = 25
-var cold_resistance = 25
-var jolt_resistance = 25
-var toxic_resistance = 25
-var acid_resistance = 25
-var bleed_resistance = 25
-var neuro_resistance = 25
-var radiant_resistance = 25
-
-var stagger_resistance = 0.5
-var deflection_chance = 0.33
-
-var staggered = 0 
 var floatingtext_damage = preload("res://UI/floatingtext.tscn")
 onready var take_damage_view  = $Mesh/TakeDamageView/Viewport
 func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
@@ -1095,6 +1083,8 @@ func skillUserInterfaceInputs():
 		saveSkillBarData()
 	if Input.is_action_just_pressed("tab"):
 		is_in_combat = !is_in_combat
+		switchMainFromHipToHand()
+		switchSecondaryFromHipToHand()
 		saveSkillBarData()
 	if Input.is_action_just_pressed("mousemode") or Input.is_action_just_pressed("ui_cancel"):	# Toggle mouse mode
 		saveInventoryData()
@@ -1212,15 +1202,16 @@ func _on_CombineSlots_pressed():
 	var combined_items = {}  # Dictionary to store combined items
 	for child in inventory_grid.get_children():
 		if child.is_in_group("Inventory"):
-			var icon = child.get_node("Icon")
-			if icon.texture != null:
-				var item_path = icon.texture.get_path()
-				if combined_items.has(item_path):
-					combined_items[item_path] += child.quantity
-					icon.texture = null  # Set texture to null for excess slots
-					child.quantity = 0  # Reset quantity
-				else:
-					combined_items[item_path] = child.quantity
+			if child.stackable == true:
+				var icon = child.get_node("Icon")
+				if icon.texture != null:
+					var item_path = icon.texture.get_path()
+					if combined_items.has(item_path):
+						combined_items[item_path] += child.quantity
+						icon.texture = null  # Set texture to null for excess slots
+						child.quantity = 0  # Reset quantity
+					else:
+						combined_items[item_path] = child.quantity
 
 	# Update quantities based on combined_items
 	for child in inventory_grid.get_children():
@@ -1249,62 +1240,40 @@ func _on_SplitFirstSlot_pressed():
 
 #________________________________Add items to inventory_________________________
 func addItemToInventory():
-	var items = $Mesh/Detector.get_overlapping_bodies()
-	for item in items:
-		if item.is_in_group("Mushroom1"):
-			for child in inventory_grid.get_children():
-				if child.is_in_group("Inventory"):
-					var icon = child.get_node("Icon")
-#					if icon.texture == null:
-#						icon.texture = preload("res://Alchemy ingredients/2.png")
-#						child.quantity += 1
-#						break
-#					elif icon.texture.get_path() == "res://Alchemy ingredients/2.png":
-#						child.quantity += 1
-#						break
-#					if icon.texture == null:
-#						icon.texture = preload("res://Berries/raspberry.png")
-#						child.quantity += 1
-#						break
-#					elif icon.texture.get_path() == "res://Berries/raspberry.png":
-#						child.quantity += 1
-#						break
-					if icon.texture == null:
-						icon.texture = preload("res://Berries/strawberry.png")
-						child.quantity += 1
-						break
-					elif icon.texture.get_path() == "res://Berries/strawberry.png":
-						child.quantity += 1
-						break	
-						
-		if item.is_in_group("Mushroom2"):
-			for child in inventory_grid.get_children():
-				if child.is_in_group("Inventory"):
-					var icon = child.get_node("Icon")
-					if icon.texture == null:
-						icon.texture = preload("res://Roots/beetroot.png")
-						child.quantity += 1
-						break
-					elif icon.texture.get_path() =="res://Roots/beetroot.png":
-						child.quantity += 1
-						break
-		if item.is_in_group("sword0"):
-			for child in inventory_grid.get_children():
-				if child.is_in_group("Inventory"):
-					var icon = child.get_node("Icon")
-					if icon.texture == null:
-						icon.texture = preload("res://0.png")
-						child.quantity = 1
-						child.item = "sword 0"
-						break
-					elif icon.texture.get_path() == "res://0.png" and child.quantity == 1 and child.item == "sword 0":
-						continue  # Move to the next slot if this one already has a sword
-					elif icon.texture == null:
-						icon.texture = preload("res://0.png")
-						child.quantity = 1
-						child.item = "sword 0"
-						break
-
+	pass
+#	var items = $Mesh/Detector.get_overlapping_bodies()
+#	for item in items:
+#		if item.is_in_group("Mushroom1"):
+#			add_item.addStackableItem(inventory_grid,add_item.rasberry_texture)
+#			add_item.addStackableItem(inventory_grid,add_item.pants1)
+#			add_item.addStackableItem(inventory_grid,add_item.hat1)
+#			add_item.addStackableItem(inventory_grid,add_item.red_potion_texture)
+#
+#
+#		if item.is_in_group("Mushroom2"):
+#			add_item.addStackableItem(inventory_grid,add_item.strawberry_texture)
+#			add_item.addStackableItem(inventory_grid,add_item.beetroot_texture)
+#			add_item.addStackableItem(inventory_grid,add_item.rosehip_texture)
+#			add_item.addStackableItem(inventory_grid,add_item.rasberry_texture)
+#
+#		if item.is_in_group("sword0"):
+#			add_item.addNotStackableItem(inventory_grid,add_item.wood_sword_texture)
+#			add_item.addNotStackableItem(inventory_grid,add_item.garment1)
+#			add_item.addNotStackableItem(inventory_grid,add_item.shoe1)
+func _on_GiveMeItems_pressed():
+			add_item.addStackableItem(inventory_grid,add_item.rasberry_texture)
+			add_item.addStackableItem(inventory_grid,add_item.pants1)
+			add_item.addStackableItem(inventory_grid,add_item.hat1)
+			add_item.addStackableItem(inventory_grid,add_item.red_potion_texture)
+			add_item.addStackableItem(inventory_grid,add_item.strawberry_texture)
+			add_item.addStackableItem(inventory_grid,add_item.beetroot_texture)
+			add_item.addStackableItem(inventory_grid,add_item.rosehip_texture)
+			add_item.addStackableItem(inventory_grid,add_item.rasberry_texture)
+			add_item.addStackableItem(inventory_grid,add_item.belt1)
+			add_item.addStackableItem(inventory_grid,add_item.glove1)
+			add_item.addNotStackableItem(inventory_grid,add_item.wood_sword_texture)
+			add_item.addNotStackableItem(inventory_grid,add_item.garment1)
+			add_item.addNotStackableItem(inventory_grid,add_item.shoe1)
 #_____________________________________more GUI stuff________________________________________________
 onready var fps_label = $UI/GUI/Minimap/FPSLabel
 func frameRate():
@@ -1349,48 +1318,101 @@ func _on_FPS_pressed():
 #
 
 
+	
+#_____________________________________Equipment________________________________
+var torso = "naked"
+func switchTorso():
+	var torso0 = $Mesh/Race/Armature/Skeleton/Torso0
+	var torso1 = $Mesh/Race/Armature/Skeleton/Torso1
+	match torso:
+		"naked":
+			torso0.visible = true 
+			torso1.visible = false
+		"garment1":
+			torso0.visible = false
+			torso1.visible = true
+var feet = "naked"
+func switchFeet():
+	var feet0 = $Mesh/Race/Armature/Skeleton/feet0
+	var feet1 = $Mesh/Race/Armature/Skeleton/feet1
+	match feet:
+		"naked":
+			feet0.visible = true 
+			feet1.visible = false
+		"cloth1":
+			feet0.visible = false
+			feet1.visible = true	
+var legs = "naked"
+func switchLegs():
+	var legs0 = $Mesh/Race/Armature/Skeleton/legs0
+	var legs1 = $Mesh/Race/Armature/Skeleton/legs1
+	match legs:
+		"naked":
+			legs0.visible = true 
+			legs1.visible = false
+		"cloth1":
+			legs0.visible = false
+			legs1.visible = true	
 
 
 
 #__________________________________Weapon Management____________________________
 #Main Weapon____________________________________________________________________
 onready var attachment_r = $Mesh/Race/Armature/Skeleton/HoldL
+onready var attachment_hip = $Mesh/Race/Armature/Skeleton/Hip
 onready var detector = $Mesh/Detector
+onready var main_weap_slot = $UI/GUI/Character/RightArm
+onready var main_weap_icon = $UI/GUI/Character/RightArm/Icon
 var sword0: PackedScene = preload("res://itemTest.tscn")
 var sword1: PackedScene = preload("res://itemTest.tscn")
 var sword2: PackedScene = preload("res://itemTest.tscn")
 var currentInstance: Node = null  
-var main_weapon = "sword 0"
+var main_weapon = "sword0"
 var got_weapon = false
-
+var sheet_weapon = false
+var is_primary_weapon_on_hip = false
+var is_chopping_trees = false
+func switchMainFromHipToHand():
+	if is_in_combat or is_chopping_trees:
+		if attachment_r.get_child_count() == 0:
+			if currentInstance != null and currentInstance.get_parent() == attachment_hip:
+				# Rotate the weapon before adding it to the hand
+				attachment_hip.remove_child(currentInstance)
+				attachment_r.add_child(currentInstance)
+				is_primary_weapon_on_hip = false
+	else:
+		if attachment_hip.get_child_count() == 0:
+			if currentInstance != null and currentInstance.get_parent() == attachment_r:
+				# Rotate the weapon before adding it to the hip
+				attachment_r.remove_child(currentInstance)
+				attachment_hip.add_child(currentInstance)
+				#currentInstance.rotation_degrees = Vector3(-6.9,-2.105,-16)
+				#currentInstance.translate(Vector3(0.049,0.019,-0.005))
+				is_primary_weapon_on_hip = true
 
 func addItemToCharacterSheet(icon,slot,texture,item):
 	if icon.texture == null:
 		icon.texture = texture
 		slot.quantity = 1
 		slot.item = item
-	
+
 func fixInstance():
 	attachment_r.add_child(currentInstance)
 	currentInstance.get_node("CollisionShape").disabled = true
 	#currentInstance.scale = Vector3(100, 100, 100)
 	got_weapon = true
 func switch():
-	var slot = $UI/GUI/Character/Weapon
-	var icon = $UI/GUI/Character/Weapon/Icon
 	match main_weapon:
-		"sword 0":
+		"sword0":
 			if currentInstance == null:
 				currentInstance = sword0.instance()
 				fixInstance()
-				
-				var sword_texture = preload("res://0.png")
-				addItemToCharacterSheet(icon,slot,sword_texture,"sword 0")
-		"sword 1":    
+				addItemToCharacterSheet(main_weap_icon,main_weap_slot,add_item.wood_sword_texture,"sword0")
+		"sword1":    
 			if currentInstance == null:
 				currentInstance = sword1.instance()
 				fixInstance()
-		"sword 2":    
+		"sword2":    
 			if currentInstance == null:
 				currentInstance = sword2.instance()
 				fixInstance()
@@ -1404,9 +1426,10 @@ func removeWeapon():
 func drop():
 	if currentInstance != null and Input.is_action_just_pressed("drop") and got_weapon:
 		removeWeapon()
+		attachment_hip.remove_child(currentInstance)
 		# Set the drop position
 		var drop_position = global_transform.origin + direction.normalized() * 1.0
-		currentInstance.global_transform.origin = Vector3(drop_position.x - rand_range(-0.3, 1), global_transform.origin.y + 0.2, drop_position.z + rand_range(-0.5, 0.88))
+		currentInstance.global_transform.origin = Vector3(drop_position.x - rand_range(0.3, 3), global_transform.origin.y + 0.2, drop_position.z + rand_range(1, 2))
 		# Set the scale of the dropped instance
 		currentInstance.scale = Vector3(1, 1, 1)
 		var collision_shape = currentInstance.get_node("CollisionShape")
@@ -1417,17 +1440,18 @@ func drop():
 		main_weapon = "null"
 		currentInstance = null
 		got_weapon = false
-		$UI/GUI/Character/Weapon.item = "null"
-		$UI/GUI/Character/Weapon/Icon.texture = null
+		main_weap_slot.item = "null"
+		main_weap_icon.texture = null
 
 func pickItemsMainHand():
 	var bodies = $Mesh/Detector.get_overlapping_bodies()
 	for body in bodies:
-		if Input.is_action_pressed("attack"):
+		if Input.is_action_pressed("collect"):
 			#print(currentInstance)
 			if currentInstance == null:
 				if body.is_in_group("sword0") and not got_weapon:
-					main_weapon = "sword 0"
+					main_weapon = "sword0"
+					got_weapon = true 
 					body.queue_free()  # Remove the picked-up item from the floor
 				elif body.is_in_group("sword1") and not got_weapon:
 
@@ -1438,19 +1462,19 @@ func pickItemsMainHand():
 
 					body.queue_free()  # Remove the picked-up item from the floor
 			elif currentInstance != null and sec_currentInstance == null:
-				if body.is_in_group("sword0") and not got_sec_weapon:
-
-
+				if body.is_in_group("sword0") and not got_sec_weapon and got_weapon:
+					got_sec_weapon = true 
+					secondary_weapon = "sword0"
+ 
 					body.queue_free()  # Remove the picked-up item from the floor
 				elif body.is_in_group("sword1") and not got_sec_weapon:
-				
-				
+					secondary_weapon = "sword1"
+					got_sec_weapon = true  # Set the flag to prevent picking up multiple items simultaneously
 					body.queue_free()  # Remove the picked-up item from the floor
 				elif body.is_in_group("sword3") and not got_sec_weapon:
-
-
-					body.queue_free()  # Remove the picked-up item from the floor
-
+					secondary_weapon = "sword1"
+					got_sec_weapon = true 
+					body.queue_free() 
 func MainWeapon():
 	pickItemsMainHand()
 	switch()
@@ -1458,32 +1482,51 @@ func MainWeapon():
 		drop()
 		main_weapon = "null"
 #Secondary__________________________________________________________________________________________
-onready var attachment_l = $Mesh/Armature020/Skeleton/HoldL
+onready var attachment_l = $Mesh/Race/Armature/Skeleton/HoldL2
+onready var attachment_hip_sec = $Mesh/Race/Armature/Skeleton/Hip2
+onready var sec_weap_slot = $UI/GUI/Character/LeftArm
+onready var sec_weap_icon = $UI/GUI/Character/LeftArm/Icon
 var sec_currentInstance: Node = null  
-var has_sec_sword0 = false
-var has_sec_sword1 = false
-var has_sec_sword2 = false
-var has_sec_sword3 = false
-var got_sec_weapon = false
 
+var secondary_weapon = "sword0"
+var got_sec_weapon = false
+var is_secondary_weapon_on_hip = false 
+func switchSecondaryFromHipToHand():
+	if is_in_combat:
+		if attachment_l.get_child_count() == 0:
+			if sec_currentInstance != null and sec_currentInstance.get_parent() == attachment_hip_sec:
+				attachment_hip_sec.remove_child(sec_currentInstance)
+				attachment_l.add_child(sec_currentInstance)
+				is_secondary_weapon_on_hip = false 
+	else:
+		if attachment_hip_sec.get_child_count() == 0:
+			if sec_currentInstance != null and sec_currentInstance.get_parent() == attachment_l:
+				attachment_l.remove_child(sec_currentInstance)
+				attachment_hip_sec.add_child(sec_currentInstance)
+				is_secondary_weapon_on_hip = true
 func fixSecInstance():
 	attachment_l.add_child(sec_currentInstance)
 	sec_currentInstance.get_node("CollisionShape").disabled = true
-	sec_currentInstance.scale = Vector3(100, 100, 100)
+	#sec_currentInstance.scale = Vector3(100, 100, 100)
 	got_sec_weapon = true
 func switchSec():
-	if has_sec_sword0:
-		if sec_currentInstance == null:
-			sec_currentInstance = sword0.instance()
-			fixSecInstance()
-	elif has_sec_sword1:    
-		if sec_currentInstance == null:
-			sec_currentInstance = sword1.instance()
-			fixSecInstance()
-	elif has_sec_sword2:    
-		if sec_currentInstance == null:
-			sec_currentInstance = sword2.instance()
-			fixSecInstance()
+	match secondary_weapon:
+		"sword0":
+			if sec_currentInstance == null:
+				sec_currentInstance = sword0.instance()
+				fixSecInstance()
+				addItemToCharacterSheet(sec_weap_icon,sec_weap_slot,add_item.wood_sword_texture,"sword0")
+		"sword1":    
+			if sec_currentInstance == null:
+				sec_currentInstance = sword1.instance()
+				fixSecInstance()
+		"sword2":    
+			if sec_currentInstance == null:
+				sec_currentInstance = sword2.instance()
+				fixSecInstance()
+		"null":
+			sec_currentInstance = null
+			got_sec_weapon = false
 func pickUpShield():
 	var bodies = detector.get_overlapping_bodies()
 	for body in bodies:
@@ -1496,9 +1539,10 @@ func pickUpShield():
 func dropSec():
 	if sec_currentInstance != null and Input.is_action_just_pressed("drop") and got_sec_weapon:
 		attachment_l.remove_child(sec_currentInstance)
+		attachment_hip_sec.remove_child(sec_currentInstance)
 		# Set the drop position
 		var drop_position = global_transform.origin + direction.normalized() * 1.0
-		sec_currentInstance.global_transform.origin = Vector3(drop_position.x - rand_range(-0.3, 1), global_transform.origin.y + 0.2, drop_position.z + rand_range(-0.5, 0.88))
+		sec_currentInstance.global_transform.origin = Vector3(drop_position.x - rand_range(0, 3), global_transform.origin.y + 0.2, drop_position.z + rand_range(1, 3))
 		# Set the scale of the dropped instance
 		sec_currentInstance.scale = Vector3(1, 1, 1)
 		var collision_shape = sec_currentInstance.get_node("CollisionShape")
@@ -1506,18 +1550,23 @@ func dropSec():
 			collision_shape.disabled = false
 		get_tree().root.add_child(sec_currentInstance)
 		# Reset variables
-		has_sec_sword0 = false
-		has_sec_sword1 = false
-		has_sec_sword2 = false
+		secondary_weapon = "null"
 		got_sec_weapon = false
 		sec_currentInstance = null
+		sec_weap_icon.texture = null
+		sec_weap_slot.item = "null"
 func SecWeapon():
 	switchSec()
 	if Input.is_action_just_pressed("drop"):
 		dropSec()
-		has_sec_sword0 = false
-		has_sec_sword1 = false
-		has_sec_sword2 = false
+		secondary_weapon = "null"
+		got_sec_weapon = false
+		sec_currentInstance = null
+		
+func removeSecWeapon():
+	if got_sec_weapon:
+		attachment_l.remove_child(sec_currentInstance)
+		got_sec_weapon = false
 #Shield_____________________________________________________________________________________________
 onready var attachment_s = $Mesh/Armature020/Skeleton/HoldL2
 var shield0: PackedScene = preload("res://itemTest.tscn")
@@ -1561,10 +1610,12 @@ func ShieldManagement():
 
 
 func displayLabels():
-	var agility_label = $UI/GUI/Character/Stats/AgiLabel
-	var int_label = $UI/GUI/Character/Stats/AgiLabel2
+	var agility_label = $UI/GUI/Character/Stats/AgiVal
+	var int_label = $UI/GUI/Character/Stats/IntVal
+	var vit_label = $UI/GUI/Character/Stats/VitVal
 	displayStats(agility_label,agility)
 	displayStats(int_label,intelligence)
+	displayStats(vit_label,vitality)
 
 func displayStats(label,value):
 	label.text = str(value)
@@ -1574,8 +1625,8 @@ func displayStats(label,value):
 var effects = {
 	"effect0": {"stats": {"agility": -0.05, "strength": 0.1}, "applied": false},
 	"effect1": {"stats": {"energy": -500000000, "mana": 10}, "applied": false},
-	"effect2": {"stats": {"health": -5, "mana": 10, "intelligence": 2,"agility": 0.05,}, "applied": false},
-	"overhydration": {"stats": {"max_health": -5,  "intelligence": -0.02,"agility": -0.05,}, "applied": false},
+	"effect2": {"stats": { "vitality": 2,"agility": 0.05,}, "applied": false},
+	"overhydration": {"stats": { "vitality": -0.02,"agility": -0.05,}, "applied": false},
 	"dehydration": {"stats": {"max_health": -25, "intelligence": -0.25,"agility": -0.25,}, "applied": false},
 	"bloated": {"stats": {"max_health": -5,"intelligence": -0.02,"agility": -0.15,}, "applied": false},
 	"hungry": {"stats": {"max_health": -5,"intelligence": -0.22,"agility": -0.05,}, "applied": false},
@@ -1860,7 +1911,130 @@ func displayResourcesRound(bar,label,value,max_value,acronim):
 	label.text =  acronim + str(round(value)) + "/" + str(round(max_value))
 	bar.value = value 
 	bar.max_value = max_value 
+
+
+
+#Stats__________________________________________________________________________
+var level = 100
+var health = 100
+const base_health = 100
+var max_health = 100
+const base_max_health = 100
+var energy = 100
+var max_energy = 100
+const base_max_energy = 100
+var resolve = 100
+var max_resolve = 100
+const base_max_resolve = 100
+
+const base_weight = 60
+var weight = 60
+const base_walk_speed = 6
+var walk_speed = 3
+const base_run_speed = 7
+var run_speed = 7
+const base_crouch_speed = 2
+var crouch_speed = 2
+const base_jumping_power = 20
+var jumping_power = 20
+const base_dash_power = 20
+var dash_power = 20
+var attribute = 1000
+var skill_points = 1000
+var defense =  10
+
+
+#attributes 
+var coordination = 1
+var creativity = 1
+var wisdom = 1
+var memory = 1
+var intelligence = 1
+var willpower = 1
+
+var power = 1
+var strength = 1
+var impact = 1
+var resistance = 1
+var tenacity = 1
+
+var accuracy = 1
+var dexterity = 1
+
+var balance = 1
+var focus = 1
+
+var acrobatics = 1
+var agility = 1
+var athletics = 1
+var flexibility = 1
+var placeholder_ = 1
+
+var endurance = 1
+var stamina = 1
+var vitality = 1
+var vigor = 1
+var recovery = 1
+
+var charisma = 1
+var loyalty = 1 
+var diplomacy = 1
+var leadership = 1
+var empathy = 1
+
+#__________________________________________Defenses and stuff_______________________________________
+#resistances
+var slash_resistance = 25
+var pierce_resistance = 25
+var blunt_resistance = 25
+var sonic_resistance = 25
+var heat_resistance = 25
+var cold_resistance = 25
+var jolt_resistance = 25
+var toxic_resistance = 25
+var acid_resistance = 25
+var bleed_resistance = 25
+var neuro_resistance = 25
+var radiant_resistance = 25
+
+var stagger_resistance = 0.5
+var deflection_chance = 0.33
+
+var staggered = 0 
+
+
+func convertStats():
+	max_health = base_max_health * vitality
+	max_sprint_speed = base_max_sprint_speed * agility
+	run_speed = base_run_speed * agility
+
+
+
+var tool_tip = preload("res://tooltip.tscn")
+func _on_AgiLabel_mouse_entered():
+	var tool_tip_instance = preload("res://tooltip.tscn").instance()
+	var title = "Agility"
+	var text = "Agility makes you quicker"
 	
+	add_child(tool_tip_instance)
+	tool_tip_instance.showTooltip(title, text)
+	print("Instance created")
+
+
+onready var gui = $UI/GUI
+func _on_PlusAgi_mouse_entered():
+	var tool_tip_instance = preload("res://tooltip.tscn").instance()
+	var title = "Agility"
+	var text = "run speed, maximum sprint speed and acceleration are multiplied by agility"
+	
+	gui.add_child(tool_tip_instance)
+	tool_tip_instance.showTooltip(title, text)
+	print("Instance created")
 
 
 
+func _on_PlusAgi_mouse_exited():
+	# Remove all children from the TextureButton
+	for child in gui.get_children():
+		if child.is_in_group("Tooltip"):
+			child.queue_free()
