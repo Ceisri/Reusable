@@ -26,19 +26,17 @@ func _on_SlowTimer_timeout():
 	switchLegs()
 	convertStats()
 func _on_3FPS_timeout():
-	
+	displayLabels()
 	displayResources(hp_bar,hp_label,health,max_health,"HP")
 	hunger()
 	hydration()
 	showStatusIcon()
 func _physics_process(delta):
 	$Debug.text = animation_state
-	displayLabels()
 #	displayClock()
 	limitStatsToMaximum()
 	frameRate()
 	speedlabel()
-	savePlayerData()
 	cameraRotation(delta)
 	crossHair()
 	crossHairResize()
@@ -1291,10 +1289,10 @@ func _on_GiveMeItems_pressed():
 			add_item.addNotStackableItem(inventory_grid,add_item.garment1)
 			add_item.addNotStackableItem(inventory_grid,add_item.shoe1)
 #_____________________________________more GUI stuff________________________________________________
-onready var fps_label = $UI/GUI/Minimap/FPSLabel
+onready var fps_label = $UI/GUI/Portrait/MinimapHolder/FPS
 func frameRate():
-	pass
-#	fps_label.text = "%d" % Engine.get_frames_per_second()
+
+	fps_label.text = "%d" % Engine.get_frames_per_second()
 func _on_FPS_pressed():
 	var current_fps = Engine.get_target_fps()
 	# Define FPS mapping
@@ -1868,8 +1866,6 @@ func hunger():
 
 
 
-onready var water_label = $UI/GUI/Portrait/HydrationLabel
-onready var water_bar = $UI/GUI/Portrait/HydrationBar
 const base_water = 4000
 var max_water = 4000
 var water = 4000
@@ -2056,8 +2052,13 @@ onready var ae_bar = $UI/GUI/Portrait/AeBar
 onready var ae_label = $UI/GUI/Portrait/AeLabel
 onready var ne_bar = $UI/GUI/Portrait/NeBar
 onready var ne_label = $UI/GUI/Portrait/NeLabel
+onready var food_bar = $UI/GUI/Portrait/MinimapHolder/FoodBar
+onready var food_label = $UI/GUI/Portrait/MinimapHolder/FoodLabel
+onready var water_bar = $UI/GUI/Portrait/MinimapHolder/WaterBar
+onready var water_label = $UI/GUI/Portrait/MinimapHolder/WaterLabel
 func allResourcesBarsAndLabels():
-
+	displayResourcesRound(water_bar,water_label,water,max_water,"")
+	displayResourcesRound(food_bar,food_label,kilocalories,max_kilocalories,"")
 	displayResourcesRound(ne_bar,ne_label,nefis,max_resolve,"NE : ")
 	displayResourcesRound(ae_bar,ae_label,aefis,max_resolve,"AE : ")
 	displayResourcesRound(re_bar,re_label,resolve,max_resolve,"RE : ")
@@ -2071,15 +2072,6 @@ func displayResourcesRound(bar,label,value,max_value,acronim):
 	bar.value = value 
 	bar.max_value = max_value 
 
-var tool_tip = preload("res://tooltip.tscn")
-func _on_AgiLabel_mouse_entered():
-	var tool_tip_instance = preload("res://tooltip.tscn").instance()
-	var title = "Agility"
-	var text = "Agility makes you quicker"
-	
-	add_child(tool_tip_instance)
-	tool_tip_instance.showTooltip(title, text)
-	print("Instance created")
 
 
 onready var gui = $UI/GUI
@@ -2103,3 +2095,5 @@ func _on_PlusAgi_mouse_exited():
 
 func _on_Effect_pressed():
 	applyEffect(self, "scared", true)
+
+
