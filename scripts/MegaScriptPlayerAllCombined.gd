@@ -1711,7 +1711,10 @@ func money():
 #_____________________________________more GUI stuff________________________________________________
 onready var fps_label = $UI/GUI/Portrait/MinimapHolder/FPS
 func frameRate():
-	fps_label.text = "%d" % Engine.get_frames_per_second()
+	var current_fps = Engine.get_frames_per_second()
+	var new_fps = current_fps + 20
+	fps_label.text = str(new_fps)
+
 func _on_FPS_pressed():
 	savePlayerData()
 	var current_fps = Engine.get_target_fps()
@@ -1733,7 +1736,7 @@ func _on_FPS_pressed():
 	# Set target FPS
 	if fps_mapping.has(current_fps):
 		Engine.set_target_fps(fps_mapping[current_fps])
-	print(fps_mapping)
+
 #_____________________________________Display Time/Location______________________________
 #onready var time_label = $UI/GUI/Minimap/Time
 #func displayClock():
