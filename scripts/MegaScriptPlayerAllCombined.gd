@@ -1863,6 +1863,12 @@ func hunger():
 		applyEffect(self, "bloated", true)
 	else:
 		applyEffect(self, "bloated", false)
+	if kilocalories < 0:
+		applyEffect(self, "hungry", true)
+	else:
+		applyEffect(self, "hungry", false)
+		
+		
 
 
 
@@ -2094,6 +2100,27 @@ func _on_PlusAgi_mouse_exited():
 
 
 func _on_Effect_pressed():
-	applyEffect(self, "scared", true)
+	applyEffect(self, "scared", false)
 
 
+
+onready var black_screen = $UI/GUI/BlackScreen
+onready var tween = $Camroot/h/v/Camera/Aim/Cross/Tween
+func _on_Toilet_pressed():
+	if water > 500 or kilocalories > 500:
+		kilocalories -= 500
+		water -= 500
+		if resolve > 25:
+			resolve -= 25
+		if breath > 30:
+			breath -= 25
+			
+   # Assuming 'black_screen' is the name of your black screen node
+	if black_screen.modulate.a == 0: # If black screen is transparent
+		# Tween to make black screen opaque
+		tween.interpolate_property(black_screen, "modulate", Color(0, 0, 0, 0), Color(0, 0, 0, 1), 1, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
+		tween.start()
+	else:
+		# Tween to make black screen transparent
+		tween.interpolate_property(black_screen, "modulate", Color(0, 0, 0, 1), Color(0, 0, 0, 0), 1, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
+		tween.start()

@@ -50,16 +50,20 @@ func _on_inventory_slot_pressed(index):
 								child.quantity += 1
 								break
 			elif button.item == "strawberry":
-					player.kilocalories += 32
+					player.kilocalories +=1
 					player.health += 5
-					player.water += 9
+					player.water += 2
 					button.quantity -=1
 			elif button.item == "raspberry":
 					player.kilocalories += 4
 					player.health += 3
 					player.water += 3
 					button.quantity -=1
-					
+			elif button.item == "beetroot":
+					player.kilocalories += 32
+					player.health += 15
+					player.water += 71.8
+					button.quantity -=1
 					
 					
 			elif icon_texture.get_path() == "res://UI/graphics/SkillIcons/empty.png":
@@ -75,27 +79,23 @@ onready var gui = $".."
 func _on_inventory_slot_mouse_entered(index):
 	var button = inventory_grid.get_node("InventorySlot" + str(index))
 	var icon_texture = button.get_node("Icon").texture
-
+	var instance = preload("res://tooltip.tscn").instance()
 	if icon_texture != null:
 		if button.item == "red potion":
-			var tool_tip_instance = preload("res://tooltip.tscn").instance()
-			var title = "Red Potion"
-			var text = "heals you over 10 seconds, drinking more potions stacks the duration"
-			gui.add_child(tool_tip_instance)
-			tool_tip_instance.showTooltip(title, text)
+			callToolTip(instance, "Red Potion", "+100 kcals +250 grams of water.\nHeals by 100 health instantly then by 10 every second, drinking more potions stacks the duration")
 		elif button.item == "strawberry":
-			var tool_tip_instance = preload("res://tooltip.tscn").instance()
-			var title = "strawberry"
-			var text = "+5 health points +32 kcals +9 grams of water"
-			gui.add_child(tool_tip_instance)
-			tool_tip_instance.showTooltip(title, text)
+			callToolTip(instance,"Strawberry","+5 health points +9 kcals +24 grams of water")
 		elif button.item == "raspberry":
-			var tool_tip_instance = preload("res://tooltip.tscn").instance()
-			var title = "raspberry"
-			var text = "+3 health points +4 kcals +3 grams of water"
-			gui.add_child(tool_tip_instance)
-			tool_tip_instance.showTooltip(title, text)
+			callToolTip(instance,"Raspberry","+3 health points +1 kcals +2 grams of water")
+		elif button.item == "beetroot":
+			callToolTip(instance,"beetroot","+15 health points +32 kcals +71.8 grams of water")
+			
+			
 func _on_inventory_slot_mouse_exited(index):
 	for child in gui.get_children():
 		if child.is_in_group("Tooltip"):
 			child.queue_free()
+
+func callToolTip(instance,title, text):
+		gui.add_child(instance)
+		instance.showTooltip(title, text)
