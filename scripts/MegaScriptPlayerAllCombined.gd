@@ -1,7 +1,7 @@
 extends KinematicBody
 onready var player_mesh = $Mesh
 onready var animation = $Mesh/Race/AnimationPlayer
-
+var rng = RandomNumberGenerator.new()
 var injured = false
 var blend = 0.25
 
@@ -13,6 +13,8 @@ var is_running = bool()
 
 
 func _ready(): 
+	print(spent_attribute_points_vit)
+	connectInventoryButtons()
 	convertStats()
 	loadPlayerData()
 	closeAllUI()
@@ -25,18 +27,24 @@ func _on_SlowTimer_timeout():
 	switchFeet()
 	switchLegs()
 	convertStats()
-func _on_3FPS_timeout():
-	displayLabels()
-	displayResources(hp_bar,hp_label,health,max_health,"HP")
+	money()
 	hunger()
-	hydration()
-	showStatusIcon()
+	hydration()	
+	frameRate()	
+	showStatusIcon()	
+	displayLabels()
+func _on_3FPS_timeout():
+	$UI/GUI/Crafting.crafting()
+	displayResources(hp_bar,hp_label,health,max_health,"HP")
+	curtainsDown()
+
+	
 func _physics_process(delta):
 	$Debug.text = animation_state
 #	displayClock()
+	ChopTree()
 	limitStatsToMaximum()
-	frameRate()
-	speedlabel()
+	
 	cameraRotation(delta)
 	crossHair()
 	crossHairResize()
@@ -62,7 +70,7 @@ func _physics_process(delta):
 	skillUserInterfaceInputs()
 	addItemToInventory()
 #	positionCoordinates()
-#	hunger()
+
 	MainWeapon()
 	SecWeapon()
 	
@@ -471,12 +479,93 @@ func savePlayerData():
 		"health": health,
 		"max_health": max_health,
 		
-		"vitality":vitality,
+
 		
 		"kilocalories": kilocalories,
 		"max_kilocalories": max_kilocalories,
 		"water": water,
 		"max_water": max_water,
+		
+		
+#leveling 
+		"attribute": attribute,
+		"spent_attribute_points_str": spent_attribute_points_str,
+		"spent_attribute_points_fur": spent_attribute_points_fur,
+		"spent_attribute_points_imp": spent_attribute_points_imp,
+		"spent_attribute_points_fer": spent_attribute_points_fer,
+		"spent_attribute_points_res": spent_attribute_points_res,
+		
+		"spent_attribute_points_ten": spent_attribute_points_ten,
+		"spent_attribute_points_acc": spent_attribute_points_acc,
+		"spent_attribute_points_dex": spent_attribute_points_dex,
+		"spent_attribute_points_poi": spent_attribute_points_poi,
+		"spent_attribute_points_bal": spent_attribute_points_bal,
+		
+		"spent_attribute_points_foc": spent_attribute_points_foc,
+		"spent_attribute_points_has": spent_attribute_points_has,
+		"spent_attribute_points_agi": spent_attribute_points_agi,
+		"spent_attribute_points_cel": spent_attribute_points_cel,
+		"spent_attribute_points_fle": spent_attribute_points_fle,
+		
+		"spent_attribute_points_def": spent_attribute_points_def,
+		"spent_attribute_points_end": spent_attribute_points_end,
+		"spent_attribute_points_sta": spent_attribute_points_sta,
+		"spent_attribute_points_vit": spent_attribute_points_vit,
+		"spent_attribute_points_cha": spent_attribute_points_cha,
+		
+		"spent_attribute_points_loy": spent_attribute_points_loy,
+		"spent_attribute_points_dip": spent_attribute_points_dip,
+		"spent_attribute_points_aut": spent_attribute_points_aut,
+		"spent_attribute_points_cou": spent_attribute_points_cou,
+		"spent_attribute_points_int": spent_attribute_points_int,
+		
+		"spent_attribute_points_wis": spent_attribute_points_wis,
+		"spent_attribute_points_san": spent_attribute_points_san,
+		"spent_attribute_points_mem": spent_attribute_points_mem,
+		"spent_attribute_points_ins": spent_attribute_points_ins,
+		"spent_attribute_points_for": spent_attribute_points_for,
+		
+#Brain attributes
+		"sanity": sanity,
+		"wisdom" : wisdom,
+		"memory": memory,
+		"intelligence": intelligence,
+		"instinct": instinct,
+#Brute attributes
+		"force": force,
+		"strength": strength,
+		"impact": impact,
+		"ferocity": ferocity,
+		"fury":fury,
+#Precision attributes
+		"accuracy": accuracy,
+		"dexterity": dexterity,
+		"poise": poise,
+		"balance": balance,
+		"focus": focus,
+#Nimble attributes
+		"haste": haste,
+		"agility": agility,
+		"celerity": celerity,
+		"flexibility": flexibility,
+		"deflection": deflection,
+#Toughness attributes
+		"endurance": endurance,
+		"stamina": stamina,
+		"vitality": vitality,
+		"recovery": recovery,
+		"resistance": resistance,
+		"tenacity": tenacity,
+#Social attributes 
+		"charisma_multiplier":charisma_multiplier,
+		"loyalty": loyalty,
+		"diplomacy": diplomacy,
+		"authority": authority,
+		"empathy": empathy,
+		"courage": courage,
+		
+		
+		
 		
 		
 		"effects": effects,
@@ -505,6 +594,154 @@ func loadPlayerData():
 			if "main_weapon"  in player_data:
 				main_weapon = player_data["main_weapon"]
 			
+#attributes 
+			if "attribute" in player_data:
+				attribute = player_data["attribute"]
+#brains 
+			if "spent_attribute_points_int" in player_data:
+				spent_attribute_points_int = player_data["spent_attribute_points_int"]
+			if "spent_attribute_points_wis" in player_data:
+				spent_attribute_points_wis = player_data["spent_attribute_points_wis"]
+			if "spent_attribute_points_ins" in player_data:
+				spent_attribute_points_ins = player_data["spent_attribute_points_ins"]
+			if "spent_attribute_points_mem" in player_data:
+				spent_attribute_points_mem = player_data["spent_attribute_points_mem"]
+			if "spent_attribute_points_san" in player_data:
+				spent_attribute_points_san = player_data["spent_attribute_points_san"]
+#social 
+			if "spent_attribute_points_cha" in player_data:
+				spent_attribute_points_cha = player_data["spent_attribute_points_cha"]
+			if "spent_attribute_points_cou" in player_data:
+				spent_attribute_points_cou = player_data["spent_attribute_points_cou"]
+			if "spent_attribute_points_loy" in player_data:
+				spent_attribute_points_loy = player_data["spent_attribute_points_loy"]
+			if "spent_attribute_points_dip" in player_data:
+				spent_attribute_points_dip = player_data["spent_attribute_points_dip"]
+			if "spent_attribute_points_aut" in player_data:
+				spent_attribute_points_aut = player_data["spent_attribute_points_aut"]
+#brawns
+			if "spent_attribute_points_vit" in player_data:
+				spent_attribute_points_vit = player_data["spent_attribute_points_vit"]
+			if "spent_attribute_points_res" in player_data:
+				spent_attribute_points_res = player_data["spent_attribute_points_res"]
+			if "spent_attribute_points_ten" in player_data:
+				spent_attribute_points_ten = player_data["spent_attribute_points_ten"]
+			if "spent_attribute_points_end" in player_data:
+				spent_attribute_points_end = player_data["spent_attribute_points_end"]
+			if "spent_attribute_points_sta" in player_data:
+				spent_attribute_points_sta = player_data["spent_attribute_points_sta"]
+#brute
+			if "spent_attribute_points_fur" in player_data:
+				spent_attribute_points_fur = player_data["spent_attribute_points_fur"]
+			if "spent_attribute_points_for" in player_data:
+				spent_attribute_points_for = player_data["spent_attribute_points_for"]
+			if "spent_attribute_points_imp" in player_data:
+				spent_attribute_points_imp = player_data["spent_attribute_points_imp"]
+			if "spent_attribute_points_fer" in player_data:
+				spent_attribute_points_fer = player_data["spent_attribute_points_fer"]
+			if "spent_attribute_points_str" in player_data:
+				spent_attribute_points_str = player_data["spent_attribute_points_str"]
+#precision
+			if "spent_attribute_points_acc" in player_data:
+				spent_attribute_points_acc = player_data["spent_attribute_points_acc"]
+			if "spent_attribute_points_dex" in player_data:
+				spent_attribute_points_dex = player_data["spent_attribute_points_dex"]
+			if "spent_attribute_points_poi" in player_data:
+				spent_attribute_points_poi = player_data["spent_attribute_points_poi"]
+			if "spent_attribute_points_bal" in player_data:
+				spent_attribute_points_bal = player_data["spent_attribute_points_bal"]
+			if "spent_attribute_points_foc" in player_data:
+				spent_attribute_points_foc = player_data["spent_attribute_points_foc"]
+#nimbleness
+			if "spent_attribute_points_has" in player_data:
+				spent_attribute_points_has = player_data["spent_attribute_points_has"]
+			if "spent_attribute_points_agi" in player_data:
+				spent_attribute_points_agi = player_data["spent_attribute_points_agi"]
+			if "spent_attribute_points_cel" in player_data:
+				spent_attribute_points_cel = player_data["spent_attribute_points_cel"]
+			if "spent_attribute_points_fle" in player_data:
+				spent_attribute_points_fle = player_data["spent_attribute_points_fle"]
+			if "spent_attribute_points_def" in player_data:
+				spent_attribute_points_def = player_data["spent_attribute_points_def"]
+			
+			
+			
+
+
+#Brute attributes
+			if "force" in player_data:
+				force = player_data["force"]
+			if "strength" in player_data:
+				strength = player_data["strength"]
+			if "impact" in player_data:
+				impact = player_data["impact"]
+			if "ferocity" in player_data:
+				ferocity = player_data["ferocity"]
+			if "fury" in player_data:
+				fury = player_data["fury"]
+			if "resistance" in player_data:
+				resistance = player_data["resistance"]
+			if "tenacity" in player_data:
+				tenacity = player_data["tenacity"]
+#Brain attributes
+			if "sanity" in player_data:
+				sanity = player_data["sanity"]
+			if "wisdom" in player_data:
+				wisdom = player_data["wisdom"]
+			if "memory" in player_data:
+				memory = player_data["memory"]
+			if "intelligence" in player_data:
+				intelligence = player_data["intelligence"]
+			if "instinct" in player_data:
+				instinct = player_data["instinct"]
+#Precision attributes
+			if "accuracy" in player_data:
+				 accuracy = player_data["accuracy"]
+			if "dexterity" in player_data:
+				dexterity = player_data["dexterity"]
+			if "poise" in player_data:
+				poise = player_data["poise"]
+			if "balance" in player_data:
+				balance = player_data["balance"]
+			if "focus" in player_data:
+				focus  = player_data["focus"]
+#Nimble attributes
+			if "haste" in player_data:
+				haste = player_data["haste"]
+			if "agility" in player_data:
+				 agility = player_data["agility"]
+			if "flexibility" in player_data:
+				flexibility = player_data["flexibility"]
+			if "celerity" in player_data:
+				celerity = player_data["celerity"]
+			if "deflection" in player_data:
+				deflection = player_data["deflection"]
+#Toughness attributes
+			if "endurance" in player_data:
+				endurance = player_data["endurance"] 
+			if "stamina" in player_data:
+				stamina = player_data["stamina"]
+			if "vitality" in player_data:
+				vitality = player_data["vitality"]
+			if "recovery" in player_data:
+				recovery = player_data["recovery"]
+#Social attributes 
+			if "charisma_multiplier" in player_data:
+				charisma_multiplier = player_data["charisma_multiplier"]
+			if "loyalty" in player_data:
+				loyalty = player_data["loyalty"]
+			if "diplomacy" in player_data:
+				diplomacy = player_data["diplomacy"]
+			if "authority" in player_data:
+				authority = player_data["authority"]
+			if "empathy" in player_data:
+				empathy = player_data["empathy"]
+			if "courage" in player_data:
+				courage = player_data["courage"]
+			
+			
+			
+			
 			
 			if "health" in player_data:
 				health = player_data["health"]
@@ -529,8 +766,6 @@ func loadPlayerData():
 				
 			if "effects" in player_data:
 				effects = player_data["effects"]
-func _on_Timer_timeout():
-	savePlayerData()
 
 var is_fullscreen = false
 func fullscreen():
@@ -703,66 +938,67 @@ func matchAnimationStates():
 				animation.play("idle cycle")
 		#skillbar stuff
 		"test1":
-			var slot = $UI/GUI/SkillBar/GridContainer/SlotUP1/Icon
-			skills(slot)
-		"test2":
-			var slot = $UI/GUI/SkillBar/GridContainer/SlotUP2/Icon
-			skills(slot)
-		"test3":
-			var slot = $UI/GUI/SkillBar/GridContainer/SlotUP3/Icon
-			skills(slot)
-		"test4":
-			var slot = $UI/GUI/SkillBar/GridContainer/SlotUP4/Icon
-			skills(slot)
-		"test5":
-			var slot = $UI/GUI/SkillBar/GridContainer/SlotUP5/Icon
-			skills(slot)
-		"test6":
-			var slot = $UI/GUI/SkillBar/GridContainer/SlotUP6/Icon
-			skills(slot)
-		"test7":
-			var slot = $UI/GUI/SkillBar/GridContainer/SlotUP7/Icon
-			skills(slot)
-		"test8":
-			var slot = $UI/GUI/SkillBar/GridContainer/SlotUP8/Icon
-			skills(slot)
-		"test9":
-			var slot = $UI/GUI/SkillBar/GridContainer/SlotUP9/Icon
-			skills(slot)
-		"test0":
-			var slot = $UI/GUI/SkillBar/GridContainer/SlotUP0/Icon
-			skills(slot)
-		"testQ":
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot1/Icon
 			skills(slot)
-		"testE":
+		"test2":
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot2/Icon
 			skills(slot)
-		"testR":
+		"test3":
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot3/Icon
 			skills(slot)
-		"testT":
+		"test4":
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot4/Icon
 			skills(slot)
-		"testF":
+		"test5":
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot5/Icon
 			skills(slot)
-		"testG":
+		"test6":
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot6/Icon
 			skills(slot)
-		"testY":
+		"test7":
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot7/Icon
 			skills(slot)
-		"testH":
+		"test8":
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot8/Icon
 			skills(slot)
-		"testV":
+		"test9":
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot9/Icon
 			skills(slot)
-		"testB":
+		"test0":
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot0/Icon
 			skills(slot)
+		"testQ":
+			var slot = $UI/GUI/SkillBar/GridContainer/SlotQ/Icon
+			skills(slot)
+		"testE":
+			var slot = $UI/GUI/SkillBar/GridContainer/SlotE/Icon
+			skills(slot)
+		"testR":
+			var slot = $UI/GUI/SkillBar/GridContainer/SlotR/Icon
+			skills(slot)
+		"testT":
+			var slot = $UI/GUI/SkillBar/GridContainer/SlotT/Icon
+			skills(slot)
+		"testF":
+			var slot = $UI/GUI/SkillBar/GridContainer/SlotF/Icon
+			skills(slot)
+		"testG":
+			var slot = $UI/GUI/SkillBar/GridContainer/SlotG/Icon
+			skills(slot)
+		"testY":
+			var slot = $UI/GUI/SkillBar/GridContainer/SlotY/Icon
+			skills(slot)
+		"testH":
+			var slot = $UI/GUI/SkillBar/GridContainer/SlotH/Icon
+			skills(slot)
+		"testV":
+			var slot = $UI/GUI/SkillBar/GridContainer/SlotV/Icon
+			skills(slot)
+		"testB":
+			var slot = $UI/GUI/SkillBar/GridContainer/SlotB/Icon
+			skills(slot)
 func skills(slot):
+	if slot != null:
 			if slot.texture != null:
 				if slot.texture.resource_path == "res://UI/graphics/SkillIcons/rush.png":
 					animation.play("combo attack 2hander cycle", 0.35)
@@ -803,6 +1039,20 @@ func animations():
 		animation_state = "sprint attack"
 	elif Input.is_action_pressed("attack") and !cursor_visible:
 			animation_state = "base attack"
+#_______________________________________________________________________________
+	elif is_sprinting:
+			animation_state = "sprint"
+	elif is_running:
+			animation_state = "run"
+
+	elif Input.is_action_pressed("crouch"):
+		if is_walking:
+			animation_state = "crouch walk"
+		else:
+			animation_state = "crouch"
+	elif is_walking:
+			animation_state = "walk"
+			
 #skills put these below the walk elif statment in case of keybinding bugs, as of now it works so no need
 	elif Input.is_action_pressed("1"):
 		animation_state = "test1"
@@ -843,19 +1093,8 @@ func animations():
 	elif Input.is_action_pressed("V"):
 		animation_state = "testV"
 	elif Input.is_action_pressed("B"):
-		animation_state = "testB"
-#_______________________________________________________________________________
-	elif is_sprinting:
-			animation_state = "sprint"
-	elif is_running:
-			animation_state = "run"
-	elif Input.is_action_pressed("crouch"):
-		if is_walking:
-			animation_state = "crouch walk"
-		else:
-			animation_state = "crouch"
-	elif is_walking:
-			animation_state = "walk"
+		animation_state = "testB" 
+			
 	elif jump_animation_duration != 0:
 		animation_state = "jump"
 	else:
@@ -907,9 +1146,9 @@ func stompKickDealDamage():
 						enemy.takeDamage(critical_damage,aggro_power,self,stagger_chance,damage_type)
 					else:
 						enemy.takeDamage(damage,aggro_power,self,stagger_chance,damage_type)
-var critical_chance = 0.3
-var critical_strength = 2
-var stagger_chance = 0.3
+
+
+
 func slideDealDamage():
 	var damage_type = "blunt"
 	var damage = 2.5
@@ -1095,14 +1334,17 @@ func skillUserInterfaceInputs():
 	if Input.is_action_just_pressed("skills"):
 		closeSwitchOpen(skill_trees)
 		saveSkillBarData()
-	if Input.is_action_just_pressed("tab"):
+		savePlayerData()
+	elif Input.is_action_just_pressed("tab"):
 		is_in_combat = !is_in_combat
 		switchMainFromHipToHand()
 		switchSecondaryFromHipToHand()
 		saveSkillBarData()
-	if Input.is_action_just_pressed("mousemode") or Input.is_action_just_pressed("ui_cancel"):	# Toggle mouse mode
+		savePlayerData()
+	elif Input.is_action_just_pressed("mousemode") or Input.is_action_just_pressed("ui_cancel"):	# Toggle mouse mode
 		saveInventoryData()
 		saveSkillBarData()
+		savePlayerData()
 		cursor_visible =!cursor_visible
 	if !cursor_visible:
 		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
@@ -1112,33 +1354,43 @@ func skillUserInterfaceInputs():
 		closeSwitchOpen(inventory)
 		saveInventoryData()
 		saveSkillBarData()
+		savePlayerData()
 	elif Input.is_action_just_pressed("Crafting"):
 		closeSwitchOpen(crafting)
 		saveInventoryData()
 		saveSkillBarData()
+		savePlayerData()
 	elif Input.is_action_just_pressed("Character"):
 		closeSwitchOpen(character)
+		savePlayerData()
 	elif Input.is_action_just_pressed("UI"):
 		closeSwitchOpen(character)
 		closeSwitchOpen(crafting)
 		closeSwitchOpen(inventory)
 		closeSwitchOpen(skill_trees)
+		savePlayerData()
 	elif Input.is_action_just_pressed("Menu"):
 		closeSwitchOpen(menu)
+		savePlayerData()
 #skillbar buttons
 func _on_Inventory_pressed():
 	closeSwitchOpen(inventory)
+	savePlayerData()
 func _on_Character_pressed():
 	closeSwitchOpen(character)
+	savePlayerData()
 func _on_Skills_pressed():
 	closeSwitchOpen(skill_trees)
+	savePlayerData()
 func _on_Menu_pressed():
 	closeSwitchOpen(menu)
+	savePlayerData()
 func _on_OpenAllUI_pressed():
 	closeSwitchOpen(character)
 	closeSwitchOpen(crafting)
 	closeSwitchOpen(inventory)
 	closeSwitchOpen(skill_trees)
+	savePlayerData()
 
 
 func closeAllUI():
@@ -1154,19 +1406,26 @@ func _on_CloseSkillsTrees_pressed():
 	skill_trees.visible = false
 func _on_CraftingCloseButton_pressed():
 	crafting.visible = false
+	savePlayerData()
 func _on_InventoryCloseButton_pressed():
 	inventory.visible = false
+	savePlayerData()
 func _on_InventoryOpenCraftingSystemButton_pressed():
 	crafting.visible = !$UI/GUI/Crafting.visible
 	saveSkillBarData()
+	savePlayerData()
 func _on_SkillTreeCloseButton_pressed():
 	skill_trees.visible = false
+	savePlayerData()
 func _on_CharacterCloseButton_pressed():
 	character.visible = false
+	savePlayerData()
 func _on_CloseMenu_pressed():
 	menu.visible = false
+	savePlayerData()
 func _on_Keybinds_pressed():
 	closeSwitchOpen(keybinds)
+	savePlayerData()
 func _on_Quit_pressed():
 	saveInventoryData()
 	savePlayerData()
@@ -1174,6 +1433,7 @@ func _on_Quit_pressed():
 	get_tree().quit()
 func _on_InventorySaveButton_pressed():
 	saveInventoryData()
+	savePlayerData()
 	saveSkillBarData()
 onready var skills_list1 = $UI/GUI/SkillTrees/Background/SylvanSkills
 func _on_SkillTree1_pressed():
@@ -1188,31 +1448,110 @@ func saveInventoryData():
 			if child.get_node("Icon").has_method("savedata"):
 				child.get_node("Icon").savedata()
 func saveSkillBarData():
-	$UI/GUI/SkillBar/GridContainer/Slot1/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/Slot2/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/Slot3/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/Slot4/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/Slot5/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/Slot6/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/Slot7/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/Slot8/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/Slot9/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/Slot10/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/SlotUP1/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/SlotUP2/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/SlotUP3/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/SlotUP4/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/SlotUP5/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/SlotUP6/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/SlotUP7/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/SlotUP8/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/SlotUP9/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/SlotUP0/Icon.savedata()
+	for child in $UI/GUI/SkillBar/GridContainer.get_children():
+		if child.has_method("savedata"):
+			child.savedata()
 
 #__________________________________Inventory____________________________________
 onready var inventory_grid = $UI/GUI/Inventory/ScrollContainer/InventoryGrid
+onready var gui = $UI/GUI
+
+
+func connectInventoryButtons():
+	for child in inventory_grid.get_children():
+		if child.is_in_group("Inventory"):
+			var index_str = child.get_name().split("InventorySlot")[1]
+			var index = int(index_str)
+			child.connect("pressed", self, "_on_inventory_slot_pressed", [index])
+			child.connect("mouse_entered", self, "_on_inventory_slot_mouse_entered", [index])
+			child.connect("mouse_exited", self, "_on_inventory_slot_mouse_exited", [index])
+
+var last_pressed_index: int = -1
+var last_press_time: float = 0.0
+export var double_press_time_inv: float = 0.4
+
+func _on_inventory_slot_pressed(index):
+	var button = inventory_grid.get_node("InventorySlot" + str(index))
+	var icon_texture_rect = button.get_node("Icon")
+	var icon_texture = icon_texture_rect.texture	
+	if icon_texture != null:
+		if  icon_texture.get_path() == "res://UI/graphics/SkillIcons/empty.png":
+				button.quantity = 0
+		var current_time = OS.get_ticks_msec() / 1000.0
+		if last_pressed_index == index and current_time - last_press_time <= double_press_time_inv:
+			print("Inventory slot", index, "pressed twice")
+
+			if icon_texture.get_path() == "res://UI/graphics/mushrooms/PNG/background/1.png":
+					kilocalories += 22
+					water += 92
+					button.quantity -=1
+			elif button.item == "red potion":
+					kilocalories += 100
+					water += 250
+					applyEffect(self,"redpotion",true)
+					red_potion_duration += 5
+					button.quantity -=1
+					for child in inventory_grid.get_children():
+						if child.is_in_group("Inventory"):
+							var icon = child.get_node("Icon")
+							if icon.texture == null:
+								icon.texture = preload("res://Potions/Empty potion.png")
+								child.quantity += 1
+								break
+							elif icon.texture.get_path() == "res://Potions/Empty potion.png":
+								child.quantity += 1
+								break
+			elif button.item == "strawberry":
+					kilocalories +=1
+					health += 5
+					water += 2
+					button.quantity -=1
+			elif button.item == "raspberry":
+					kilocalories += 4
+					health += 3
+					water += 3
+					button.quantity -=1
+			elif button.item == "beetroot":
+					kilocalories += 32
+					health += 15
+					water += 71.8
+					button.quantity -=1
+					
+					
+			elif icon_texture.get_path() == "res://UI/graphics/SkillIcons/empty.png":
+				button.quantity = 0
+		else:
+			print("Inventory slot", index, "pressed once")
+		last_pressed_index = index
+		last_press_time = current_time
+		savePlayerData()
+
+func _on_inventory_slot_mouse_entered(index):
+	var button = inventory_grid.get_node("InventorySlot" + str(index))
+	var icon_texture = button.get_node("Icon").texture
+	var instance = preload("res://tooltip.tscn").instance()
+	if icon_texture != null:
+		if button.item == "red potion":
+			callToolTip(instance, "Red Potion", "+100 kcals +250 grams of water.\nHeals by 100 health instantly then by 10 every second, drinking more potions stacks the duration")
+		elif button.item == "strawberry":
+			callToolTip(instance,"Strawberry","+5 health points +9 kcals +24 grams of water")
+		elif button.item == "raspberry":
+			callToolTip(instance,"Raspberry","+3 health points +1 kcals +2 grams of water")
+		elif button.item == "beetroot":
+			callToolTip(instance,"beetroot","+15 health points +32 kcals +71.8 grams of water")
+			
+func _on_inventory_slot_mouse_exited(index):
+	for child in gui.get_children():
+		if child.is_in_group("Tooltip"):
+			child.queue_free()
+
+func callToolTip(instance,title, text):
+		gui.add_child(instance)
+		instance.showTooltip(title, text)
 # Function to combine slots when pressed
 func _on_CombineSlots_pressed():
+	savePlayerData()
+	saveInventoryData()
 	var combined_items = {}  # Dictionary to store combined items
 	for child in inventory_grid.get_children():
 		if child.is_in_group("Inventory"):
@@ -1226,7 +1565,6 @@ func _on_CombineSlots_pressed():
 						child.quantity = 0  # Reset quantity
 					else:
 						combined_items[item_path] = child.quantity
-
 	# Update quantities based on combined_items
 	for child in inventory_grid.get_children():
 		if child.is_in_group("Inventory"):
@@ -1235,7 +1573,10 @@ func _on_CombineSlots_pressed():
 			if item_path in combined_items:
 				child.quantity = combined_items[item_path]
 
+
 func _on_SplitFirstSlot_pressed():
+	savePlayerData()
+	saveInventoryData()
 	var first_slot = $UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot1
 	if first_slot.is_in_group("Inventory"):
 		var first_icon = first_slot.get_node("Icon")
@@ -1253,6 +1594,47 @@ func _on_SplitFirstSlot_pressed():
 							break
 
 #________________________________Add items to inventory_________________________
+var loot_amount = 1
+var chopping_power = 3
+var chopping_efficiency = 1 
+var pop_up_resource = preload("res://UI/floatingResource.tscn")
+func ChopTree():
+	var tree = ray.get_collider()
+	if Input.is_action_just_pressed("attack"):
+		if tree != null:
+			if tree.is_in_group("tree"):
+		#		tree.health -= chopping_power
+				# Generate a random number between 0 and 1
+				var random_value = randf()
+				# 25% chance for wood
+				if random_value < 0.2:
+					loot_amount = rng.randi_range(1, 2)
+					add_item.addStackableItem(inventory_grid,add_item.aubergine,loot_amount)
+					add_item.addFloatingIcon(take_damage_view,add_item.aubergine,loot_amount)
+				# 25% chance for acorn
+				elif random_value < 0.4:
+					loot_amount = rng.randi_range(5, 45)
+					add_item.addStackableItem(inventory_grid,add_item.raspberry,loot_amount)
+					add_item.addFloatingIcon(take_damage_view,add_item.raspberry,loot_amount)
+				# 25% chance for branch
+				elif random_value < 0.6:
+					loot_amount = rng.randi_range(3, 5)
+					add_item.addStackableItem(inventory_grid,add_item.potato,loot_amount)
+					add_item.addFloatingIcon(take_damage_view,add_item.potato,loot_amount)
+				elif random_value < 0.8:
+					loot_amount = rng.randi_range(15, 25)
+					add_item.addStackableItem(inventory_grid,add_item.onion,loot_amount)
+					add_item.addFloatingIcon(take_damage_view,add_item.onion,loot_amount)
+		# 25% chance for resin
+				else:
+					loot_amount = rng.randi_range(1, 5)
+					add_item.addStackableItem(inventory_grid,add_item.beetroot,loot_amount)
+					add_item.addFloatingIcon(take_damage_view,add_item.beetroot,loot_amount)
+
+
+
+
+
 func addItemToInventory():
 	pass
 #	var items = $Mesh/Detector.get_overlapping_bodies()
@@ -1275,25 +1657,63 @@ func addItemToInventory():
 #			add_item.addNotStackableItem(inventory_grid,add_item.garment1)
 #			add_item.addNotStackableItem(inventory_grid,add_item.shoe1)
 func _on_GiveMeItems_pressed():
-			add_item.addStackableItem(inventory_grid,add_item.rasberry_texture)
-			add_item.addStackableItem(inventory_grid,add_item.pants1)
-			add_item.addStackableItem(inventory_grid,add_item.hat1)
-			add_item.addStackableItem(inventory_grid,add_item.red_potion_texture)
-			add_item.addStackableItem(inventory_grid,add_item.strawberry_texture)
-			add_item.addStackableItem(inventory_grid,add_item.beetroot_texture)
-			add_item.addStackableItem(inventory_grid,add_item.rosehip_texture)
-			add_item.addStackableItem(inventory_grid,add_item.rasberry_texture)
-			add_item.addStackableItem(inventory_grid,add_item.belt1)
-			add_item.addStackableItem(inventory_grid,add_item.glove1)
-			add_item.addNotStackableItem(inventory_grid,add_item.wood_sword_texture)
-			add_item.addNotStackableItem(inventory_grid,add_item.garment1)
-			add_item.addNotStackableItem(inventory_grid,add_item.shoe1)
+	coins += 55
+	add_item.addStackableItem(inventory_grid,add_item.garlic,200)
+	add_item.addFloatingIcon(take_damage_view,add_item.garlic,200)
+	
+	add_item.addStackableItem(inventory_grid,add_item.potato,200)
+	add_item.addFloatingIcon(take_damage_view,add_item.potato,200)
+	add_item.addStackableItem(inventory_grid,add_item.onion,200)
+	add_item.addStackableItem(inventory_grid,add_item.carrot,200)
+	add_item.addStackableItem(inventory_grid,add_item.corn,200)
+	add_item.addStackableItem(inventory_grid,add_item.cabbage,200)
+	add_item.addStackableItem(inventory_grid,add_item.bell_pepper,200)
+	add_item.addStackableItem(inventory_grid,add_item.aubergine,200)
+	add_item.addStackableItem(inventory_grid,add_item.tomato,200)
+
+	
+	add_item.addStackableItem(inventory_grid,add_item.raspberry,200)
+	add_item.addStackableItem(inventory_grid,add_item.pants1,200)
+	add_item.addStackableItem(inventory_grid,add_item.hat1,200)
+	add_item.addStackableItem(inventory_grid,add_item.red_potion,200)
+	add_item.addStackableItem(inventory_grid,add_item.strawberry,200)
+	add_item.addStackableItem(inventory_grid,add_item.beetroot,200)
+	add_item.addStackableItem(inventory_grid,add_item.rosehip,200)
+	add_item.addStackableItem(inventory_grid,add_item.belt1,200)
+	add_item.addStackableItem(inventory_grid,add_item.glove1,200)
+	add_item.addNotStackableItem(inventory_grid,add_item.wood_sword)
+	add_item.addNotStackableItem(inventory_grid,add_item.garment1)
+	add_item.addNotStackableItem(inventory_grid,add_item.shoe1)
+	
+	
+	
+#_____________________________________Currency______________________________________________________
+onready var ethernium_label = $UI/GUI/Inventory/etherniumLabel
+onready var silver_label = $UI/GUI/Inventory/silverLabel
+onready var copper_label = $UI/GUI/Inventory/copperLabel
+
+var coins = 0 
+
+func money():
+	var ethernium_coins = str(coins / 10000)  # 100 silver = 1 ethernium
+	var silver_coins = str((coins % 10000) / 100)  # 100 copper = 1 silver
+	var copper_coins = str(coins % 100)  # Remaining copper coins
+	
+	
+	ethernium_label.text = ethernium_coins
+	silver_label.text = silver_coins
+	copper_label.text = copper_coins
+
+
+	
+	
+	
 #_____________________________________more GUI stuff________________________________________________
 onready var fps_label = $UI/GUI/Portrait/MinimapHolder/FPS
 func frameRate():
-
 	fps_label.text = "%d" % Engine.get_frames_per_second()
 func _on_FPS_pressed():
+	savePlayerData()
 	var current_fps = Engine.get_target_fps()
 	# Define FPS mapping
 	var fps_mapping = {
@@ -1313,6 +1733,7 @@ func _on_FPS_pressed():
 	# Set target FPS
 	if fps_mapping.has(current_fps):
 		Engine.set_target_fps(fps_mapping[current_fps])
+	print(fps_mapping)
 #_____________________________________Display Time/Location______________________________
 #onready var time_label = $UI/GUI/Minimap/Time
 #func displayClock():
@@ -1421,7 +1842,7 @@ func switch():
 			if currentInstance == null:
 				currentInstance = sword0.instance()
 				fixInstance()
-				addItemToCharacterSheet(main_weap_icon,main_weap_slot,add_item.wood_sword_texture,"sword0")
+				addItemToCharacterSheet(main_weap_icon,main_weap_slot,add_item.wood_sword,"sword0")
 		"sword1":    
 			if currentInstance == null:
 				currentInstance = sword1.instance()
@@ -1529,7 +1950,7 @@ func switchSec():
 			if sec_currentInstance == null:
 				sec_currentInstance = sword0.instance()
 				fixSecInstance()
-				addItemToCharacterSheet(sec_weap_icon,sec_weap_slot,add_item.wood_sword_texture,"sword0")
+				addItemToCharacterSheet(sec_weap_icon,sec_weap_slot,add_item.wood_sword,"sword0")
 		"sword1":    
 			if sec_currentInstance == null:
 				sec_currentInstance = sword1.instance()
@@ -1622,17 +2043,6 @@ func ShieldManagement():
 		dropShield()
 		has_shield0 = false
 
-
-func displayLabels():
-	var agility_label = $UI/GUI/Character/Stats/AgiVal
-	var int_label = $UI/GUI/Character/Stats/IntVal
-	var vit_label = $UI/GUI/Character/Stats/VitVal
-	displayStats(agility_label,agility)
-	displayStats(int_label,intelligence)
-	displayStats(vit_label,vitality)
-
-func displayStats(label,value):
-	label.text = str(value)
 	
 #___________________________________Status effects______________________________
 # Define effects and their corresponding stat changes
@@ -1822,7 +2232,7 @@ func redPotion():
 			red_potion_duration -= 1
 		else:
 			applyEffect(self,"redpotion",false)
-#_____________________________Hunger system and stuff___________________________
+#_____________________________Hunger system and Hydration System___________________________
 onready var kilocalories_label = $UI/GUI/Portrait/Kilocalories
 onready var kilocalories_bar = $UI/GUI/Portrait/KilocaloriesBar
 const base_kilocaries = 2000
@@ -1870,8 +2280,6 @@ func hunger():
 		
 		
 
-
-
 const base_water = 4000
 var max_water = 4000
 var water = 4000
@@ -1917,8 +2325,45 @@ func hydration():
 		applyEffect(self, "overhydration", false)
 		applyEffect(self, "dehydration", false)
 
+onready var black_screen = $UI/GUI/BlackScreen
+onready var tween = $Camroot/h/v/Camera/Aim/Cross/Tween
+func _on_Toilet2_pressed():
+	if water > 500 or kilocalories > 125:
+		kilocalories -= 500
+		water -= 125
+		if resolve > 25:
+			resolve -= 25
+		if breath > 30:
+			breath -= 25
+			
+		if black_screen.modulate.a == 0: # If black screen is transparent
+			# Tween to make black screen opaque
+			tween.interpolate_property(black_screen, "modulate", Color(0, 0, 0, 0), Color(0, 0, 0, 1), 1, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
+			tween.start()
 
+func curtainsDown():
+	if black_screen.modulate.a == 1: # If black screen is opaque
+		# Tween to make black screen transparent
+		tween.interpolate_property(black_screen, "modulate", Color(0, 0, 0, 1), Color(0, 0, 0, 0), 1, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
+		tween.start()
 
+func _on_Toilet1_pressed():
+	if water > 200:
+		water -= 200
+		if resolve > 5:
+			resolve -= 5
+		$Mesh/Piss.restart()
+		var damage_type = "piss"
+		var damage = 0
+		var aggro_power = damage + 20
+		var enemies = $Mesh/Piss.get_node("Area").get_overlapping_bodies()
+		for enemy in enemies:
+			if enemy.is_in_group("enemy"):
+				enemy.applyEffect(enemy,"effect1", true)
+				if enemy.has_method("takeDamage"):
+					if is_on_floor():
+						#insert sound effect here
+							enemy.takeDamage(damage,aggro_power,self,stagger_chance,damage_type)
 
 
 #Stats__________________________________________________________________________
@@ -1941,12 +2386,9 @@ var jumping_power = 20
 const base_dash_power = 20
 var dash_power = 20
 var attribute = 1000
-var skill_points = 1000
+
 var defense =  10
 
-
-
-#crude stats____________________________
 
 #magic energy systems 
 const base_max_aefis = 100
@@ -1966,9 +2408,7 @@ const base_max_health = 100
 var max_health = 100
 var health = 100
 #________________________
-const base_max_sanity = 100
-var max_sanity = 100
-var sanity = 100
+
 
 #additional combat energy systems
 const base_max_resolve = 100
@@ -1980,43 +2420,48 @@ var max_breath = 100
 var breath = 100
 
 
+var scale_factor = 1
 #attributes 
-var coordination = 1
-var creativity = 1
+#leveling
+var skill_points = 0
+var sanity  = 1
 var wisdom = 1
 var memory = 1
 var intelligence = 1
-var willpower = 1
-
-var power = 1
+var instinct = 1
+var force = 1
 var strength = 1
 var impact = 1
-var resistance = 1
-var tenacity = 1
-
+var ferocity  = 1 
+var fury = 1 
+#precision atts
 var accuracy = 1
 var dexterity = 1
-
+var poise = 1
 var balance = 1
 var focus = 1
-
-var acrobatics = 1
+#nimbleness atts
+var haste = 1
 var agility = 1
-var athletics = 1
+var celerity = 1
 var flexibility = 1
-var placeholder_ = 1
-
+var deflection = 1
+#thoughness atts
 var endurance = 1
 var stamina = 1
 var vitality = 1
-var vigor = 1
-var recovery = 1
-
+var resistance = 1
+var tenacity = 1
+#social atts
+const base_charisma = 1 
 var charisma = 1
+var charisma_multiplier = 1 
 var loyalty = 1 
 var diplomacy = 1
-var leadership = 1
+var authority = 1
 var empathy = 1
+var courage = 1 
+var recovery = 1
 
 #__________________________________________Defenses and stuff_______________________________________
 #resistances
@@ -2043,7 +2488,6 @@ func limitStatsToMaximum():
 		health = max_health
 
 func convertStats():
-	
 	max_health = base_max_health * vitality
 	max_sprint_speed = base_max_sprint_speed * agility
 	run_speed = base_run_speed * agility
@@ -2080,47 +2524,1432 @@ func displayResourcesRound(bar,label,value,max_value,acronim):
 
 
 
-onready var gui = $UI/GUI
-func _on_PlusAgi_mouse_entered():
-	var tool_tip_instance = preload("res://tooltip.tscn").instance()
-	var title = "Agility"
-	var text = "run speed, maximum sprint speed and acceleration are multiplied by agility"
-	
-	gui.add_child(tool_tip_instance)
-	tool_tip_instance.showTooltip(title, text)
-	print("Instance created")
+
+func _on_AgiLabel_mouse_entered():
+	var instance = preload("res://tooltip.tscn").instance()
+	callToolTip(instance,"Agility","run speed, maximum sprint speed and acceleration are multiplied by agility")
 
 
-
-func _on_PlusAgi_mouse_exited():
+func _on_AgiLabel_mouse_exited():
 	# Remove all children from the TextureButton
 	for child in gui.get_children():
 		if child.is_in_group("Tooltip"):
 			child.queue_free()
-
-
-func _on_Effect_pressed():
-	applyEffect(self, "scared", false)
-
-
-
-onready var black_screen = $UI/GUI/BlackScreen
-onready var tween = $Camroot/h/v/Camera/Aim/Cross/Tween
-func _on_Toilet_pressed():
-	if water > 500 or kilocalories > 500:
-		kilocalories -= 500
-		water -= 500
-		if resolve > 25:
-			resolve -= 25
-		if breath > 30:
-			breath -= 25
 			
-   # Assuming 'black_screen' is the name of your black screen node
-	if black_screen.modulate.a == 0: # If black screen is transparent
-		# Tween to make black screen opaque
-		tween.interpolate_property(black_screen, "modulate", Color(0, 0, 0, 0), Color(0, 0, 0, 1), 1, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
-		tween.start()
+func displayLabels():
+	var agility_label = $UI/GUI/Character/Stats/AgiVal
+	var int_label = $UI/GUI/Character/Stats/IntVal
+	var vit_label = $UI/GUI/Character/Stats/VitVal
+	displayStats(agility_label,agility)
+	displayStats(int_label,intelligence)
+	displayStats(vit_label,vitality)
+
+func displayStats(label,value):
+	label.text = str(value)
+
+
+
+var attribute_increase_factor = 0.1
+var minimum_att_value = 0.005
+#Leveling compounding attributes 
+var spent_attribute_points_san = 0
+var spent_attribute_points_wis = 0
+var spent_attribute_points_mem = 0
+var spent_attribute_points_int = 0
+var spent_attribute_points_ins = 0
+
+var spent_attribute_points_for = 0
+var spent_attribute_points_str = 0
+var spent_attribute_points_fur = 0
+var spent_attribute_points_imp = 0
+var spent_attribute_points_fer = 0
+
+var spent_attribute_points_foc = 0
+var spent_attribute_points_bal = 0
+var spent_attribute_points_dex = 0
+var spent_attribute_points_acc = 0
+var spent_attribute_points_poi = 0
+
+var spent_attribute_points_has = 0
+var spent_attribute_points_agi = 0
+var spent_attribute_points_cel = 0
+var spent_attribute_points_fle = 0
+var spent_attribute_points_def = 0
+
+var spent_attribute_points_end = 0
+var spent_attribute_points_sta = 0
+var spent_attribute_points_vit = 0
+var spent_attribute_points_res = 0
+var spent_attribute_points_ten = 0
+
+var spent_attribute_points_cha = 0
+var spent_attribute_points_loy = 0 
+var spent_attribute_points_dip = 0
+var spent_attribute_points_aut = 0
+var spent_attribute_points_cou = 0
+
+func resistanceMath():
+	pass
+#	var additional_resistance = 0
+#	var res_multiplier = 0.5
+#	if resistance > 1:
+#		additional_resistance = res_multiplier * (resistance - 1)
+#	elif resistance < 1:
+#		additional_resistance = -res_multiplier * (1 - resistance)
+#	defense = base_defense + int(resistance * 10)
+#	max_health = (base_max_health * (vitality + additional_resistance)) * scale_factor
+#	max_energy = base_max_energy * (stamina  + additional_resistance)
+#	max_resolve = base_max_resolve * (tenacity + additional_resistance)
+#
+const base_melee_atk_speed = 1 
+var melee_atk_speed = 1 
+const base_ranged_atk_speed = 1 
+var ranged_atk_speed = 1 
+const base_casting_speed = 1 
+var casting_speed = 1 
+func updateAttackSpeed():
+	var bonus_universal_speed = (celerity -1) * 0.15
+	var atk_speed_formula = (dexterity - scale_factor ) * 0.5 
+	melee_atk_speed = base_melee_atk_speed + atk_speed_formula + bonus_universal_speed
+	var atk_speed_formula_ranged = (strength -1) * 0.5
+	ranged_atk_speed = base_ranged_atk_speed + atk_speed_formula_ranged + bonus_universal_speed
+	var atk_speed_formula_casting = (instinct -1) * 0.35 + ((memory-1) * 0.05) + bonus_universal_speed
+	casting_speed = base_casting_speed + atk_speed_formula_casting
+	#display the labels
+	$BookStatsSkills/CombatStats/GridContainer/CastingSpeedValue.text = str(casting_speed)
+	$BookStatsSkills/CombatStats/GridContainer/RangedSpeedValue.text = str(ranged_atk_speed)
+	$BookStatsSkills/CombatStats/GridContainer/AtkSpeedValue.text = str(melee_atk_speed)
+var critical_chance = 0.00
+var critical_strength = 2
+func updateCritical():
+	critical_chance = max(0, (accuracy - 1.00) * 0.5) +  max(0, (impact - 1.00) * 0.005) 
+	critical_strength = ((ferocity -1) * 2) 
+#	critical_chance_val.text = str(round(critical_chance * 100 * 1000) / 1000) + "%"
+#	critical_str_val.text = "x" + str(critical_strength)
+var stagger_chance = 0.00
+func updateStaggerChance():
+	stagger_chance = max(0, (impact - 1.00) * 0.45) +  max(0, (ferocity - 1.00) * 0.005) 
+	$BookStatsSkills/CombatStats/GridContainer/StaggerChanceValue.text = str(stagger_chance)
+var life_steal = 1 
+#func updateLifeSteal():
+#	life_steal_value.text = str(life_steal * 100) + "%"
+func updateScaleRelatedAttributes():
+	charisma = base_charisma * (charisma_multiplier * 0.87 * (scale_factor * 1.15))
+func UpdateAllStats():
+	updateAttackSpeed()
+	updateScaleRelatedAttributes()
+	updateCritical()
+#	updateLifeSteal()
+	updateStaggerChance()
+func manageEnergy():
+	if is_running:
+		if energy >0:
+			energy -= 1 * scale_factor
+		if energy < 0:
+			energy = 0 
+	elif is_sprinting:
+		if energy >0:
+			energy -= 1.5 * scale_factor
+		if energy < 0:
+			energy = 0 
 	else:
-		# Tween to make black screen transparent
-		tween.interpolate_property(black_screen, "modulate", Color(0, 0, 0, 1), Color(0, 0, 0, 0), 1, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
-		tween.start()
+		if energy < max_energy:
+			energy += endurance + (fury * 0.25)
+		elif energy > max_energy:
+			energy = max_energy
+
+
+
+#intelligence
+func _on_PlusInt_pressed():
+	if attribute >0:
+		if spent_attribute_points_int < 5:
+			spent_attribute_points_int += 1
+			attribute -= 1 
+			intelligence += attribute_increase_factor
+		elif spent_attribute_points_int < 10:
+			spent_attribute_points_int += 1
+			attribute -= 1 
+			intelligence += attribute_increase_factor * 0.5
+		elif spent_attribute_points_int < 15:
+			spent_attribute_points_int += 1
+			attribute -= 1 
+			intelligence += attribute_increase_factor * 0.2
+		elif spent_attribute_points_int < 20:
+			spent_attribute_points_int += 1
+			attribute -= 1
+			intelligence += attribute_increase_factor * 0.1
+		elif spent_attribute_points_int < 25:
+			spent_attribute_points_int += 1
+			attribute -= 1 
+			intelligence += attribute_increase_factor * 0.05
+		else:
+			spent_attribute_points_int += 1
+			attribute -= 1 
+			intelligence += attribute_increase_factor * 0.01
+func _on_MinInt_pressed():
+	if intelligence > 0.05:
+		spent_attribute_points_int -= 1
+		attribute += 1 
+		if spent_attribute_points_int < 5:
+			intelligence -= attribute_increase_factor
+		elif spent_attribute_points_int < 10:
+			intelligence -= attribute_increase_factor * 0.5
+		elif spent_attribute_points_int < 15:
+			intelligence -= attribute_increase_factor * 0.2
+		elif spent_attribute_points_int < 20:
+			intelligence -= attribute_increase_factor * 0.1
+		elif spent_attribute_points_int < 25:
+			intelligence -= attribute_increase_factor * 0.05
+		else:
+			intelligence -= attribute_increase_factor * 0.01
+#Instincts
+func _on_PlusIns_pressed():
+	if attribute > 0:
+		if spent_attribute_points_ins < 5:
+			spent_attribute_points_ins += 1
+			attribute -= 1
+			instinct += attribute_increase_factor
+		elif spent_attribute_points_ins < 10:
+			spent_attribute_points_ins += 1
+			attribute -= 1
+			instinct += attribute_increase_factor * 0.5
+		elif spent_attribute_points_ins < 15:
+			spent_attribute_points_ins += 1
+			attribute -= 1
+			instinct += attribute_increase_factor * 0.2
+		elif spent_attribute_points_ins < 20:
+			spent_attribute_points_ins += 1
+			attribute -= 1
+			instinct += attribute_increase_factor * 0.1
+		elif spent_attribute_points_ins < 25:
+			spent_attribute_points_ins += 1
+			attribute -= 1
+			instinct += attribute_increase_factor * 0.05
+		else:
+			spent_attribute_points_ins += 1
+			attribute -= 1
+			instinct += attribute_increase_factor * 0.01
+func _on_MinIns_pressed():
+	if instinct > 0.05:
+		spent_attribute_points_ins -= 1
+		attribute += 1
+		if spent_attribute_points_ins < 5:
+			instinct -= attribute_increase_factor
+		elif spent_attribute_points_ins < 10:
+			instinct -= attribute_increase_factor * 0.5
+		elif spent_attribute_points_ins < 15:
+			instinct -= attribute_increase_factor * 0.2
+		elif spent_attribute_points_ins < 20:
+			instinct -= attribute_increase_factor * 0.1
+		elif spent_attribute_points_ins < 25:
+			instinct -= attribute_increase_factor * 0.05
+		else:
+			instinct -= attribute_increase_factor * 0.01
+# Wisdom
+func _on_PlusWis_pressed():
+	if attribute > 0:
+		if spent_attribute_points_wis < 5:
+			spent_attribute_points_wis += 1
+			attribute -= 1
+			wisdom += attribute_increase_factor
+		elif spent_attribute_points_wis < 10:
+			spent_attribute_points_wis += 1
+			attribute -= 1
+			wisdom += attribute_increase_factor * 0.5
+		elif spent_attribute_points_wis < 15:
+			spent_attribute_points_wis += 1
+			attribute -= 1
+			wisdom += attribute_increase_factor * 0.2
+		elif spent_attribute_points_wis < 20:
+			spent_attribute_points_wis += 1
+			attribute -= 1
+			wisdom += attribute_increase_factor * 0.1
+		elif spent_attribute_points_wis < 25:
+			spent_attribute_points_wis += 1
+			attribute -= 1
+			wisdom += attribute_increase_factor * 0.05
+		else:
+			spent_attribute_points_wis += 1
+			attribute -= 1
+			wisdom += attribute_increase_factor * 0.01
+func _on_MinWis_pressed():
+	if wisdom > 0.05:
+		spent_attribute_points_wis -= 1
+		attribute += 1
+		if spent_attribute_points_wis < 5:
+			wisdom -= attribute_increase_factor
+		elif spent_attribute_points_wis < 10:
+			wisdom -= attribute_increase_factor * 0.5
+		elif spent_attribute_points_wis < 15:
+			wisdom -= attribute_increase_factor * 0.2
+		elif spent_attribute_points_wis < 20:
+			wisdom -= attribute_increase_factor * 0.1
+		elif spent_attribute_points_wis < 25:
+			wisdom -= attribute_increase_factor * 0.05
+		else:
+			wisdom -= attribute_increase_factor * 0.01
+# Memory
+func _on_PlusMem_pressed():
+	if attribute > 0:
+		if spent_attribute_points_mem < 5:
+			spent_attribute_points_mem += 1
+			attribute -= 1
+			memory += attribute_increase_factor
+		elif spent_attribute_points_mem < 10:
+			spent_attribute_points_mem += 1
+			attribute -= 1
+			memory += attribute_increase_factor * 0.5
+		elif spent_attribute_points_mem < 15:
+			spent_attribute_points_mem += 1
+			attribute -= 1
+			memory += attribute_increase_factor * 0.2
+		elif spent_attribute_points_mem < 20:
+			spent_attribute_points_mem += 1
+			attribute -= 1
+			memory += attribute_increase_factor * 0.1
+		elif spent_attribute_points_mem < 25:
+			spent_attribute_points_mem += 1
+			attribute -= 1
+			memory += attribute_increase_factor * 0.05
+		else:
+			spent_attribute_points_mem += 1
+			attribute -= 1
+			memory += attribute_increase_factor * 0.01
+func _on_MinMem_pressed():
+	if memory > 0.05:
+		spent_attribute_points_mem -= 1
+		attribute += 1
+		if spent_attribute_points_mem < 5:
+			memory -= attribute_increase_factor
+		elif spent_attribute_points_mem < 10:
+			memory -= attribute_increase_factor * 0.5
+		elif spent_attribute_points_mem < 15:
+			memory -= attribute_increase_factor * 0.2
+		elif spent_attribute_points_mem < 20:
+			memory -= attribute_increase_factor * 0.1
+		elif spent_attribute_points_mem < 25:
+			memory -= attribute_increase_factor * 0.05
+		else:
+			memory -= attribute_increase_factor * 0.01
+# Sanity
+func _on_PlusSan_pressed():
+	if attribute > 0:
+		if spent_attribute_points_san < 5:
+			spent_attribute_points_san += 1
+			attribute -= 1
+			sanity += attribute_increase_factor
+		elif spent_attribute_points_san < 10:
+			spent_attribute_points_san += 1
+			attribute -= 1
+			sanity += attribute_increase_factor * 0.5
+		elif spent_attribute_points_san < 15:
+			spent_attribute_points_san += 1
+			attribute -= 1
+			sanity += attribute_increase_factor * 0.2
+		elif spent_attribute_points_san < 20:
+			spent_attribute_points_san += 1
+			attribute -= 1
+			sanity += attribute_increase_factor * 0.1
+		elif spent_attribute_points_san < 25:
+			spent_attribute_points_san += 1
+			attribute -= 1
+			sanity += attribute_increase_factor * 0.05
+		else:
+			spent_attribute_points_san += 1
+			attribute -= 1
+			sanity += attribute_increase_factor * 0.01
+func _on_MinSan_pressed():
+	if sanity > 0.05:
+		spent_attribute_points_san -= 1
+		attribute += 1
+		if spent_attribute_points_san < 5:
+			sanity -= attribute_increase_factor
+		elif spent_attribute_points_san < 10:
+			sanity -= attribute_increase_factor * 0.5
+		elif spent_attribute_points_san < 15:
+			sanity -= attribute_increase_factor * 0.2
+		elif spent_attribute_points_san < 20:
+			sanity -= attribute_increase_factor * 0.1
+		elif spent_attribute_points_san < 25:
+			sanity -= attribute_increase_factor * 0.05
+		else:
+			sanity -= attribute_increase_factor * 0.01
+#Strength
+func _on_PlusStr_pressed():
+	if attribute > 0:
+		if spent_attribute_points_str < 5:
+			spent_attribute_points_str += 1
+			attribute -= 1
+			strength += attribute_increase_factor
+		elif spent_attribute_points_str < 10:
+			spent_attribute_points_str += 1
+			attribute -= 1
+			strength += attribute_increase_factor * 0.5
+		elif spent_attribute_points_str < 15:
+			spent_attribute_points_str += 1
+			attribute -= 1
+			strength += attribute_increase_factor * 0.2
+		elif spent_attribute_points_str < 20:
+			spent_attribute_points_str += 1
+			attribute -= 1
+			strength += attribute_increase_factor * 0.1
+		elif spent_attribute_points_str < 25:
+			spent_attribute_points_str += 1
+			attribute -= 1
+			strength += attribute_increase_factor * 0.05
+		else:
+			spent_attribute_points_str += 1
+			attribute -= 1
+			strength += attribute_increase_factor * 0.01
+func _on_MinStr_pressed():
+	if strength > 0.05:
+		spent_attribute_points_str -= 1
+		attribute += 1
+		if spent_attribute_points_str < 5:
+			strength -= attribute_increase_factor
+		elif spent_attribute_points_str < 10:
+			strength -= attribute_increase_factor * 0.5
+		elif spent_attribute_points_str < 15:
+			strength -= attribute_increase_factor * 0.2
+		elif spent_attribute_points_str < 20:
+			strength -= attribute_increase_factor * 0.1
+		elif spent_attribute_points_str < 25:
+			strength -= attribute_increase_factor * 0.05
+		else:
+			strength -= attribute_increase_factor * 0.01
+#Force
+func _on_PlusFor_pressed():
+	if attribute > 0:
+		if spent_attribute_points_for < 5:
+			spent_attribute_points_for += 1
+			attribute -= 1
+			force += attribute_increase_factor
+		elif spent_attribute_points_for < 10:
+			spent_attribute_points_for += 1
+			attribute -= 1
+			force += attribute_increase_factor * 0.5
+		elif spent_attribute_points_for < 15:
+			spent_attribute_points_for += 1
+			attribute -= 1
+			force += attribute_increase_factor * 0.2
+		elif spent_attribute_points_for < 20:
+			spent_attribute_points_for += 1
+			attribute -= 1
+			force += attribute_increase_factor * 0.1
+		elif spent_attribute_points_for < 25:
+			spent_attribute_points_for += 1
+			attribute -= 1
+			force += attribute_increase_factor * 0.05
+		else:
+			spent_attribute_points_for += 1
+			attribute -= 1
+			force += attribute_increase_factor * 0.01
+func _on_MinFor_pressed():
+	if force > 0.05:
+		spent_attribute_points_for -= 1
+		attribute += 1
+		if spent_attribute_points_for < 5:
+			force -= attribute_increase_factor
+		elif spent_attribute_points_for < 10:
+			force -= attribute_increase_factor * 0.5
+		elif spent_attribute_points_for < 15:
+			force -= attribute_increase_factor * 0.2
+		elif spent_attribute_points_for < 20:
+			force -= attribute_increase_factor * 0.1
+		elif spent_attribute_points_for < 25:
+			force -= attribute_increase_factor * 0.05
+		else:
+			force -= attribute_increase_factor * 0.01
+#Impact
+func _on_PlusImp_pressed():
+	if attribute > 0:
+		if spent_attribute_points_imp < 5:
+			spent_attribute_points_imp += 1
+			attribute -= 1
+			impact += attribute_increase_factor
+		elif spent_attribute_points_imp < 10:
+			spent_attribute_points_imp += 1
+			attribute -= 1
+			impact += attribute_increase_factor * 0.5
+		elif spent_attribute_points_imp < 15:
+			spent_attribute_points_imp += 1
+			attribute -= 1
+			impact += attribute_increase_factor * 0.2
+		elif spent_attribute_points_imp < 20:
+			spent_attribute_points_imp += 1
+			attribute -= 1
+			impact += attribute_increase_factor * 0.1
+		elif spent_attribute_points_imp < 25:
+			spent_attribute_points_imp += 1
+			attribute -= 1
+			impact += attribute_increase_factor * 0.05
+		else:
+			spent_attribute_points_imp += 1
+			attribute -= 1
+			impact += attribute_increase_factor * 0.01
+func _on_MinImp_pressed():
+	if impact > 0.05:
+		spent_attribute_points_imp -= 1
+		attribute += 1
+		if spent_attribute_points_imp < 5:
+			impact -= attribute_increase_factor
+		elif spent_attribute_points_imp < 10:
+			impact -= attribute_increase_factor * 0.5
+		elif spent_attribute_points_imp < 15:
+			impact -= attribute_increase_factor * 0.2
+		elif spent_attribute_points_imp < 20:
+			impact -= attribute_increase_factor * 0.1
+		elif spent_attribute_points_imp < 25:
+			impact -= attribute_increase_factor * 0.05
+		else:
+			impact -= attribute_increase_factor * 0.01
+#Ferocity
+func _on_PlusFer_pressed():
+	if attribute > 0:
+		if spent_attribute_points_fer < 5:
+			spent_attribute_points_fer += 1
+			attribute -= 1
+			ferocity += attribute_increase_factor
+		elif spent_attribute_points_fer < 10:
+			spent_attribute_points_fer += 1
+			attribute -= 1
+			ferocity += attribute_increase_factor * 0.5
+		elif spent_attribute_points_fer < 15:
+			spent_attribute_points_fer += 1
+			attribute -= 1
+			ferocity += attribute_increase_factor * 0.2
+		elif spent_attribute_points_fer < 20:
+			spent_attribute_points_fer += 1
+			attribute -= 1
+			ferocity += attribute_increase_factor * 0.1
+		elif spent_attribute_points_fer < 25:
+			spent_attribute_points_fer += 1
+			attribute -= 1
+			ferocity += attribute_increase_factor * 0.05
+		else:
+			spent_attribute_points_fer += 1
+			attribute -= 1
+			ferocity += attribute_increase_factor * 0.01
+func _on_MinFer_pressed():
+	if ferocity > 0.05:
+		spent_attribute_points_fer -= 1
+		attribute += 1
+		if spent_attribute_points_fer < 5:
+			ferocity -= attribute_increase_factor
+		elif spent_attribute_points_fer < 10:
+			ferocity -= attribute_increase_factor * 0.5
+		elif spent_attribute_points_fer < 15:
+			ferocity -= attribute_increase_factor * 0.2
+		elif spent_attribute_points_fer < 20:
+			ferocity -= attribute_increase_factor * 0.1
+		elif spent_attribute_points_fer < 25:
+			ferocity -= attribute_increase_factor * 0.05
+		else:
+			ferocity -= attribute_increase_factor * 0.01
+#Fury
+func _on_PlusFur_pressed():
+	if attribute > 0:
+		if spent_attribute_points_fur < 5:
+			spent_attribute_points_fur += 1
+			attribute -= 1
+			fury += attribute_increase_factor
+		elif spent_attribute_points_fur < 10:
+			spent_attribute_points_fur += 1
+			attribute -= 1
+			fury += attribute_increase_factor * 0.5
+		elif spent_attribute_points_fur < 15:
+			spent_attribute_points_fur+= 1
+			attribute -= 1
+			fury += attribute_increase_factor * 0.2
+		elif spent_attribute_points_fur < 20:
+			spent_attribute_points_fur += 1
+			attribute -= 1
+			fury += attribute_increase_factor * 0.1
+		elif spent_attribute_points_fur < 25:
+			spent_attribute_points_fur += 1
+			attribute -= 1
+			fury += attribute_increase_factor * 0.05
+		else:
+			spent_attribute_points_fur += 1
+			attribute -= 1
+			fury += attribute_increase_factor * 0.01
+func _on_MinFur_pressed():
+	if fury > 0.05:
+		spent_attribute_points_fur -= 1
+		attribute += 1
+		if spent_attribute_points_fur < 5:
+			fury -= attribute_increase_factor
+		elif spent_attribute_points_fur < 10:
+			fury -= attribute_increase_factor * 0.5
+		elif spent_attribute_points_fur < 15:
+			fury -= attribute_increase_factor * 0.2
+		elif spent_attribute_points_fur < 20:
+			fury -= attribute_increase_factor * 0.1
+		elif spent_attribute_points_fur < 25:
+			fury -= attribute_increase_factor * 0.05
+		else:
+			fury -= attribute_increase_factor * 0.01
+#Vitality, for now it only increases health 
+func _on_PlusVit_pressed():
+	if attribute > 0:
+		if spent_attribute_points_vit < 5:
+			spent_attribute_points_vit += 1
+			attribute -= 1
+			vitality += attribute_increase_factor
+		elif spent_attribute_points_vit < 10:
+			spent_attribute_points_vit += 1
+			attribute -= 1
+			vitality += attribute_increase_factor * 0.5
+		elif spent_attribute_points_vit < 15:
+			spent_attribute_points_vit += 1
+			attribute -= 1
+			vitality += attribute_increase_factor * 0.2
+		elif spent_attribute_points_vit < 20:
+			spent_attribute_points_vit += 1
+			attribute -= 1
+			vitality += attribute_increase_factor * 0.1
+		elif spent_attribute_points_vit < 25:
+			spent_attribute_points_vit += 1
+			attribute -= 1
+			vitality += attribute_increase_factor * 0.05
+		else:
+			spent_attribute_points_vit += 1
+			attribute -= 1
+			vitality += attribute_increase_factor * 0.01
+func _on_MinVit_pressed():
+	if vitality > 0.05:
+		spent_attribute_points_vit -= 1
+		attribute += 1
+		if spent_attribute_points_vit < 5:
+			vitality -= attribute_increase_factor
+		elif spent_attribute_points_vit < 10:
+			vitality -= attribute_increase_factor * 0.5
+		elif spent_attribute_points_vit < 15:
+			vitality -= attribute_increase_factor * 0.2
+		elif spent_attribute_points_vit < 20:
+			vitality -= attribute_increase_factor * 0.1
+		elif spent_attribute_points_vit < 25:
+			vitality -= attribute_increase_factor * 0.05
+		else:
+			vitality -= attribute_increase_factor * 0.01
+#Stamina 
+func _on_PlusSta_pressed():
+	if attribute > 0:
+		if spent_attribute_points_sta < 5:
+			spent_attribute_points_sta += 1
+			attribute -= 1
+			stamina += attribute_increase_factor
+		elif spent_attribute_points_sta < 10:
+			spent_attribute_points_sta += 1
+			attribute -= 1
+			stamina += attribute_increase_factor * 0.5
+		elif spent_attribute_points_sta < 15:
+			spent_attribute_points_sta += 1
+			attribute -= 1
+			stamina += attribute_increase_factor * 0.2
+		elif spent_attribute_points_sta < 20:
+			spent_attribute_points_sta += 1
+			attribute -= 1
+			stamina += attribute_increase_factor * 0.1
+		elif spent_attribute_points_sta < 25:
+			spent_attribute_points_sta += 1
+			attribute -= 1
+			stamina += attribute_increase_factor * 0.05
+		else:
+			spent_attribute_points_sta += 1
+			attribute -= 1
+			stamina += attribute_increase_factor * 0.01
+func _on_MinSta_pressed():
+	if stamina > 0.05:
+		spent_attribute_points_sta -= 1
+		attribute += 1
+		if spent_attribute_points_sta < 5:
+			stamina -= attribute_increase_factor
+		elif spent_attribute_points_sta < 10:
+			stamina -= attribute_increase_factor * 0.5
+		elif spent_attribute_points_sta < 15:
+			stamina -= attribute_increase_factor * 0.2
+		elif spent_attribute_points_sta < 20:
+			stamina -= attribute_increase_factor * 0.1
+		elif spent_attribute_points_sta < 25:
+			stamina -= attribute_increase_factor * 0.05
+		else:
+			stamina -= attribute_increase_factor * 0.01
+#Endurance
+func _on_PlusEnd_pressed():
+	if attribute > 0:
+		if spent_attribute_points_end < 5:
+			spent_attribute_points_end += 1
+			attribute -= 1
+			endurance += attribute_increase_factor
+		elif spent_attribute_points_end < 10:
+			spent_attribute_points_end += 1
+			attribute -= 1
+			endurance += attribute_increase_factor * 0.5
+		elif spent_attribute_points_end < 15:
+			spent_attribute_points_end += 1
+			attribute -= 1
+			endurance += attribute_increase_factor * 0.2
+		elif spent_attribute_points_end < 20:
+			spent_attribute_points_end += 1
+			attribute -= 1
+			endurance += attribute_increase_factor * 0.1
+		elif spent_attribute_points_end < 25:
+			spent_attribute_points_end += 1
+			attribute -= 1
+			endurance += attribute_increase_factor * 0.05
+		else:
+			spent_attribute_points_end += 1
+			attribute -= 1
+			endurance += attribute_increase_factor * 0.01
+func _on_MinEnd_pressed():
+	if endurance > 0.05:
+		spent_attribute_points_end -= 1
+		attribute += 1
+		if spent_attribute_points_end < 5:
+			endurance -= attribute_increase_factor
+		elif spent_attribute_points_end < 10:
+			endurance -= attribute_increase_factor * 0.5
+		elif spent_attribute_points_end < 15:
+			endurance -= attribute_increase_factor * 0.2
+		elif spent_attribute_points_end < 20:
+			endurance -= attribute_increase_factor * 0.1
+		elif spent_attribute_points_end < 25:
+			endurance -= attribute_increase_factor * 0.05
+		else:
+			endurance -= attribute_increase_factor * 0.01
+
+#Resistance, it increases health, energy, resolve, defense at 1/3 value of other attributes
+func _on_PlusRes_pressed():
+	if attribute > 0:
+		if spent_attribute_points_res < 5:
+			spent_attribute_points_res += 1
+			attribute -= 1
+			resistance += attribute_increase_factor
+		elif spent_attribute_points_res < 10:
+			spent_attribute_points_res += 1
+			attribute -= 1
+			resistance += attribute_increase_factor * 0.5
+		elif spent_attribute_points_res < 15:
+			spent_attribute_points_res += 1
+			attribute -= 1
+			resistance += attribute_increase_factor * 0.2
+		elif spent_attribute_points_res < 20:
+			spent_attribute_points_res += 1
+			attribute -= 1
+			resistance += attribute_increase_factor * 0.1
+		elif spent_attribute_points_res < 25:
+			spent_attribute_points_res += 1
+			attribute -= 1
+			resistance += attribute_increase_factor * 0.05
+		else:
+			spent_attribute_points_res += 1
+			attribute -= 1
+			resistance += attribute_increase_factor * 0.01
+func _on_MinRes_pressed():
+	if resistance > 0.05:
+		spent_attribute_points_res -= 1
+		attribute += 1
+		if spent_attribute_points_res < 5:
+			resistance -= attribute_increase_factor
+		elif spent_attribute_points_res < 10:
+			resistance -= attribute_increase_factor * 0.5
+		elif spent_attribute_points_res < 15:
+			resistance -= attribute_increase_factor * 0.2
+		elif spent_attribute_points_res < 20:
+			resistance -= attribute_increase_factor * 0.1
+		elif spent_attribute_points_res < 25:
+			resistance -= attribute_increase_factor * 0.05
+		else:
+			resistance -= attribute_increase_factor * 0.01
+#Tenacity
+func _on_PlusTen_pressed():
+	if attribute > 0:
+		if spent_attribute_points_ten < 5:
+			spent_attribute_points_ten += 1
+			attribute -= 1
+			tenacity += attribute_increase_factor
+		elif spent_attribute_points_ten < 10:
+			spent_attribute_points_ten += 1
+			attribute -= 1
+			tenacity += attribute_increase_factor * 0.5
+		elif spent_attribute_points_ten < 15:
+			spent_attribute_points_ten += 1
+			attribute -= 1
+			tenacity += attribute_increase_factor * 0.2
+		elif spent_attribute_points_ten < 20:
+			spent_attribute_points_ten += 1
+			attribute -= 1
+			tenacity += attribute_increase_factor * 0.1
+		elif spent_attribute_points_ten < 25:
+			spent_attribute_points_ten += 1
+			attribute -= 1
+			tenacity += attribute_increase_factor * 0.05
+		else:
+			spent_attribute_points_ten += 1
+			attribute -= 1
+			tenacity += attribute_increase_factor * 0.0
+func _on_MinTen_pressed():
+	if tenacity > 0.05:
+		spent_attribute_points_ten -= 1
+		attribute += 1
+		if spent_attribute_points_ten < 5:
+			tenacity -= attribute_increase_factor
+		elif spent_attribute_points_ten < 10:
+			tenacity -= attribute_increase_factor * 0.5
+		elif spent_attribute_points_ten < 15:
+			tenacity -= attribute_increase_factor * 0.2
+		elif spent_attribute_points_ten < 20:
+			tenacity -= attribute_increase_factor * 0.1
+		elif spent_attribute_points_ten < 25:
+			tenacity -= attribute_increase_factor * 0.05
+		else:
+			tenacity -= attribute_increase_factor * 0.01
+#Agility 
+func _on_PlusAgi_pressed():
+	if attribute > 0:
+		if spent_attribute_points_agi < 5:
+			spent_attribute_points_agi += 1
+			attribute -= 1
+			agility += attribute_increase_factor
+		elif spent_attribute_points_agi < 10:
+			spent_attribute_points_agi += 1
+			attribute -= 1
+			agility += attribute_increase_factor * 0.5
+		elif spent_attribute_points_agi < 15:
+			spent_attribute_points_agi += 1
+			attribute -= 1
+			agility += attribute_increase_factor * 0.2
+		elif spent_attribute_points_agi < 20:
+			spent_attribute_points_agi += 1
+			attribute -= 1
+			agility += attribute_increase_factor * 0.1
+		elif spent_attribute_points_agi < 25:
+			spent_attribute_points_agi += 1
+			attribute -= 1
+			agility += attribute_increase_factor * 0.05
+		else:
+			spent_attribute_points_agi += 1
+			attribute -= 1
+			agility += attribute_increase_factor * 0.01
+func _on_MinAgi_pressed():
+	if agility > 0.05:
+		spent_attribute_points_agi -= 1
+		attribute += 1
+		if spent_attribute_points_agi < 5:
+			agility -= attribute_increase_factor
+		elif spent_attribute_points_agi < 10:
+			agility -= attribute_increase_factor * 0.5
+		elif spent_attribute_points_agi < 15:
+			agility -= attribute_increase_factor * 0.2
+		elif spent_attribute_points_agi < 20:
+			agility -= attribute_increase_factor * 0.1
+		elif spent_attribute_points_agi < 25:
+			agility -= attribute_increase_factor * 0.05
+		else:
+			agility -= attribute_increase_factor * 0.01
+#Haste
+func _on_PlusHas_pressed():
+	if attribute > 0:
+		if spent_attribute_points_has < 5:
+			spent_attribute_points_has += 1
+			attribute -= 1
+			haste += attribute_increase_factor
+		elif spent_attribute_points_has < 10:
+			spent_attribute_points_has += 1
+			attribute -= 1
+			haste += attribute_increase_factor * 0.5
+		elif spent_attribute_points_has < 15:
+			spent_attribute_points_has += 1
+			attribute -= 1
+			haste += attribute_increase_factor * 0.2
+		elif spent_attribute_points_has < 20:
+			spent_attribute_points_has += 1
+			attribute -= 1
+			haste += attribute_increase_factor * 0.1
+		elif spent_attribute_points_has < 25:
+			spent_attribute_points_has += 1
+			attribute -= 1
+			haste += attribute_increase_factor * 0.05
+		else:
+			spent_attribute_points_has += 1
+			attribute -= 1
+			haste += attribute_increase_factor * 0.01
+func _on_MinHas_pressed():
+	if haste > 0.05:
+		spent_attribute_points_has -= 1
+		attribute += 1
+		if spent_attribute_points_has < 5:
+			haste -= attribute_increase_factor
+		elif spent_attribute_points_has < 10:
+			haste -= attribute_increase_factor * 0.5
+		elif spent_attribute_points_has < 15:
+			haste -= attribute_increase_factor * 0.2
+		elif spent_attribute_points_has < 20:
+			haste -= attribute_increase_factor * 0.1
+		elif spent_attribute_points_has < 25:
+			haste -= attribute_increase_factor * 0.05
+		else:
+			haste -= attribute_increase_factor * 0.01
+#Celerety 
+func _on_PlusCel_pressed():
+	if attribute > 0:
+		if spent_attribute_points_cel < 5:
+			spent_attribute_points_cel += 1
+			attribute -= 1
+			celerity += attribute_increase_factor
+		elif spent_attribute_points_cel < 10:
+			spent_attribute_points_cel += 1
+			attribute -= 1
+			celerity += attribute_increase_factor * 0.5
+		elif spent_attribute_points_cel < 15:
+			spent_attribute_points_cel += 1
+			attribute -= 1
+			celerity += attribute_increase_factor * 0.2
+		elif spent_attribute_points_cel < 20:
+			spent_attribute_points_cel += 1
+			attribute -= 1
+			celerity += attribute_increase_factor * 0.1
+		elif spent_attribute_points_cel < 25:
+			spent_attribute_points_cel += 1
+			attribute -= 1
+			celerity += attribute_increase_factor * 0.05
+		else:
+			spent_attribute_points_cel += 1
+			attribute -= 1
+			celerity += attribute_increase_factor * 0.01
+func _on_MinCel_pressed():
+	if celerity > 0.05:
+		spent_attribute_points_cel -= 1
+		attribute += 1
+		if spent_attribute_points_cel < 5:
+			celerity -= attribute_increase_factor
+		elif spent_attribute_points_cel < 10:
+			celerity -= attribute_increase_factor * 0.5
+		elif spent_attribute_points_cel < 15:
+			celerity -= attribute_increase_factor * 0.2
+		elif spent_attribute_points_cel < 20:
+			celerity -= attribute_increase_factor * 0.1
+		elif spent_attribute_points_cel < 25:
+			celerity -= attribute_increase_factor * 0.05
+		else:
+			celerity -= attribute_increase_factor * 0.01
+#Flexibity.... this is mostly about taking less falling damage or when being knocked down by tackles 
+func _on_PlusFle_pressed():
+	if attribute > 0:
+		if spent_attribute_points_fle < 5:
+			spent_attribute_points_fle += 1
+			attribute -= 1
+			flexibility += attribute_increase_factor
+		elif spent_attribute_points_fle< 10:
+			spent_attribute_points_fle += 1
+			attribute -= 1
+			flexibility += attribute_increase_factor * 0.5
+		elif spent_attribute_points_fle < 15:
+			spent_attribute_points_fle += 1
+			attribute -= 1
+			flexibility += attribute_increase_factor * 0.2
+		elif spent_attribute_points_fle< 20:
+			spent_attribute_points_fle += 1
+			attribute -= 1
+			flexibility += attribute_increase_factor * 0.1
+		elif spent_attribute_points_fle < 25:
+			spent_attribute_points_fle += 1
+			attribute -= 1
+			flexibility += attribute_increase_factor * 0.05
+		else:
+			spent_attribute_points_fle += 1
+			attribute -= 1
+			flexibility += attribute_increase_factor * 0.01
+func _on_MinFle_pressed():
+	if flexibility > 0.05:
+		spent_attribute_points_fle -= 1
+		attribute += 1
+		if spent_attribute_points_fle < 5:
+			flexibility -= attribute_increase_factor
+		elif spent_attribute_points_fle < 10:
+			flexibility -= attribute_increase_factor * 0.5
+		elif spent_attribute_points_fle < 15:
+			flexibility -= attribute_increase_factor * 0.2
+		elif spent_attribute_points_fle < 20:
+			flexibility -= attribute_increase_factor * 0.1
+		elif spent_attribute_points_fle < 25:
+			flexibility -= attribute_increase_factor * 0.05
+		else:
+			flexibility -= attribute_increase_factor * 0.01
+
+#Deflextion, influence chance to take less damage, kind of opposite of critical hits
+# Deflection
+func _on_PlusDef_pressed():
+	if attribute > 0:
+		if spent_attribute_points_def < 5:
+			spent_attribute_points_def += 1
+			attribute -= 1
+			deflection += attribute_increase_factor
+		elif spent_attribute_points_def < 10:
+			spent_attribute_points_def += 1
+			attribute -= 1
+			deflection += attribute_increase_factor * 0.5
+		elif spent_attribute_points_def < 15:
+			spent_attribute_points_def += 1
+			attribute -= 1
+			deflection += attribute_increase_factor * 0.2
+		elif spent_attribute_points_def < 20:
+			spent_attribute_points_def += 1
+			attribute -= 1
+			deflection += attribute_increase_factor * 0.1
+		elif spent_attribute_points_def < 25:
+			spent_attribute_points_def += 1
+			attribute -= 1
+			deflection += attribute_increase_factor * 0.05
+		else:
+			spent_attribute_points_def += 1
+			attribute -= 1
+			deflection += attribute_increase_factor * 0.01
+func _on_MinDef_pressed():
+	if deflection > 0.05:
+		spent_attribute_points_def -= 1
+		attribute += 1
+		if spent_attribute_points_def < 5:
+			deflection -= attribute_increase_factor
+		elif spent_attribute_points_def < 10:
+			deflection -= attribute_increase_factor * 0.5
+		elif spent_attribute_points_def < 15:
+			deflection -= attribute_increase_factor * 0.2
+		elif spent_attribute_points_def < 20:
+			deflection -= attribute_increase_factor * 0.1
+		elif spent_attribute_points_def < 25:
+			deflection -= attribute_increase_factor * 0.05
+		else:
+			deflection -= attribute_increase_factor * 0.01
+#Dexterity
+func _on_PlusDex_pressed():
+	if attribute > 0:
+		if spent_attribute_points_dex < 5:
+			spent_attribute_points_dex += 1
+			attribute -= 1
+			dexterity += attribute_increase_factor
+		elif spent_attribute_points_dex < 10:
+			spent_attribute_points_dex += 1
+			attribute -= 1
+			dexterity += attribute_increase_factor * 0.5
+		elif spent_attribute_points_dex < 15:
+			spent_attribute_points_dex += 1
+			attribute -= 1
+			dexterity += attribute_increase_factor * 0.2
+		elif spent_attribute_points_dex < 20:
+			spent_attribute_points_dex += 1
+			attribute -= 1
+			dexterity += attribute_increase_factor * 0.1
+		elif spent_attribute_points_dex < 25:
+			spent_attribute_points_dex += 1
+			attribute -= 1
+			dexterity += attribute_increase_factor * 0.05
+		else:
+			spent_attribute_points_dex += 1
+			attribute -= 1
+			dexterity += attribute_increase_factor * 0.01
+func _on_MinDex_pressed():
+	if dexterity > 0.05:
+		spent_attribute_points_dex -= 1
+		attribute += 1
+		if spent_attribute_points_dex < 5:
+			dexterity -= attribute_increase_factor
+		elif spent_attribute_points_dex < 10:
+			dexterity -= attribute_increase_factor * 0.5
+		elif spent_attribute_points_dex < 15:
+			dexterity -= attribute_increase_factor * 0.2
+		elif spent_attribute_points_dex < 20:
+			dexterity -= attribute_increase_factor * 0.1
+		elif spent_attribute_points_dex < 25:
+			dexterity -= attribute_increase_factor * 0.05
+		else:
+			dexterity -= attribute_increase_factor * 0.01
+#Accuracy
+func _on_PlusAcc_pressed():
+	if attribute > 0:
+		if spent_attribute_points_acc < 5:
+			spent_attribute_points_acc += 1
+			attribute -= 1
+			accuracy += attribute_increase_factor
+		elif spent_attribute_points_acc < 10:
+			spent_attribute_points_acc += 1
+			attribute -= 1
+			accuracy += attribute_increase_factor * 0.5
+		elif spent_attribute_points_acc < 15:
+			spent_attribute_points_acc += 1
+			attribute -= 1
+			accuracy += attribute_increase_factor * 0.2
+		elif spent_attribute_points_acc < 20:
+			spent_attribute_points_acc += 1
+			attribute -= 1
+			accuracy += attribute_increase_factor * 0.1
+		elif spent_attribute_points_acc < 25:
+			spent_attribute_points_acc += 1
+			attribute -= 1
+			accuracy += attribute_increase_factor * 0.05
+		else:
+			spent_attribute_points_acc += 1
+			attribute -= 1
+			accuracy += attribute_increase_factor * 0.01
+func _on_MinAcc_pressed():
+	if accuracy > 0.05:
+		spent_attribute_points_acc -= 1
+		attribute += 1
+		if spent_attribute_points_acc < 5:
+			accuracy -= attribute_increase_factor
+		elif spent_attribute_points_acc < 10:
+			accuracy -= attribute_increase_factor * 0.5
+		elif spent_attribute_points_acc < 15:
+			accuracy -= attribute_increase_factor * 0.2
+		elif spent_attribute_points_acc < 20:
+			accuracy -= attribute_increase_factor * 0.1
+		elif spent_attribute_points_acc < 25:
+			accuracy -= attribute_increase_factor * 0.05
+		else:
+			accuracy -= attribute_increase_factor * 0.01
+#Focus
+func _on_PlusFoc_pressed():
+	if attribute > 0:
+		if spent_attribute_points_foc < 5:
+			spent_attribute_points_foc += 1
+			attribute -= 1
+			focus += attribute_increase_factor
+		elif spent_attribute_points_foc < 10:
+			spent_attribute_points_foc += 1
+			attribute -= 1
+			focus += attribute_increase_factor * 0.5
+		elif spent_attribute_points_foc < 15:
+			spent_attribute_points_foc += 1
+			attribute -= 1
+			focus += attribute_increase_factor * 0.2
+		elif spent_attribute_points_foc < 20:
+			spent_attribute_points_foc += 1
+			attribute -= 1
+			focus += attribute_increase_factor * 0.1
+		elif spent_attribute_points_foc < 25:
+			spent_attribute_points_foc += 1
+			attribute -= 1
+			focus += attribute_increase_factor * 0.05
+		else:
+			spent_attribute_points_foc += 1
+			attribute -= 1
+			focus += attribute_increase_factor * 0.01
+func _on_MinFoc_pressed():
+	if focus > 0.05:
+		spent_attribute_points_foc -= 1
+		attribute += 1
+		if spent_attribute_points_foc < 5:
+			focus -= attribute_increase_factor
+		elif spent_attribute_points_foc < 10:
+			focus -= attribute_increase_factor * 0.5
+		elif spent_attribute_points_foc < 15:
+			focus -= attribute_increase_factor * 0.2
+		elif spent_attribute_points_foc < 20:
+			focus -= attribute_increase_factor * 0.1
+		elif spent_attribute_points_foc < 25:
+			focus -= attribute_increase_factor * 0.05
+		else:
+			focus -= attribute_increase_factor * 0.01
+#Poise 
+func _on_PlusPoi_pressed():
+	if attribute > 0:
+		if spent_attribute_points_poi < 5:
+			spent_attribute_points_poi += 1
+			attribute -= 1
+			poise += attribute_increase_factor
+		elif spent_attribute_points_poi < 10:
+			spent_attribute_points_poi += 1
+			attribute -= 1
+			poise += attribute_increase_factor * 0.5
+		elif spent_attribute_points_poi < 15:
+			spent_attribute_points_poi += 1
+			attribute -= 1
+			poise += attribute_increase_factor * 0.2
+		elif spent_attribute_points_poi < 20:
+			spent_attribute_points_poi += 1
+			attribute -= 1
+			poise += attribute_increase_factor * 0.1
+		elif spent_attribute_points_poi < 25:
+			spent_attribute_points_poi += 1
+			attribute -= 1
+			poise += attribute_increase_factor * 0.05
+		else:
+			spent_attribute_points_poi += 1
+			attribute -= 1
+			poise += attribute_increase_factor * 0.01
+func _on_MinPoi_pressed():
+	if poise > 0.05:
+		spent_attribute_points_poi -= 1
+		attribute += 1
+		if spent_attribute_points_poi < 5:
+			poise -= attribute_increase_factor
+		elif spent_attribute_points_poi < 10:
+			poise -= attribute_increase_factor * 0.5
+		elif spent_attribute_points_poi < 15:
+			poise -= attribute_increase_factor * 0.2
+		elif spent_attribute_points_poi < 20:
+			poise -= attribute_increase_factor * 0.1
+		elif spent_attribute_points_poi < 25:
+			poise -= attribute_increase_factor * 0.05
+		else:
+			poise -= attribute_increase_factor * 0.01
+#Balance
+func _on_PlusBal_pressed():
+	if attribute > 0:
+		if spent_attribute_points_bal < 5:
+			spent_attribute_points_bal += 1
+			attribute -= 1
+			balance += attribute_increase_factor
+		elif spent_attribute_points_bal < 10:
+			spent_attribute_points_bal += 1
+			attribute -= 1
+			balance += attribute_increase_factor * 0.5
+		elif spent_attribute_points_bal < 15:
+			spent_attribute_points_bal += 1
+			attribute -= 1
+			balance += attribute_increase_factor * 0.2
+		elif spent_attribute_points_bal < 20:
+			spent_attribute_points_bal += 1
+			attribute -= 1
+			balance += attribute_increase_factor * 0.1
+		elif spent_attribute_points_bal < 25:
+			spent_attribute_points_bal += 1
+			attribute -= 1
+			balance += attribute_increase_factor * 0.05
+		else:
+			spent_attribute_points_bal += 1
+			attribute -= 1
+			balance += attribute_increase_factor * 0.01
+func _on_MinBal_pressed():
+	if balance > 0.05:
+		spent_attribute_points_bal -= 1
+		attribute += 1
+		if spent_attribute_points_bal < 5:
+			balance -= attribute_increase_factor
+		elif spent_attribute_points_bal < 10:
+			balance -= attribute_increase_factor * 0.5
+		elif spent_attribute_points_bal < 15:
+			balance -= attribute_increase_factor * 0.2
+		elif spent_attribute_points_bal < 20:
+			balance -= attribute_increase_factor * 0.1
+		elif spent_attribute_points_bal < 25:
+			balance -= attribute_increase_factor * 0.05
+		else:
+			balance -= attribute_increase_factor * 0.01
+#Charisma 
+func _on_PlusCha_pressed():
+	if attribute > 0:
+		if spent_attribute_points_cha < 5:
+			spent_attribute_points_cha += 1
+			attribute -= 1
+			charisma_multiplier += attribute_increase_factor
+		elif spent_attribute_points_cha < 10:
+			spent_attribute_points_cha += 1
+			attribute -= 1
+			charisma_multiplier += attribute_increase_factor * 0.5
+		elif spent_attribute_points_cha < 15:
+			spent_attribute_points_cha += 1
+			attribute -= 1
+			charisma_multiplier += attribute_increase_factor * 0.2
+		elif spent_attribute_points_cha < 20:
+			spent_attribute_points_cha += 1
+			attribute -= 1
+			charisma_multiplier += attribute_increase_factor * 0.1
+		elif spent_attribute_points_cha < 25:
+			spent_attribute_points_cha += 1
+			attribute -= 1
+			charisma_multiplier += attribute_increase_factor * 0.05
+		else:
+			spent_attribute_points_cha += 1
+			attribute -= 1
+			charisma_multiplier += attribute_increase_factor * 0.01
+func _on_MinCha_pressed():
+	if charisma_multiplier > 0.05:
+		spent_attribute_points_cha -= 1
+		attribute += 1
+		if spent_attribute_points_cha < 5:
+			charisma_multiplier -= attribute_increase_factor
+		elif spent_attribute_points_cha < 10:
+			charisma_multiplier -= attribute_increase_factor * 0.5
+		elif spent_attribute_points_cha < 15:
+			charisma_multiplier -= attribute_increase_factor * 0.2
+		elif spent_attribute_points_cha < 20:
+			charisma_multiplier -= attribute_increase_factor * 0.1
+		elif spent_attribute_points_cha < 25:
+			charisma_multiplier -= attribute_increase_factor * 0.05
+		else:
+			charisma_multiplier -= attribute_increase_factor * 0.01
+#Diplomancy 
+func _on_PlusDip_pressed():
+	if attribute > 0:
+		if spent_attribute_points_dip < 5:
+			spent_attribute_points_dip += 1
+			attribute -= 1
+			diplomacy += attribute_increase_factor
+		elif spent_attribute_points_dip < 10:
+			spent_attribute_points_dip += 1
+			attribute -= 1
+			diplomacy += attribute_increase_factor * 0.5
+		elif spent_attribute_points_dip < 15:
+			spent_attribute_points_dip += 1
+			attribute -= 1
+			diplomacy += attribute_increase_factor * 0.2
+		elif spent_attribute_points_dip < 20:
+			spent_attribute_points_dip += 1
+			attribute -= 1
+			diplomacy += attribute_increase_factor * 0.1
+		elif spent_attribute_points_dip < 25:
+			spent_attribute_points_dip += 1
+			attribute -= 1
+			diplomacy += attribute_increase_factor * 0.05
+		else:
+			spent_attribute_points_dip += 1
+			attribute -= 1
+			diplomacy += attribute_increase_factor * 0.01
+func _on_MinDip_pressed():
+	if diplomacy > 0.05:
+		spent_attribute_points_dip -= 1
+		attribute += 1
+		if spent_attribute_points_dip < 5:
+			diplomacy -= attribute_increase_factor
+		elif spent_attribute_points_dip < 10:
+			diplomacy -= attribute_increase_factor * 0.5
+		elif spent_attribute_points_dip < 15:
+			diplomacy -= attribute_increase_factor * 0.2
+		elif spent_attribute_points_dip < 20:
+			diplomacy -= attribute_increase_factor * 0.1
+		elif spent_attribute_points_dip < 25:
+			diplomacy -= attribute_increase_factor * 0.05
+		else:
+			diplomacy -= attribute_increase_factor * 0.01
+# Authority
+func _on_PlusAut_pressed():
+	if attribute > 0:
+		if spent_attribute_points_aut < 5:
+			spent_attribute_points_aut += 1
+			attribute -= 1
+			authority += attribute_increase_factor
+		elif spent_attribute_points_aut < 10:
+			spent_attribute_points_aut += 1
+			attribute -= 1
+			authority += attribute_increase_factor * 0.5
+		elif spent_attribute_points_aut < 15:
+			spent_attribute_points_aut += 1
+			attribute -= 1
+			authority += attribute_increase_factor * 0.2
+		elif spent_attribute_points_aut < 20:
+			spent_attribute_points_aut += 1
+			attribute -= 1
+			authority += attribute_increase_factor * 0.1
+		elif spent_attribute_points_aut < 25:
+			spent_attribute_points_aut += 1
+			attribute -= 1
+			authority += attribute_increase_factor * 0.05
+		else:
+			spent_attribute_points_aut += 1
+			attribute -= 1
+			authority += attribute_increase_factor * 0.01
+func _on_MinAut_pressed():
+	if authority > 0.05:
+		spent_attribute_points_aut -= 1
+		attribute += 1
+		if spent_attribute_points_aut < 5:
+			authority -= attribute_increase_factor
+		elif spent_attribute_points_aut < 10:
+			authority -= attribute_increase_factor * 0.5
+		elif spent_attribute_points_aut < 15:
+			authority -= attribute_increase_factor * 0.2
+		elif spent_attribute_points_aut < 20:
+			authority -= attribute_increase_factor * 0.1
+		elif spent_attribute_points_aut < 25:
+			authority -= attribute_increase_factor * 0.05
+		else:
+			authority -= attribute_increase_factor * 0.01
+#Courage 
+func _on_PlusCou_pressed():
+	if attribute > 0:
+		if spent_attribute_points_cou < 5:
+			spent_attribute_points_cou += 1
+			attribute -= 1
+			courage += attribute_increase_factor
+		elif spent_attribute_points_cou < 10:
+			spent_attribute_points_cou += 1
+			attribute -= 1
+			courage += attribute_increase_factor * 0.5
+		elif spent_attribute_points_cou < 15:
+			spent_attribute_points_cou += 1
+			attribute -= 1
+			courage += attribute_increase_factor * 0.2
+		elif spent_attribute_points_cou < 20:
+			spent_attribute_points_cou += 1
+			attribute -= 1
+			courage += attribute_increase_factor * 0.1
+		elif spent_attribute_points_cou < 25:
+			spent_attribute_points_cou += 1
+			attribute -= 1
+			courage += attribute_increase_factor * 0.05
+		else:
+			spent_attribute_points_cou += 1
+			attribute -= 1
+			courage += attribute_increase_factor * 0.01
+func _on_MinCou_pressed():
+	if courage > 0.05:
+		spent_attribute_points_cou -= 1
+		attribute += 1
+		if spent_attribute_points_cou < 5:
+			courage -= attribute_increase_factor
+		elif spent_attribute_points_cou < 10:
+			courage -= attribute_increase_factor * 0.5
+		elif spent_attribute_points_cou < 15:
+			courage -= attribute_increase_factor * 0.2
+		elif spent_attribute_points_cou < 20:
+			courage -= attribute_increase_factor * 0.1
+		elif spent_attribute_points_cou < 25:
+			courage -= attribute_increase_factor * 0.05
+		else:
+			courage -= attribute_increase_factor * 0.01
+#Loyalty
+func _on_PlusLoy_pressed():
+	if attribute > 0:
+		if spent_attribute_points_loy < 5:
+			spent_attribute_points_loy += 1
+			attribute -= 1
+			loyalty += attribute_increase_factor
+		elif spent_attribute_points_loy < 10:
+			spent_attribute_points_loy += 1
+			attribute -= 1
+			loyalty += attribute_increase_factor * 0.5
+		elif spent_attribute_points_loy < 15:
+			spent_attribute_points_loy += 1
+			attribute -= 1
+			loyalty += attribute_increase_factor * 0.2
+		elif spent_attribute_points_loy < 20:
+			spent_attribute_points_loy += 1
+			attribute -= 1
+			loyalty += attribute_increase_factor * 0.1
+		elif spent_attribute_points_loy < 25:
+			spent_attribute_points_loy += 1
+			attribute -= 1
+			loyalty += attribute_increase_factor * 0.05
+		else:
+			spent_attribute_points_loy += 1
+			attribute -= 1
+			loyalty += attribute_increase_factor * 0.01
+func _on_MinLoy_pressed():
+	if loyalty > 0.05:
+		spent_attribute_points_loy -= 1
+		attribute += 1
+		if spent_attribute_points_loy < 5:
+			loyalty -= attribute_increase_factor
+		elif spent_attribute_points_loy < 10:
+			loyalty -= attribute_increase_factor * 0.5
+		elif spent_attribute_points_loy < 15:
+			loyalty -= attribute_increase_factor * 0.2
+		elif spent_attribute_points_loy < 20:
+			loyalty -= attribute_increase_factor * 0.1
+		elif spent_attribute_points_loy < 25:
+			loyalty -= attribute_increase_factor * 0.05
+		else:
+			loyalty -= attribute_increase_factor * 0.01

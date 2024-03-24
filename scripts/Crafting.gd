@@ -26,7 +26,7 @@ onready var item = crafting_result.item
 func craftItemTest():
 	mushroomCrafts()
 		
-func _physics_process(delta):
+func crafting():
 	craftItemTest()
 	redPotionCraft()
 

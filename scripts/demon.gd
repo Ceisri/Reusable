@@ -19,7 +19,9 @@ var speed = 4
 var velocity = Vector3()
 var max_distance = 30.1
 var aggro_info
-func _physics_process(delta):
+var delta =  0.07
+
+func _on_Timer_timeout():
 	aggro_info = gatherAggroInformation()
 	var target = findTargetWithHighestAggro()
 	is_moving()
@@ -541,3 +543,6 @@ func showStatusIcon(icon1, icon2, icon3, icon4, icon5, icon6, icon7, icon8, icon
 					icon.texture = effect["texture"]
 					icon.modulate = effect["modulation_color"]
 					break  # Exit loop after applying status to the first available icon
+
+
+

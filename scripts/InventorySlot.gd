@@ -93,9 +93,24 @@ func matchItemTypeToIcon():
 		
 		preload("res://Alchemy ingredients/2.png"): "rosehip",
 		preload("res://Processed ingredients/ground rosehip.png"): "ground rosehip",
-		preload("res://Berries/raspberry.png"): "raspberry",
-		preload("res://Berries/strawberry.png"): "strawberry",
-		preload("res://Roots/beetroot.png"): "beetroot",
+		
+		#food
+		preload("res://Food Icons/Vegetables/aubergine.png"): "aubergine",
+		preload("res://Food Icons/Vegetables/beetroot.png"): "beetroot",
+		preload("res://Food Icons/Vegetables/bell pepper.png"): "bell pepper",
+		preload("res://Food Icons/Vegetables/cabbage.png"): "cabbage",
+		preload("res://Food Icons/Vegetables/carrot.png"): "carrot",
+		preload("res://Food Icons/Vegetables/corn.png"): "corn",
+		preload("res://Food Icons/Vegetables/garlic.png"): "garlic",
+		preload("res://Food Icons/Vegetables/onion.png"): "onion",
+		preload("res://Food Icons/Vegetables/potato.png"): "potato",
+		preload("res://Food Icons/Vegetables/tomato.png"): "tomato",
+		preload("res://Food Icons/Cooked Meals/Bread/bread.png"): "",
+		
+		
+		preload("res://Food Icons/Fruits/raspberries.png"): "raspberry",
+		preload("res://Food Icons/Fruits/strawberry.png"): "strawberry",
+		
 		
 		preload("res://Alchemy ingredients/blood.png"): "blood",
 		
@@ -155,10 +170,10 @@ func matchItemTypeToIcon():
 		preload("res://Potions/water.png"): "water",
 		preload("res://Potions/Empty potion.png"): "empty potion",
 #_______________Equipment___________________________________________________________
-		preload("res://UI Icon pack1/128x128/Boots.png"): "shoe1",
+		preload("res://Equipment icons/shoe1.png"): "shoe1",
 		preload("res://Equipment icons/pants1.png"): "pants1",
 		preload("res://Equipment icons/glove1.png"): "glove1",
-		preload("res://UI Icon pack1/128x128/armor 2.png"): "garment1",
+		preload("res://Equipment icons/garment1.png"): "garment1",
 		preload("res://Equipment icons/shoulder1.png"): "pad1",
 		preload("res://Equipment icons/hat1.png"): "hat1",
 		preload("res://0.png"): "sword0",
