@@ -34,7 +34,7 @@ func displayQuantity():
 			quantity_label.text = ""
 
 func get_drag_data(position: Vector2):
-	decreaseIngredients()
+
 	var slot = get_parent().get_name()
 	var data = {
 		"origin_node": self,
@@ -63,6 +63,7 @@ func can_drop_data(position, data):
 	else:
 		return false
 
+
 func drop_data(position, data):
 	var origin_texture = data["origin_texture"]
 	var target_texture = icon.texture
@@ -84,41 +85,6 @@ func drop_data(position, data):
 		var temp_quantity = quantity
 		quantity = origin_quantity
 		origin_node.quantity = temp_quantity
-	# Update the display
-	displayQuantity()
-	icon.savedata()
 
-func decreaseIngredients():
-	var crafting_slot1 = $"../CraftingGrid/craftingSlot1"
-	var crafting_slot2 = $"../CraftingGrid/craftingSlot2"
-	var crafting_slot3 = $"../CraftingGrid/craftingSlot3"
-	var crafting_slot4 = $"../CraftingGrid/craftingSlot4"
-	var crafting_slot5 = $"../CraftingGrid/craftingSlot5"
-	var crafting_slot6 = $"../CraftingGrid/craftingSlot6"
-	var crafting_slot7 = $"../CraftingGrid/craftingSlot7"
-	var crafting_slot8 = $"../CraftingGrid/craftingSlot8"
-	var crafting_slot9 = $"../CraftingGrid/craftingSlot9"
-	var crafting_slot10 = $"../CraftingGrid/craftingSlot10"
-	var crafting_slot11 = $"../CraftingGrid/craftingSlot11"
-	var crafting_slot12 = $"../CraftingGrid/craftingSlot12"
-	var crafting_slot13 = $"../CraftingGrid/craftingSlot13"
-	var crafting_slot14 = $"../CraftingGrid/craftingSlot14"
-	var crafting_slot15 = $"../CraftingGrid/craftingSlot15"
-	var crafting_slot16 = $"../CraftingGrid/craftingSlot16"
 
-	crafting_slot1.quantity -= 1
-	crafting_slot2.quantity -= 1
-	crafting_slot3.quantity -= 1
-	crafting_slot4.quantity -= 1
-	crafting_slot5.quantity -= 1
-	crafting_slot6.quantity -= 1
-	crafting_slot7.quantity -= 1
-	crafting_slot8.quantity -= 1
-	crafting_slot9.quantity -= 1
-	crafting_slot10.quantity -= 1
-	crafting_slot11.quantity -= 1
-	crafting_slot12.quantity -= 1
-	crafting_slot13.quantity -= 1
-	crafting_slot14.quantity -= 1
-	crafting_slot15.quantity -= 1
-	crafting_slot16.quantity -= 1
+

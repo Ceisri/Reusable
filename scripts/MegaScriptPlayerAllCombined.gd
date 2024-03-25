@@ -13,7 +13,6 @@ var is_running = bool()
 
 
 func _ready(): 
-	print(spent_attribute_points_vit)
 	connectInventoryButtons()
 	connectAttributeButtons()
 	connectAttributeHovering()
@@ -39,7 +38,7 @@ func _on_SlowTimer_timeout():
 	
 	
 func _on_3FPS_timeout():
-	$UI/GUI/Crafting.crafting()
+	crafting()
 	displayResources(hp_bar,hp_label,health,max_health,"HP")
 	curtainsDown()
 	SwitchEquipmentBasedOnEquipmentIcons()
@@ -4580,3 +4579,36 @@ func minusLoy():
 			loyalty -= attribute_increase_factor * 0.05
 		else:
 			loyalty -= attribute_increase_factor * 0.01
+
+
+
+
+
+#______________________________________Crafting_________________________________
+
+onready var crafting_slot1 = $UI/GUI/Crafting/CraftingGrid/craftingSlot1/Icon
+onready var crafting_slot2 = $UI/GUI/Crafting/CraftingGrid/craftingSlot2/Icon
+onready var crafting_slot3 = $UI/GUI/Crafting/CraftingGrid/craftingSlot3/Icon
+onready var crafting_slot4 = $UI/GUI/Crafting/CraftingGrid/craftingSlot4/Icon
+onready var crafting_slot5 = $UI/GUI/Crafting/CraftingGrid/craftingSlot5/Icon
+onready var crafting_slot6 = $UI/GUI/Crafting/CraftingGrid/craftingSlot6/Icon
+onready var crafting_slot7 = $UI/GUI/Crafting/CraftingGrid/craftingSlot7/Icon
+onready var crafting_slot8 = $UI/GUI/Crafting/CraftingGrid/craftingSlot8/Icon
+onready var crafting_slot9 = $UI/GUI/Crafting/CraftingGrid/craftingSlot9/Icon
+onready var crafting_slot10 = $UI/GUI/Crafting/CraftingGrid/craftingSlot10/Icon
+onready var crafting_slot11 = $UI/GUI/Crafting/CraftingGrid/craftingSlot11/Icon
+onready var crafting_slot12 = $UI/GUI/Crafting/CraftingGrid/craftingSlot12/Icon
+onready var crafting_slot13 = $UI/GUI/Crafting/CraftingGrid/craftingSlot13/Icon
+onready var crafting_slot14 = $UI/GUI/Crafting/CraftingGrid/craftingSlot14/Icon
+onready var crafting_slot15 = $UI/GUI/Crafting/CraftingGrid/craftingSlot15/Icon
+onready var crafting_slot16 = $UI/GUI/Crafting/CraftingGrid/craftingSlot16/Icon
+
+
+onready var crafting_result = $UI/GUI/Crafting/CraftingResultSlot/Icon
+onready var icon = $CraftingResultSlot/Icon
+
+func crafting():
+	if crafting_slot1.texture != null:
+		if crafting_slot1.texture.get_path() == "res://Alchemy ingredients/2.png":
+			crafting_result.texture = preload("res://Processed ingredients/ground rosehip.png")
+			$UI/GUI/Crafting/CraftingResultSlot.quantity = 55
