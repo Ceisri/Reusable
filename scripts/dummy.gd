@@ -291,7 +291,7 @@ func applyEffect(player: Node, effect_name: String, active: bool):
 	else:
 		print("Effect not found:", effect_name)
 
-onready var status_grid = $UI/GUI/Portrait/StatusGrid
+
 func showStatusIcon(icon1, icon2, icon3, icon4, icon5, icon6, icon7, icon8, icon9, icon10, icon11, icon12, icon13, icon14, icon15, icon16, icon17, icon18, icon19, icon20):
 ##	applyEffect(self, "bleeding", true)
 ##	applyEffect(self, "hungry", true)

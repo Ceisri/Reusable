@@ -2,8 +2,8 @@ extends KinematicBody
 onready var player_mesh = $Mesh
 onready var animation = $Mesh/Race/AnimationPlayer
 var rng = RandomNumberGenerator.new()
-var injured = false
-var blend = 0.25
+var injured: bool = false
+var blend: float = 0.25
 
 # Condition States
 var is_attacking = bool()
@@ -18,6 +18,7 @@ func _ready():
 	convertStats()
 	loadPlayerData()
 	closeAllUI()
+	SwitchEquipmentBasedOnEquipmentIcons()
 	direction = Vector3.BACK.rotated(Vector3.UP, $Camroot/h.global_transform.basis.get_euler().y)
 func _on_SlowTimer_timeout():
 	allResourcesBarsAndLabels()
@@ -33,18 +34,18 @@ func _on_SlowTimer_timeout():
 	frameRate()	
 	showStatusIcon()	
 	displayLabels()
+	
 func _on_3FPS_timeout():
 	$UI/GUI/Crafting.crafting()
 	displayResources(hp_bar,hp_label,health,max_health,"HP")
 	curtainsDown()
-
-	
+	SwitchEquipmentBasedOnEquipmentIcons()
 func _physics_process(delta):
 	$Debug.text = animation_state
 #	displayClock()
 	ChopTree()
 	limitStatsToMaximum()
-	
+
 	cameraRotation(delta)
 	crossHair()
 	crossHairResize()
@@ -70,11 +71,8 @@ func _physics_process(delta):
 	skillUserInterfaceInputs()
 	addItemToInventory()
 #	positionCoordinates()
-
 	MainWeapon()
-	SecWeapon()
-	
-	
+	SecWeapon()	
 	
 #_______________________________________________Basic Movement______________________________________
 var h_rot 
@@ -474,7 +472,7 @@ func savePlayerData():
 		"position": translation,
 		"camera.translation.y" : camera.translation.y,
 		"camera.translation.z" : camera.translation.z,
-		"main_weapon": main_weapon,
+
 		
 		"health": health,
 		"max_health": max_health,
@@ -591,8 +589,7 @@ func loadPlayerData():
 				camera.translation.y = player_data["camera.translation.y"]
 			if "camera.translation.z" in player_data:
 				camera.translation.z = player_data["camera.translation.z"]
-			if "main_weapon"  in player_data:
-				main_weapon = player_data["main_weapon"]
+
 			
 #attributes 
 			if "attribute" in player_data:
@@ -663,9 +660,6 @@ func loadPlayerData():
 				spent_attribute_points_fle = player_data["spent_attribute_points_fle"]
 			if "spent_attribute_points_def" in player_data:
 				spent_attribute_points_def = player_data["spent_attribute_points_def"]
-			
-			
-			
 
 
 #Brute attributes
@@ -740,9 +734,6 @@ func loadPlayerData():
 				courage = player_data["courage"]
 			
 			
-			
-			
-			
 			if "health" in player_data:
 				health = player_data["health"]
 			if "max_health" in player_data:
@@ -767,20 +758,14 @@ func loadPlayerData():
 			if "effects" in player_data:
 				effects = player_data["effects"]
 
-var is_fullscreen = false
+var is_fullscreen :bool  = false
 func fullscreen():
 	if Input.is_action_just_pressed("fullscreen"):
 		is_fullscreen = !is_fullscreen
 		OS.set_window_fullscreen(is_fullscreen)
+		savePlayerData()
 
 onready var ray = $Camroot/h/v/Camera/Aim
-
-
-
-func _on_Detector_body_entered(body):
-	if body.is_in_group("Spawner"):
-			body.start()
-			#body.quantity += 20
 
 
 #__________________________________Entitygraphical interface________________________________________
@@ -791,7 +776,7 @@ onready var enemy_health_bar = $UI/GUI/EnemyUI/HP
 onready var enemy_health_label = $UI/GUI/EnemyUI/HP/HPlab
 onready var enemy_energy_bar = $UI/GUI/EnemyUI/EN
 onready var enemy_energy_label =$UI/GUI/EnemyUI/EN/ENlab
-var fade_duration = 0.3
+var fade_duration : float = 0.3
 func showEnemyStats():
 	if ray.is_colliding():
 		var body = ray.get_collider()
@@ -839,9 +824,9 @@ func showEnemyStats():
 		#print(str(fade_duration))
 
 #______________________________________________Animations___________________________________________
-var weapon_type = "fist"
+var weapon_type: String = "fist"
 
-var animation_state = "idle"
+var animation_state: String = "idle"
 func matchAnimationStates():
 	match animation_state:
 #_______________________________attacking states________________________________
@@ -1006,7 +991,7 @@ func skills(slot):
 					animation.play("crawl cycle", 0.35)
 				else:
 					pass
-var sprint_animation_speed = 1
+var sprint_animation_speed : float = 1
 func animations():
 #on water
 	if is_swimming:
@@ -1111,8 +1096,8 @@ func attack():
 #Double click to heavy attack_______________________________________________________________________
 var double_atk_count: int = 0
 var double_atk_timer: float = 0.0
-var double_atk_animation_duration = 0
-var double_atk_animation_max_duration = 1.125
+var double_atk_animation_duration : float  = 0
+var double_atk_animation_max_duration : float  = 1.125
 func doubleAttack(delta):
 		if double_atk_count > 0:
 			double_atk_timer += delta
@@ -1150,9 +1135,9 @@ func stompKickDealDamage():
 
 
 func slideDealDamage():
-	var damage_type = "blunt"
-	var damage = 2.5
-	var aggro_power = damage + 20
+	var damage_type: String = "blunt"
+	var damage: float = 2.5
+	var aggro_power : float = damage + 20
 	var enemies = $Mesh/Detector.get_overlapping_bodies()
 	for enemy in enemies:
 		if enemy.is_in_group("enemy"):
@@ -1237,7 +1222,7 @@ func PunchDealDamage3():
 						enemy.takeDamage(critical_damage *2,aggro_power,self,stagger_chance,damage_type)
 					else:
 						enemy.takeDamage(damage *2 ,aggro_power,self,stagger_chance,damage_type)
-var jump_force = 10
+var jump_force : float  = 10
 func jumpUp():#called on animation
 	vertical_velocity = Vector3.UP * jump_force 
 func jumpDown():#called on animation
@@ -1247,7 +1232,7 @@ func speedlabel():
 	$kmh.text = "km/h " + str(movement_speed)
 
 
-var can_move = false
+var can_move: bool = false
 func stopMovement():
 	can_move = false
 func startMovement():
@@ -1485,7 +1470,7 @@ func _on_inventory_slot_pressed(index):
 					kilocalories += 22
 					water += 92
 					button.quantity -=1
-			elif button.item == "red potion":
+			elif icon_texture.get_path() == "res://Potions/Red potion.png":
 					kilocalories += 100
 					water += 250
 					applyEffect(self,"redpotion",true)
@@ -1501,17 +1486,17 @@ func _on_inventory_slot_pressed(index):
 							elif icon.texture.get_path() == "res://Potions/Empty potion.png":
 								child.quantity += 1
 								break
-			elif button.item == "strawberry":
+			elif icon_texture.get_path() == "res://Food Icons/Fruits/strawberry.png":
 					kilocalories +=1
 					health += 5
 					water += 2
 					button.quantity -=1
-			elif button.item == "raspberry":
+			elif icon_texture.get_path() == "res://Food Icons/Fruits/raspberries.png":
 					kilocalories += 4
 					health += 3
 					water += 3
 					button.quantity -=1
-			elif button.item == "beetroot":
+			elif icon_texture.get_path() == "res://Food Icons/Vegetables/beetroot.png":
 					kilocalories += 32
 					health += 15
 					water += 71.8
@@ -1531,13 +1516,13 @@ func _on_inventory_slot_mouse_entered(index):
 	var icon_texture = button.get_node("Icon").texture
 	var instance = preload("res://tooltip.tscn").instance()
 	if icon_texture != null:
-		if button.item == "red potion":
+		if icon_texture.get_path() == "res://Potions/Red potion.png":
 			callToolTip(instance, "Red Potion", "+100 kcals +250 grams of water.\nHeals by 100 health instantly then by 10 every second, drinking more potions stacks the duration")
-		elif button.item == "strawberry":
+		elif icon_texture.get_path() == "res://Food Icons/Fruits/strawberry.png":
 			callToolTip(instance,"Strawberry","+5 health points +9 kcals +24 grams of water")
-		elif button.item == "raspberry":
+		elif icon_texture.get_path() == "res://Food Icons/Fruits/raspberries.png":
 			callToolTip(instance,"Raspberry","+3 health points +1 kcals +2 grams of water")
-		elif button.item == "beetroot":
+		elif icon_texture.get_path() == "res://Food Icons/Vegetables/beetroot.png":
 			callToolTip(instance,"beetroot","+15 health points +32 kcals +71.8 grams of water")
 			
 func _on_inventory_slot_mouse_exited(index):
@@ -1712,7 +1697,7 @@ func money():
 onready var fps_label = $UI/GUI/Portrait/MinimapHolder/FPS
 func frameRate():
 	var current_fps = Engine.get_frames_per_second()
-	var new_fps = current_fps + 20
+	var new_fps = current_fps + 15
 	fps_label.text = str(new_fps)
 
 func _on_FPS_pressed():
@@ -1754,10 +1739,62 @@ func _on_FPS_pressed():
 #	# Use %d to format integers without decimals
 #	coordinates.text = "%d, %d, %d" % [rounded_position.x, rounded_position.y, rounded_position.z]
 #
+#____________________________________Equipment 2D_______________________________
+
+func SwitchEquipmentBasedOnEquipmentIcons():
+#__________________________main weapon__________________________________________
+	var main_weapon_icon = $UI/GUI/Character/RightArm/Icon
+	if main_weapon_icon.texture != null:
+		if main_weapon_icon.texture.get_path() == "res://0.png":
+			main_weapon = "sword0"
+			applyEffect(self, "effect1", true)
+	elif main_weapon_icon.texture == null:
+		removeWeapon()
+		main_weapon = "null"
+		applyEffect(self, "effect1", false)
+#__________________________sec weapon___________________________________________
+	var sec_weapon_icon = $UI/GUI/Character/LeftArm/Icon
+	if sec_weapon_icon.texture != null:
+		if sec_weapon_icon.texture.get_path() == "res://0.png":
+			secondary_weapon = "sword0"
+			applyEffect(self, "effect1", true)
+	elif sec_weapon_icon.texture == null:
+		removeSecWeapon()
+		secondary_weapon = "null"
+		applyEffect(self, "effect1", false)	
+#_______________________________chest___________________________________________
+	var chest_icon = $UI/GUI/Character/Chest/Icon
+	if chest_icon.texture != null:
+		if chest_icon.texture.get_path() == "res://Equipment icons/garment1.png":
+			torso = "garment1"
+			applyEffect(self, "effect1", true)
+	elif chest_icon.texture == null:
+		torso = "naked"
+		applyEffect(self, "effect1", false)
+#_______________________________legs____________________________________________
+	var legs_icon = $UI/GUI/Character/Pants/Icon
+	if legs_icon.texture != null:
+		if legs_icon.texture.get_path() == "res://Equipment icons/pants1.png":
+			legs = "cloth1"
+		#player.applyEffect(player, "effect3", true)
+	elif legs_icon.texture == null:
+		legs = "naked"
+		#player.applyEffect(player, "effect3", false)
+#_______________________________foot____________________________________________
+	var foot_icon = $UI/GUI/Character/RightFoot/Icon
+	if  foot_icon.texture != null:
+		if  foot_icon.texture.get_path() == "res://Equipment icons/shoe1.png":
+			feet = "cloth1"
+			
+	elif foot_icon.texture == null:
+		feet = "naked"
+		
+
+
 
 
 	
-#_____________________________________Equipment________________________________
+#_____________________________________Equipment 3D______________________________
 var torso = "naked"
 func switchTorso():
 	var torso0 = $Mesh/Race/Armature/Skeleton/Torso0
@@ -1791,9 +1828,6 @@ func switchLegs():
 		"cloth1":
 			legs0.visible = false
 			legs1.visible = true	
-
-
-
 #__________________________________Weapon Management____________________________
 #Main Weapon____________________________________________________________________
 onready var attachment_r = $Mesh/Race/Armature/Skeleton/HoldL
@@ -1805,7 +1839,7 @@ var sword0: PackedScene = preload("res://itemTest.tscn")
 var sword1: PackedScene = preload("res://itemTest.tscn")
 var sword2: PackedScene = preload("res://itemTest.tscn")
 var currentInstance: Node = null  
-var main_weapon = "sword0"
+var main_weapon = "null"
 var got_weapon = false
 var sheet_weapon = false
 var is_primary_weapon_on_hip = false
@@ -1856,6 +1890,7 @@ func switch():
 				fixInstance()
 		"null":
 			currentInstance = null
+			
 			got_weapon = false
 func removeWeapon():
 	if got_weapon:
@@ -1926,7 +1961,7 @@ onready var sec_weap_slot = $UI/GUI/Character/LeftArm
 onready var sec_weap_icon = $UI/GUI/Character/LeftArm/Icon
 var sec_currentInstance: Node = null  
 
-var secondary_weapon = "sword0"
+var secondary_weapon = "null"
 var got_sec_weapon = false
 var is_secondary_weapon_on_hip = false 
 func switchSecondaryFromHipToHand():

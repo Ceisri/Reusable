@@ -19,9 +19,9 @@ var speed = 4
 var velocity = Vector3()
 var max_distance = 30.1
 var aggro_info
-var delta =  0.07
 
-func _on_Timer_timeout():
+
+func _physics_process(delta):
 	aggro_info = gatherAggroInformation()
 	var target = findTargetWithHighestAggro()
 	is_moving()
@@ -490,7 +490,7 @@ func applyEffect(player: Node, effect_name: String, active: bool):
 	else:
 		print("Effect not found:", effect_name)
 
-onready var status_grid = $UI/GUI/Portrait/StatusGrid
+
 func showStatusIcon(icon1, icon2, icon3, icon4, icon5, icon6, icon7, icon8, icon9, icon10, icon11, icon12, icon13, icon14, icon15, icon16, icon17, icon18, icon19, icon20):
 #	applyEffect(self, "bleeding", true)
 #	applyEffect(self, "hungry", true)
