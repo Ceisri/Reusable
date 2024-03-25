@@ -9,9 +9,6 @@ var item : String = "null"
 var type : String = ""
 
 
-func _physics_process(delta):
-	icon.savedata()
-
 func get_drag_data(position: Vector2):
 
 	var slot = get_parent().get_name()

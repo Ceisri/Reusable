@@ -15,6 +15,8 @@ var is_running = bool()
 func _ready(): 
 	print(spent_attribute_points_vit)
 	connectInventoryButtons()
+	connectAttributeButtons()
+	connectAttributeHovering()
 	convertStats()
 	loadPlayerData()
 	closeAllUI()
@@ -35,12 +37,13 @@ func _on_SlowTimer_timeout():
 	showStatusIcon()	
 	displayLabels()
 	
+	
 func _on_3FPS_timeout():
 	$UI/GUI/Crafting.crafting()
 	displayResources(hp_bar,hp_label,health,max_health,"HP")
 	curtainsDown()
 	SwitchEquipmentBasedOnEquipmentIcons()
-func _physics_process(delta):
+func _physics_process(delta: float) -> void:
 	$Debug.text = animation_state
 #	displayClock()
 	ChopTree()
@@ -254,8 +257,8 @@ func fallDamage():
 		fall_distance = 0 
 
 # Physics value
-var direction = Vector3()
-var horizontal_velocity = Vector3()
+var direction : Vector3 = Vector3()
+var horizontal_velocity : Vector3 = Vector3()
 var aim_turn = float()
 var movement = Vector3()
 var vertical_velocity = Vector3()
@@ -287,8 +290,8 @@ var dash_count1 : int = 0
 var dash_timer1 : float = 0.0
 var dash_count2 : int = 0
 var dash_timer2 : float = 0.0
-var dodge_animation_duration = 0
-var dodge_animation_max_duration = 3
+var dodge_animation_duration : float = 0
+var dodge_animation_max_duration : float = 3
 func dodgeBack(delta):#Doddge when in strafe mode
 		if dash_countback > 0:
 			dash_timerback += delta
@@ -355,30 +358,30 @@ func dodgeRight(delta):#Dodge when in strafe mode
 			elif dodge_animation_duration < 0: 
 					dodge_animation_duration = 0
 	#_____________________________________________________Camera_______________________________________
-var is_aiming = false
-var camrot_h = 0
-var camrot_v = 0
+var is_aiming: bool = false
+var camrot_h: float = 0
+var camrot_v: float = 0
 onready var parent = $".."
-export var cam_v_max = 200 # -75 recommended
-export var cam_v_min = -125 # -55 recommended
+export var cam_v_max: float = 200 
+export var cam_v_min: float = -125 
 onready var camera_v =$Camroot/h/v
 onready var camera_h =$Camroot/h
 onready var camera = $Camroot/h/v/Camera
 onready var minimap_camera = $UI/GUI/Portrait/MinimapHolder/Minimap/Viewport/Camera
-var minimap_rotate = false
-var h_sensitivity = 0.1
-var v_sensitivity = 0.1
-var rot_speed_multiplier = .15 #reduce this to make the rotation radius larger
-var h_acceleration = 10
-var v_acceleration = 10
-var touch_start_position = Vector2.ZERO
-var zoom_speed = 0.1
-var mouse_sense = 0.1
+var minimap_rotate: bool = false
+var h_sensitivity: float = 0.1
+var v_sensitivity: float = 0.1
+var rot_speed_multiplier:float = .15 #reduce this to make the rotation radius larger
+var h_acceleration: float  = 10
+var v_acceleration: float = 10
+var touch_start_position: Vector2 = Vector2.ZERO
+var zoom_speed: float = 0.1
+var mouse_sense: float = 0.1
 
 func shake_camera(duration: float, intensity: float, rand_x, rand_y):
 	pass
 
-func Zoom(zoom_direction):
+func Zoom(zoom_direction : float):
 	# Adjust the camera's position based on the zoom direction
 	camera.translation.y += zoom_direction * zoom_speed
 	camera.translation.z -= zoom_direction * (zoom_speed * 2)
@@ -409,7 +412,7 @@ func _input(event):
 		elif event is InputEventMouseButton and event.button_index == BUTTON_WHEEL_DOWN:
 			# Zoom out when scrolling down
 			Zoom(1)
-func stiffCamera(delta):
+func stiffCamera(delta: float):
 	if is_aiming and !is_climbing:
 		player_mesh.rotation.y = lerp_angle(player_mesh.rotation.y, $Camroot/h.rotation.y, delta * angular_acceleration)
 #	elif is_climbing:
@@ -464,9 +467,9 @@ func lifesteal(damage):
 
 
 #___________________________________________Save data system________________________________________
-var entity_name = "dai"
-const SAVE_DIR = "user://saves/"
-var save_path = SAVE_DIR + entity_name + "save.dat"
+var entity_name: String = "dai"
+const SAVE_DIR: String = "user://saves/"
+var save_path: String = SAVE_DIR + entity_name + "save.dat"
 func savePlayerData():
 	var data = {
 		"position": translation,
@@ -1747,11 +1750,11 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 	if main_weapon_icon.texture != null:
 		if main_weapon_icon.texture.get_path() == "res://0.png":
 			main_weapon = "sword0"
-			applyEffect(self, "effect1", true)
+			applyEffect(self, "effect2", true)
 	elif main_weapon_icon.texture == null:
 		removeWeapon()
 		main_weapon = "null"
-		applyEffect(self, "effect1", false)
+		applyEffect(self, "effect2", false)
 #__________________________sec weapon___________________________________________
 	var sec_weapon_icon = $UI/GUI/Character/LeftArm/Icon
 	if sec_weapon_icon.texture != null:
@@ -1788,11 +1791,25 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 			
 	elif foot_icon.texture == null:
 		feet = "naked"
-		
-
-
-
-
+	
+	var headset_icon = $UI/GUI/Character/Head/Icon
+	var glove_icon = $UI/GUI/Character/RightHand/Icon
+	var glove_l_icon = 	$UI/GUI/Character/LeftHand/Icon
+	var shoulder_r_icon = $UI/GUI/Character/RightShoulder/Icon
+	var shoulder_l_icon = $UI/GUI/Character/LeftShoulder/Icon
+	main_weapon_icon.savedata()
+	sec_weap_icon.savedata()
+	headset_icon.savedata()
+	shoulder_l_icon.savedata()
+	shoulder_r_icon.savedata()
+	chest_icon.savedata()
+	glove_icon.savedata()
+	glove_l_icon.savedata()
+	legs_icon.savedata()
+	foot_icon.savedata()
+	
+	
+	
 	
 #_____________________________________Equipment 3D______________________________
 var torso = "naked"
@@ -2462,35 +2479,37 @@ var scale_factor = 1
 #attributes 
 #leveling
 var skill_points = 0
+
 var sanity  = 1
 var wisdom = 1
 var memory = 1
 var intelligence = 1
 var instinct = 1
+
 var force = 1
 var strength = 1
 var impact = 1
 var ferocity  = 1 
 var fury = 1 
-#precision atts
+
 var accuracy = 1
 var dexterity = 1
 var poise = 1
 var balance = 1
 var focus = 1
-#nimbleness atts
+
 var haste = 1
 var agility = 1
 var celerity = 1
 var flexibility = 1
 var deflection = 1
-#thoughness atts
+
 var endurance = 1
 var stamina = 1
 var vitality = 1
 var resistance = 1
 var tenacity = 1
-#social atts
+
 const base_charisma = 1 
 var charisma = 1
 var charisma_multiplier = 1 
@@ -2501,7 +2520,15 @@ var empathy = 1
 var courage = 1 
 var recovery = 1
 
-#__________________________________________Defenses and stuff_______________________________________
+const base_melee_atk_speed = 1 
+var melee_atk_speed = 1 
+const base_ranged_atk_speed = 1 
+var ranged_atk_speed = 1 
+const base_casting_speed = 1 
+var critical_chance = 0.00
+var critical_strength = 2
+var stagger_chance = 0.00
+var life_steal = 1  
 #resistances
 var slash_resistance = 25
 var pierce_resistance = 25
@@ -2561,32 +2588,6 @@ func displayResourcesRound(bar,label,value,max_value,acronim):
 	bar.max_value = max_value 
 
 
-
-
-func _on_AgiLabel_mouse_entered():
-	var instance = preload("res://tooltip.tscn").instance()
-	callToolTip(instance,"Agility","run speed, maximum sprint speed and acceleration are multiplied by agility")
-
-
-func _on_AgiLabel_mouse_exited():
-	# Remove all children from the TextureButton
-	for child in gui.get_children():
-		if child.is_in_group("Tooltip"):
-			child.queue_free()
-			
-func displayLabels():
-	var agility_label = $UI/GUI/Character/Stats/AgiVal
-	var int_label = $UI/GUI/Character/Stats/IntVal
-	var vit_label = $UI/GUI/Character/Stats/VitVal
-	displayStats(agility_label,agility)
-	displayStats(int_label,intelligence)
-	displayStats(vit_label,vitality)
-
-func displayStats(label,value):
-	label.text = str(value)
-
-
-
 var attribute_increase_factor = 0.1
 var minimum_att_value = 0.005
 #Leveling compounding attributes 
@@ -2626,80 +2627,670 @@ var spent_attribute_points_dip = 0
 var spent_attribute_points_aut = 0
 var spent_attribute_points_cou = 0
 
-func resistanceMath():
-	pass
-#	var additional_resistance = 0
-#	var res_multiplier = 0.5
-#	if resistance > 1:
-#		additional_resistance = res_multiplier * (resistance - 1)
-#	elif resistance < 1:
-#		additional_resistance = -res_multiplier * (1 - resistance)
-#	defense = base_defense + int(resistance * 10)
-#	max_health = (base_max_health * (vitality + additional_resistance)) * scale_factor
-#	max_energy = base_max_energy * (stamina  + additional_resistance)
-#	max_resolve = base_max_resolve * (tenacity + additional_resistance)
-#
-const base_melee_atk_speed = 1 
-var melee_atk_speed = 1 
-const base_ranged_atk_speed = 1 
-var ranged_atk_speed = 1 
-const base_casting_speed = 1 
-var casting_speed = 1 
-func updateAttackSpeed():
-	var bonus_universal_speed = (celerity -1) * 0.15
-	var atk_speed_formula = (dexterity - scale_factor ) * 0.5 
-	melee_atk_speed = base_melee_atk_speed + atk_speed_formula + bonus_universal_speed
-	var atk_speed_formula_ranged = (strength -1) * 0.5
-	ranged_atk_speed = base_ranged_atk_speed + atk_speed_formula_ranged + bonus_universal_speed
-	var atk_speed_formula_casting = (instinct -1) * 0.35 + ((memory-1) * 0.05) + bonus_universal_speed
-	casting_speed = base_casting_speed + atk_speed_formula_casting
-	#display the labels
-	$BookStatsSkills/CombatStats/GridContainer/CastingSpeedValue.text = str(casting_speed)
-	$BookStatsSkills/CombatStats/GridContainer/RangedSpeedValue.text = str(ranged_atk_speed)
-	$BookStatsSkills/CombatStats/GridContainer/AtkSpeedValue.text = str(melee_atk_speed)
-var critical_chance = 0.00
-var critical_strength = 2
-func updateCritical():
-	critical_chance = max(0, (accuracy - 1.00) * 0.5) +  max(0, (impact - 1.00) * 0.005) 
-	critical_strength = ((ferocity -1) * 2) 
-#	critical_chance_val.text = str(round(critical_chance * 100 * 1000) / 1000) + "%"
-#	critical_str_val.text = "x" + str(critical_strength)
-var stagger_chance = 0.00
-func updateStaggerChance():
-	stagger_chance = max(0, (impact - 1.00) * 0.45) +  max(0, (ferocity - 1.00) * 0.005) 
-	$BookStatsSkills/CombatStats/GridContainer/StaggerChanceValue.text = str(stagger_chance)
-var life_steal = 1 
-#func updateLifeSteal():
-#	life_steal_value.text = str(life_steal * 100) + "%"
-func updateScaleRelatedAttributes():
-	charisma = base_charisma * (charisma_multiplier * 0.87 * (scale_factor * 1.15))
-func UpdateAllStats():
-	updateAttackSpeed()
-	updateScaleRelatedAttributes()
-	updateCritical()
-#	updateLifeSteal()
-	updateStaggerChance()
-func manageEnergy():
-	if is_running:
-		if energy >0:
-			energy -= 1 * scale_factor
-		if energy < 0:
-			energy = 0 
-	elif is_sprinting:
-		if energy >0:
-			energy -= 1.5 * scale_factor
-		if energy < 0:
-			energy = 0 
-	else:
-		if energy < max_energy:
-			energy += endurance + (fury * 0.25)
-		elif energy > max_energy:
-			energy = max_energy
+func displayLabels():
+	var value_int = $UI/GUI/Character/Intelligence/value
+	var value_ins = $UI/GUI/Character/Instinct/value
+	var value_wis = $UI/GUI/Character/Wisdom/value
+	var value_mem = $UI/GUI/Character/Memory/value
+	var value_san = $UI/GUI/Character/Sanity/value
+	
+	# Fetch references to the UI elements representing the values of different attributes
+	var value_force = $UI/GUI/Character/Force/value
+	var value_strength = $UI/GUI/Character/Strength/value
+	var value_impact = $UI/GUI/Character/Impact/value
+	var value_ferocity = $UI/GUI/Character/Ferocity/value
+	var value_fury = $UI/GUI/Character/Fury/value
+	
+	# Fetch references to the UI elements representing the values of different attributes
+	var value_accuracy = $UI/GUI/Character/Accuracy/value
+	var value_dexterity = $UI/GUI/Character/Dexterity/value
+	var value_poise = $UI/GUI/Character/Poise/value
+	var value_balance = $UI/GUI/Character/Balance/value
+	var value_focus = $UI/GUI/Character/Focus/value
+	var value_haste = $UI/GUI/Character/Haste/value
+	var value_agility = $UI/GUI/Character/Agility/value
+	var value_celerity = $UI/GUI/Character/Celerity/value
+	var value_flexibility = $UI/GUI/Character/Flexibility/value
+	var value_deflection = $UI/GUI/Character/Deflection/value
+	var value_endurance = $UI/GUI/Character/Endurance/value
+	var value_stamina = $UI/GUI/Character/Stamina/value
+	var value_vitality = $UI/GUI/Character/Vitality/value
+	var value_resistance = $UI/GUI/Character/Resistance/value
+	var value_tenacity = $UI/GUI/Character/Tenacity/value
+	
+	
+	var val_cha = $UI/GUI/Character/Charisma/value
+	displayStats(val_cha,charisma_multiplier)
+	var val_dip = $UI/GUI/Character/Diplomacy/value
+	displayStats(val_dip,diplomacy)
+	var val_au = $UI/GUI/Character/Authority/value
+	displayStats(val_au,authority)	
+	var val_cou = $UI/GUI/Character/Courage/value
+	displayStats(val_cou,courage)
+	var val_loy = $UI/GUI/Character/Loyalty/value
+	displayStats(val_loy,loyalty)
+	
+		
+	# Display labels for all attributes
+	displayStats(value_ins, instinct)
+	displayStats(value_int, intelligence)
+	displayStats(value_wis, wisdom)
+	displayStats(value_mem, memory)
+	displayStats(value_san, sanity)
+	displayStats(value_force, force)
+	displayStats(value_strength, strength)
+	displayStats(value_impact, impact)
+	displayStats(value_ferocity, ferocity)
+	displayStats(value_fury, fury)	
+	displayStats(value_accuracy, accuracy)
+	displayStats(value_dexterity, dexterity)
+	displayStats(value_poise, poise)
+	displayStats(value_balance, balance)
+	displayStats(value_focus, focus)
+	displayStats(value_haste, haste)
+	displayStats(value_agility, agility)
+	displayStats(value_celerity, celerity)
+	displayStats(value_flexibility, flexibility)
+	displayStats(value_deflection, deflection)
+	displayStats(value_endurance, endurance)
+	displayStats(value_stamina, stamina)
+	displayStats(value_vitality, vitality)
+	displayStats(value_resistance, resistance)
+	displayStats(value_tenacity, tenacity)
 
 
+# Function to display attribute values
+func displayStats(label, value):
+	label.text = str(value)
 
+func connectAttributeHovering():
+	var int_label = $UI/GUI/Character/Intelligence
+	var ins_label = $UI/GUI/Character/Instinct
+	var wis_label = $UI/GUI/Character/Wisdom
+	var san_label = $UI/GUI/Character/Sanity
+	var mem_label = $UI/GUI/Character/Memory
+	var force_label = $UI/GUI/Character/Force
+	var str_label = $UI/GUI/Character/Strength
+	var imp_label = $UI/GUI/Character/Impact
+	var fer_label = $UI/GUI/Character/Ferocity
+	var fury_label = $UI/GUI/Character/Fury
+	
+	var accuracy_label = $UI/GUI/Character/Accuracy
+	var dexterity_label = $UI/GUI/Character/Dexterity
+	var poise_label = $UI/GUI/Character/Poise
+	var balance_label = $UI/GUI/Character/Balance
+	var focus_label = $UI/GUI/Character/Focus
+
+	var haste_label = $UI/GUI/Character/Haste
+	var agility_label = $UI/GUI/Character/Agility
+	var celerity_label = $UI/GUI/Character/Celerity
+	var flexibility_label = $UI/GUI/Character/Flexibility
+	var deflection_label = $UI/GUI/Character/Deflection
+
+	var endurance_label = $UI/GUI/Character/Endurance
+	var stamina_label = $UI/GUI/Character/Stamina
+	var vitality_label = $UI/GUI/Character/Vitality
+	var resistance_label = $UI/GUI/Character/Resistance
+	var tenacity_label = $UI/GUI/Character/Tenacity
+
+	var charisma_label = $UI/GUI/Character/Charisma
+	var loyalty_label = $UI/GUI/Character/Loyalty
+	var diplomacy_label = $UI/GUI/Character/Diplomacy
+	var authority_label = $UI/GUI/Character/Authority
+	var empathy_label = $UI/GUI/Character/Empathy
+	var courage_label = $UI/GUI/Character/Courage	
+	# Set mouse_filter for each label to stop mouse events
+	int_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	ins_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	wis_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	san_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	mem_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	
+	force_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	str_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	imp_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	fer_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	fury_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	
+	haste_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	agility_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	celerity_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	flexibility_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	deflection_label.mouse_filter = Control.MOUSE_FILTER_STOP	
+	
+	accuracy_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	dexterity_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	poise_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	balance_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	focus_label.mouse_filter = Control.MOUSE_FILTER_STOP
+
+	endurance_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	stamina_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	vitality_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	resistance_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	tenacity_label.mouse_filter = Control.MOUSE_FILTER_STOP
+
+	charisma_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	loyalty_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	diplomacy_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	authority_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	courage_label.mouse_filter = Control.MOUSE_FILTER_STOP
+
+	
+	
+	# Connect mouse entered and exited signals for Intelligence label
+	int_label.connect("mouse_entered", self, "intHovered")
+	int_label.connect("mouse_exited", self, "intExited")
+	# Connect mouse entered and exited signals for Instinct label
+	ins_label.connect("mouse_entered", self, "insHovered")
+	ins_label.connect("mouse_exited", self, "insExited")
+	# Connect mouse entered and exited signals for Wisdom label
+	wis_label.connect("mouse_entered", self, "wisHovered")
+	wis_label.connect("mouse_exited", self, "wisExited")
+	# Connect mouse entered and exited signals for Memory label
+	mem_label.connect("mouse_entered", self, "memHovered")
+	mem_label.connect("mouse_exited", self, "memExited")	
+	# Connect mouse entered and exited signals for Sanity label
+	san_label.connect("mouse_entered", self, "sanHovered")
+	san_label.connect("mouse_exited", self, "sanExited")
+
+
+	# Connect mouse entered and exited signals for Strength label
+	str_label.connect("mouse_entered", self, "strHovered")
+	str_label.connect("mouse_exited", self, "strExited")
+	# Connect mouse entered and exited signals for Force label
+	force_label.connect("mouse_entered", self, "forceHovered")
+	force_label.connect("mouse_exited", self, "forceExited")
+	# Connect mouse entered and exited signals for Impact label
+	imp_label.connect("mouse_entered", self, "impHovered")
+	imp_label.connect("mouse_exited", self, "impExited")
+	# Connect mouse entered and exited signals for Ferocity label
+	fer_label.connect("mouse_entered", self, "ferHovered")
+	fer_label.connect("mouse_exited", self, "ferExited")
+	# Connect mouse entered and exited signals for Fury label
+	fury_label.connect("mouse_entered", self, "furHovered")
+	fury_label.connect("mouse_exited", self, "furExited")
+
+	# Connect mouse entered and exited signals for Vitality label
+	vitality_label.connect("mouse_entered", self, "vitHovered")
+	vitality_label.connect("mouse_exited", self, "vitExited")
+	# Connect mouse entered and exited signals for Stamina label
+	stamina_label.connect("mouse_entered", self, "staHovered")
+	stamina_label.connect("mouse_exited", self, "staExited")
+	# Connect mouse entered and exited signals for Endurance label
+	endurance_label.connect("mouse_entered", self, "endHovered")
+	endurance_label.connect("mouse_exited", self, "endExited")	
+	# Connect mouse entered and exited signals for Resistance label
+	resistance_label.connect("mouse_entered", self, "resHovered")
+	resistance_label.connect("mouse_exited", self, "resExited")
+	# Connect mouse entered and exited signals for Tenacity label
+	tenacity_label.connect("mouse_entered", self, "tenHovered")
+	tenacity_label.connect("mouse_exited", self, "tenExited")
+
+
+	# Connect mouse entered and exited signals for Agility label
+	agility_label.connect("mouse_entered", self, "agiHovered")
+	agility_label.connect("mouse_exited", self, "agiExited")
+	# Connect mouse entered and exited signals for Haste label
+	haste_label.connect("mouse_entered", self, "hasHovered")
+	haste_label.connect("mouse_exited", self, "hasExited")
+	# Connect mouse entered and exited signals for Celerity label
+	celerity_label.connect("mouse_entered", self, "celHovered")
+	celerity_label.connect("mouse_exited", self, "celExited")
+	# Connect mouse entered and exited signals for Flexibility label
+	flexibility_label.connect("mouse_entered", self, "fleHovered")
+	flexibility_label.connect("mouse_exited", self, "fleExited")
+	# Connect mouse entered and exited signals for Deflection label
+	deflection_label.connect("mouse_entered", self, "defHovered")
+	deflection_label.connect("mouse_exited", self, "defExited")
+	
+	
+	# Connect mouse entered and exited signals for Dexterity label
+	dexterity_label.connect("mouse_entered", self, "dexHovered")
+	dexterity_label.connect("mouse_exited", self, "dexExited")
+	# Connect mouse entered and exited signals for Accuracy label
+	accuracy_label.connect("mouse_entered", self, "accHovered")
+	accuracy_label.connect("mouse_exited", self, "accExited")	
+	# Connect mouse entered and exited signals for Focus label
+	focus_label.connect("mouse_entered", self, "focHovered")
+	focus_label.connect("mouse_exited", self, "focExited")
+	# Connect mouse entered and exited signals for Poise label
+	poise_label.connect("mouse_entered", self, "poiHovered")
+	poise_label.connect("mouse_exited", self, "poiExited")
+	# Connect mouse entered and exited signals for Balance label
+	balance_label.connect("mouse_entered", self, "balHovered")
+	balance_label.connect("mouse_exited", self, "balExited")
+
+
+	# Connect mouse entered and exited signals for Charisma label
+	charisma_label.connect("mouse_entered", self, "chaHovered")
+	charisma_label.connect("mouse_exited", self, "chaExited")
+	# Connect mouse entered and exited signals for Diplomacy label
+	diplomacy_label.connect("mouse_entered", self, "dipHovered")
+	diplomacy_label.connect("mouse_exited", self, "dipExited")
+	# Connect mouse entered and exited signals for Authority label
+	authority_label.connect("mouse_entered", self, "autHovered")
+	authority_label.connect("mouse_exited", self, "autExited")
+	# Connect mouse entered and exited signals for Courage label
+	courage_label.connect("mouse_entered", self, "couHovered")
+	courage_label.connect("mouse_exited", self, "couExited")
+	# Connect mouse entered and exited signals for Loyalty label
+	loyalty_label.connect("mouse_entered", self, "loHovered")
+	loyalty_label.connect("mouse_exited", self, "loyExited")
+
+# Functions to handle mouse entering and exiting each label
+func intHovered():
+	var instance = preload("res://tooltip.tscn").instance()
+	callToolTip(instance,"placeholder","holder placer")
+func intExited():
+	# Remove all children from the TextureButton
+	for child in gui.get_children():
+		if child.is_in_group("Tooltip"):
+			child.queue_free()
+func insHovered():
+	var instance = preload("res://tooltip.tscn").instance()
+	callToolTip(instance,"placeholder","holder placer")
+func insExited():
+	# Remove all children from the TextureButton
+	for child in gui.get_children():
+		if child.is_in_group("Tooltip"):
+			child.queue_free()
+func wisHovered():
+	var instance = preload("res://tooltip.tscn").instance()
+	callToolTip(instance,"placeholder","holder placer")
+func wisExited():
+	# Remove all children from the TextureButton
+	for child in gui.get_children():
+		if child.is_in_group("Tooltip"):
+			child.queue_free()
+func memHovered():
+	var instance = preload("res://tooltip.tscn").instance()
+	callToolTip(instance,"placeholder","holder placer")
+func memExited():
+	# Remove all children from the TextureButton
+	for child in gui.get_children():
+		if child.is_in_group("Tooltip"):
+			child.queue_free()	
+func sanHovered():
+	var instance = preload("res://tooltip.tscn").instance()
+	callToolTip(instance,"placeholder","holder placer")
+func sanExited():
+	# Remove all children from the TextureButton
+	for child in gui.get_children():
+		if child.is_in_group("Tooltip"):
+			child.queue_free()
+
+	# Remove all children from the TextureButton
+	for child in gui.get_children():
+		if child.is_in_group("Tooltip"):
+			child.queue_free()
+
+
+func strHovered():
+	var instance = preload("res://tooltip.tscn").instance()
+	callToolTip(instance,"placeholder","holder placer")
+func strExited():
+	# Remove all children from the TextureButton
+	for child in gui.get_children():
+		if child.is_in_group("Tooltip"):
+			child.queue_free()
+func forceHovered():
+	var instance = preload("res://tooltip.tscn").instance()
+	callToolTip(instance,"placeholder","holder placer")
+func forceExited():
+	# Remove all children from the TextureButton
+	for child in gui.get_children():
+		if child.is_in_group("Tooltip"):
+			child.queue_free()
+func impHovered():
+	var instance = preload("res://tooltip.tscn").instance()
+	callToolTip(instance,"placeholder","holder placer")
+func impExited():
+	# Remove all children from the TextureButton
+	for child in gui.get_children():
+		if child.is_in_group("Tooltip"):
+			child.queue_free()
+func ferHovered():
+	var instance = preload("res://tooltip.tscn").instance()
+	callToolTip(instance,"placeholder","holder placer")
+func ferExited():
+	# Remove all children from the TextureButton
+	for child in gui.get_children():
+		if child.is_in_group("Tooltip"):
+			child.queue_free()
+func furHovered():
+	var instance = preload("res://tooltip.tscn").instance()
+	callToolTip(instance,"placeholder","holder placer")
+func furExited():
+	# Remove all children from the TextureButton
+	for child in gui.get_children():
+		if child.is_in_group("Tooltip"):
+			child.queue_free()
+
+
+func vitHovered():
+	var instance = preload("res://tooltip.tscn").instance()
+	callToolTip(instance,"placeholder","holder placer")
+func vitExited():
+	# Remove all children from the TextureButton
+	for child in gui.get_children():
+		if child.is_in_group("Tooltip"):
+			child.queue_free()
+func staHovered():
+	var instance = preload("res://tooltip.tscn").instance()
+	callToolTip(instance,"placeholder","holder placer")
+func staExited():
+	# Remove all children from the TextureButton
+	for child in gui.get_children():
+		if child.is_in_group("Tooltip"):
+			child.queue_free()
+func endHovered():
+	var instance = preload("res://tooltip.tscn").instance()
+	callToolTip(instance,"placeholder","holder placer")
+func endExited():
+	# Remove all children from the TextureButton
+	for child in gui.get_children():
+		if child.is_in_group("Tooltip"):
+			child.queue_free()
+func resHovered():
+	var instance = preload("res://tooltip.tscn").instance()
+	callToolTip(instance,"placeholder","holder placer")
+func resExited():
+	# Remove all children from the TextureButton
+	for child in gui.get_children():
+		if child.is_in_group("Tooltip"):
+			child.queue_free()
+func tenHovered():
+	var instance = preload("res://tooltip.tscn").instance()
+	callToolTip(instance,"placeholder","holder placer")
+func tenExited():
+	# Remove all children from the TextureButton
+	for child in gui.get_children():
+		if child.is_in_group("Tooltip"):
+			child.queue_free()
+
+func agiHovered():
+	var instance = preload("res://tooltip.tscn").instance()
+	callToolTip(instance,"placeholder","holder placer")
+func agiExited():
+	# Remove all children from the TextureButton
+	for child in gui.get_children():
+		if child.is_in_group("Tooltip"):
+			child.queue_free()
+func hasHovered():
+	var instance = preload("res://tooltip.tscn").instance()
+	callToolTip(instance,"placeholder","holder placer")
+func hasExited():
+	# Remove all children from the TextureButton
+	for child in gui.get_children():
+		if child.is_in_group("Tooltip"):
+			child.queue_free()
+func celHovered():
+	var instance = preload("res://tooltip.tscn").instance()
+	callToolTip(instance,"placeholder","holder placer")
+func celExited():
+	# Remove all children from the TextureButton
+	for child in gui.get_children():
+		if child.is_in_group("Tooltip"):
+			child.queue_free()
+func fleHovered():
+	var instance = preload("res://tooltip.tscn").instance()
+	callToolTip(instance,"placeholder","holder placer")
+func fleExited():
+	# Remove all children from the TextureButton
+	for child in gui.get_children():
+		if child.is_in_group("Tooltip"):
+			child.queue_free()
+
+func defHovered():
+	var instance = preload("res://tooltip.tscn").instance()
+	callToolTip(instance,"placeholder","holder placer")
+func defExited():
+	# Remove all children from the TextureButton
+	for child in gui.get_children():
+		if child.is_in_group("Tooltip"):
+			child.queue_free()
+func dexHovered():
+	var instance = preload("res://tooltip.tscn").instance()
+	callToolTip(instance,"placeholder","holder placer")
+func dexExited():
+	# Remove all children from the TextureButton
+	for child in gui.get_children():
+		if child.is_in_group("Tooltip"):
+			child.queue_free()
+func accHovered():
+	var instance = preload("res://tooltip.tscn").instance()
+	callToolTip(instance,"placeholder","holder placer")
+func accExited():
+	# Remove all children from the TextureButton
+	for child in gui.get_children():
+		if child.is_in_group("Tooltip"):
+			child.queue_free()
+func focHovered():
+	var instance = preload("res://tooltip.tscn").instance()
+	callToolTip(instance,"placeholder","holder placer")
+func focExited():
+	# Remove all children from the TextureButton
+	for child in gui.get_children():
+		if child.is_in_group("Tooltip"):
+			child.queue_free()
+func poiHovered():
+	var instance = preload("res://tooltip.tscn").instance()
+	callToolTip(instance,"placeholder","holder placer")
+func poiExited():
+	# Remove all children from the TextureButton
+	for child in gui.get_children():
+		if child.is_in_group("Tooltip"):
+			child.queue_free()
+func balHovered():
+	var instance = preload("res://tooltip.tscn").instance()
+	callToolTip(instance,"placeholder","holder placer")
+func balExited():
+	# Remove all children from the TextureButton
+	for child in gui.get_children():
+		if child.is_in_group("Tooltip"):
+			child.queue_free()
+			
+func chaHovered():
+	var instance = preload("res://tooltip.tscn").instance()
+	callToolTip(instance,"placeholder","holder placer")
+func chaExited():
+	# Remove all children from the TextureButton
+	for child in gui.get_children():
+		if child.is_in_group("Tooltip"):
+			child.queue_free()
+func dipHovered():
+	var instance = preload("res://tooltip.tscn").instance()
+	callToolTip(instance,"placeholder","holder placer")
+func dipExited():
+	# Remove all children from the TextureButton
+	for child in gui.get_children():
+		if child.is_in_group("Tooltip"):
+			child.queue_free()
+func autHovered():
+	var instance = preload("res://tooltip.tscn").instance()
+	callToolTip(instance,"placeholder","holder placer")
+func autExited():
+	# Remove all children from the TextureButton
+	for child in gui.get_children():
+		if child.is_in_group("Tooltip"):
+			child.queue_free()
+func couHovered():
+	var instance = preload("res://tooltip.tscn").instance()
+	callToolTip(instance,"placeholder","holder placer")
+func couExited():
+	# Remove all children from the TextureButton
+	for child in gui.get_children():
+		if child.is_in_group("Tooltip"):
+			child.queue_free()
+func loyHovered():
+	var instance = preload("res://tooltip.tscn").instance()
+	callToolTip(instance,"placeholder","holder placer")
+func loyExited():
+	# Remove all children from the TextureButton
+	for child in gui.get_children():
+		if child.is_in_group("Tooltip"):
+			child.queue_free()
+
+
+func connectAttributeButtons():
+   # Intelligence attribute
+	var plus_int = $UI/GUI/Character/Intelligence/Plus
+	var min_int = $UI/GUI/Character/Intelligence/Min
+	plus_int.connect("pressed", self, "plusInt")
+	min_int.connect("pressed", self, "minusInt")
+	# Instinct attribute
+	var plus_ins = $UI/GUI/Character/Instinct/Plus
+	var min_ins = $UI/GUI/Character/Instinct/Min
+	plus_ins.connect("pressed", self, "plusIns")
+	min_ins.connect("pressed", self, "minusIns")
+	# Wisdom attribute
+	var plus_wis = $UI/GUI/Character/Wisdom/Plus
+	var min_wis = $UI/GUI/Character/Wisdom/Min
+	plus_wis.connect("pressed", self, "plusWis")
+	min_wis.connect("pressed", self, "minusWis")
+	# Memory attribute
+	var plus_mem = $UI/GUI/Character/Memory/Plus
+	var min_mem = $UI/GUI/Character/Memory/Min
+	plus_mem.connect("pressed", self, "plusMem")
+	min_mem.connect("pressed", self, "minusMem")
+	# Sanity attribute
+	var plus_san = $UI/GUI/Character/Sanity/Plus
+	var min_san = $UI/GUI/Character/Sanity/Min
+	plus_san.connect("pressed", self, "plusSan")
+	min_san.connect("pressed", self, "minusSan")
+
+	# Strength attribute
+	var plus_str = $UI/GUI/Character/Strength/Plus
+	var min_str = $UI/GUI/Character/Strength/Min
+	plus_str.connect("pressed", self, "plusStr")
+	min_str.connect("pressed", self, "minusStr")
+	# Force attribute
+	var plus_for = $UI/GUI/Character/Force/Plus
+	var min_for = $UI/GUI/Character/Force/Min
+	plus_for.connect("pressed", self, "plusFor")
+	min_for.connect("pressed", self, "minusFor")
+	# Impact attributes
+	var plus_imp = $UI/GUI/Character/Impact/Plus
+	var min_imp = $UI/GUI/Character/Impact/Min
+	plus_imp.connect("pressed", self, "plusImp")
+	min_imp.connect("pressed", self, "minusImp")
+	# Ferocity attribute
+	var plus_fer = $UI/GUI/Character/Ferocity/Plus
+	var min_fer = $UI/GUI/Character/Ferocity/Min
+	plus_fer.connect("pressed", self, "plusFer")
+	min_fer.connect("pressed", self, "minusFer")
+	# Fury attribute
+	var plus_fur = $UI/GUI/Character/Fury/Plus
+	var min_fur = $UI/GUI/Character/Fury/Min
+	plus_fur.connect("pressed", self, "plusFur")
+	min_fur.connect("pressed", self, "minusFur")
+
+	# Vitality attribute
+	var plus_vitality = $UI/GUI/Character/Vitality/Plus
+	var min_vitality = $UI/GUI/Character/Vitality/Min
+	plus_vitality.connect("pressed", self, "plusVit")
+	min_vitality.connect("pressed", self, "minusVit")	
+	# Stamina attribute
+	var plus_stamina = $UI/GUI/Character/Stamina/Plus
+	var min_stamina = $UI/GUI/Character/Stamina/Min
+	plus_stamina.connect("pressed", self, "plusSta")
+	min_stamina.connect("pressed", self, "minusSta")
+	# Endurance attribute
+	var plus_endurance = $UI/GUI/Character/Endurance/Plus
+	var min_endurance = $UI/GUI/Character/Endurance/Min
+	plus_endurance.connect("pressed", self, "plusEnd")
+	min_endurance.connect("pressed", self, "minusEnd")	
+	# Resistance attribute
+	var plus_resistance = $UI/GUI/Character/Resistance/Plus
+	var min_resistance = $UI/GUI/Character/Resistance/Min
+	plus_resistance.connect("pressed", self, "plusRes")
+	min_resistance.connect("pressed", self, "minusRes")
+	# Tenacity attribute
+	var plus_tenacity = $UI/GUI/Character/Tenacity/Plus
+	var min_tenacity = $UI/GUI/Character/Tenacity/Min
+	plus_tenacity.connect("pressed", self, "plusTen")
+	min_tenacity.connect("pressed", self, "minusTen")
+
+	# Agility attribute
+	var plus_agility = $UI/GUI/Character/Agility/Plus
+	var min_agility = $UI/GUI/Character/Agility/Min
+	plus_agility.connect("pressed", self, "plusAgi")
+	min_agility.connect("pressed", self, "minusAgi")
+	# Haste attribute
+	var plus_haste = $UI/GUI/Character/Haste/Plus
+	var min_haste = $UI/GUI/Character/Haste/Min
+	plus_haste.connect("pressed", self, "plusHas")
+	min_haste.connect("pressed", self, "minusHas")	
+	# Celerity attribute
+	var plus_celerity = $UI/GUI/Character/Celerity/Plus
+	var min_celerity = $UI/GUI/Character/Celerity/Min
+	plus_celerity.connect("pressed", self, "plusCel")
+	min_celerity.connect("pressed", self, "minusCel")
+	# Flexibility attribute
+	var plus_flexibility = $UI/GUI/Character/Flexibility/Plus
+	var min_flexibility = $UI/GUI/Character/Flexibility/Min
+	plus_flexibility.connect("pressed", self, "plusFle")
+	min_flexibility.connect("pressed", self, "minusFle")
+	# Deflection attribute
+	var plus_deflection = $UI/GUI/Character/Deflection/Plus
+	var min_deflection = $UI/GUI/Character/Deflection/Min
+	plus_deflection.connect("pressed", self, "plusDef")
+	min_deflection.connect("pressed", self, "minusDef")
+	
+	# Dexterity attributes
+	var plus_dex = $UI/GUI/Character/Dexterity/Plus
+	var min_dex = $UI/GUI/Character/Dexterity/Min
+	plus_dex.connect("pressed", self, "plusDex")
+	min_dex.connect("pressed", self, "minusDex")
+	# Accuracy attributes
+	var plus_acc = $UI/GUI/Character/Accuracy/Plus
+	var min_acc = $UI/GUI/Character/Accuracy/Min
+	plus_acc.connect("pressed", self, "plusAcc")
+	min_acc.connect("pressed", self, "minusAcc")
+	# Focus attributes
+	var plus_focus = $UI/GUI/Character/Focus/Plus
+	var min_focus = $UI/GUI/Character/Focus/Min
+	plus_focus.connect("pressed", self, "plusFoc")
+	min_focus.connect("pressed", self, "minusFoc")	
+	# Poise attributes
+	var plus_poi = $UI/GUI/Character/Poise/Plus
+	var min_poi = $UI/GUI/Character/Poise/Min
+	plus_poi.connect("pressed", self, "plusPoi")
+	min_poi.connect("pressed", self, "minusPoi")
+	# Balance attributes
+	var plus_bal = $UI/GUI/Character/Balance/Plus
+	var min_bal = $UI/GUI/Character/Balance/Min
+	plus_bal.connect("pressed", self, "plusBal")
+	min_bal.connect("pressed", self, "minusBal")
+
+	# Charisma attribute
+	var plus_char = $UI/GUI/Character/Charisma/Plus
+	var min_char = $UI/GUI/Character/Charisma/Min
+	plus_char.connect("pressed", self, "plusCha")
+	min_char.connect("pressed", self, "minusCha")
+	# Diplomacy attribute
+	var plus_dip = $UI/GUI/Character/Diplomacy/Plus
+	var min_dip = $UI/GUI/Character/Diplomacy/Min
+	plus_dip.connect("pressed", self, "plusDip")
+	min_dip.connect("pressed", self, "minusDip")	
+	# Authority attribute
+	var plus_aut = $UI/GUI/Character/Authority/Plus
+	var min_aut = $UI/GUI/Character/Authority/Min
+	plus_aut.connect("pressed", self, "plusAut")
+	min_aut.connect("pressed", self, "minusAut")
+	# Courage attribute
+	var plus_cou = $UI/GUI/Character/Courage/Plus
+	var min_cou = $UI/GUI/Character/Courage/Min
+	plus_cou.connect("pressed", self, "plusCou")
+	min_cou.connect("pressed", self, "minusCou")
+	# Loyalty attribute
+	var plus_loy = $UI/GUI/Character/Loyalty/Plus
+	var min_loy = $UI/GUI/Character/Loyalty/Min
+	plus_loy.connect("pressed", self, "plusLoy")
+	min_loy.connect("pressed", self, "minusLoy")
 #intelligence
-func _on_PlusInt_pressed():
+func plusInt():
 	if attribute >0:
 		if spent_attribute_points_int < 5:
 			spent_attribute_points_int += 1
@@ -2725,7 +3316,7 @@ func _on_PlusInt_pressed():
 			spent_attribute_points_int += 1
 			attribute -= 1 
 			intelligence += attribute_increase_factor * 0.01
-func _on_MinInt_pressed():
+func minusInt():
 	if intelligence > 0.05:
 		spent_attribute_points_int -= 1
 		attribute += 1 
@@ -2742,7 +3333,7 @@ func _on_MinInt_pressed():
 		else:
 			intelligence -= attribute_increase_factor * 0.01
 #Instincts
-func _on_PlusIns_pressed():
+func plusIns():
 	if attribute > 0:
 		if spent_attribute_points_ins < 5:
 			spent_attribute_points_ins += 1
@@ -2768,7 +3359,7 @@ func _on_PlusIns_pressed():
 			spent_attribute_points_ins += 1
 			attribute -= 1
 			instinct += attribute_increase_factor * 0.01
-func _on_MinIns_pressed():
+func minusIns():
 	if instinct > 0.05:
 		spent_attribute_points_ins -= 1
 		attribute += 1
@@ -2785,7 +3376,7 @@ func _on_MinIns_pressed():
 		else:
 			instinct -= attribute_increase_factor * 0.01
 # Wisdom
-func _on_PlusWis_pressed():
+func plusWis():
 	if attribute > 0:
 		if spent_attribute_points_wis < 5:
 			spent_attribute_points_wis += 1
@@ -2811,7 +3402,7 @@ func _on_PlusWis_pressed():
 			spent_attribute_points_wis += 1
 			attribute -= 1
 			wisdom += attribute_increase_factor * 0.01
-func _on_MinWis_pressed():
+func minusWis():
 	if wisdom > 0.05:
 		spent_attribute_points_wis -= 1
 		attribute += 1
@@ -2828,7 +3419,7 @@ func _on_MinWis_pressed():
 		else:
 			wisdom -= attribute_increase_factor * 0.01
 # Memory
-func _on_PlusMem_pressed():
+func plusMem():
 	if attribute > 0:
 		if spent_attribute_points_mem < 5:
 			spent_attribute_points_mem += 1
@@ -2854,7 +3445,7 @@ func _on_PlusMem_pressed():
 			spent_attribute_points_mem += 1
 			attribute -= 1
 			memory += attribute_increase_factor * 0.01
-func _on_MinMem_pressed():
+func minusMem():
 	if memory > 0.05:
 		spent_attribute_points_mem -= 1
 		attribute += 1
@@ -2871,7 +3462,7 @@ func _on_MinMem_pressed():
 		else:
 			memory -= attribute_increase_factor * 0.01
 # Sanity
-func _on_PlusSan_pressed():
+func plusSan():
 	if attribute > 0:
 		if spent_attribute_points_san < 5:
 			spent_attribute_points_san += 1
@@ -2897,7 +3488,7 @@ func _on_PlusSan_pressed():
 			spent_attribute_points_san += 1
 			attribute -= 1
 			sanity += attribute_increase_factor * 0.01
-func _on_MinSan_pressed():
+func minusSan():
 	if sanity > 0.05:
 		spent_attribute_points_san -= 1
 		attribute += 1
@@ -2914,7 +3505,7 @@ func _on_MinSan_pressed():
 		else:
 			sanity -= attribute_increase_factor * 0.01
 #Strength
-func _on_PlusStr_pressed():
+func plusStr():
 	if attribute > 0:
 		if spent_attribute_points_str < 5:
 			spent_attribute_points_str += 1
@@ -2940,7 +3531,7 @@ func _on_PlusStr_pressed():
 			spent_attribute_points_str += 1
 			attribute -= 1
 			strength += attribute_increase_factor * 0.01
-func _on_MinStr_pressed():
+func minusStr():
 	if strength > 0.05:
 		spent_attribute_points_str -= 1
 		attribute += 1
@@ -2957,7 +3548,7 @@ func _on_MinStr_pressed():
 		else:
 			strength -= attribute_increase_factor * 0.01
 #Force
-func _on_PlusFor_pressed():
+func plusFor():
 	if attribute > 0:
 		if spent_attribute_points_for < 5:
 			spent_attribute_points_for += 1
@@ -2983,7 +3574,7 @@ func _on_PlusFor_pressed():
 			spent_attribute_points_for += 1
 			attribute -= 1
 			force += attribute_increase_factor * 0.01
-func _on_MinFor_pressed():
+func minusFor():
 	if force > 0.05:
 		spent_attribute_points_for -= 1
 		attribute += 1
@@ -3000,7 +3591,7 @@ func _on_MinFor_pressed():
 		else:
 			force -= attribute_increase_factor * 0.01
 #Impact
-func _on_PlusImp_pressed():
+func plusImp():
 	if attribute > 0:
 		if spent_attribute_points_imp < 5:
 			spent_attribute_points_imp += 1
@@ -3026,7 +3617,7 @@ func _on_PlusImp_pressed():
 			spent_attribute_points_imp += 1
 			attribute -= 1
 			impact += attribute_increase_factor * 0.01
-func _on_MinImp_pressed():
+func minusImp():
 	if impact > 0.05:
 		spent_attribute_points_imp -= 1
 		attribute += 1
@@ -3043,7 +3634,7 @@ func _on_MinImp_pressed():
 		else:
 			impact -= attribute_increase_factor * 0.01
 #Ferocity
-func _on_PlusFer_pressed():
+func plusFer():
 	if attribute > 0:
 		if spent_attribute_points_fer < 5:
 			spent_attribute_points_fer += 1
@@ -3069,7 +3660,7 @@ func _on_PlusFer_pressed():
 			spent_attribute_points_fer += 1
 			attribute -= 1
 			ferocity += attribute_increase_factor * 0.01
-func _on_MinFer_pressed():
+func minusFer():
 	if ferocity > 0.05:
 		spent_attribute_points_fer -= 1
 		attribute += 1
@@ -3086,7 +3677,7 @@ func _on_MinFer_pressed():
 		else:
 			ferocity -= attribute_increase_factor * 0.01
 #Fury
-func _on_PlusFur_pressed():
+func plusFur():
 	if attribute > 0:
 		if spent_attribute_points_fur < 5:
 			spent_attribute_points_fur += 1
@@ -3112,7 +3703,7 @@ func _on_PlusFur_pressed():
 			spent_attribute_points_fur += 1
 			attribute -= 1
 			fury += attribute_increase_factor * 0.01
-func _on_MinFur_pressed():
+func minusFur():
 	if fury > 0.05:
 		spent_attribute_points_fur -= 1
 		attribute += 1
@@ -3129,7 +3720,7 @@ func _on_MinFur_pressed():
 		else:
 			fury -= attribute_increase_factor * 0.01
 #Vitality, for now it only increases health 
-func _on_PlusVit_pressed():
+func plusVit():
 	if attribute > 0:
 		if spent_attribute_points_vit < 5:
 			spent_attribute_points_vit += 1
@@ -3155,7 +3746,7 @@ func _on_PlusVit_pressed():
 			spent_attribute_points_vit += 1
 			attribute -= 1
 			vitality += attribute_increase_factor * 0.01
-func _on_MinVit_pressed():
+func minusVit():
 	if vitality > 0.05:
 		spent_attribute_points_vit -= 1
 		attribute += 1
@@ -3172,7 +3763,7 @@ func _on_MinVit_pressed():
 		else:
 			vitality -= attribute_increase_factor * 0.01
 #Stamina 
-func _on_PlusSta_pressed():
+func plusSta():
 	if attribute > 0:
 		if spent_attribute_points_sta < 5:
 			spent_attribute_points_sta += 1
@@ -3198,7 +3789,7 @@ func _on_PlusSta_pressed():
 			spent_attribute_points_sta += 1
 			attribute -= 1
 			stamina += attribute_increase_factor * 0.01
-func _on_MinSta_pressed():
+func minusSta():
 	if stamina > 0.05:
 		spent_attribute_points_sta -= 1
 		attribute += 1
@@ -3215,7 +3806,7 @@ func _on_MinSta_pressed():
 		else:
 			stamina -= attribute_increase_factor * 0.01
 #Endurance
-func _on_PlusEnd_pressed():
+func plusEnd():
 	if attribute > 0:
 		if spent_attribute_points_end < 5:
 			spent_attribute_points_end += 1
@@ -3241,7 +3832,7 @@ func _on_PlusEnd_pressed():
 			spent_attribute_points_end += 1
 			attribute -= 1
 			endurance += attribute_increase_factor * 0.01
-func _on_MinEnd_pressed():
+func minusEnd():
 	if endurance > 0.05:
 		spent_attribute_points_end -= 1
 		attribute += 1
@@ -3257,9 +3848,8 @@ func _on_MinEnd_pressed():
 			endurance -= attribute_increase_factor * 0.05
 		else:
 			endurance -= attribute_increase_factor * 0.01
-
 #Resistance, it increases health, energy, resolve, defense at 1/3 value of other attributes
-func _on_PlusRes_pressed():
+func plusRes():
 	if attribute > 0:
 		if spent_attribute_points_res < 5:
 			spent_attribute_points_res += 1
@@ -3285,7 +3875,7 @@ func _on_PlusRes_pressed():
 			spent_attribute_points_res += 1
 			attribute -= 1
 			resistance += attribute_increase_factor * 0.01
-func _on_MinRes_pressed():
+func minusRes():
 	if resistance > 0.05:
 		spent_attribute_points_res -= 1
 		attribute += 1
@@ -3302,7 +3892,7 @@ func _on_MinRes_pressed():
 		else:
 			resistance -= attribute_increase_factor * 0.01
 #Tenacity
-func _on_PlusTen_pressed():
+func plusTen():
 	if attribute > 0:
 		if spent_attribute_points_ten < 5:
 			spent_attribute_points_ten += 1
@@ -3328,7 +3918,7 @@ func _on_PlusTen_pressed():
 			spent_attribute_points_ten += 1
 			attribute -= 1
 			tenacity += attribute_increase_factor * 0.0
-func _on_MinTen_pressed():
+func minusTen():
 	if tenacity > 0.05:
 		spent_attribute_points_ten -= 1
 		attribute += 1
@@ -3345,7 +3935,7 @@ func _on_MinTen_pressed():
 		else:
 			tenacity -= attribute_increase_factor * 0.01
 #Agility 
-func _on_PlusAgi_pressed():
+func plusAgi():
 	if attribute > 0:
 		if spent_attribute_points_agi < 5:
 			spent_attribute_points_agi += 1
@@ -3371,7 +3961,7 @@ func _on_PlusAgi_pressed():
 			spent_attribute_points_agi += 1
 			attribute -= 1
 			agility += attribute_increase_factor * 0.01
-func _on_MinAgi_pressed():
+func minusAgi():
 	if agility > 0.05:
 		spent_attribute_points_agi -= 1
 		attribute += 1
@@ -3388,7 +3978,7 @@ func _on_MinAgi_pressed():
 		else:
 			agility -= attribute_increase_factor * 0.01
 #Haste
-func _on_PlusHas_pressed():
+func plusHas():
 	if attribute > 0:
 		if spent_attribute_points_has < 5:
 			spent_attribute_points_has += 1
@@ -3414,7 +4004,7 @@ func _on_PlusHas_pressed():
 			spent_attribute_points_has += 1
 			attribute -= 1
 			haste += attribute_increase_factor * 0.01
-func _on_MinHas_pressed():
+func minusHas():
 	if haste > 0.05:
 		spent_attribute_points_has -= 1
 		attribute += 1
@@ -3431,7 +4021,7 @@ func _on_MinHas_pressed():
 		else:
 			haste -= attribute_increase_factor * 0.01
 #Celerety 
-func _on_PlusCel_pressed():
+func plusCel():
 	if attribute > 0:
 		if spent_attribute_points_cel < 5:
 			spent_attribute_points_cel += 1
@@ -3457,7 +4047,7 @@ func _on_PlusCel_pressed():
 			spent_attribute_points_cel += 1
 			attribute -= 1
 			celerity += attribute_increase_factor * 0.01
-func _on_MinCel_pressed():
+func minusCel():
 	if celerity > 0.05:
 		spent_attribute_points_cel -= 1
 		attribute += 1
@@ -3474,7 +4064,7 @@ func _on_MinCel_pressed():
 		else:
 			celerity -= attribute_increase_factor * 0.01
 #Flexibity.... this is mostly about taking less falling damage or when being knocked down by tackles 
-func _on_PlusFle_pressed():
+func plusFle():
 	if attribute > 0:
 		if spent_attribute_points_fle < 5:
 			spent_attribute_points_fle += 1
@@ -3500,7 +4090,7 @@ func _on_PlusFle_pressed():
 			spent_attribute_points_fle += 1
 			attribute -= 1
 			flexibility += attribute_increase_factor * 0.01
-func _on_MinFle_pressed():
+func minusFle():
 	if flexibility > 0.05:
 		spent_attribute_points_fle -= 1
 		attribute += 1
@@ -3516,10 +4106,8 @@ func _on_MinFle_pressed():
 			flexibility -= attribute_increase_factor * 0.05
 		else:
 			flexibility -= attribute_increase_factor * 0.01
-
-#Deflextion, influence chance to take less damage, kind of opposite of critical hits
-# Deflection
-func _on_PlusDef_pressed():
+#Deflection
+func plusDef():
 	if attribute > 0:
 		if spent_attribute_points_def < 5:
 			spent_attribute_points_def += 1
@@ -3545,7 +4133,7 @@ func _on_PlusDef_pressed():
 			spent_attribute_points_def += 1
 			attribute -= 1
 			deflection += attribute_increase_factor * 0.01
-func _on_MinDef_pressed():
+func minusDef():
 	if deflection > 0.05:
 		spent_attribute_points_def -= 1
 		attribute += 1
@@ -3562,7 +4150,7 @@ func _on_MinDef_pressed():
 		else:
 			deflection -= attribute_increase_factor * 0.01
 #Dexterity
-func _on_PlusDex_pressed():
+func plusDex():
 	if attribute > 0:
 		if spent_attribute_points_dex < 5:
 			spent_attribute_points_dex += 1
@@ -3588,7 +4176,7 @@ func _on_PlusDex_pressed():
 			spent_attribute_points_dex += 1
 			attribute -= 1
 			dexterity += attribute_increase_factor * 0.01
-func _on_MinDex_pressed():
+func minusDex():
 	if dexterity > 0.05:
 		spent_attribute_points_dex -= 1
 		attribute += 1
@@ -3605,7 +4193,7 @@ func _on_MinDex_pressed():
 		else:
 			dexterity -= attribute_increase_factor * 0.01
 #Accuracy
-func _on_PlusAcc_pressed():
+func plusAcc():
 	if attribute > 0:
 		if spent_attribute_points_acc < 5:
 			spent_attribute_points_acc += 1
@@ -3631,7 +4219,7 @@ func _on_PlusAcc_pressed():
 			spent_attribute_points_acc += 1
 			attribute -= 1
 			accuracy += attribute_increase_factor * 0.01
-func _on_MinAcc_pressed():
+func minusAcc():
 	if accuracy > 0.05:
 		spent_attribute_points_acc -= 1
 		attribute += 1
@@ -3648,7 +4236,7 @@ func _on_MinAcc_pressed():
 		else:
 			accuracy -= attribute_increase_factor * 0.01
 #Focus
-func _on_PlusFoc_pressed():
+func plusFoc():
 	if attribute > 0:
 		if spent_attribute_points_foc < 5:
 			spent_attribute_points_foc += 1
@@ -3674,7 +4262,7 @@ func _on_PlusFoc_pressed():
 			spent_attribute_points_foc += 1
 			attribute -= 1
 			focus += attribute_increase_factor * 0.01
-func _on_MinFoc_pressed():
+func minusFoc():
 	if focus > 0.05:
 		spent_attribute_points_foc -= 1
 		attribute += 1
@@ -3691,7 +4279,7 @@ func _on_MinFoc_pressed():
 		else:
 			focus -= attribute_increase_factor * 0.01
 #Poise 
-func _on_PlusPoi_pressed():
+func plusPoi():
 	if attribute > 0:
 		if spent_attribute_points_poi < 5:
 			spent_attribute_points_poi += 1
@@ -3717,7 +4305,7 @@ func _on_PlusPoi_pressed():
 			spent_attribute_points_poi += 1
 			attribute -= 1
 			poise += attribute_increase_factor * 0.01
-func _on_MinPoi_pressed():
+func minusPoi():
 	if poise > 0.05:
 		spent_attribute_points_poi -= 1
 		attribute += 1
@@ -3734,7 +4322,7 @@ func _on_MinPoi_pressed():
 		else:
 			poise -= attribute_increase_factor * 0.01
 #Balance
-func _on_PlusBal_pressed():
+func plusBal():
 	if attribute > 0:
 		if spent_attribute_points_bal < 5:
 			spent_attribute_points_bal += 1
@@ -3760,7 +4348,7 @@ func _on_PlusBal_pressed():
 			spent_attribute_points_bal += 1
 			attribute -= 1
 			balance += attribute_increase_factor * 0.01
-func _on_MinBal_pressed():
+func minusBal():
 	if balance > 0.05:
 		spent_attribute_points_bal -= 1
 		attribute += 1
@@ -3777,7 +4365,8 @@ func _on_MinBal_pressed():
 		else:
 			balance -= attribute_increase_factor * 0.01
 #Charisma 
-func _on_PlusCha_pressed():
+func plusCha():
+	print("ok")
 	if attribute > 0:
 		if spent_attribute_points_cha < 5:
 			spent_attribute_points_cha += 1
@@ -3803,7 +4392,7 @@ func _on_PlusCha_pressed():
 			spent_attribute_points_cha += 1
 			attribute -= 1
 			charisma_multiplier += attribute_increase_factor * 0.01
-func _on_MinCha_pressed():
+func minusCha():
 	if charisma_multiplier > 0.05:
 		spent_attribute_points_cha -= 1
 		attribute += 1
@@ -3820,7 +4409,7 @@ func _on_MinCha_pressed():
 		else:
 			charisma_multiplier -= attribute_increase_factor * 0.01
 #Diplomancy 
-func _on_PlusDip_pressed():
+func plusDip():
 	if attribute > 0:
 		if spent_attribute_points_dip < 5:
 			spent_attribute_points_dip += 1
@@ -3846,7 +4435,7 @@ func _on_PlusDip_pressed():
 			spent_attribute_points_dip += 1
 			attribute -= 1
 			diplomacy += attribute_increase_factor * 0.01
-func _on_MinDip_pressed():
+func minusDip():
 	if diplomacy > 0.05:
 		spent_attribute_points_dip -= 1
 		attribute += 1
@@ -3862,8 +4451,8 @@ func _on_MinDip_pressed():
 			diplomacy -= attribute_increase_factor * 0.05
 		else:
 			diplomacy -= attribute_increase_factor * 0.01
-# Authority
-func _on_PlusAut_pressed():
+#Authority
+func plusAut():
 	if attribute > 0:
 		if spent_attribute_points_aut < 5:
 			spent_attribute_points_aut += 1
@@ -3889,7 +4478,7 @@ func _on_PlusAut_pressed():
 			spent_attribute_points_aut += 1
 			attribute -= 1
 			authority += attribute_increase_factor * 0.01
-func _on_MinAut_pressed():
+func minusAut():
 	if authority > 0.05:
 		spent_attribute_points_aut -= 1
 		attribute += 1
@@ -3906,7 +4495,7 @@ func _on_MinAut_pressed():
 		else:
 			authority -= attribute_increase_factor * 0.01
 #Courage 
-func _on_PlusCou_pressed():
+func plusCou():
 	if attribute > 0:
 		if spent_attribute_points_cou < 5:
 			spent_attribute_points_cou += 1
@@ -3932,7 +4521,7 @@ func _on_PlusCou_pressed():
 			spent_attribute_points_cou += 1
 			attribute -= 1
 			courage += attribute_increase_factor * 0.01
-func _on_MinCou_pressed():
+func minusCou():
 	if courage > 0.05:
 		spent_attribute_points_cou -= 1
 		attribute += 1
@@ -3949,7 +4538,7 @@ func _on_MinCou_pressed():
 		else:
 			courage -= attribute_increase_factor * 0.01
 #Loyalty
-func _on_PlusLoy_pressed():
+func plusLoy():
 	if attribute > 0:
 		if spent_attribute_points_loy < 5:
 			spent_attribute_points_loy += 1
@@ -3975,7 +4564,7 @@ func _on_PlusLoy_pressed():
 			spent_attribute_points_loy += 1
 			attribute -= 1
 			loyalty += attribute_increase_factor * 0.01
-func _on_MinLoy_pressed():
+func minusLoy():
 	if loyalty > 0.05:
 		spent_attribute_points_loy -= 1
 		attribute += 1
