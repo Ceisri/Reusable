@@ -1580,6 +1580,35 @@ func _on_SplitFirstSlot_pressed():
 							child.quantity += original_quantity / 2
 							break
 
+#______________________________________Crafting_________________________________
+
+onready var crafting_slot1 = $UI/GUI/Crafting/CraftingGrid/craftingSlot1/Icon
+onready var crafting_slot2 = $UI/GUI/Crafting/CraftingGrid/craftingSlot2/Icon
+onready var crafting_slot3 = $UI/GUI/Crafting/CraftingGrid/craftingSlot3/Icon
+onready var crafting_slot4 = $UI/GUI/Crafting/CraftingGrid/craftingSlot4/Icon
+onready var crafting_slot5 = $UI/GUI/Crafting/CraftingGrid/craftingSlot5/Icon
+onready var crafting_slot6 = $UI/GUI/Crafting/CraftingGrid/craftingSlot6/Icon
+onready var crafting_slot7 = $UI/GUI/Crafting/CraftingGrid/craftingSlot7/Icon
+onready var crafting_slot8 = $UI/GUI/Crafting/CraftingGrid/craftingSlot8/Icon
+onready var crafting_slot9 = $UI/GUI/Crafting/CraftingGrid/craftingSlot9/Icon
+onready var crafting_slot10 = $UI/GUI/Crafting/CraftingGrid/craftingSlot10/Icon
+onready var crafting_slot11 = $UI/GUI/Crafting/CraftingGrid/craftingSlot11/Icon
+onready var crafting_slot12 = $UI/GUI/Crafting/CraftingGrid/craftingSlot12/Icon
+onready var crafting_slot13 = $UI/GUI/Crafting/CraftingGrid/craftingSlot13/Icon
+onready var crafting_slot14 = $UI/GUI/Crafting/CraftingGrid/craftingSlot14/Icon
+onready var crafting_slot15 = $UI/GUI/Crafting/CraftingGrid/craftingSlot15/Icon
+onready var crafting_slot16 = $UI/GUI/Crafting/CraftingGrid/craftingSlot16/Icon
+
+
+onready var crafting_result = $UI/GUI/Crafting/CraftingResultSlot/Icon
+onready var icon = $CraftingResultSlot/Icon
+
+func crafting():
+	if crafting_slot1.texture != null:
+		if crafting_slot1.texture.get_path() == "res://Alchemy ingredients/2.png":
+			crafting_result.texture = preload("res://Processed ingredients/ground rosehip.png")
+			$UI/GUI/Crafting/CraftingResultSlot.quantity = 2
+
 #________________________________Add items to inventory_________________________
 var loot_amount = 1
 var chopping_power = 3
@@ -1617,8 +1646,6 @@ func ChopTree():
 					loot_amount = rng.randi_range(1, 5)
 					add_item.addStackableItem(inventory_grid,add_item.beetroot,loot_amount)
 					add_item.addFloatingIcon(take_damage_view,add_item.beetroot,loot_amount)
-
-
 
 
 
@@ -1769,10 +1796,10 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 	if chest_icon.texture != null:
 		if chest_icon.texture.get_path() == "res://Equipment icons/garment1.png":
 			torso = "garment1"
-			applyEffect(self, "effect1", true)
+			
 	elif chest_icon.texture == null:
 		torso = "naked"
-		applyEffect(self, "effect1", false)
+
 #_______________________________legs____________________________________________
 	var legs_icon = $UI/GUI/Character/Pants/Icon
 	if legs_icon.texture != null:
@@ -1819,9 +1846,11 @@ func switchTorso():
 		"naked":
 			torso0.visible = true 
 			torso1.visible = false
+			applyEffect(self,"garment1", false)
 		"garment1":
 			torso0.visible = false
 			torso1.visible = true
+			applyEffect(self,"garment1", true)
 var feet = "naked"
 func switchFeet():
 	var feet0 = $Mesh/Race/Armature/Skeleton/feet0
@@ -1911,6 +1940,7 @@ func switch():
 func removeWeapon():
 	if got_weapon:
 		attachment_r.remove_child(currentInstance)
+		attachment_hip.remove_child(currentInstance)
 		got_weapon = false
 func drop():
 	if currentInstance != null and Input.is_action_just_pressed("drop") and got_weapon:
@@ -1965,6 +1995,7 @@ func pickItemsMainHand():
 					got_sec_weapon = true 
 					body.queue_free() 
 func MainWeapon():
+	switchMainFromHipToHand()
 	pickItemsMainHand()
 	switch()
 	if Input.is_action_just_pressed("drop"):
@@ -2045,6 +2076,7 @@ func dropSec():
 		sec_weap_icon.texture = null
 		sec_weap_slot.item = "null"
 func SecWeapon():
+	switchSecondaryFromHipToHand()
 	switchSec()
 	if Input.is_action_just_pressed("drop"):
 		dropSec()
@@ -2055,6 +2087,7 @@ func SecWeapon():
 func removeSecWeapon():
 	if got_sec_weapon:
 		attachment_l.remove_child(sec_currentInstance)
+		attachment_hip_sec.remove_child(sec_currentInstance)
 		got_sec_weapon = false
 #Shield_____________________________________________________________________________________________
 onready var attachment_s = $Mesh/Armature020/Skeleton/HoldL2
@@ -2101,7 +2134,7 @@ func ShieldManagement():
 #___________________________________Status effects______________________________
 # Define effects and their corresponding stat changes
 var effects = {
-	"effect0": {"stats": {"agility": -0.05, "strength": 0.1}, "applied": false},
+	"garment": {"stats": {"agility": -0.05, "strength": 0.1}, "applied": false},
 	"effect1": {"stats": {"energy": -500000000, "mana": 10}, "applied": false},
 	"effect2": {"stats": { "vitality": 2,"agility": 0.05,}, "applied": false},
 	"overhydration": {"stats": { "vitality": -0.02,"agility": -0.05,}, "applied": false},
@@ -2131,7 +2164,7 @@ var effects = {
 	"impaired": {"stats": { "dexterity": -0.25}, "applied": false},
 	"lethargy": {"stats": {}, "applied": false},
 	"redpotion": {"stats": {}, "applied": false},
-	"test": {"stats": {"vitality": -0.25,"agility": 0.25,}, "applied": false},
+	"garment1": {"stats": {"resistance": 0.075,"agility": 0.05,}, "applied": false},
 }
 
 # Function to apply or remove effects
@@ -4584,31 +4617,3 @@ func minusLoy():
 
 
 
-#______________________________________Crafting_________________________________
-
-onready var crafting_slot1 = $UI/GUI/Crafting/CraftingGrid/craftingSlot1/Icon
-onready var crafting_slot2 = $UI/GUI/Crafting/CraftingGrid/craftingSlot2/Icon
-onready var crafting_slot3 = $UI/GUI/Crafting/CraftingGrid/craftingSlot3/Icon
-onready var crafting_slot4 = $UI/GUI/Crafting/CraftingGrid/craftingSlot4/Icon
-onready var crafting_slot5 = $UI/GUI/Crafting/CraftingGrid/craftingSlot5/Icon
-onready var crafting_slot6 = $UI/GUI/Crafting/CraftingGrid/craftingSlot6/Icon
-onready var crafting_slot7 = $UI/GUI/Crafting/CraftingGrid/craftingSlot7/Icon
-onready var crafting_slot8 = $UI/GUI/Crafting/CraftingGrid/craftingSlot8/Icon
-onready var crafting_slot9 = $UI/GUI/Crafting/CraftingGrid/craftingSlot9/Icon
-onready var crafting_slot10 = $UI/GUI/Crafting/CraftingGrid/craftingSlot10/Icon
-onready var crafting_slot11 = $UI/GUI/Crafting/CraftingGrid/craftingSlot11/Icon
-onready var crafting_slot12 = $UI/GUI/Crafting/CraftingGrid/craftingSlot12/Icon
-onready var crafting_slot13 = $UI/GUI/Crafting/CraftingGrid/craftingSlot13/Icon
-onready var crafting_slot14 = $UI/GUI/Crafting/CraftingGrid/craftingSlot14/Icon
-onready var crafting_slot15 = $UI/GUI/Crafting/CraftingGrid/craftingSlot15/Icon
-onready var crafting_slot16 = $UI/GUI/Crafting/CraftingGrid/craftingSlot16/Icon
-
-
-onready var crafting_result = $UI/GUI/Crafting/CraftingResultSlot/Icon
-onready var icon = $CraftingResultSlot/Icon
-
-func crafting():
-	if crafting_slot1.texture != null:
-		if crafting_slot1.texture.get_path() == "res://Alchemy ingredients/2.png":
-			crafting_result.texture = preload("res://Processed ingredients/ground rosehip.png")
-			$UI/GUI/Crafting/CraftingResultSlot.quantity = 55
