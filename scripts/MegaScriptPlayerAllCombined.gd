@@ -42,6 +42,7 @@ func _on_3FPS_timeout():
 	displayResources(hp_bar,hp_label,health,max_health,"HP")
 	curtainsDown()
 	SwitchEquipmentBasedOnEquipmentIcons()
+	updateAllStats()
 func _physics_process(delta: float) -> void:
 	$Debug.text = animation_state
 #	displayClock()
@@ -465,300 +466,6 @@ func lifesteal(damage):
 
 
 
-#___________________________________________Save data system________________________________________
-var entity_name: String = "dai"
-const SAVE_DIR: String = "user://saves/"
-var save_path: String = SAVE_DIR + entity_name + "save.dat"
-func savePlayerData():
-	var data = {
-		"position": translation,
-		"camera.translation.y" : camera.translation.y,
-		"camera.translation.z" : camera.translation.z,
-
-		
-		"health": health,
-		"max_health": max_health,
-		
-
-		
-		"kilocalories": kilocalories,
-		"max_kilocalories": max_kilocalories,
-		"water": water,
-		"max_water": max_water,
-		
-		
-#leveling 
-		"attribute": attribute,
-		"spent_attribute_points_str": spent_attribute_points_str,
-		"spent_attribute_points_fur": spent_attribute_points_fur,
-		"spent_attribute_points_imp": spent_attribute_points_imp,
-		"spent_attribute_points_fer": spent_attribute_points_fer,
-		"spent_attribute_points_res": spent_attribute_points_res,
-		
-		"spent_attribute_points_ten": spent_attribute_points_ten,
-		"spent_attribute_points_acc": spent_attribute_points_acc,
-		"spent_attribute_points_dex": spent_attribute_points_dex,
-		"spent_attribute_points_poi": spent_attribute_points_poi,
-		"spent_attribute_points_bal": spent_attribute_points_bal,
-		
-		"spent_attribute_points_foc": spent_attribute_points_foc,
-		"spent_attribute_points_has": spent_attribute_points_has,
-		"spent_attribute_points_agi": spent_attribute_points_agi,
-		"spent_attribute_points_cel": spent_attribute_points_cel,
-		"spent_attribute_points_fle": spent_attribute_points_fle,
-		
-		"spent_attribute_points_def": spent_attribute_points_def,
-		"spent_attribute_points_end": spent_attribute_points_end,
-		"spent_attribute_points_sta": spent_attribute_points_sta,
-		"spent_attribute_points_vit": spent_attribute_points_vit,
-		"spent_attribute_points_cha": spent_attribute_points_cha,
-		
-		"spent_attribute_points_loy": spent_attribute_points_loy,
-		"spent_attribute_points_dip": spent_attribute_points_dip,
-		"spent_attribute_points_aut": spent_attribute_points_aut,
-		"spent_attribute_points_cou": spent_attribute_points_cou,
-		"spent_attribute_points_int": spent_attribute_points_int,
-		
-		"spent_attribute_points_wis": spent_attribute_points_wis,
-		"spent_attribute_points_san": spent_attribute_points_san,
-		"spent_attribute_points_mem": spent_attribute_points_mem,
-		"spent_attribute_points_ins": spent_attribute_points_ins,
-		"spent_attribute_points_for": spent_attribute_points_for,
-		
-#Brain attributes
-		"sanity": sanity,
-		"wisdom" : wisdom,
-		"memory": memory,
-		"intelligence": intelligence,
-		"instinct": instinct,
-#Brute attributes
-		"force": force,
-		"strength": strength,
-		"impact": impact,
-		"ferocity": ferocity,
-		"fury":fury,
-#Precision attributes
-		"accuracy": accuracy,
-		"dexterity": dexterity,
-		"poise": poise,
-		"balance": balance,
-		"focus": focus,
-#Nimble attributes
-		"haste": haste,
-		"agility": agility,
-		"celerity": celerity,
-		"flexibility": flexibility,
-		"deflection": deflection,
-#Toughness attributes
-		"endurance": endurance,
-		"stamina": stamina,
-		"vitality": vitality,
-		"recovery": recovery,
-		"resistance": resistance,
-		"tenacity": tenacity,
-#Social attributes 
-		"charisma_multiplier":charisma_multiplier,
-		"loyalty": loyalty,
-		"diplomacy": diplomacy,
-		"authority": authority,
-		"empathy": empathy,
-		"courage": courage,
-		
-		
-		
-		
-		
-		"effects": effects,
-		}
-	var dir = Directory.new()
-	if !dir.dir_exists(SAVE_DIR):
-		dir.make_dir_recursive(SAVE_DIR)
-	var file = File.new()
-	var error = file.open_encrypted_with_pass(save_path, File.WRITE, "P@paB3ar6969")
-	if error == OK:
-		file.store_var(data)
-		file.close()
-func loadPlayerData():
-	var file = File.new()
-	if file.file_exists(save_path):
-		var error = file.open_encrypted_with_pass(save_path, File.READ, "P@paB3ar6969")
-		if error == OK:
-			var player_data = file.get_var()
-			file.close()
-			if "position" in player_data:
-				translation = player_data["position"]
-			if "camera.translation.y" in player_data:
-				camera.translation.y = player_data["camera.translation.y"]
-			if "camera.translation.z" in player_data:
-				camera.translation.z = player_data["camera.translation.z"]
-
-			
-#attributes 
-			if "attribute" in player_data:
-				attribute = player_data["attribute"]
-#brains 
-			if "spent_attribute_points_int" in player_data:
-				spent_attribute_points_int = player_data["spent_attribute_points_int"]
-			if "spent_attribute_points_wis" in player_data:
-				spent_attribute_points_wis = player_data["spent_attribute_points_wis"]
-			if "spent_attribute_points_ins" in player_data:
-				spent_attribute_points_ins = player_data["spent_attribute_points_ins"]
-			if "spent_attribute_points_mem" in player_data:
-				spent_attribute_points_mem = player_data["spent_attribute_points_mem"]
-			if "spent_attribute_points_san" in player_data:
-				spent_attribute_points_san = player_data["spent_attribute_points_san"]
-#social 
-			if "spent_attribute_points_cha" in player_data:
-				spent_attribute_points_cha = player_data["spent_attribute_points_cha"]
-			if "spent_attribute_points_cou" in player_data:
-				spent_attribute_points_cou = player_data["spent_attribute_points_cou"]
-			if "spent_attribute_points_loy" in player_data:
-				spent_attribute_points_loy = player_data["spent_attribute_points_loy"]
-			if "spent_attribute_points_dip" in player_data:
-				spent_attribute_points_dip = player_data["spent_attribute_points_dip"]
-			if "spent_attribute_points_aut" in player_data:
-				spent_attribute_points_aut = player_data["spent_attribute_points_aut"]
-#brawns
-			if "spent_attribute_points_vit" in player_data:
-				spent_attribute_points_vit = player_data["spent_attribute_points_vit"]
-			if "spent_attribute_points_res" in player_data:
-				spent_attribute_points_res = player_data["spent_attribute_points_res"]
-			if "spent_attribute_points_ten" in player_data:
-				spent_attribute_points_ten = player_data["spent_attribute_points_ten"]
-			if "spent_attribute_points_end" in player_data:
-				spent_attribute_points_end = player_data["spent_attribute_points_end"]
-			if "spent_attribute_points_sta" in player_data:
-				spent_attribute_points_sta = player_data["spent_attribute_points_sta"]
-#brute
-			if "spent_attribute_points_fur" in player_data:
-				spent_attribute_points_fur = player_data["spent_attribute_points_fur"]
-			if "spent_attribute_points_for" in player_data:
-				spent_attribute_points_for = player_data["spent_attribute_points_for"]
-			if "spent_attribute_points_imp" in player_data:
-				spent_attribute_points_imp = player_data["spent_attribute_points_imp"]
-			if "spent_attribute_points_fer" in player_data:
-				spent_attribute_points_fer = player_data["spent_attribute_points_fer"]
-			if "spent_attribute_points_str" in player_data:
-				spent_attribute_points_str = player_data["spent_attribute_points_str"]
-#precision
-			if "spent_attribute_points_acc" in player_data:
-				spent_attribute_points_acc = player_data["spent_attribute_points_acc"]
-			if "spent_attribute_points_dex" in player_data:
-				spent_attribute_points_dex = player_data["spent_attribute_points_dex"]
-			if "spent_attribute_points_poi" in player_data:
-				spent_attribute_points_poi = player_data["spent_attribute_points_poi"]
-			if "spent_attribute_points_bal" in player_data:
-				spent_attribute_points_bal = player_data["spent_attribute_points_bal"]
-			if "spent_attribute_points_foc" in player_data:
-				spent_attribute_points_foc = player_data["spent_attribute_points_foc"]
-#nimbleness
-			if "spent_attribute_points_has" in player_data:
-				spent_attribute_points_has = player_data["spent_attribute_points_has"]
-			if "spent_attribute_points_agi" in player_data:
-				spent_attribute_points_agi = player_data["spent_attribute_points_agi"]
-			if "spent_attribute_points_cel" in player_data:
-				spent_attribute_points_cel = player_data["spent_attribute_points_cel"]
-			if "spent_attribute_points_fle" in player_data:
-				spent_attribute_points_fle = player_data["spent_attribute_points_fle"]
-			if "spent_attribute_points_def" in player_data:
-				spent_attribute_points_def = player_data["spent_attribute_points_def"]
-
-
-#Brute attributes
-			if "force" in player_data:
-				force = player_data["force"]
-			if "strength" in player_data:
-				strength = player_data["strength"]
-			if "impact" in player_data:
-				impact = player_data["impact"]
-			if "ferocity" in player_data:
-				ferocity = player_data["ferocity"]
-			if "fury" in player_data:
-				fury = player_data["fury"]
-			if "resistance" in player_data:
-				resistance = player_data["resistance"]
-			if "tenacity" in player_data:
-				tenacity = player_data["tenacity"]
-#Brain attributes
-			if "sanity" in player_data:
-				sanity = player_data["sanity"]
-			if "wisdom" in player_data:
-				wisdom = player_data["wisdom"]
-			if "memory" in player_data:
-				memory = player_data["memory"]
-			if "intelligence" in player_data:
-				intelligence = player_data["intelligence"]
-			if "instinct" in player_data:
-				instinct = player_data["instinct"]
-#Precision attributes
-			if "accuracy" in player_data:
-				 accuracy = player_data["accuracy"]
-			if "dexterity" in player_data:
-				dexterity = player_data["dexterity"]
-			if "poise" in player_data:
-				poise = player_data["poise"]
-			if "balance" in player_data:
-				balance = player_data["balance"]
-			if "focus" in player_data:
-				focus  = player_data["focus"]
-#Nimble attributes
-			if "haste" in player_data:
-				haste = player_data["haste"]
-			if "agility" in player_data:
-				 agility = player_data["agility"]
-			if "flexibility" in player_data:
-				flexibility = player_data["flexibility"]
-			if "celerity" in player_data:
-				celerity = player_data["celerity"]
-			if "deflection" in player_data:
-				deflection = player_data["deflection"]
-#Toughness attributes
-			if "endurance" in player_data:
-				endurance = player_data["endurance"] 
-			if "stamina" in player_data:
-				stamina = player_data["stamina"]
-			if "vitality" in player_data:
-				vitality = player_data["vitality"]
-			if "recovery" in player_data:
-				recovery = player_data["recovery"]
-#Social attributes 
-			if "charisma_multiplier" in player_data:
-				charisma_multiplier = player_data["charisma_multiplier"]
-			if "loyalty" in player_data:
-				loyalty = player_data["loyalty"]
-			if "diplomacy" in player_data:
-				diplomacy = player_data["diplomacy"]
-			if "authority" in player_data:
-				authority = player_data["authority"]
-			if "empathy" in player_data:
-				empathy = player_data["empathy"]
-			if "courage" in player_data:
-				courage = player_data["courage"]
-			
-			
-			if "health" in player_data:
-				health = player_data["health"]
-			if "max_health" in player_data:
-				max_health = player_data["max_health"]
-
-			if "vitality" in player_data:
-				vitality = player_data["vitality"]
-
-
-			if "kilocalories" in player_data:
-				kilocalories = player_data["kilocalories"]
-
-			if "max_kilocalories" in player_data:
-				max_kilocalories = player_data["max_kilocalories"]
-
-			if "water" in player_data:
-				water = player_data["water"]
-
-			if "max_water" in player_data:
-				max_water = player_data["max_water"]
-				
-			if "effects" in player_data:
-				effects = player_data["effects"]
 
 var is_fullscreen :bool  = false
 func fullscreen():
@@ -767,7 +474,6 @@ func fullscreen():
 		OS.set_window_fullscreen(is_fullscreen)
 		savePlayerData()
 
-onready var ray = $Camroot/h/v/Camera/Aim
 
 
 #__________________________________Entitygraphical interface________________________________________
@@ -778,6 +484,7 @@ onready var enemy_health_bar = $UI/GUI/EnemyUI/HP
 onready var enemy_health_label = $UI/GUI/EnemyUI/HP/HPlab
 onready var enemy_energy_bar = $UI/GUI/EnemyUI/EN
 onready var enemy_energy_label =$UI/GUI/EnemyUI/EN/ENlab
+onready var ray = $Camroot/h/v/Camera/Aim
 var fade_duration : float = 0.3
 func showEnemyStats():
 	if ray.is_colliding():
@@ -1771,18 +1478,20 @@ func _on_FPS_pressed():
 #____________________________________Equipment 2D_______________________________
 
 func SwitchEquipmentBasedOnEquipmentIcons():
+	pass
 #__________________________main weapon__________________________________________
-	var main_weapon_icon = $UI/GUI/Character/RightArm/Icon
-	if main_weapon_icon.texture != null:
-		if main_weapon_icon.texture.get_path() == "res://0.png":
-			main_weapon = "sword0"
-			applyEffect(self, "effect2", true)
-	elif main_weapon_icon.texture == null:
-		removeWeapon()
-		main_weapon = "null"
-		applyEffect(self, "effect2", false)
+	var main_weapon_icon = $UI/GUI/Character/Equipment/MainWeap/Icon
+	if main_weapon_icon != null:
+		if main_weapon_icon.texture != null:
+			if main_weapon_icon.texture.get_path() == "res://0.png":
+				main_weapon = "sword0"
+				applyEffect(self, "effect2", true)
+		elif main_weapon_icon.texture == null:
+			removeWeapon()
+			main_weapon = "null"
+			applyEffect(self, "effect2", false)
 #__________________________sec weapon___________________________________________
-	var sec_weapon_icon = $UI/GUI/Character/LeftArm/Icon
+	var sec_weapon_icon = $UI/GUI/Character/Equipment/SecWeap/Icon
 	if sec_weapon_icon.texture != null:
 		if sec_weapon_icon.texture.get_path() == "res://0.png":
 			secondary_weapon = "sword0"
@@ -1792,7 +1501,7 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 		secondary_weapon = "null"
 		applyEffect(self, "effect1", false)	
 #_______________________________chest___________________________________________
-	var chest_icon = $UI/GUI/Character/Chest/Icon
+	var chest_icon = $UI/GUI/Character/Equipment/BreastPlate/Icon
 	if chest_icon.texture != null:
 		if chest_icon.texture.get_path() == "res://Equipment icons/garment1.png":
 			torso = "garment1"
@@ -1801,7 +1510,7 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 		torso = "naked"
 
 #_______________________________legs____________________________________________
-	var legs_icon = $UI/GUI/Character/Pants/Icon
+	var legs_icon = $UI/GUI/Character/Equipment/Pants/Icon
 	if legs_icon.texture != null:
 		if legs_icon.texture.get_path() == "res://Equipment icons/pants1.png":
 			legs = "cloth1"
@@ -1810,30 +1519,30 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 		legs = "naked"
 		#player.applyEffect(player, "effect3", false)
 #_______________________________foot____________________________________________
-	var foot_icon = $UI/GUI/Character/RightFoot/Icon
-	if  foot_icon.texture != null:
-		if  foot_icon.texture.get_path() == "res://Equipment icons/shoe1.png":
-			feet = "cloth1"
-			
-	elif foot_icon.texture == null:
-		feet = "naked"
-	
-	var headset_icon = $UI/GUI/Character/Head/Icon
-	var glove_icon = $UI/GUI/Character/RightHand/Icon
-	var glove_l_icon = 	$UI/GUI/Character/LeftHand/Icon
-	var shoulder_r_icon = $UI/GUI/Character/RightShoulder/Icon
-	var shoulder_l_icon = $UI/GUI/Character/LeftShoulder/Icon
+#	var foot_icon = $UI/GUI/Character/RightFoot/Icon
+#	if  foot_icon.texture != null:
+#		if  foot_icon.texture.get_path() == "res://Equipment icons/shoe1.png":
+#			feet = "cloth1"
+#
+#	elif foot_icon.texture == null:
+#		feet = "naked"
+#
+#	var headset_icon = $UI/GUI/Character/Head/Icon
+#	var glove_icon = $UI/GUI/Character/RightHand/Icon
+#	var glove_l_icon = 	$UI/GUI/Character/LeftHand/Icon
+#	var shoulder_r_icon = $UI/GUI/Character/RightShoulder/Icon
+#	var shoulder_l_icon = $UI/GUI/Character/LeftShoulder/Icon
 	main_weapon_icon.savedata()
-	sec_weap_icon.savedata()
-	headset_icon.savedata()
-	shoulder_l_icon.savedata()
-	shoulder_r_icon.savedata()
+	$UI/GUI/Character/Equipment/SecWeap/Icon.savedata()
+#	headset_icon.savedata()
+#	shoulder_l_icon.savedata()
+#	shoulder_r_icon.savedata()
 	chest_icon.savedata()
-	glove_icon.savedata()
-	glove_l_icon.savedata()
+#	glove_icon.savedata()
+#	glove_l_icon.savedata()
 	legs_icon.savedata()
-	foot_icon.savedata()
-	
+#	foot_icon.savedata()
+#
 	
 	
 	
@@ -2164,7 +1873,7 @@ var effects = {
 	"impaired": {"stats": { "dexterity": -0.25}, "applied": false},
 	"lethargy": {"stats": {}, "applied": false},
 	"redpotion": {"stats": {}, "applied": false},
-	"garment1": {"stats": {"resistance": 0.075,"agility": 0.05,}, "applied": false},
+	"garment1": {"stats": {"additional_melee_atk_speed": 0.75,"agility": 0.05,}, "applied": false},
 }
 
 # Function to apply or remove effects
@@ -2475,7 +2184,7 @@ var dash_power = 20
 var attribute = 1000
 
 var defense =  10
-
+const base_defense = 0
 
 #magic energy systems 
 const base_max_aefis = 100
@@ -2690,7 +2399,6 @@ func displayLabels():
 	var value_resistance = $UI/GUI/Character/Resistance/value
 	var value_tenacity = $UI/GUI/Character/Tenacity/value
 	
-	
 	var val_cha = $UI/GUI/Character/Charisma/value
 	displayStats(val_cha,charisma_multiplier)
 	var val_dip = $UI/GUI/Character/Diplomacy/value
@@ -2702,7 +2410,6 @@ func displayLabels():
 	var val_loy = $UI/GUI/Character/Loyalty/value
 	displayStats(val_loy,loyalty)
 	
-		
 	# Display labels for all attributes
 	displayStats(value_ins, instinct)
 	displayStats(value_int, intelligence)
@@ -2730,13 +2437,12 @@ func displayLabels():
 	displayStats(value_resistance, resistance)
 	displayStats(value_tenacity, tenacity)
 
-
-# Function to display attribute values
 func displayStats(label, value):
-	label.text = str(value)
+	var rounded_value = str(round(value * 1000) / 1000)
+	label.text = rounded_value
 
 func connectAttributeHovering():
-	var int_label = $UI/GUI/Character/Intelligence
+	var int_label: Label = $UI/GUI/Character/Intelligence
 	var ins_label = $UI/GUI/Character/Instinct
 	var wis_label = $UI/GUI/Character/Wisdom
 	var san_label = $UI/GUI/Character/Sanity
@@ -2808,8 +2514,6 @@ func connectAttributeHovering():
 	authority_label.mouse_filter = Control.MOUSE_FILTER_STOP
 	courage_label.mouse_filter = Control.MOUSE_FILTER_STOP
 
-	
-	
 	# Connect mouse entered and exited signals for Intelligence label
 	int_label.connect("mouse_entered", self, "intHovered")
 	int_label.connect("mouse_exited", self, "intExited")
@@ -2825,7 +2529,6 @@ func connectAttributeHovering():
 	# Connect mouse entered and exited signals for Sanity label
 	san_label.connect("mouse_entered", self, "sanHovered")
 	san_label.connect("mouse_exited", self, "sanExited")
-
 
 	# Connect mouse entered and exited signals for Strength label
 	str_label.connect("mouse_entered", self, "strHovered")
@@ -2859,7 +2562,6 @@ func connectAttributeHovering():
 	tenacity_label.connect("mouse_entered", self, "tenHovered")
 	tenacity_label.connect("mouse_exited", self, "tenExited")
 
-
 	# Connect mouse entered and exited signals for Agility label
 	agility_label.connect("mouse_entered", self, "agiHovered")
 	agility_label.connect("mouse_exited", self, "agiExited")
@@ -2875,7 +2577,6 @@ func connectAttributeHovering():
 	# Connect mouse entered and exited signals for Deflection label
 	deflection_label.connect("mouse_entered", self, "defHovered")
 	deflection_label.connect("mouse_exited", self, "defExited")
-	
 	
 	# Connect mouse entered and exited signals for Dexterity label
 	dexterity_label.connect("mouse_entered", self, "dexHovered")
@@ -3187,19 +2888,19 @@ func connectAttributeButtons():
 	plus_mem.connect("pressed", self, "plusMem")
 	min_mem.connect("pressed", self, "minusMem")
 	# Sanity attribute
-	var plus_san = $UI/GUI/Character/Sanity/Plus
-	var min_san = $UI/GUI/Character/Sanity/Min
+	var plus_san: Button = $UI/GUI/Character/Sanity/Plus
+	var min_san: Button = $UI/GUI/Character/Sanity/Min
 	plus_san.connect("pressed", self, "plusSan")
 	min_san.connect("pressed", self, "minusSan")
 
 	# Strength attribute
-	var plus_str = $UI/GUI/Character/Strength/Plus
-	var min_str = $UI/GUI/Character/Strength/Min
+	var plus_str: Button = $UI/GUI/Character/Strength/Plus
+	var min_str: Button = $UI/GUI/Character/Strength/Min
 	plus_str.connect("pressed", self, "plusStr")
 	min_str.connect("pressed", self, "minusStr")
 	# Force attribute
-	var plus_for = $UI/GUI/Character/Force/Plus
-	var min_for = $UI/GUI/Character/Force/Min
+	var plus_for: Button = $UI/GUI/Character/Force/Plus
+	var min_for: Button = $UI/GUI/Character/Force/Min
 	plus_for.connect("pressed", self, "plusFor")
 	min_for.connect("pressed", self, "minusFor")
 	# Impact attributes
@@ -4615,5 +4316,365 @@ func minusLoy():
 
 
 
+onready var att_points_label = $BookStatsSkills/AttPoints
+onready var critical_chance_val = $UI/GUI/Character/Equipment/CombatStats/GridContainer/CritChanceValue
+onready var critical_str_val = $UI/GUI/Character/Equipment/CombatStats/GridContainer/CritDamageValue
+onready var life_steal_value = $UI/GUI/Character/Equipment/CombatStats/GridContainer/LifeStealValue
 
 
+
+func resistanceMath():
+	var additional_resistance = 0
+	var res_multiplier = 0.5
+	if resistance > 1:
+		additional_resistance = res_multiplier * (resistance - 1)
+	elif resistance < 1:
+		additional_resistance = -res_multiplier * (1 - resistance)
+	defense = base_defense + int(resistance * 10)
+	max_health = (base_max_health * (vitality + additional_resistance)) * scale_factor
+	max_energy = base_max_energy * (stamina  + additional_resistance)
+	max_resolve = base_max_resolve * (tenacity + additional_resistance)
+	
+
+var additional_melee_atk_speed : float = 0
+var casting_speed: float = 1 
+func updateAttackSpeed():
+	var bonus_universal_speed = (celerity -1) * 0.15
+	var atk_speed_formula = (dexterity - scale_factor ) * 0.5 
+	melee_atk_speed = base_melee_atk_speed + atk_speed_formula + bonus_universal_speed + additional_melee_atk_speed
+	
+	var atk_speed_formula_ranged = (strength -1) * 0.5
+	ranged_atk_speed = base_ranged_atk_speed + atk_speed_formula_ranged + bonus_universal_speed
+	
+	var atk_speed_formula_casting = (instinct -1) * 0.35 + ((memory-1) * 0.05) + bonus_universal_speed
+	casting_speed = base_casting_speed + atk_speed_formula_casting
+	#display the labels
+	$UI/GUI/Character/Equipment/CombatStats/GridContainer/CastingSpeedValue.text = str(casting_speed)
+	$UI/GUI/Character/Equipment/CombatStats/GridContainer/RangedSpeedValue.text = str(ranged_atk_speed)
+	$UI/GUI/Character/Equipment/CombatStats/GridContainer/AtkSpeedValue.text = str(melee_atk_speed)
+
+
+func updateCritical():
+	critical_chance = max(0, (accuracy - 1.00) * 0.5) +  max(0, (impact - 1.00) * 0.005) 
+	critical_strength = ((ferocity -1) * 2) 
+	critical_chance_val.text = str(round(critical_chance * 100 * 1000) / 1000) + "%"
+	critical_str_val.text = "x" + str(critical_strength)
+
+func updateStaggerChance():
+	stagger_chance = max(0, (impact - 1.00) * 0.45) +  max(0, (ferocity - 1.00) * 0.005) 
+	$UI/GUI/Character/Equipment/CombatStats/GridContainer/StaggerChanceValue.text = str(stagger_chance)
+
+func updateLifeSteal():
+	life_steal_value.text = str(life_steal * 100) + "%"
+func updateScaleRelatedAttributes():
+	charisma = base_charisma * (charisma_multiplier * 0.87 * (scale_factor * 1.15))
+func updateDamageTypes():
+	pass
+func updateAllStats():
+	updateAttackSpeed()
+	updateScaleRelatedAttributes()
+	updateCritical()
+	updateLifeSteal()
+	updateStaggerChance()
+
+
+
+
+
+
+
+
+
+
+#___________________________________________Save data system________________________________________
+var entity_name: String = "dai"
+const SAVE_DIR: String = "user://saves/"
+var save_path: String = SAVE_DIR + entity_name + "save.dat"
+func savePlayerData():
+	var data = {
+		"position": translation,
+		"camera.translation.y" : camera.translation.y,
+		"camera.translation.z" : camera.translation.z,
+
+		
+		"health": health,
+		"max_health": max_health,
+		
+
+		
+		"kilocalories": kilocalories,
+		"max_kilocalories": max_kilocalories,
+		"water": water,
+		"max_water": max_water,
+		
+		
+#leveling 
+		"attribute": attribute,
+		"spent_attribute_points_str": spent_attribute_points_str,
+		"spent_attribute_points_fur": spent_attribute_points_fur,
+		"spent_attribute_points_imp": spent_attribute_points_imp,
+		"spent_attribute_points_fer": spent_attribute_points_fer,
+		"spent_attribute_points_res": spent_attribute_points_res,
+		
+		"spent_attribute_points_ten": spent_attribute_points_ten,
+		"spent_attribute_points_acc": spent_attribute_points_acc,
+		"spent_attribute_points_dex": spent_attribute_points_dex,
+		"spent_attribute_points_poi": spent_attribute_points_poi,
+		"spent_attribute_points_bal": spent_attribute_points_bal,
+		
+		"spent_attribute_points_foc": spent_attribute_points_foc,
+		"spent_attribute_points_has": spent_attribute_points_has,
+		"spent_attribute_points_agi": spent_attribute_points_agi,
+		"spent_attribute_points_cel": spent_attribute_points_cel,
+		"spent_attribute_points_fle": spent_attribute_points_fle,
+		
+		"spent_attribute_points_def": spent_attribute_points_def,
+		"spent_attribute_points_end": spent_attribute_points_end,
+		"spent_attribute_points_sta": spent_attribute_points_sta,
+		"spent_attribute_points_vit": spent_attribute_points_vit,
+		"spent_attribute_points_cha": spent_attribute_points_cha,
+		
+		"spent_attribute_points_loy": spent_attribute_points_loy,
+		"spent_attribute_points_dip": spent_attribute_points_dip,
+		"spent_attribute_points_aut": spent_attribute_points_aut,
+		"spent_attribute_points_cou": spent_attribute_points_cou,
+		"spent_attribute_points_int": spent_attribute_points_int,
+		
+		"spent_attribute_points_wis": spent_attribute_points_wis,
+		"spent_attribute_points_san": spent_attribute_points_san,
+		"spent_attribute_points_mem": spent_attribute_points_mem,
+		"spent_attribute_points_ins": spent_attribute_points_ins,
+		"spent_attribute_points_for": spent_attribute_points_for,
+		
+#Brain attributes
+		"sanity": sanity,
+		"wisdom" : wisdom,
+		"memory": memory,
+		"intelligence": intelligence,
+		"instinct": instinct,
+#Brute attributes
+		"force": force,
+		"strength": strength,
+		"impact": impact,
+		"ferocity": ferocity,
+		"fury":fury,
+#Precision attributes
+		"accuracy": accuracy,
+		"dexterity": dexterity,
+		"poise": poise,
+		"balance": balance,
+		"focus": focus,
+#Nimble attributes
+		"haste": haste,
+		"agility": agility,
+		"celerity": celerity,
+		"flexibility": flexibility,
+		"deflection": deflection,
+#Toughness attributes
+		"endurance": endurance,
+		"stamina": stamina,
+		"vitality": vitality,
+		"recovery": recovery,
+		"resistance": resistance,
+		"tenacity": tenacity,
+#Social attributes 
+		"charisma_multiplier":charisma_multiplier,
+		"loyalty": loyalty,
+		"diplomacy": diplomacy,
+		"authority": authority,
+		"empathy": empathy,
+		"courage": courage,
+		
+		
+		
+		
+		
+		"effects": effects,
+		}
+	var dir = Directory.new()
+	if !dir.dir_exists(SAVE_DIR):
+		dir.make_dir_recursive(SAVE_DIR)
+	var file = File.new()
+	var error = file.open_encrypted_with_pass(save_path, File.WRITE, "P@paB3ar6969")
+	if error == OK:
+		file.store_var(data)
+		file.close()
+func loadPlayerData():
+	var file = File.new()
+	if file.file_exists(save_path):
+		var error = file.open_encrypted_with_pass(save_path, File.READ, "P@paB3ar6969")
+		if error == OK:
+			var player_data = file.get_var()
+			file.close()
+			if "position" in player_data:
+				translation = player_data["position"]
+			if "camera.translation.y" in player_data:
+				camera.translation.y = player_data["camera.translation.y"]
+			if "camera.translation.z" in player_data:
+				camera.translation.z = player_data["camera.translation.z"]
+
+			
+#attributes 
+			if "attribute" in player_data:
+				attribute = player_data["attribute"]
+#brains 
+			if "spent_attribute_points_int" in player_data:
+				spent_attribute_points_int = player_data["spent_attribute_points_int"]
+			if "spent_attribute_points_wis" in player_data:
+				spent_attribute_points_wis = player_data["spent_attribute_points_wis"]
+			if "spent_attribute_points_ins" in player_data:
+				spent_attribute_points_ins = player_data["spent_attribute_points_ins"]
+			if "spent_attribute_points_mem" in player_data:
+				spent_attribute_points_mem = player_data["spent_attribute_points_mem"]
+			if "spent_attribute_points_san" in player_data:
+				spent_attribute_points_san = player_data["spent_attribute_points_san"]
+#social 
+			if "spent_attribute_points_cha" in player_data:
+				spent_attribute_points_cha = player_data["spent_attribute_points_cha"]
+			if "spent_attribute_points_cou" in player_data:
+				spent_attribute_points_cou = player_data["spent_attribute_points_cou"]
+			if "spent_attribute_points_loy" in player_data:
+				spent_attribute_points_loy = player_data["spent_attribute_points_loy"]
+			if "spent_attribute_points_dip" in player_data:
+				spent_attribute_points_dip = player_data["spent_attribute_points_dip"]
+			if "spent_attribute_points_aut" in player_data:
+				spent_attribute_points_aut = player_data["spent_attribute_points_aut"]
+#brawns
+			if "spent_attribute_points_vit" in player_data:
+				spent_attribute_points_vit = player_data["spent_attribute_points_vit"]
+			if "spent_attribute_points_res" in player_data:
+				spent_attribute_points_res = player_data["spent_attribute_points_res"]
+			if "spent_attribute_points_ten" in player_data:
+				spent_attribute_points_ten = player_data["spent_attribute_points_ten"]
+			if "spent_attribute_points_end" in player_data:
+				spent_attribute_points_end = player_data["spent_attribute_points_end"]
+			if "spent_attribute_points_sta" in player_data:
+				spent_attribute_points_sta = player_data["spent_attribute_points_sta"]
+#brute
+			if "spent_attribute_points_fur" in player_data:
+				spent_attribute_points_fur = player_data["spent_attribute_points_fur"]
+			if "spent_attribute_points_for" in player_data:
+				spent_attribute_points_for = player_data["spent_attribute_points_for"]
+			if "spent_attribute_points_imp" in player_data:
+				spent_attribute_points_imp = player_data["spent_attribute_points_imp"]
+			if "spent_attribute_points_fer" in player_data:
+				spent_attribute_points_fer = player_data["spent_attribute_points_fer"]
+			if "spent_attribute_points_str" in player_data:
+				spent_attribute_points_str = player_data["spent_attribute_points_str"]
+#precision
+			if "spent_attribute_points_acc" in player_data:
+				spent_attribute_points_acc = player_data["spent_attribute_points_acc"]
+			if "spent_attribute_points_dex" in player_data:
+				spent_attribute_points_dex = player_data["spent_attribute_points_dex"]
+			if "spent_attribute_points_poi" in player_data:
+				spent_attribute_points_poi = player_data["spent_attribute_points_poi"]
+			if "spent_attribute_points_bal" in player_data:
+				spent_attribute_points_bal = player_data["spent_attribute_points_bal"]
+			if "spent_attribute_points_foc" in player_data:
+				spent_attribute_points_foc = player_data["spent_attribute_points_foc"]
+#nimbleness
+			if "spent_attribute_points_has" in player_data:
+				spent_attribute_points_has = player_data["spent_attribute_points_has"]
+			if "spent_attribute_points_agi" in player_data:
+				spent_attribute_points_agi = player_data["spent_attribute_points_agi"]
+			if "spent_attribute_points_cel" in player_data:
+				spent_attribute_points_cel = player_data["spent_attribute_points_cel"]
+			if "spent_attribute_points_fle" in player_data:
+				spent_attribute_points_fle = player_data["spent_attribute_points_fle"]
+			if "spent_attribute_points_def" in player_data:
+				spent_attribute_points_def = player_data["spent_attribute_points_def"]
+
+
+#Brute attributes
+			if "force" in player_data:
+				force = player_data["force"]
+			if "strength" in player_data:
+				strength = player_data["strength"]
+			if "impact" in player_data:
+				impact = player_data["impact"]
+			if "ferocity" in player_data:
+				ferocity = player_data["ferocity"]
+			if "fury" in player_data:
+				fury = player_data["fury"]
+			if "resistance" in player_data:
+				resistance = player_data["resistance"]
+			if "tenacity" in player_data:
+				tenacity = player_data["tenacity"]
+#Brain attributes
+			if "sanity" in player_data:
+				sanity = player_data["sanity"]
+			if "wisdom" in player_data:
+				wisdom = player_data["wisdom"]
+			if "memory" in player_data:
+				memory = player_data["memory"]
+			if "intelligence" in player_data:
+				intelligence = player_data["intelligence"]
+			if "instinct" in player_data:
+				instinct = player_data["instinct"]
+#Precision attributes
+			if "accuracy" in player_data:
+				 accuracy = player_data["accuracy"]
+			if "dexterity" in player_data:
+				dexterity = player_data["dexterity"]
+			if "poise" in player_data:
+				poise = player_data["poise"]
+			if "balance" in player_data:
+				balance = player_data["balance"]
+			if "focus" in player_data:
+				focus  = player_data["focus"]
+#Nimble attributes
+			if "haste" in player_data:
+				haste = player_data["haste"]
+			if "agility" in player_data:
+				 agility = player_data["agility"]
+			if "flexibility" in player_data:
+				flexibility = player_data["flexibility"]
+			if "celerity" in player_data:
+				celerity = player_data["celerity"]
+			if "deflection" in player_data:
+				deflection = player_data["deflection"]
+#Toughness attributes
+			if "endurance" in player_data:
+				endurance = player_data["endurance"] 
+			if "stamina" in player_data:
+				stamina = player_data["stamina"]
+			if "vitality" in player_data:
+				vitality = player_data["vitality"]
+			if "recovery" in player_data:
+				recovery = player_data["recovery"]
+#Social attributes 
+			if "charisma_multiplier" in player_data:
+				charisma_multiplier = player_data["charisma_multiplier"]
+			if "loyalty" in player_data:
+				loyalty = player_data["loyalty"]
+			if "diplomacy" in player_data:
+				diplomacy = player_data["diplomacy"]
+			if "authority" in player_data:
+				authority = player_data["authority"]
+			if "empathy" in player_data:
+				empathy = player_data["empathy"]
+			if "courage" in player_data:
+				courage = player_data["courage"]
+			
+			
+			if "health" in player_data:
+				health = player_data["health"]
+			if "max_health" in player_data:
+				max_health = player_data["max_health"]
+
+			if "vitality" in player_data:
+				vitality = player_data["vitality"]
+
+			if "kilocalories" in player_data:
+				kilocalories = player_data["kilocalories"]
+
+			if "max_kilocalories" in player_data:
+				max_kilocalories = player_data["max_kilocalories"]
+
+			if "water" in player_data:
+				water = player_data["water"]
+
+			if "max_water" in player_data:
+				max_water = player_data["max_water"]
+#			if "effects" in player_data:
+#				effects = player_data["effects"]
