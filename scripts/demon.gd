@@ -194,43 +194,75 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
 	if damage_type == "slash":
 		var mitigation = slash_resistance / (slash_resistance + 100.0)
 		damage_to_take *= (1.0 - mitigation)
-		#instigator.lifesteal(damage_to_take)
+		if instigator.has_method("lifesteal"):
+			instigator.lifesteal(damage_to_take)
+			
 	elif damage_type == "pierce":
 		var mitigation = pierce_resistance / (pierce_resistance + 100.0)
 		damage_to_take *= (1.0 - mitigation)
-		#instigator.lifesteal(damage_to_take)
+		if instigator.has_method("lifesteal"):
+			instigator.lifesteal(damage_to_take)
+			
 	elif damage_type == "blunt":
 		var mitigation = blunt_resistance / (blunt_resistance + 100.0)
 		damage_to_take *= (1.0 - mitigation)
+		if instigator.has_method("lifesteal"):
+			instigator.lifesteal(damage_to_take)
+			
 	elif damage_type == "sonic":
 		var mitigation = sonic_resistance / (sonic_resistance + 100.0)
 		damage_to_take *= (1.0 - mitigation)
+		if instigator.has_method("lifesteal"):
+			instigator.lifesteal(damage_to_take)
+			
 	elif damage_type == "heat":
 		var mitigation = heat_resistance / (heat_resistance + 100.0)
 		damage_to_take *= (1.0 - mitigation)
 		if instigator.has_method("lifesteal"):
 			instigator.lifesteal(damage_to_take)
+			
 	elif damage_type == "cold":
 		var mitigation = cold_resistance / (cold_resistance + 100.0)
 		damage_to_take *= (1.0 - mitigation)
+		if instigator.has_method("lifesteal"):
+			instigator.lifesteal(damage_to_take)
+			
 	elif damage_type == "jolt":
 		var mitigation = jolt_resistance / (jolt_resistance + 100.0)
 		damage_to_take *= (1.0 - mitigation)
+		if instigator.has_method("lifesteal"):
+			instigator.lifesteal(damage_to_take)
+		
 	elif damage_type == "toxic":
 		var mitigation = toxic_resistance / (toxic_resistance + 100.0)
 		damage_to_take *= (1.0 - mitigation)
+		if instigator.has_method("lifesteal"):
+			instigator.lifesteal(damage_to_take)
+		
 	elif damage_type == "acid":
 		var mitigation = acid_resistance / (acid_resistance + 100.0)
 		damage_to_take *= (1.0 - mitigation)
+		if instigator.has_method("lifesteal"):
+			instigator.lifesteal(damage_to_take)
+		
 	elif damage_type == "bleed":
 		var mitigation = bleed_resistance / (bleed_resistance + 100.0)
 		damage_to_take *= (1.0 - mitigation)
+		if instigator.has_method("lifesteal"):
+			instigator.lifesteal(damage_to_take)
+		
 	elif damage_type == "neuro":
 		var mitigation = neuro_resistance / (neuro_resistance + 100.0)
 		damage_to_take *= (1.0 - mitigation)
+		if instigator.has_method("lifesteal"):
+			instigator.lifesteal(damage_to_take)
+		
 	elif damage_type == "radiant":
 		var mitigation = radiant_resistance / (radiant_resistance + 100.0)
 		damage_to_take *= (1.0 - mitigation)
+		if instigator.has_method("lifesteal"):
+			instigator.lifesteal(damage_to_take)
+			
 	if random < deflection_chance:
 		damage_to_take = damage_to_take / 2
 		text.status = "Deflected"
@@ -248,6 +280,9 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
 		getKilled(instigator)
 		queue_free()	
 	$Health.text = str(health)
+	
+	
+	
 func takeAggro(aggro_power,instigator):
 	var instigatorAggro = getOrCreatePlayerAggro(instigator)
 	instigatorAggro.aggro += aggro_power
@@ -449,9 +484,18 @@ func slash():
 					else:
 						enemy.takeDamage(damage,aggro_power,self,stagger_chance,damage_type)
 
-
-
-	
+var lifesteal_pop = preload("res://UI/lifestealandhealing.tscn")
+var life_steal: float = 0.3
+func lifesteal(damage_to_take):
+	if life_steal > 0:
+		var text = lifesteal_pop.instance()
+		var life_steal_ratio = damage_to_take * life_steal
+		if health < max_health:
+			health += life_steal_ratio
+			text.amount = round(life_steal_ratio * 100)/ 100
+			take_damage_view.add_child(text)
+		elif health > max_health:
+			health = max_health
 #___________________________________Status effects______________________________
 # Define effects and their corresponding stat changes
 var effects = {

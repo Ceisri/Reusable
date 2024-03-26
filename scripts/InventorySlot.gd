@@ -9,8 +9,7 @@ var item = "null"
 var type = "item"
 var stackable = true
 var max_quantity = 9999999999
-func _ready():
-	displayQuantity()
+
 
 
 func _physics_process(delta):
@@ -18,8 +17,7 @@ func _physics_process(delta):
 
 
 func slotFunctions():
-
-		displayQuantity()
+	displayQuantity()
 
 
 

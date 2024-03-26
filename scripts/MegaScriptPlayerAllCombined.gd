@@ -12,7 +12,8 @@ var is_walking = bool()
 var is_running = bool()
 
 
-func _ready(): 
+func _ready():
+	connectUIButtons()
 	connectInventoryButtons()
 	connectAttributeButtons()
 	connectAttributeHovering()
@@ -35,7 +36,7 @@ func _on_SlowTimer_timeout():
 	frameRate()	
 	showStatusIcon()	
 	displayLabels()
-	
+	regenStats()
 	
 func _on_3FPS_timeout():
 	crafting()
@@ -453,17 +454,23 @@ func crossHairResize():
 	crosshair_tween.interpolate_property(crosshair, "rect_scale", crosshair.rect_scale, Vector2(target_scale, target_scale), 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
 	crosshair_tween.start()
 
-onready var minimap = $UI/GUI/Portrait/MinimapHolder/Minimap
+onready var minimap:Control = $UI/GUI/Portrait/MinimapHolder/Minimap
 func miniMapVisibility():
 	if Input.is_action_just_pressed("minimap"):
 		minimap.visible = !minimap.visible
 	
 	
-	
-	
-func lifesteal(damage):
-	pass
-
+var lifesteal_pop = preload("res://UI/lifestealandhealing.tscn")	
+func lifesteal(damage_to_take):
+	if life_steal > 0:
+		var text = lifesteal_pop.instance()
+		var life_steal_ratio = damage_to_take * life_steal
+		if health < max_health:
+			health += life_steal_ratio
+			text.amount = round(life_steal_ratio * 100)/ 100
+			take_damage_view.add_child(text)
+		elif health > max_health:
+			health = max_health
 
 
 
@@ -958,43 +965,75 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
 	if damage_type == "slash":
 		var mitigation = slash_resistance / (slash_resistance + 100.0)
 		damage_to_take *= (1.0 - mitigation)
-		#instigator.lifesteal(damage_to_take)
+		if instigator.has_method("lifesteal"):
+			instigator.lifesteal(damage_to_take)
+			
 	elif damage_type == "pierce":
 		var mitigation = pierce_resistance / (pierce_resistance + 100.0)
 		damage_to_take *= (1.0 - mitigation)
-		#instigator.lifesteal(damage_to_take)
+		if instigator.has_method("lifesteal"):
+			instigator.lifesteal(damage_to_take)
+			
 	elif damage_type == "blunt":
 		var mitigation = blunt_resistance / (blunt_resistance + 100.0)
 		damage_to_take *= (1.0 - mitigation)
+		if instigator.has_method("lifesteal"):
+			instigator.lifesteal(damage_to_take)
+			
 	elif damage_type == "sonic":
 		var mitigation = sonic_resistance / (sonic_resistance + 100.0)
 		damage_to_take *= (1.0 - mitigation)
+		if instigator.has_method("lifesteal"):
+			instigator.lifesteal(damage_to_take)
+			
 	elif damage_type == "heat":
 		var mitigation = heat_resistance / (heat_resistance + 100.0)
 		damage_to_take *= (1.0 - mitigation)
 		if instigator.has_method("lifesteal"):
 			instigator.lifesteal(damage_to_take)
+			
 	elif damage_type == "cold":
 		var mitigation = cold_resistance / (cold_resistance + 100.0)
 		damage_to_take *= (1.0 - mitigation)
+		if instigator.has_method("lifesteal"):
+			instigator.lifesteal(damage_to_take)
+			
 	elif damage_type == "jolt":
 		var mitigation = jolt_resistance / (jolt_resistance + 100.0)
 		damage_to_take *= (1.0 - mitigation)
+		if instigator.has_method("lifesteal"):
+			instigator.lifesteal(damage_to_take)
+		
 	elif damage_type == "toxic":
 		var mitigation = toxic_resistance / (toxic_resistance + 100.0)
 		damage_to_take *= (1.0 - mitigation)
+		if instigator.has_method("lifesteal"):
+			instigator.lifesteal(damage_to_take)
+		
 	elif damage_type == "acid":
 		var mitigation = acid_resistance / (acid_resistance + 100.0)
 		damage_to_take *= (1.0 - mitigation)
+		if instigator.has_method("lifesteal"):
+			instigator.lifesteal(damage_to_take)
+		
 	elif damage_type == "bleed":
 		var mitigation = bleed_resistance / (bleed_resistance + 100.0)
 		damage_to_take *= (1.0 - mitigation)
+		if instigator.has_method("lifesteal"):
+			instigator.lifesteal(damage_to_take)
+		
 	elif damage_type == "neuro":
 		var mitigation = neuro_resistance / (neuro_resistance + 100.0)
 		damage_to_take *= (1.0 - mitigation)
+		if instigator.has_method("lifesteal"):
+			instigator.lifesteal(damage_to_take)
+		
 	elif damage_type == "radiant":
 		var mitigation = radiant_resistance / (radiant_resistance + 100.0)
 		damage_to_take *= (1.0 - mitigation)
+		if instigator.has_method("lifesteal"):
+			instigator.lifesteal(damage_to_take)
+		
 	if random < deflection_chance:
 		damage_to_take = damage_to_take / 2
 		text.status = "Deflected"
@@ -1017,13 +1056,13 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
 
 #___________________________________close buttons/inputs_______________________________
 
-var cursor_visible = false
-onready var keybinds = $UI/GUI/Keybinds
-onready var inventory = $UI/GUI/Inventory
-onready var crafting = $UI/GUI/Crafting
-onready var skill_trees = $UI/GUI/SkillTrees
-onready var character = $UI/GUI/Character
-onready var menu = $UI/GUI/Menu
+var cursor_visible: bool = false
+onready var keybinds: Control = $UI/GUI/Keybinds
+onready var inventory: Control = $UI/GUI/Inventory
+onready var crafting: Control = $UI/GUI/Crafting
+onready var skill_trees: Control = $UI/GUI/SkillTrees
+onready var character: Control = $UI/GUI/Equipment
+onready var menu: Control = $UI/GUI/Menu
 func skillUserInterfaceInputs():
 	if Input.is_action_just_pressed("skills"):
 		closeSwitchOpen(skill_trees)
@@ -1085,8 +1124,53 @@ func _on_OpenAllUI_pressed():
 	closeSwitchOpen(inventory)
 	closeSwitchOpen(skill_trees)
 	savePlayerData()
-
-
+	
+func connectUIButtons():
+	var close_dmg: TextureButton = $UI/GUI/Equipment/DmgDef/Close
+	if close_dmg != null:
+		close_dmg.connect("pressed", self, "closeDamageTypes")
+	var close_atts: TextureButton = $UI/GUI/Equipment/Attributes/Close
+	if close_atts != null:
+		close_atts.connect("pressed", self, "closeAtts")
+	var open_dmg: TextureButton = $UI/GUI/Equipment/EquipmentBG/OpenDmgDef
+	if open_dmg != null:
+		 open_dmg.connect("pressed", self, "switchAttsStatsUI")
+		
+		
+onready var dmg_ui: Control = $UI/GUI/Equipment/DmgDef	
+onready var atts_ui: Control = $UI/GUI/Equipment/Attributes
+var toggleCount:int  = 0
+func switchAttsStatsUI():
+	toggleCount += 1
+	
+	# Check if both UI elements are valid
+	if dmg_ui != null and atts_ui != null:
+		if toggleCount == 1:
+			# First press: Show dmg_ui, hide atts_ui
+			dmg_ui.visible = true
+			atts_ui.visible = false
+		elif toggleCount == 2:
+			# Second press: Hide dmg_ui, show atts_ui
+			dmg_ui.visible = false
+			atts_ui.visible = true
+		elif toggleCount == 3:
+			# Third press: Hide both UI elements
+			dmg_ui.visible = false
+			atts_ui.visible = false
+			toggleCount = 0  # Reset toggle count for next cycle
+	
+		
+func closeDamageTypes():
+	closeUI(dmg_ui)
+func closeAtts():
+	closeUI(atts_ui)
+		
+func closeUI(ui):
+	if ui != null:
+		ui.visible = false
+func closeSwitchOpen(ui):
+	ui.visible = !ui.visible
+		
 func closeAllUI():
 		character.visible = false 
 		crafting.visible  = false
@@ -1094,8 +1178,7 @@ func closeAllUI():
 		skill_trees.visible = false
 		keybinds.visible = false
 		menu.visible = false
-func closeSwitchOpen(ui):
-	ui.visible = !ui.visible
+
 func _on_CloseSkillsTrees_pressed():
 	skill_trees.visible = false
 func _on_CraftingCloseButton_pressed():
@@ -1131,7 +1214,7 @@ func _on_InventorySaveButton_pressed():
 	saveSkillBarData()
 onready var skills_list1 = $UI/GUI/SkillTrees/Background/SylvanSkills
 func _on_SkillTree1_pressed():
-	skills_list1.visible = !skills_list1.visible
+	closeSwitchOpen(skills_list1)
 	saveSkillBarData()
 	
 func saveInventoryData():
@@ -1181,20 +1264,12 @@ func _on_inventory_slot_pressed(index):
 					button.quantity -=1
 			elif icon_texture.get_path() == "res://Potions/Red potion.png":
 					kilocalories += 100
+					health += 100
 					water += 250
 					applyEffect(self,"redpotion",true)
 					red_potion_duration += 5
 					button.quantity -=1
-					for child in inventory_grid.get_children():
-						if child.is_in_group("Inventory"):
-							var icon = child.get_node("Icon")
-							if icon.texture == null:
-								icon.texture = preload("res://Potions/Empty potion.png")
-								child.quantity += 1
-								break
-							elif icon.texture.get_path() == "res://Potions/Empty potion.png":
-								child.quantity += 1
-								break
+					add_item.addStackableItem(inventory_grid,add_item.empty_potion,1)
 			elif icon_texture.get_path() == "res://Food Icons/Fruits/strawberry.png":
 					kilocalories +=1
 					health += 5
@@ -1227,12 +1302,21 @@ func _on_inventory_slot_mouse_entered(index):
 	if icon_texture != null:
 		if icon_texture.get_path() == "res://Potions/Red potion.png":
 			callToolTip(instance, "Red Potion", "+100 kcals +250 grams of water.\nHeals by 100 health instantly then by 10 every second, drinking more potions stacks the duration")
+		
+		
 		elif icon_texture.get_path() == "res://Food Icons/Fruits/strawberry.png":
 			callToolTip(instance,"Strawberry","+5 health points +9 kcals +24 grams of water")
 		elif icon_texture.get_path() == "res://Food Icons/Fruits/raspberries.png":
 			callToolTip(instance,"Raspberry","+3 health points +1 kcals +2 grams of water")
 		elif icon_texture.get_path() == "res://Food Icons/Vegetables/beetroot.png":
 			callToolTip(instance,"beetroot","+15 health points +32 kcals +71.8 grams of water")
+			
+			
+		#equipment icons
+		elif icon_texture.get_path() == "res://Equipment icons/garment1.png":
+			callToolTip(instance,"Farmer Jacket","+3 slash resistance /n +1 pierce resistance")
+			
+			
 			
 func _on_inventory_slot_mouse_exited(index):
 	for child in gui.get_children():
@@ -1474,121 +1558,15 @@ func _on_FPS_pressed():
 #	)
 #	# Use %d to format integers without decimals
 #	coordinates.text = "%d, %d, %d" % [rounded_position.x, rounded_position.y, rounded_position.z]
-#
-#____________________________________Equipment 2D_______________________________
 
-func SwitchEquipmentBasedOnEquipmentIcons():
-	pass
-#__________________________main weapon__________________________________________
-	var main_weapon_icon = $UI/GUI/Character/Equipment/MainWeap/Icon
-	if main_weapon_icon != null:
-		if main_weapon_icon.texture != null:
-			if main_weapon_icon.texture.get_path() == "res://0.png":
-				main_weapon = "sword0"
-				applyEffect(self, "effect2", true)
-		elif main_weapon_icon.texture == null:
-			removeWeapon()
-			main_weapon = "null"
-			applyEffect(self, "effect2", false)
-#__________________________sec weapon___________________________________________
-	var sec_weapon_icon = $UI/GUI/Character/Equipment/SecWeap/Icon
-	if sec_weapon_icon.texture != null:
-		if sec_weapon_icon.texture.get_path() == "res://0.png":
-			secondary_weapon = "sword0"
-			applyEffect(self, "effect1", true)
-	elif sec_weapon_icon.texture == null:
-		removeSecWeapon()
-		secondary_weapon = "null"
-		applyEffect(self, "effect1", false)	
-#_______________________________chest___________________________________________
-	var chest_icon = $UI/GUI/Character/Equipment/BreastPlate/Icon
-	if chest_icon.texture != null:
-		if chest_icon.texture.get_path() == "res://Equipment icons/garment1.png":
-			torso = "garment1"
-			
-	elif chest_icon.texture == null:
-		torso = "naked"
 
-#_______________________________legs____________________________________________
-	var legs_icon = $UI/GUI/Character/Equipment/Pants/Icon
-	if legs_icon.texture != null:
-		if legs_icon.texture.get_path() == "res://Equipment icons/pants1.png":
-			legs = "cloth1"
-		#player.applyEffect(player, "effect3", true)
-	elif legs_icon.texture == null:
-		legs = "naked"
-		#player.applyEffect(player, "effect3", false)
-#_______________________________foot____________________________________________
-#	var foot_icon = $UI/GUI/Character/RightFoot/Icon
-#	if  foot_icon.texture != null:
-#		if  foot_icon.texture.get_path() == "res://Equipment icons/shoe1.png":
-#			feet = "cloth1"
-#
-#	elif foot_icon.texture == null:
-#		feet = "naked"
-#
-#	var headset_icon = $UI/GUI/Character/Head/Icon
-#	var glove_icon = $UI/GUI/Character/RightHand/Icon
-#	var glove_l_icon = 	$UI/GUI/Character/LeftHand/Icon
-#	var shoulder_r_icon = $UI/GUI/Character/RightShoulder/Icon
-#	var shoulder_l_icon = $UI/GUI/Character/LeftShoulder/Icon
-	main_weapon_icon.savedata()
-	$UI/GUI/Character/Equipment/SecWeap/Icon.savedata()
-#	headset_icon.savedata()
-#	shoulder_l_icon.savedata()
-#	shoulder_r_icon.savedata()
-	chest_icon.savedata()
-#	glove_icon.savedata()
-#	glove_l_icon.savedata()
-	legs_icon.savedata()
-#	foot_icon.savedata()
-#
-	
-	
-	
-#_____________________________________Equipment 3D______________________________
-var torso = "naked"
-func switchTorso():
-	var torso0 = $Mesh/Race/Armature/Skeleton/Torso0
-	var torso1 = $Mesh/Race/Armature/Skeleton/Torso1
-	match torso:
-		"naked":
-			torso0.visible = true 
-			torso1.visible = false
-			applyEffect(self,"garment1", false)
-		"garment1":
-			torso0.visible = false
-			torso1.visible = true
-			applyEffect(self,"garment1", true)
-var feet = "naked"
-func switchFeet():
-	var feet0 = $Mesh/Race/Armature/Skeleton/feet0
-	var feet1 = $Mesh/Race/Armature/Skeleton/feet1
-	match feet:
-		"naked":
-			feet0.visible = true 
-			feet1.visible = false
-		"cloth1":
-			feet0.visible = false
-			feet1.visible = true	
-var legs = "naked"
-func switchLegs():
-	var legs0 = $Mesh/Race/Armature/Skeleton/legs0
-	var legs1 = $Mesh/Race/Armature/Skeleton/legs1
-	match legs:
-		"naked":
-			legs0.visible = true 
-			legs1.visible = false
-		"cloth1":
-			legs0.visible = false
-			legs1.visible = true	
 #__________________________________Weapon Management____________________________
 #Main Weapon____________________________________________________________________
 onready var attachment_r = $Mesh/Race/Armature/Skeleton/HoldL
 onready var attachment_hip = $Mesh/Race/Armature/Skeleton/Hip
 onready var detector = $Mesh/Detector
-onready var main_weap_slot = $UI/GUI/Character/RightArm
-onready var main_weap_icon = $UI/GUI/Character/RightArm/Icon
+onready var main_weap_slot = $UI/GUI/Equipment/EquipmentBG/MainWeap
+onready var main_weap_icon = $UI/GUI/Equipment/EquipmentBG/MainWeap/Icon
 var sword0: PackedScene = preload("res://itemTest.tscn")
 var sword1: PackedScene = preload("res://itemTest.tscn")
 var sword2: PackedScene = preload("res://itemTest.tscn")
@@ -1713,8 +1691,8 @@ func MainWeapon():
 #Secondary__________________________________________________________________________________________
 onready var attachment_l = $Mesh/Race/Armature/Skeleton/HoldL2
 onready var attachment_hip_sec = $Mesh/Race/Armature/Skeleton/Hip2
-onready var sec_weap_slot = $UI/GUI/Character/LeftArm
-onready var sec_weap_icon = $UI/GUI/Character/LeftArm/Icon
+onready var sec_weap_slot = $UI/GUI/Character/Equipment/SecWeap
+onready var sec_weap_icon = $UI/GUI/Character/Equipment/SecWeap/Icon
 var sec_currentInstance: Node = null  
 
 var secondary_weapon = "null"
@@ -1839,6 +1817,117 @@ func ShieldManagement():
 		dropShield()
 		has_shield0 = false
 
+	
+	
+	
+#____________________________________Equipment 2D_______________________________
+func SwitchEquipmentBasedOnEquipmentIcons():
+#__________________________main weapon__________________________________________
+	if main_weap_icon != null:
+		main_weap_icon.savedata()
+		if main_weap_icon.texture != null:
+			if main_weap_icon.texture.get_path() == "res://0.png":
+				main_weapon = "sword0"
+				applyEffect(self, "effect2", true)
+		elif main_weap_icon.texture == null:
+			removeWeapon()
+			main_weapon = "null"
+			applyEffect(self, "effect2", false)
+#__________________________sec weapon___________________________________________
+	if sec_weap_icon != null:
+		if sec_weap_icon.texture != null:
+			if sec_weap_icon.texture.get_path() == "res://0.png":
+				secondary_weapon = "sword0"
+				applyEffect(self, "effect1", true)
+		elif sec_weap_icon.texture == null:
+			removeSecWeapon()
+			secondary_weapon = "null"
+			applyEffect(self, "effect1", false)	
+#_______________________________chest___________________________________________
+	var chest_icon = $UI/GUI/Equipment/EquipmentBG/BreastPlate/Icon
+	if chest_icon != null:
+		if chest_icon.texture != null:
+			if chest_icon.texture.get_path() == "res://Equipment icons/garment1.png":
+				torso = "garment1"
+				
+		elif chest_icon.texture == null:
+			torso = "naked"
+
+#_______________________________legs____________________________________________
+	var legs_icon = $UI/GUI/Equipment/EquipmentBG/Pants/Icon
+	if legs_icon != null:
+		if legs_icon.texture != null:
+			if legs_icon.texture.get_path() == "res://Equipment icons/pants1.png":
+				legs = "cloth1"
+			#player.applyEffect(player, "effect3", true)
+		elif legs_icon.texture == null:
+			legs = "naked"
+			#player.applyEffect(player, "effect3", false)
+#_______________________________foot____________________________________________
+	var foot_icon = $UI/GUI/Equipment/EquipmentBG/ShoeR/Icon
+	if foot_icon != null:
+		if  foot_icon.texture != null:
+			if  foot_icon.texture.get_path() == "res://Equipment icons/shoe1.png":
+				feet = "cloth1"
+
+		elif foot_icon.texture == null:
+			feet = "naked"
+
+	var headset_icon = $UI/GUI/Equipment/EquipmentBG/Helmet/Icon
+	var glove_icon = $UI/GUI/Equipment/EquipmentBG/GloveR/Icon
+	var glove_l_icon = $UI/GUI/Equipment/EquipmentBG/GloveL/Icon
+	var shoulder_r_icon = $UI/GUI/Equipment/EquipmentBG/ShoeR/Icon
+	var shoulder_l_icon = $UI/GUI/Equipment/EquipmentBG/ShoeL/Icon
+	$UI/GUI/Equipment/EquipmentBG/SecWeap/Icon.savedata()
+	headset_icon.savedata()
+	shoulder_l_icon.savedata()
+	shoulder_r_icon.savedata()
+	chest_icon.savedata()
+	glove_icon.savedata()
+	glove_l_icon.savedata()
+	legs_icon.savedata()
+	foot_icon.savedata()
+	$UI/GUI/Equipment/EquipmentBG/Belt/Icon.savedata()
+	$UI/GUI/Equipment/EquipmentBG/ThirdWeap/Icon.savedata()
+	
+#_____________________________________Equipment 3D______________________________
+var torso = "naked"
+func switchTorso():
+	var torso0 = $Mesh/Race/Armature/Skeleton/Torso0
+	var torso1 = $Mesh/Race/Armature/Skeleton/Torso1
+	match torso:
+		"naked":
+			torso0.visible = true 
+			torso1.visible = false
+			applyEffect(self,"garment1", false)
+		"garment1":
+			torso0.visible = false
+			torso1.visible = true
+			applyEffect(self,"garment1", true)
+var feet = "naked"
+func switchFeet():
+	var feet0 = $Mesh/Race/Armature/Skeleton/feet0
+	var feet1 = $Mesh/Race/Armature/Skeleton/feet1
+	match feet:
+		"naked":
+			feet0.visible = true 
+			feet1.visible = false
+		"cloth1":
+			feet0.visible = false
+			feet1.visible = true	
+var legs = "naked"
+func switchLegs():
+	var legs0 = $Mesh/Race/Armature/Skeleton/legs0
+	var legs1 = $Mesh/Race/Armature/Skeleton/legs1
+	match legs:
+		"naked":
+			legs0.visible = true 
+			legs1.visible = false
+		"cloth1":
+			legs0.visible = false
+			legs1.visible = true	
+	
+	
 	
 #___________________________________Status effects______________________________
 # Define effects and their corresponding stat changes
@@ -2261,37 +2350,51 @@ var empathy = 1
 var courage = 1 
 var recovery = 1
 
-const base_melee_atk_speed = 1 
-var melee_atk_speed = 1 
-const base_ranged_atk_speed = 1 
-var ranged_atk_speed = 1 
-const base_casting_speed = 1 
-var critical_chance = 0.00
-var critical_strength = 2
-var stagger_chance = 0.00
-var life_steal = 1  
+const base_melee_atk_speed: int = 1 
+var melee_atk_speed: float = 1 
+const base_ranged_atk_speed: int = 1 
+var ranged_atk_speed: float = 1 
+const base_casting_speed: int  = 1 
+var critical_chance: float = 0.00
+var critical_strength: float = 2
+var stagger_chance: float = 0.00
+var life_steal: float = 0
 #resistances
-var slash_resistance = 25
-var pierce_resistance = 25
-var blunt_resistance = 25
-var sonic_resistance = 25
-var heat_resistance = 25
-var cold_resistance = 25
-var jolt_resistance = 25
-var toxic_resistance = 25
-var acid_resistance = 25
-var bleed_resistance = 25
-var neuro_resistance = 25
-var radiant_resistance = 25
+var slash_resistance: int = 0
+var pierce_resistance: int = 0
+var blunt_resistance: int = 0
+var sonic_resistance: int = 0
+var heat_resistance: int = 0
+var cold_resistance: int = 0
+var jolt_resistance: int = 0
+var toxic_resistance: int = 0
+var acid_resistance: int = 0
+var bleed_resistance: int = 0
+var neuro_resistance: int = 0
+var radiant_resistance: int = 0
 
-var stagger_resistance = 0.5
-var deflection_chance = 0.33
+var stagger_resistance: float = 0.5
+var deflection_chance : float = 0.33
 
 var staggered = 0 
 
+func regenStats():
+	#regen resolve
+	if resolve < max_resolve:
+		resolve += recovery
+		
+	#breath 
+	if water > max_water * 0.3:
+		if kilocalories > max_kilocalories * 0.3:
+			if breath < max_breath:
+				breath += stamina
+				
+		
 func limitStatsToMaximum():
 	if health > max_health:
 		health = max_health
+	if resolve > max_resolve:
+		resolve = max_resolve
 
 func convertStats():
 	max_health = base_max_health * vitality
@@ -2369,50 +2472,58 @@ var spent_attribute_points_aut = 0
 var spent_attribute_points_cou = 0
 
 func displayLabels():
-	var value_int = $UI/GUI/Character/Intelligence/value
-	var value_ins = $UI/GUI/Character/Instinct/value
-	var value_wis = $UI/GUI/Character/Wisdom/value
-	var value_mem = $UI/GUI/Character/Memory/value
-	var value_san = $UI/GUI/Character/Sanity/value
+	var cast_spd_label: Label = $UI/GUI/Equipment/EquipmentBG/CombatStats/GridContainer/CastingSpeedValue
+	displayStats(cast_spd_label,casting_speed)
+	var ran_spd_label: Label = $UI/GUI/Equipment/EquipmentBG/CombatStats/GridContainer/RangedSpeedValue
+	displayStats(ran_spd_label,ranged_atk_speed)
+	var atk_spd_label: Label = $UI/GUI/Equipment/EquipmentBG/CombatStats/GridContainer/AtkSpeedValue
+	displayStats(atk_spd_label,melee_atk_speed)
+	var life_steal_label: Label = $UI/GUI/Equipment/EquipmentBG/CombatStats/GridContainer/LifeStealValue
+	displayStats(life_steal_label,life_steal)
 	
-	# Fetch references to the UI elements representing the values of different attributes
-	var value_force = $UI/GUI/Character/Force/value
-	var value_strength = $UI/GUI/Character/Strength/value
-	var value_impact = $UI/GUI/Character/Impact/value
-	var value_ferocity = $UI/GUI/Character/Ferocity/value
-	var value_fury = $UI/GUI/Character/Fury/value
-	
-	# Fetch references to the UI elements representing the values of different attributes
-	var value_accuracy = $UI/GUI/Character/Accuracy/value
-	var value_dexterity = $UI/GUI/Character/Dexterity/value
-	var value_poise = $UI/GUI/Character/Poise/value
-	var value_balance = $UI/GUI/Character/Balance/value
-	var value_focus = $UI/GUI/Character/Focus/value
-	var value_haste = $UI/GUI/Character/Haste/value
-	var value_agility = $UI/GUI/Character/Agility/value
-	var value_celerity = $UI/GUI/Character/Celerity/value
-	var value_flexibility = $UI/GUI/Character/Flexibility/value
-	var value_deflection = $UI/GUI/Character/Deflection/value
-	var value_endurance = $UI/GUI/Character/Endurance/value
-	var value_stamina = $UI/GUI/Character/Stamina/value
-	var value_vitality = $UI/GUI/Character/Vitality/value
-	var value_resistance = $UI/GUI/Character/Resistance/value
-	var value_tenacity = $UI/GUI/Character/Tenacity/value
-	
-	var val_cha = $UI/GUI/Character/Charisma/value
+	var int_lab = $UI/GUI/Equipment/Attributes/Intelligence/value
+	displayStats(int_lab, intelligence)
+	var value_ins = $UI/GUI/Equipment/Attributes/Instinct/value
+	var value_wis = $UI/GUI/Equipment/Attributes/Wisdom/value
+	var value_mem = $UI/GUI/Equipment/Attributes/Memory/value
+	var value_san = $UI/GUI/Equipment/Attributes/Sanity/value
+
+	var value_strength = $UI/GUI/Equipment/Attributes/Strength/value	
+	var value_force = $UI/GUI/Equipment/Attributes/Force/value
+	var value_impact = $UI/GUI/Equipment/Attributes/Impact/value
+	var value_ferocity = $UI/GUI/Equipment/Attributes/Ferocity/value
+	var value_fury = $UI/GUI/Equipment/Attributes/Fury/value
+
+	var value_accuracy = $UI/GUI/Equipment/Attributes/Accuracy/value
+	var value_dexterity = $UI/GUI/Equipment/Attributes/Dexterity/value
+	var value_poise = $UI/GUI/Equipment/Attributes/Poise/value
+	var value_balance = $UI/GUI/Equipment/Attributes/Balance/value
+	var value_focus = $UI/GUI/Equipment/Attributes/Focus/value
+	var value_haste = $UI/GUI/Equipment/Attributes/Haste/value
+	var value_agility = $UI/GUI/Equipment/Attributes/Agility/value
+	var value_celerity = $UI/GUI/Equipment/Attributes/Celerity/value
+	var value_flexibility = $UI/GUI/Equipment/Attributes/Flexibility/value
+
+	var value_deflection = $UI/GUI/Equipment/Attributes/Deflection/value
+	var value_endurance = $UI/GUI/Equipment/Attributes/Endurance/value
+	var value_stamina = $UI/GUI/Equipment/Attributes/Stamina/value
+	var value_vitality = $UI/GUI/Equipment/Attributes/Vitality/value
+	var value_resistance = $UI/GUI/Equipment/Attributes/Resistance/value
+	var value_tenacity = $UI/GUI/Equipment/Attributes/Tenacity/value
+
+
+	var val_cha = $UI/GUI/Equipment/Attributes/Charisma/value
 	displayStats(val_cha,charisma_multiplier)
-	var val_dip = $UI/GUI/Character/Diplomacy/value
+	var val_dip = $UI/GUI/Equipment/Attributes/Diplomacy/value
 	displayStats(val_dip,diplomacy)
-	var val_au = $UI/GUI/Character/Authority/value
+	var val_au = $UI/GUI/Equipment/Attributes/Authority/value
 	displayStats(val_au,authority)	
-	var val_cou = $UI/GUI/Character/Courage/value
+	var val_cou = $UI/GUI/Equipment/Attributes/Courage/value
 	displayStats(val_cou,courage)
-	var val_loy = $UI/GUI/Character/Loyalty/value
+	var val_loy = $UI/GUI/Equipment/Attributes/Loyalty/value
 	displayStats(val_loy,loyalty)
 	
-	# Display labels for all attributes
 	displayStats(value_ins, instinct)
-	displayStats(value_int, intelligence)
 	displayStats(value_wis, wisdom)
 	displayStats(value_mem, memory)
 	displayStats(value_san, sanity)
@@ -2436,47 +2547,57 @@ func displayLabels():
 	displayStats(value_vitality, vitality)
 	displayStats(value_resistance, resistance)
 	displayStats(value_tenacity, tenacity)
+	
+	
+	#resistances and damages________________________________________________
+	var val_slash : Label = $UI/GUI/Equipment/DmgDef/Defenses/Slaval
+	displayStats(val_slash, slash_resistance)
+	var val_blunt : Label = $UI/GUI/Equipment/DmgDef/Defenses/Bluntval
+	displayStats(val_blunt, blunt_resistance)
+	var val_pierce : Label = $UI/GUI/Equipment/DmgDef/Defenses/Pierceval
+	displayStats(val_pierce, pierce_resistance)
+
 
 func displayStats(label, value):
 	var rounded_value = str(round(value * 1000) / 1000)
 	label.text = rounded_value
 
 func connectAttributeHovering():
-	var int_label: Label = $UI/GUI/Character/Intelligence
-	var ins_label = $UI/GUI/Character/Instinct
-	var wis_label = $UI/GUI/Character/Wisdom
-	var san_label = $UI/GUI/Character/Sanity
-	var mem_label = $UI/GUI/Character/Memory
-	var force_label = $UI/GUI/Character/Force
-	var str_label = $UI/GUI/Character/Strength
-	var imp_label = $UI/GUI/Character/Impact
-	var fer_label = $UI/GUI/Character/Ferocity
-	var fury_label = $UI/GUI/Character/Fury
+	var int_label: Label = $UI/GUI/Equipment/Attributes/Intelligence
+	var ins_label = $UI/GUI/Equipment/Attributes/Instinct
+	var wis_label = $UI/GUI/Equipment/Attributes/Wisdom
+	var san_label = $UI/GUI/Equipment/Attributes/Sanity
+	var mem_label = $UI/GUI/Equipment/Attributes/Memory
+	var force_label = $UI/GUI/Equipment/Attributes/Force
+	var str_label =$UI/GUI/Equipment/Attributes/Strength
+	var imp_label =$UI/GUI/Equipment/Attributes/Impact
+	var fer_label = $UI/GUI/Equipment/Attributes/Ferocity
+	var fury_label = $UI/GUI/Equipment/Attributes/Fury
 	
-	var accuracy_label = $UI/GUI/Character/Accuracy
-	var dexterity_label = $UI/GUI/Character/Dexterity
-	var poise_label = $UI/GUI/Character/Poise
-	var balance_label = $UI/GUI/Character/Balance
-	var focus_label = $UI/GUI/Character/Focus
+	var accuracy_label = $UI/GUI/Equipment/Attributes/Accuracy
+	var dexterity_label = $UI/GUI/Equipment/Attributes/Dexterity
+	var poise_label = $UI/GUI/Equipment/Attributes/Poise
+	var balance_label = $UI/GUI/Equipment/Attributes/Balance
+	var focus_label = $UI/GUI/Equipment/Attributes/Focus
 
-	var haste_label = $UI/GUI/Character/Haste
-	var agility_label = $UI/GUI/Character/Agility
-	var celerity_label = $UI/GUI/Character/Celerity
-	var flexibility_label = $UI/GUI/Character/Flexibility
-	var deflection_label = $UI/GUI/Character/Deflection
+	var haste_label = $UI/GUI/Equipment/Attributes/Haste
+	var agility_label = $UI/GUI/Equipment/Attributes/Agility
+	var celerity_label = $UI/GUI/Equipment/Attributes/Celerity
+	var flexibility_label = $UI/GUI/Equipment/Attributes/Flexibility
+	var deflection_label = $UI/GUI/Equipment/Attributes/Deflection
 
-	var endurance_label = $UI/GUI/Character/Endurance
-	var stamina_label = $UI/GUI/Character/Stamina
-	var vitality_label = $UI/GUI/Character/Vitality
-	var resistance_label = $UI/GUI/Character/Resistance
-	var tenacity_label = $UI/GUI/Character/Tenacity
+	var endurance_label = $UI/GUI/Equipment/Attributes/Endurance
+	var stamina_label = $UI/GUI/Equipment/Attributes/Stamina
+	var vitality_label = $UI/GUI/Equipment/Attributes/Vitality
+	var resistance_label = $UI/GUI/Equipment/Attributes/Resistance
+	var tenacity_label = $UI/GUI/Equipment/Attributes/Tenacity
 
-	var charisma_label = $UI/GUI/Character/Charisma
-	var loyalty_label = $UI/GUI/Character/Loyalty
-	var diplomacy_label = $UI/GUI/Character/Diplomacy
-	var authority_label = $UI/GUI/Character/Authority
-	var empathy_label = $UI/GUI/Character/Empathy
-	var courage_label = $UI/GUI/Character/Courage	
+	var charisma_label = $UI/GUI/Equipment/Attributes/Charisma
+	var loyalty_label = $UI/GUI/Equipment/Attributes/Loyalty
+	var diplomacy_label = $UI/GUI/Equipment/Attributes/Diplomacy
+	var authority_label = $UI/GUI/Equipment/Attributes/Authority
+	var empathy_label = $UI/GUI/Equipment/Attributes/Empathy
+	var courage_label = $UI/GUI/Equipment/Attributes/Courage	
 	# Set mouse_filter for each label to stop mouse events
 	int_label.mouse_filter = Control.MOUSE_FILTER_STOP
 	ins_label.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -2868,158 +2989,160 @@ func loyExited():
 
 func connectAttributeButtons():
    # Intelligence attribute
-	var plus_int = $UI/GUI/Character/Intelligence/Plus
-	var min_int = $UI/GUI/Character/Intelligence/Min
-	plus_int.connect("pressed", self, "plusInt")
-	min_int.connect("pressed", self, "minusInt")
+	var plus_int : Button = $UI/GUI/Equipment/Attributes/Intelligence/Plus
+	var min_int : Button = $UI/GUI/Equipment/Attributes/Intelligence/Min
+	if plus_int != null:
+		plus_int.connect("pressed", self, "plusInt")
+	if min_int != null:
+		min_int.connect("pressed", self, "minusInt")
 	# Instinct attribute
-	var plus_ins = $UI/GUI/Character/Instinct/Plus
-	var min_ins = $UI/GUI/Character/Instinct/Min
+	var plus_ins = $UI/GUI/Equipment/Attributes/Instinct/Plus
+	var min_ins = $UI/GUI/Equipment/Attributes/Instinct/Min
 	plus_ins.connect("pressed", self, "plusIns")
 	min_ins.connect("pressed", self, "minusIns")
 	# Wisdom attribute
-	var plus_wis = $UI/GUI/Character/Wisdom/Plus
-	var min_wis = $UI/GUI/Character/Wisdom/Min
+	var plus_wis = $UI/GUI/Equipment/Attributes/Wisdom/Plus
+	var min_wis = $UI/GUI/Equipment/Attributes/Wisdom/Min
 	plus_wis.connect("pressed", self, "plusWis")
 	min_wis.connect("pressed", self, "minusWis")
 	# Memory attribute
-	var plus_mem = $UI/GUI/Character/Memory/Plus
-	var min_mem = $UI/GUI/Character/Memory/Min
+	var plus_mem = $UI/GUI/Equipment/Attributes/Memory/Plus
+	var min_mem = $UI/GUI/Equipment/Attributes/Memory/Min
 	plus_mem.connect("pressed", self, "plusMem")
 	min_mem.connect("pressed", self, "minusMem")
 	# Sanity attribute
-	var plus_san: Button = $UI/GUI/Character/Sanity/Plus
-	var min_san: Button = $UI/GUI/Character/Sanity/Min
+	var plus_san: Button = $UI/GUI/Equipment/Attributes/Sanity/Plus
+	var min_san: Button = $UI/GUI/Equipment/Attributes/Sanity/Min
 	plus_san.connect("pressed", self, "plusSan")
 	min_san.connect("pressed", self, "minusSan")
 
 	# Strength attribute
-	var plus_str: Button = $UI/GUI/Character/Strength/Plus
-	var min_str: Button = $UI/GUI/Character/Strength/Min
+	var plus_str: Button = $UI/GUI/Equipment/Attributes/Strength/Plus
+	var min_str: Button = $UI/GUI/Equipment/Attributes/Strength/Min
 	plus_str.connect("pressed", self, "plusStr")
 	min_str.connect("pressed", self, "minusStr")
 	# Force attribute
-	var plus_for: Button = $UI/GUI/Character/Force/Plus
-	var min_for: Button = $UI/GUI/Character/Force/Min
+	var plus_for: Button = $UI/GUI/Equipment/Attributes/Force/Plus
+	var min_for: Button = $UI/GUI/Equipment/Attributes/Force/Min
 	plus_for.connect("pressed", self, "plusFor")
 	min_for.connect("pressed", self, "minusFor")
 	# Impact attributes
-	var plus_imp = $UI/GUI/Character/Impact/Plus
-	var min_imp = $UI/GUI/Character/Impact/Min
+	var plus_imp = $UI/GUI/Equipment/Attributes/Impact/Plus
+	var min_imp = $UI/GUI/Equipment/Attributes/Impact/Min
 	plus_imp.connect("pressed", self, "plusImp")
 	min_imp.connect("pressed", self, "minusImp")
 	# Ferocity attribute
-	var plus_fer = $UI/GUI/Character/Ferocity/Plus
-	var min_fer = $UI/GUI/Character/Ferocity/Min
+	var plus_fer = $UI/GUI/Equipment/Attributes/Ferocity/Plus
+	var min_fer = $UI/GUI/Equipment/Attributes/Ferocity/Min
 	plus_fer.connect("pressed", self, "plusFer")
 	min_fer.connect("pressed", self, "minusFer")
 	# Fury attribute
-	var plus_fur = $UI/GUI/Character/Fury/Plus
-	var min_fur = $UI/GUI/Character/Fury/Min
+	var plus_fur = $UI/GUI/Equipment/Attributes/Fury/Plus
+	var min_fur = $UI/GUI/Equipment/Attributes/Fury/Min
 	plus_fur.connect("pressed", self, "plusFur")
 	min_fur.connect("pressed", self, "minusFur")
 
 	# Vitality attribute
-	var plus_vitality = $UI/GUI/Character/Vitality/Plus
-	var min_vitality = $UI/GUI/Character/Vitality/Min
+	var plus_vitality = $UI/GUI/Equipment/Attributes/Vitality/Plus
+	var min_vitality = $UI/GUI/Equipment/Attributes/Vitality/Min
 	plus_vitality.connect("pressed", self, "plusVit")
 	min_vitality.connect("pressed", self, "minusVit")	
 	# Stamina attribute
-	var plus_stamina = $UI/GUI/Character/Stamina/Plus
-	var min_stamina = $UI/GUI/Character/Stamina/Min
+	var plus_stamina = $UI/GUI/Equipment/Attributes/Stamina/Plus
+	var min_stamina = $UI/GUI/Equipment/Attributes/Stamina/Min
 	plus_stamina.connect("pressed", self, "plusSta")
 	min_stamina.connect("pressed", self, "minusSta")
 	# Endurance attribute
-	var plus_endurance = $UI/GUI/Character/Endurance/Plus
-	var min_endurance = $UI/GUI/Character/Endurance/Min
+	var plus_endurance = $UI/GUI/Equipment/Attributes/Endurance/Plus
+	var min_endurance = $UI/GUI/Equipment/Attributes/Endurance/Min
 	plus_endurance.connect("pressed", self, "plusEnd")
 	min_endurance.connect("pressed", self, "minusEnd")	
 	# Resistance attribute
-	var plus_resistance = $UI/GUI/Character/Resistance/Plus
-	var min_resistance = $UI/GUI/Character/Resistance/Min
+	var plus_resistance = $UI/GUI/Equipment/Attributes/Resistance/Plus
+	var min_resistance = $UI/GUI/Equipment/Attributes/Resistance/Min
 	plus_resistance.connect("pressed", self, "plusRes")
 	min_resistance.connect("pressed", self, "minusRes")
 	# Tenacity attribute
-	var plus_tenacity = $UI/GUI/Character/Tenacity/Plus
-	var min_tenacity = $UI/GUI/Character/Tenacity/Min
+	var plus_tenacity = $UI/GUI/Equipment/Attributes/Tenacity/Plus
+	var min_tenacity = $UI/GUI/Equipment/Attributes/Tenacity/Min
 	plus_tenacity.connect("pressed", self, "plusTen")
 	min_tenacity.connect("pressed", self, "minusTen")
 
 	# Agility attribute
-	var plus_agility = $UI/GUI/Character/Agility/Plus
-	var min_agility = $UI/GUI/Character/Agility/Min
+	var plus_agility = $UI/GUI/Equipment/Attributes/Agility/Plus
+	var min_agility = $UI/GUI/Equipment/Attributes/Agility/Min
 	plus_agility.connect("pressed", self, "plusAgi")
 	min_agility.connect("pressed", self, "minusAgi")
 	# Haste attribute
-	var plus_haste = $UI/GUI/Character/Haste/Plus
-	var min_haste = $UI/GUI/Character/Haste/Min
+	var plus_haste = $UI/GUI/Equipment/Attributes/Haste/Plus
+	var min_haste = $UI/GUI/Equipment/Attributes/Haste/Min
 	plus_haste.connect("pressed", self, "plusHas")
 	min_haste.connect("pressed", self, "minusHas")	
 	# Celerity attribute
-	var plus_celerity = $UI/GUI/Character/Celerity/Plus
-	var min_celerity = $UI/GUI/Character/Celerity/Min
+	var plus_celerity = $UI/GUI/Equipment/Attributes/Celerity/Plus
+	var min_celerity = $UI/GUI/Equipment/Attributes/Celerity/Min
 	plus_celerity.connect("pressed", self, "plusCel")
 	min_celerity.connect("pressed", self, "minusCel")
 	# Flexibility attribute
-	var plus_flexibility = $UI/GUI/Character/Flexibility/Plus
-	var min_flexibility = $UI/GUI/Character/Flexibility/Min
+	var plus_flexibility = $UI/GUI/Equipment/Attributes/Flexibility/Plus
+	var min_flexibility = $UI/GUI/Equipment/Attributes/Flexibility/Min
 	plus_flexibility.connect("pressed", self, "plusFle")
 	min_flexibility.connect("pressed", self, "minusFle")
 	# Deflection attribute
-	var plus_deflection = $UI/GUI/Character/Deflection/Plus
-	var min_deflection = $UI/GUI/Character/Deflection/Min
+	var plus_deflection = $UI/GUI/Equipment/Attributes/Deflection/Plus
+	var min_deflection = $UI/GUI/Equipment/Attributes/Deflection/Min
 	plus_deflection.connect("pressed", self, "plusDef")
 	min_deflection.connect("pressed", self, "minusDef")
 	
 	# Dexterity attributes
-	var plus_dex = $UI/GUI/Character/Dexterity/Plus
-	var min_dex = $UI/GUI/Character/Dexterity/Min
+	var plus_dex = $UI/GUI/Equipment/Attributes/Dexterity/Plus
+	var min_dex = $UI/GUI/Equipment/Attributes/Dexterity/Min
 	plus_dex.connect("pressed", self, "plusDex")
 	min_dex.connect("pressed", self, "minusDex")
 	# Accuracy attributes
-	var plus_acc = $UI/GUI/Character/Accuracy/Plus
-	var min_acc = $UI/GUI/Character/Accuracy/Min
+	var plus_acc = $UI/GUI/Equipment/Attributes/Accuracy/Plus
+	var min_acc = $UI/GUI/Equipment/Attributes/Accuracy/Min
 	plus_acc.connect("pressed", self, "plusAcc")
 	min_acc.connect("pressed", self, "minusAcc")
 	# Focus attributes
-	var plus_focus = $UI/GUI/Character/Focus/Plus
-	var min_focus = $UI/GUI/Character/Focus/Min
+	var plus_focus = $UI/GUI/Equipment/Attributes/Focus/Plus
+	var min_focus = $UI/GUI/Equipment/Attributes/Focus/Min
 	plus_focus.connect("pressed", self, "plusFoc")
 	min_focus.connect("pressed", self, "minusFoc")	
 	# Poise attributes
-	var plus_poi = $UI/GUI/Character/Poise/Plus
-	var min_poi = $UI/GUI/Character/Poise/Min
+	var plus_poi = $UI/GUI/Equipment/Attributes/Poise/Plus
+	var min_poi = $UI/GUI/Equipment/Attributes/Poise/Min
 	plus_poi.connect("pressed", self, "plusPoi")
 	min_poi.connect("pressed", self, "minusPoi")
 	# Balance attributes
-	var plus_bal = $UI/GUI/Character/Balance/Plus
-	var min_bal = $UI/GUI/Character/Balance/Min
+	var plus_bal = $UI/GUI/Equipment/Attributes/Balance/Plus
+	var min_bal = $UI/GUI/Equipment/Attributes/Balance/Min
 	plus_bal.connect("pressed", self, "plusBal")
 	min_bal.connect("pressed", self, "minusBal")
 
 	# Charisma attribute
-	var plus_char = $UI/GUI/Character/Charisma/Plus
-	var min_char = $UI/GUI/Character/Charisma/Min
+	var plus_char = $UI/GUI/Equipment/Attributes/Charisma/Plus
+	var min_char = $UI/GUI/Equipment/Attributes/Charisma/Min
 	plus_char.connect("pressed", self, "plusCha")
 	min_char.connect("pressed", self, "minusCha")
 	# Diplomacy attribute
-	var plus_dip = $UI/GUI/Character/Diplomacy/Plus
-	var min_dip = $UI/GUI/Character/Diplomacy/Min
+	var plus_dip = $UI/GUI/Equipment/Attributes/Diplomacy/Plus
+	var min_dip = $UI/GUI/Equipment/Attributes/Diplomacy/Min
 	plus_dip.connect("pressed", self, "plusDip")
 	min_dip.connect("pressed", self, "minusDip")	
 	# Authority attribute
-	var plus_aut = $UI/GUI/Character/Authority/Plus
-	var min_aut = $UI/GUI/Character/Authority/Min
+	var plus_aut = $UI/GUI/Equipment/Attributes/Authority/Plus
+	var min_aut = $UI/GUI/Equipment/Attributes/Authority/Min
 	plus_aut.connect("pressed", self, "plusAut")
 	min_aut.connect("pressed", self, "minusAut")
 	# Courage attribute
-	var plus_cou = $UI/GUI/Character/Courage/Plus
-	var min_cou = $UI/GUI/Character/Courage/Min
+	var plus_cou = $UI/GUI/Equipment/Attributes/Courage/Plus
+	var min_cou = $UI/GUI/Equipment/Attributes/Courage/Min
 	plus_cou.connect("pressed", self, "plusCou")
 	min_cou.connect("pressed", self, "minusCou")
 	# Loyalty attribute
-	var plus_loy = $UI/GUI/Character/Loyalty/Plus
-	var min_loy = $UI/GUI/Character/Loyalty/Min
+	var plus_loy = $UI/GUI/Equipment/Attributes/Loyalty/Plus
+	var min_loy = $UI/GUI/Equipment/Attributes/Loyalty/Min
 	plus_loy.connect("pressed", self, "plusLoy")
 	min_loy.connect("pressed", self, "minusLoy")
 #intelligence
@@ -4316,10 +4439,9 @@ func minusLoy():
 
 
 
-onready var att_points_label = $BookStatsSkills/AttPoints
-onready var critical_chance_val = $UI/GUI/Character/Equipment/CombatStats/GridContainer/CritChanceValue
-onready var critical_str_val = $UI/GUI/Character/Equipment/CombatStats/GridContainer/CritDamageValue
-onready var life_steal_value = $UI/GUI/Character/Equipment/CombatStats/GridContainer/LifeStealValue
+
+onready var critical_chance_val = $UI/GUI/Equipment/EquipmentBG/CombatStats/GridContainer/CritChanceValue
+onready var critical_str_val = $UI/GUI/Equipment/EquipmentBG/CombatStats/GridContainer/CritDamageValue
 
 
 
@@ -4348,10 +4470,7 @@ func updateAttackSpeed():
 	
 	var atk_speed_formula_casting = (instinct -1) * 0.35 + ((memory-1) * 0.05) + bonus_universal_speed
 	casting_speed = base_casting_speed + atk_speed_formula_casting
-	#display the labels
-	$UI/GUI/Character/Equipment/CombatStats/GridContainer/CastingSpeedValue.text = str(casting_speed)
-	$UI/GUI/Character/Equipment/CombatStats/GridContainer/RangedSpeedValue.text = str(ranged_atk_speed)
-	$UI/GUI/Character/Equipment/CombatStats/GridContainer/AtkSpeedValue.text = str(melee_atk_speed)
+
 
 
 func updateCritical():
@@ -4362,19 +4481,15 @@ func updateCritical():
 
 func updateStaggerChance():
 	stagger_chance = max(0, (impact - 1.00) * 0.45) +  max(0, (ferocity - 1.00) * 0.005) 
-	$UI/GUI/Character/Equipment/CombatStats/GridContainer/StaggerChanceValue.text = str(stagger_chance)
 
-func updateLifeSteal():
-	life_steal_value.text = str(life_steal * 100) + "%"
+
 func updateScaleRelatedAttributes():
 	charisma = base_charisma * (charisma_multiplier * 0.87 * (scale_factor * 1.15))
-func updateDamageTypes():
-	pass
+
 func updateAllStats():
 	updateAttackSpeed()
 	updateScaleRelatedAttributes()
 	updateCritical()
-	updateLifeSteal()
 	updateStaggerChance()
 
 
@@ -4399,6 +4514,12 @@ func savePlayerData():
 		
 		"health": health,
 		"max_health": max_health,
+		
+		"breath": breath,
+		"max_breath":max_breath,
+		
+		"resolve": resolve,
+		"max_resolve": max_resolve,
 		
 
 		
@@ -4513,7 +4634,23 @@ func loadPlayerData():
 			if "camera.translation.z" in player_data:
 				camera.translation.z = player_data["camera.translation.z"]
 
-			
+
+			if "health" in player_data:
+				health = player_data["health"]
+			if "max_health" in player_data:
+				max_health = player_data["max_health"]
+
+			if "breath" in player_data:
+				breath = player_data["breath"]
+			if "max_breath" in player_data:
+				max_breath = player_data["max_breath"]
+
+			if "resolve" in player_data:
+				resolve = player_data["resolve"]
+			if "max_resolve" in player_data:
+				max_resolve = player_data["max_resolve"]
+
+
 #attributes 
 			if "attribute" in player_data:
 				attribute = player_data["attribute"]
@@ -4656,11 +4793,7 @@ func loadPlayerData():
 			if "courage" in player_data:
 				courage = player_data["courage"]
 			
-			
-			if "health" in player_data:
-				health = player_data["health"]
-			if "max_health" in player_data:
-				max_health = player_data["max_health"]
+	
 
 			if "vitality" in player_data:
 				vitality = player_data["vitality"]
