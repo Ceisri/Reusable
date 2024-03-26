@@ -38,7 +38,8 @@ onready var rosehip = preload("res://Alchemy ingredients/2.png")
 
 
 onready var red_potion = preload("res://Potions/Red potion.png")
-
+onready var empty_potion = preload("res://Potions/Empty potion.png")
+onready var water = preload("res://Potions/water.png")
 
 
 onready var hat1 = preload("res://Equipment icons/hat1.png")
