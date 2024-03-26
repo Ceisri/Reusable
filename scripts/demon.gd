@@ -44,6 +44,7 @@ func _physics_process(delta):
 		else:
 			is_sprinting = false
 func _on_AggroTimer_timeout():
+	$Health.text = str(health)
 	for playerAggro in targets:
 		var distance = eyes.global_transform.origin.distance_to(playerAggro.player.global_transform.origin)
 		var aggro_change = calculateAggroChange(distance, playerAggro.aggro)
@@ -186,6 +187,7 @@ var floatingtext_damage = preload("res://UI/floatingtext.tscn")
 onready var take_damage_audio = $TakeHit
 onready var take_damage_view  = $TakeDamageView/Viewport
 func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
+	$Health.text = str(health)
 	take_damage_audio.play()
 	var random = randf()
 	var damage_to_take = damage
@@ -279,7 +281,6 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
 	if health < 0:
 		getKilled(instigator)
 		queue_free()	
-	$Health.text = str(health)
 	
 	
 	
@@ -471,7 +472,7 @@ var critical_strength = 2
 var stagger_chance = 0.3
 func slash():
 	var damage_type = "slash"
-	var damage = 2.5
+	var damage = 100
 	var aggro_power = damage + 20
 	var enemies = $Area.get_overlapping_bodies()
 	for enemy in enemies:

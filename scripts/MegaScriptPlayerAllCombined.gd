@@ -17,6 +17,7 @@ func _ready():
 	connectInventoryButtons()
 	connectAttributeButtons()
 	connectAttributeHovering()
+	connectHoveredResistanceLabels()
 	convertStats()
 	loadPlayerData()
 	closeAllUI()
@@ -38,6 +39,11 @@ func _on_SlowTimer_timeout():
 	displayLabels()
 	regenStats()
 	
+	
+	
+	#testing random stats for mitigation 
+	slash_resistance += 1
+	blunt_resistance += 1
 func _on_3FPS_timeout():
 	crafting()
 	displayResources(hp_bar,hp_label,health,max_health,"HP")
@@ -49,7 +55,6 @@ func _physics_process(delta: float) -> void:
 #	displayClock()
 	ChopTree()
 	limitStatsToMaximum()
-
 	cameraRotation(delta)
 	crossHair()
 	crossHairResize()
@@ -965,6 +970,7 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
 	if damage_type == "slash":
 		var mitigation = slash_resistance / (slash_resistance + 100.0)
 		damage_to_take *= (1.0 - mitigation)
+		print(damage_to_take )
 		if instigator.has_method("lifesteal"):
 			instigator.lifesteal(damage_to_take)
 			
@@ -1314,7 +1320,7 @@ func _on_inventory_slot_mouse_entered(index):
 			
 		#equipment icons
 		elif icon_texture.get_path() == "res://Equipment icons/garment1.png":
-			callToolTip(instance,"Farmer Jacket","+3 slash resistance /n +1 pierce resistance")
+			callToolTip(instance,"Farmer Jacket","+3 slash resistance +1 pierce resistance")
 			
 			
 			
@@ -1962,7 +1968,7 @@ var effects = {
 	"impaired": {"stats": { "dexterity": -0.25}, "applied": false},
 	"lethargy": {"stats": {}, "applied": false},
 	"redpotion": {"stats": {}, "applied": false},
-	"garment1": {"stats": {"additional_melee_atk_speed": 0.75,"agility": 0.05,}, "applied": false},
+	"garment1": {"stats": {"slash_resistance": 3,"pierce_resistance": 1}, "applied": false},
 }
 
 # Function to apply or remove effects
@@ -2360,7 +2366,7 @@ var critical_strength: float = 2
 var stagger_chance: float = 0.00
 var life_steal: float = 0
 #resistances
-var slash_resistance: int = 0
+var slash_resistance: int = 0 #50 equals 33.333% damage reduction 100 equals 50% damage reduction, 200 equals 66.666% damage reduction
 var pierce_resistance: int = 0
 var blunt_resistance: int = 0
 var sonic_resistance: int = 0
@@ -2598,6 +2604,8 @@ func connectAttributeHovering():
 	var authority_label = $UI/GUI/Equipment/Attributes/Authority
 	var empathy_label = $UI/GUI/Equipment/Attributes/Empathy
 	var courage_label = $UI/GUI/Equipment/Attributes/Courage	
+	
+	
 	# Set mouse_filter for each label to stop mouse events
 	int_label.mouse_filter = Control.MOUSE_FILTER_STOP
 	ins_label.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -2715,7 +2723,6 @@ func connectAttributeHovering():
 	balance_label.connect("mouse_entered", self, "balHovered")
 	balance_label.connect("mouse_exited", self, "balExited")
 
-
 	# Connect mouse entered and exited signals for Charisma label
 	charisma_label.connect("mouse_entered", self, "chaHovered")
 	charisma_label.connect("mouse_exited", self, "chaExited")
@@ -2731,262 +2738,223 @@ func connectAttributeHovering():
 	# Connect mouse entered and exited signals for Loyalty label
 	loyalty_label.connect("mouse_entered", self, "loHovered")
 	loyalty_label.connect("mouse_exited", self, "loyExited")
+	
+	
 
 # Functions to handle mouse entering and exiting each label
 func intHovered():
 	var instance = preload("res://tooltip.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func intExited():
-	# Remove all children from the TextureButton
-	for child in gui.get_children():
-		if child.is_in_group("Tooltip"):
-			child.queue_free()
+	deleteTooltip()
 func insHovered():
 	var instance = preload("res://tooltip.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func insExited():
-	# Remove all children from the TextureButton
-	for child in gui.get_children():
-		if child.is_in_group("Tooltip"):
-			child.queue_free()
+	deleteTooltip()
 func wisHovered():
 	var instance = preload("res://tooltip.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func wisExited():
-	# Remove all children from the TextureButton
-	for child in gui.get_children():
-		if child.is_in_group("Tooltip"):
-			child.queue_free()
+	deleteTooltip()
 func memHovered():
 	var instance = preload("res://tooltip.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func memExited():
-	# Remove all children from the TextureButton
-	for child in gui.get_children():
-		if child.is_in_group("Tooltip"):
-			child.queue_free()	
+	deleteTooltip()
 func sanHovered():
 	var instance = preload("res://tooltip.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func sanExited():
-	# Remove all children from the TextureButton
-	for child in gui.get_children():
-		if child.is_in_group("Tooltip"):
-			child.queue_free()
-
-	# Remove all children from the TextureButton
-	for child in gui.get_children():
-		if child.is_in_group("Tooltip"):
-			child.queue_free()
-
+	deleteTooltip()
 
 func strHovered():
 	var instance = preload("res://tooltip.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func strExited():
-	# Remove all children from the TextureButton
-	for child in gui.get_children():
-		if child.is_in_group("Tooltip"):
-			child.queue_free()
+	deleteTooltip()
 func forceHovered():
 	var instance = preload("res://tooltip.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func forceExited():
-	# Remove all children from the TextureButton
-	for child in gui.get_children():
-		if child.is_in_group("Tooltip"):
-			child.queue_free()
+	deleteTooltip()
 func impHovered():
 	var instance = preload("res://tooltip.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func impExited():
-	# Remove all children from the TextureButton
-	for child in gui.get_children():
-		if child.is_in_group("Tooltip"):
-			child.queue_free()
+	deleteTooltip()
 func ferHovered():
 	var instance = preload("res://tooltip.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func ferExited():
-	# Remove all children from the TextureButton
-	for child in gui.get_children():
-		if child.is_in_group("Tooltip"):
-			child.queue_free()
+	deleteTooltip()
 func furHovered():
 	var instance = preload("res://tooltip.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func furExited():
-	# Remove all children from the TextureButton
-	for child in gui.get_children():
-		if child.is_in_group("Tooltip"):
-			child.queue_free()
+	deleteTooltip()
 
 
 func vitHovered():
 	var instance = preload("res://tooltip.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func vitExited():
-	# Remove all children from the TextureButton
-	for child in gui.get_children():
-		if child.is_in_group("Tooltip"):
-			child.queue_free()
+	deleteTooltip()
 func staHovered():
 	var instance = preload("res://tooltip.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func staExited():
-	# Remove all children from the TextureButton
-	for child in gui.get_children():
-		if child.is_in_group("Tooltip"):
-			child.queue_free()
+	deleteTooltip()
 func endHovered():
 	var instance = preload("res://tooltip.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func endExited():
-	# Remove all children from the TextureButton
-	for child in gui.get_children():
-		if child.is_in_group("Tooltip"):
-			child.queue_free()
+	deleteTooltip()
 func resHovered():
 	var instance = preload("res://tooltip.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func resExited():
-	# Remove all children from the TextureButton
-	for child in gui.get_children():
-		if child.is_in_group("Tooltip"):
-			child.queue_free()
+	deleteTooltip()
 func tenHovered():
 	var instance = preload("res://tooltip.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func tenExited():
-	# Remove all children from the TextureButton
-	for child in gui.get_children():
-		if child.is_in_group("Tooltip"):
-			child.queue_free()
+	deleteTooltip()
 
 func agiHovered():
 	var instance = preload("res://tooltip.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func agiExited():
-	# Remove all children from the TextureButton
-	for child in gui.get_children():
-		if child.is_in_group("Tooltip"):
-			child.queue_free()
+	deleteTooltip()
 func hasHovered():
 	var instance = preload("res://tooltip.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func hasExited():
-	# Remove all children from the TextureButton
-	for child in gui.get_children():
-		if child.is_in_group("Tooltip"):
-			child.queue_free()
+	deleteTooltip()
 func celHovered():
 	var instance = preload("res://tooltip.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func celExited():
-	# Remove all children from the TextureButton
-	for child in gui.get_children():
-		if child.is_in_group("Tooltip"):
-			child.queue_free()
+	deleteTooltip()
 func fleHovered():
 	var instance = preload("res://tooltip.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func fleExited():
-	# Remove all children from the TextureButton
-	for child in gui.get_children():
-		if child.is_in_group("Tooltip"):
-			child.queue_free()
+	deleteTooltip()
 
 func defHovered():
 	var instance = preload("res://tooltip.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func defExited():
-	# Remove all children from the TextureButton
-	for child in gui.get_children():
-		if child.is_in_group("Tooltip"):
-			child.queue_free()
+	deleteTooltip()
 func dexHovered():
 	var instance = preload("res://tooltip.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func dexExited():
-	# Remove all children from the TextureButton
-	for child in gui.get_children():
-		if child.is_in_group("Tooltip"):
-			child.queue_free()
+	deleteTooltip()
 func accHovered():
 	var instance = preload("res://tooltip.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func accExited():
-	# Remove all children from the TextureButton
-	for child in gui.get_children():
-		if child.is_in_group("Tooltip"):
-			child.queue_free()
+	deleteTooltip()
 func focHovered():
 	var instance = preload("res://tooltip.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func focExited():
-	# Remove all children from the TextureButton
-	for child in gui.get_children():
-		if child.is_in_group("Tooltip"):
-			child.queue_free()
+	deleteTooltip()
 func poiHovered():
 	var instance = preload("res://tooltip.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func poiExited():
-	# Remove all children from the TextureButton
-	for child in gui.get_children():
-		if child.is_in_group("Tooltip"):
-			child.queue_free()
+	deleteTooltip()
 func balHovered():
 	var instance = preload("res://tooltip.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func balExited():
-	# Remove all children from the TextureButton
-	for child in gui.get_children():
-		if child.is_in_group("Tooltip"):
-			child.queue_free()
-			
+	deleteTooltip()
+	
 func chaHovered():
 	var instance = preload("res://tooltip.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func chaExited():
-	# Remove all children from the TextureButton
-	for child in gui.get_children():
-		if child.is_in_group("Tooltip"):
-			child.queue_free()
+	deleteTooltip()
 func dipHovered():
 	var instance = preload("res://tooltip.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func dipExited():
-	# Remove all children from the TextureButton
-	for child in gui.get_children():
-		if child.is_in_group("Tooltip"):
-			child.queue_free()
+	deleteTooltip()
 func autHovered():
 	var instance = preload("res://tooltip.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func autExited():
-	# Remove all children from the TextureButton
-	for child in gui.get_children():
-		if child.is_in_group("Tooltip"):
-			child.queue_free()
+	deleteTooltip()
 func couHovered():
 	var instance = preload("res://tooltip.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func couExited():
-	# Remove all children from the TextureButton
-	for child in gui.get_children():
-		if child.is_in_group("Tooltip"):
-			child.queue_free()
+	deleteTooltip()
 func loyHovered():
 	var instance = preload("res://tooltip.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func loyExited():
+	deleteTooltip()
+
+
+func connectHoveredResistanceLabels():
+	var slash_label = $UI/GUI/Equipment/DmgDef/Defenses/Slash
+	slash_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	slash_label.connect("mouse_entered", self, "slashResHovered")
+	slash_label.connect("mouse_exited", self, "slashResExited")
+	var blunt_label = $UI/GUI/Equipment/DmgDef/Defenses/Blunt
+	blunt_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	blunt_label.connect("mouse_entered", self, "bluntResHovered")
+	blunt_label.connect("mouse_exited", self, "bluntResExited")
+	var pierce_label = $UI/GUI/Equipment/DmgDef/Defenses/Pierce
+	pierce_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	pierce_label.connect("mouse_entered", self, "pierceResHovered")
+	pierce_label.connect("mouse_exited", self, "pierceResExited")
+
+func slashResHovered():
+	# Instantiate the tooltip scene
+	var instance = preload("res://tooltip.tscn").instance()
+	var mitigation: float = slash_resistance / (slash_resistance + 100.0)
+	mitigation = round(mitigation * 1000) / 1000  # round to 3 decimal place
+	# Set the tooltip text
+	var tooltip_text: String = "protection:  " + str(mitigation * 100) + "%"
+	# Call a function to display the tooltip
+	callToolTip(instance, "Slash Resistance", tooltip_text)
+func slashResExited():
+	deleteTooltip()
+	
+func bluntResHovered():
+	# Instantiate the tooltip scene
+	var instance = preload("res://tooltip.tscn").instance()
+	var mitigation: float = blunt_resistance / (blunt_resistance + 100.0)
+	mitigation = round(mitigation * 1000) / 1000  # round to 3 decimal place
+	# Set the tooltip text
+	var tooltip_text: String = "protection:  " + str(mitigation * 100) + "%"
+	# Call a function to display the tooltip
+	callToolTip(instance, "blunt Resistance", tooltip_text)
+func bluntResExited():
+	deleteTooltip()
+
+func pierceResHovered():
+	# Instantiate the tooltip scene
+	var instance = preload("res://tooltip.tscn").instance()
+	var mitigation: float = pierce_resistance / (pierce_resistance + 100.0)
+	mitigation = round(mitigation * 1000) / 1000  # round to 3 decimal place
+	# Set the tooltip text
+	var tooltip_text: String = "protection:  " + str(mitigation * 100) + "%"
+	# Call a function to display the tooltip
+	callToolTip(instance, "pierce Resistance", tooltip_text)
+func pierceResExited():
+	deleteTooltip()
+
+func deleteTooltip():
 	# Remove all children from the TextureButton
 	for child in gui.get_children():
 		if child.is_in_group("Tooltip"):
 			child.queue_free()
-
-
 func connectAttributeButtons():
    # Intelligence attribute
 	var plus_int : Button = $UI/GUI/Equipment/Attributes/Intelligence/Plus
