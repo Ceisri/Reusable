@@ -43,7 +43,7 @@ func _on_SlowTimer_timeout():
 	displayLabels()
 	regenStats()
 	
-	resistanceMath()
+
 	
 
 func _on_3FPS_timeout():
@@ -835,7 +835,7 @@ func doubleAttack(delta):
 func stompKickDealDamage():
 	shake_camera(0.2, 0.05, 0, 1)
 	var damage_type = "blunt"
-	var damage = 25
+	var damage = 25 + blunt_dmg
 	var aggro_power = damage + 20
 	var enemies = $Mesh/Detector.get_overlapping_bodies()
 	for enemy in enemies:
@@ -972,75 +972,116 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
 		else:
 			# For every negative point of slash resistance, add to damage to take directly
 			damage_to_take += -slash_resistance
-	
 		damage_to_take *= (1.0 - mitigation)
-		print(damage_to_take)
-
 		if instigator.has_method("lifesteal"):
 			instigator.lifesteal(damage_to_take)
 			
 	elif damage_type == "pierce":
-		var mitigation = pierce_resistance / (pierce_resistance + 100.0)
+		var mitigation: float
+		if pierce_resistance >= 0:
+			mitigation = pierce_resistance / (pierce_resistance + 100.0)
+		else:
+			damage_to_take += -pierce_resistance
 		damage_to_take *= (1.0 - mitigation)
 		if instigator.has_method("lifesteal"):
 			instigator.lifesteal(damage_to_take)
 			
 	elif damage_type == "blunt":
-		var mitigation = blunt_resistance / (blunt_resistance + 100.0)
+		var mitigation: float
+		if blunt_resistance >= 0:
+			mitigation = blunt_resistance / (blunt_resistance + 100.0)
+		else:
+			damage_to_take += -blunt_resistance
 		damage_to_take *= (1.0 - mitigation)
 		if instigator.has_method("lifesteal"):
 			instigator.lifesteal(damage_to_take)
 			
 	elif damage_type == "sonic":
-		var mitigation = sonic_resistance / (sonic_resistance + 100.0)
+		var mitigation: float
+		if sonic_resistance >= 0:
+			mitigation = sonic_resistance / (sonic_resistance + 100.0)
+		else:
+			damage_to_take += -sonic_resistance
 		damage_to_take *= (1.0 - mitigation)
 		if instigator.has_method("lifesteal"):
 			instigator.lifesteal(damage_to_take)
 			
 	elif damage_type == "heat":
-		var mitigation = heat_resistance / (heat_resistance + 100.0)
+		var mitigation: float
+		if heat_resistance >= 0:
+			mitigation = heat_resistance / (heat_resistance + 100.0)
+		else:
+			damage_to_take += -heat_resistance
 		damage_to_take *= (1.0 - mitigation)
 		if instigator.has_method("lifesteal"):
 			instigator.lifesteal(damage_to_take)
 			
 	elif damage_type == "cold":
-		var mitigation = cold_resistance / (cold_resistance + 100.0)
+		var mitigation: float
+		if cold_resistance >= 0:
+			mitigation = cold_resistance / (cold_resistance + 100.0)
+		else:
+			damage_to_take += -cold_resistance
 		damage_to_take *= (1.0 - mitigation)
 		if instigator.has_method("lifesteal"):
 			instigator.lifesteal(damage_to_take)
 			
 	elif damage_type == "jolt":
-		var mitigation = jolt_resistance / (jolt_resistance + 100.0)
+		var mitigation: float
+		if jolt_resistance >= 0:
+			mitigation = jolt_resistance / (jolt_resistance + 100.0)
+		else:
+			damage_to_take += -jolt_resistance
 		damage_to_take *= (1.0 - mitigation)
 		if instigator.has_method("lifesteal"):
 			instigator.lifesteal(damage_to_take)
 		
 	elif damage_type == "toxic":
-		var mitigation = toxic_resistance / (toxic_resistance + 100.0)
+		var mitigation: float
+		if toxic_resistance >= 0:
+			mitigation = toxic_resistance / (toxic_resistance + 100.0)
+		else:
+			damage_to_take += -toxic_resistance
 		damage_to_take *= (1.0 - mitigation)
 		if instigator.has_method("lifesteal"):
 			instigator.lifesteal(damage_to_take)
 		
 	elif damage_type == "acid":
-		var mitigation = acid_resistance / (acid_resistance + 100.0)
+		var mitigation: float
+		if acid_resistance >= 0:
+			mitigation = acid_resistance / (acid_resistance + 100.0)
+		else:
+			damage_to_take += -acid_resistance
 		damage_to_take *= (1.0 - mitigation)
 		if instigator.has_method("lifesteal"):
 			instigator.lifesteal(damage_to_take)
 		
 	elif damage_type == "bleed":
-		var mitigation = bleed_resistance / (bleed_resistance + 100.0)
+		var mitigation: float
+		if bleed_resistance >= 0:
+			mitigation = bleed_resistance / (bleed_resistance + 100.0)
+		else:
+			damage_to_take += -acid_resistance
 		damage_to_take *= (1.0 - mitigation)
 		if instigator.has_method("lifesteal"):
 			instigator.lifesteal(damage_to_take)
 		
 	elif damage_type == "neuro":
-		var mitigation = neuro_resistance / (neuro_resistance + 100.0)
+		var mitigation: float
+		if neuro_resistance >= 0:
+			mitigation = neuro_resistance / (neuro_resistance + 100.0)
+		else:
+			damage_to_take += -neuro_resistance
 		damage_to_take *= (1.0 - mitigation)
 		if instigator.has_method("lifesteal"):
 			instigator.lifesteal(damage_to_take)
 		
 	elif damage_type == "radiant":
-		var mitigation = radiant_resistance / (radiant_resistance + 100.0)
+		var mitigation: float
+		if radiant_resistance >= 0:
+			mitigation = radiant_resistance / (radiant_resistance + 100.0)
+		else:
+			damage_to_take += -radiant_resistance
 		damage_to_take *= (1.0 - mitigation)
 		if instigator.has_method("lifesteal"):
 			instigator.lifesteal(damage_to_take)
@@ -2018,12 +2059,10 @@ func switchFootR():
 #___________________________________Status effects______________________________
 # Define effects and their corresponding stat changes
 var effects = {
-	"garment": {"stats": {"agility": -0.05, "strength": 0.1}, "applied": false},
-	"effect1": {"stats": {"energy": -500000000, "mana": 10}, "applied": false},
 	"effect2": {"stats": { "vitality": 2,"agility": 0.05,}, "applied": false},
-	"overhydration": {"stats": { "vitality": -0.02,"agility": -0.05,}, "applied": false},
+	"overhydration": {"stats": { "vitality": -0.02,"extra_agility": -0.05,}, "applied": false},
 	"dehydration": {"stats": { "intelligence": -0.25,"agility": -0.25,}, "applied": false},
-	"bloated": {"stats": {"intelligence": -0.02,"agility": -0.15,}, "applied": false},
+	"bloated": {"stats": {"intelligence": -0.02,"extra_agility": -0.15,}, "applied": false},
 	"hungry": {"stats": {"intelligence": -0.22,"agility": -0.05,}, "applied": false},
 	"bleeding": {"stats": {}, "applied": false},
 	"stunned": {"stats": {}, "applied": false},
@@ -2345,9 +2384,6 @@ func _on_Toilet1_pressed():
 
 #Stats__________________________________________________________________________
 var level = 100
-var energy = 100
-var max_energy = 100
-const base_max_energy = 100
 
 
 const base_weight = 60
@@ -2485,24 +2521,34 @@ var bleed_dmg: int = 0
 var neuro_dmg: int = 0
 var radiant_dmg: int = 0
 
+var casting_speed: float = 1 
 
 #equipment variables
 var extra_charm : float = 0
 var extra_balance: float = 0 
+var extra_agility: float = 0 
+var additional_melee_atk_speed : float = 0
+
+
+var total_agility: float = 0
 
 
 func regenStats():
-	#regen resolve
-	if resolve < max_resolve:
-		resolve += recovery
-		
-	#breath 
-	if water > max_water * 0.3:
-		if kilocalories > max_kilocalories * 0.3:
-			if breath < max_breath:
-				breath += stamina
+	regenAefisNefis()
 				
-		
+
+func regenAefisNefis():
+	aefis = min(aefis + intelligence + wisdom, max_aefis)
+	nefis = min(nefis + instinct, max_nefis)
+	
+	if water >= 0.75 * max_water and kilocalories >= 0.75 * max_kilocalories:
+		breath = min(breath + recovery, max_breath)
+		resolve = min(resolve + recovery, max_resolve)
+		health = min(health + recovery, max_health)
+
+
+
+
 func limitStatsToMaximum():
 	if health > max_health:
 		health = max_health
@@ -2510,9 +2556,67 @@ func limitStatsToMaximum():
 		resolve = max_resolve
 
 func convertStats():
+	total_agility = extra_agility + agility
+	
 	max_health = base_max_health * vitality
-	max_sprint_speed = base_max_sprint_speed * agility
-	run_speed = base_run_speed * agility
+	max_sprint_speed = base_max_sprint_speed * total_agility
+	run_speed = base_run_speed * total_agility
+	
+	stagger_chance = max(0, (impact - 1.00) * 0.45) +  max(0, (ferocity - 1.00) * 0.005) 
+	
+#___________atks speed formulas
+	var bonus_universal_speed = (celerity -1) * 0.15
+	var atk_speed_formula = (dexterity - scale_factor ) * 0.5 
+	melee_atk_speed = base_melee_atk_speed + atk_speed_formula + bonus_universal_speed + additional_melee_atk_speed
+	
+	var atk_speed_formula_ranged = (strength -1) * 0.5
+	ranged_atk_speed = base_ranged_atk_speed + atk_speed_formula_ranged + bonus_universal_speed
+	
+	var atk_speed_formula_casting = (instinct -1) * 0.35 + ((memory-1) * 0.05) + bonus_universal_speed
+	casting_speed = base_casting_speed + atk_speed_formula_casting	
+#____________resistance attribute formula
+	var additional_resistance: float  = 0
+	var res_multiplier : float  = 0.5
+	if resistance > 1:
+		additional_resistance = res_multiplier * (resistance - 1)
+	elif resistance < 1:
+		additional_resistance = -res_multiplier * (1 - resistance)
+	defense = base_defense + int(resistance * 10)
+	max_health = (base_max_health * (vitality + additional_resistance)) * scale_factor
+	max_breath = base_max_breath * (stamina  + additional_resistance)
+	max_resolve = base_max_resolve * (tenacity + additional_resistance)
+
+
+	
+
+
+
+
+
+
+func updateCritical():
+	critical_chance = max(0, (accuracy - 1.00) * 0.5) +  max(0, (impact - 1.00) * 0.005) 
+	critical_strength = ((ferocity -1) * 2) 
+	critical_chance_val.text = str(round(critical_chance * 100 * 1000) / 1000) + "%"
+	critical_str_val.text = "x" + str(critical_strength)
+
+
+
+
+func updateScaleRelatedAttributes():
+	var scale_multiplication: float 
+	scale_multiplication = base_charisma * (charisma_multiplier * 0.8699 * (scale_factor * 1.15))
+	charisma = scale_multiplication + extra_charm
+
+
+func updateAefisNefis():
+	var intelligence_portion = intelligence * 0.5
+	var wisdom_portion = wisdom * 0.5
+
+	max_aefis = base_max_aefis * (wisdom_portion + intelligence_portion)
+	max_nefis = base_max_nefis * instinct
+
+
 
 onready var hp_bar = $UI/GUI/Portrait/LifeBar
 onready var hp_label = $UI/GUI/Portrait/LifeLabel
@@ -2531,8 +2635,8 @@ onready var water_label = $UI/GUI/Portrait/MinimapHolder/WaterLabel
 func allResourcesBarsAndLabels():
 	displayResourcesRound(water_bar,water_label,water,max_water,"")
 	displayResourcesRound(food_bar,food_label,kilocalories,max_kilocalories,"")
-	displayResourcesRound(ne_bar,ne_label,nefis,max_resolve,"NE : ")
-	displayResourcesRound(ae_bar,ae_label,aefis,max_resolve,"AE : ")
+	displayResourcesRound(ne_bar,ne_label,nefis,max_nefis,"NE : ")
+	displayResourcesRound(ae_bar,ae_label,aefis,max_aefis,"AE : ")
 	displayResourcesRound(re_bar,re_label,resolve,max_resolve,"RE : ")
 	displayResourcesRound(br_bar,br_label,breath,max_breath,"BH : ")
 func displayResources(bar,label,value,max_value,acronim):
@@ -2651,7 +2755,7 @@ func displayLabels():
 	displayStats(value_balance, balance + extra_balance)
 	displayStats(value_focus, focus)
 	displayStats(value_haste, haste)
-	displayStats(value_agility, agility)
+	displayStats(value_agility, total_agility)
 	displayStats(value_celerity, celerity)
 	displayStats(value_flexibility, flexibility)
 	displayStats(value_deflection, deflection)
@@ -4776,54 +4880,14 @@ onready var critical_str_val = $UI/GUI/Equipment/EquipmentBG/CombatStats/GridCon
 
 
 
-func resistanceMath():
-	var additional_resistance: float  = 0
-	var res_multiplier : float  = 0.5
-	if resistance > 1:
-		additional_resistance = res_multiplier * (resistance - 1)
-	elif resistance < 1:
-		additional_resistance = -res_multiplier * (1 - resistance)
-	defense = base_defense + int(resistance * 10)
-	max_health = (base_max_health * (vitality + additional_resistance)) * scale_factor
-	max_energy = base_max_energy * (stamina  + additional_resistance)
-	max_resolve = base_max_resolve * (tenacity + additional_resistance)
-	
 
-var additional_melee_atk_speed : float = 0
-var casting_speed: float = 1 
-func updateAttackSpeed():
-	var bonus_universal_speed = (celerity -1) * 0.15
-	var atk_speed_formula = (dexterity - scale_factor ) * 0.5 
-	melee_atk_speed = base_melee_atk_speed + atk_speed_formula + bonus_universal_speed + additional_melee_atk_speed
-	
-	var atk_speed_formula_ranged = (strength -1) * 0.5
-	ranged_atk_speed = base_ranged_atk_speed + atk_speed_formula_ranged + bonus_universal_speed
-	
-	var atk_speed_formula_casting = (instinct -1) * 0.35 + ((memory-1) * 0.05) + bonus_universal_speed
-	casting_speed = base_casting_speed + atk_speed_formula_casting
-
-
-
-func updateCritical():
-	critical_chance = max(0, (accuracy - 1.00) * 0.5) +  max(0, (impact - 1.00) * 0.005) 
-	critical_strength = ((ferocity -1) * 2) 
-	critical_chance_val.text = str(round(critical_chance * 100 * 1000) / 1000) + "%"
-	critical_str_val.text = "x" + str(critical_strength)
-
-func updateStaggerChance():
-	stagger_chance = max(0, (impact - 1.00) * 0.45) +  max(0, (ferocity - 1.00) * 0.005) 
-
-
-func updateScaleRelatedAttributes():
-	var scale_multiplication: float 
-	scale_multiplication = base_charisma * (charisma_multiplier * 0.8699 * (scale_factor * 1.15))
-	charisma = scale_multiplication + extra_charm
 
 func updateAllStats():
-	updateAttackSpeed()
+	updateAefisNefis()
+
 	updateScaleRelatedAttributes()
 	updateCritical()
-	updateStaggerChance()
+
 
 
 
@@ -4847,7 +4911,11 @@ func savePlayerData():
 		"resolve": resolve,
 		"max_resolve": max_resolve,
 		
-
+		"aefis":aefis,
+		"max_aefis": max_aefis,
+		
+		"nefis":nefis,
+		"max_nefis": max_nefis,
 		
 		"kilocalories": kilocalories,
 		"max_kilocalories": max_kilocalories,
@@ -4976,7 +5044,15 @@ func loadPlayerData():
 			if "max_resolve" in player_data:
 				max_resolve = player_data["max_resolve"]
 
+			if "aefis" in player_data:
+				aefis = player_data["aefis"]
+			if "max_aefis" in player_data:
+				max_aefis = player_data["max_aefis"]
 
+			if "nefis" in player_data:
+				nefis = player_data["nefis"]
+			if "max_nefis" in player_data:
+				max_nefis = player_data["max_nefis"]
 #attributes 
 			if "attribute" in player_data:
 				attribute = player_data["attribute"]
@@ -5137,3 +5213,28 @@ func loadPlayerData():
 				max_water = player_data["max_water"]
 #			if "effects" in player_data:
 #				effects = player_data["effects"]
+
+
+func _on_pressme_pressed():
+	health = 5
+	breath = 5
+	aefis = 5 
+	nefis = 5 
+	resolve = 5 
+	
+
+
+func _on_pressme2_pressed():
+	slash_resistance = rng.randi_range(-125, 125)
+	pierce_resistance = rng.randi_range(-125, 125)
+	blunt_resistance= rng.randi_range(-125, 125)
+	sonic_resistance= rng.randi_range(-125, 125)
+	heat_resistance= rng.randi_range(-125, 125)
+	cold_resistance= rng.randi_range(-125, 125)
+	jolt_resistance= rng.randi_range(-125, 125)
+	toxic_resistance= rng.randi_range(-125, 125)
+	acid_resistance= rng.randi_range(-125, 125)
+	bleed_resistance= rng.randi_range(-125, 125)
+	neuro_resistance= rng.randi_range(-125, 125)
+	radiant_resistance= rng.randi_range(-125, 125)
+

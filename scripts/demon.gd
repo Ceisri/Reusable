@@ -471,7 +471,36 @@ var critical_chance = 0.3
 var critical_strength = 2
 var stagger_chance = 0.3
 func slash():
-	var damage_type = "slash"
+	var rand_num = randi() % 12  # Generate a random number between 0 and 11
+	var damage_type: String = ""
+
+	if rand_num == 0:
+		damage_type = "slash"
+	elif rand_num == 1:
+		damage_type = "blunt"
+	elif rand_num == 2:
+		damage_type = "pierce"
+	elif rand_num == 3:
+		damage_type = "sonic"
+	elif rand_num == 4:
+		damage_type = "heat"
+	elif rand_num == 5:
+		damage_type = "cold"
+	elif rand_num == 6:
+		damage_type = "jolt"
+	elif rand_num == 7:
+		damage_type = "toxic"
+	elif rand_num == 8:
+		damage_type = "acid"
+	elif rand_num == 9:
+		damage_type = "bleed"
+	elif rand_num == 10:
+		damage_type = "neuro"
+	else:
+		damage_type = "radiant"
+
+
+	
 	var damage = 100
 	var aggro_power = damage + 20
 	var enemies = $Area.get_overlapping_bodies()
