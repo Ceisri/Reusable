@@ -1317,7 +1317,7 @@ func saveSkillBarData():
 
 #__________________________________Inventory____________________________________
 #for this to work either preload all the item icons here or add the "AddItemToInventory.gd"
-#as an autoload, i called it add_item in my project, and i used to to compre the path 
+#as an autoload, i called it add_item in my project, and i used it to to compre the path 
 #of icons, if the path matches with the icon i need, i do the effect of the specific item 
 #i also use the same autoload to add items to inventory 
 onready var inventory_grid = $UI/GUI/Inventory/ScrollContainer/InventoryGrid
