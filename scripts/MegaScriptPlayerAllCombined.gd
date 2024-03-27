@@ -47,6 +47,12 @@ func _on_SlowTimer_timeout():
 	
 
 func _on_3FPS_timeout():
+	$UI/GUI/Equipment/Attributes/AttributePoints.text = "Attributes points left: " + str(attribute)
+# Calculate the sum of all spent attribute points
+	var total_spent_attribute_points = spent_attribute_points_san + spent_attribute_points_wis + spent_attribute_points_mem + spent_attribute_points_int + spent_attribute_points_ins +spent_attribute_points_for + spent_attribute_points_str + spent_attribute_points_fur + spent_attribute_points_imp + spent_attribute_points_fer + spent_attribute_points_foc + spent_attribute_points_bal + spent_attribute_points_dex + spent_attribute_points_acc + spent_attribute_points_poi +spent_attribute_points_has + spent_attribute_points_agi + spent_attribute_points_cel + spent_attribute_points_fle + spent_attribute_points_def + spent_attribute_points_end + spent_attribute_points_sta + spent_attribute_points_vit + spent_attribute_points_res + spent_attribute_points_ten + spent_attribute_points_cha + spent_attribute_points_loy + spent_attribute_points_dip + spent_attribute_points_aut + spent_attribute_points_cou
+	# Update the text in the UI/GUI
+	$UI/GUI/Equipment/Attributes/AttributeSpent.text = "Attributes points Spent: " + str(total_spent_attribute_points)
+
 	crafting()
 	displayResources(hp_bar,hp_label,health,max_health,"HP")
 	curtainsDown()
@@ -1764,7 +1770,7 @@ func MainWeapon():
 onready var attachment_l = $Mesh/Race/Armature/Skeleton/HoldL2
 onready var attachment_hip_sec = $Mesh/Race/Armature/Skeleton/Hip2
 onready var sec_weap_slot = $UI/GUI/Character/Equipment/SecWeap
-onready var sec_weap_icon = $UI/GUI/Character/Equipment/SecWeap/Icon
+onready var sec_weap_icon = $UI/GUI/Equipment/EquipmentBG/SecWeap/Icon
 var sec_currentInstance: Node = null  
 
 var secondary_weapon = "null"
@@ -2059,11 +2065,11 @@ func switchFootR():
 #___________________________________Status effects______________________________
 # Define effects and their corresponding stat changes
 var effects = {
-	"effect2": {"stats": { "vitality": 2,"agility": 0.05,}, "applied": false},
-	"overhydration": {"stats": { "vitality": -0.02,"extra_agility": -0.05,}, "applied": false},
-	"dehydration": {"stats": { "intelligence": -0.25,"agility": -0.25,}, "applied": false},
-	"bloated": {"stats": {"intelligence": -0.02,"extra_agility": -0.15,}, "applied": false},
-	"hungry": {"stats": {"intelligence": -0.22,"agility": -0.05,}, "applied": false},
+	"effect2": {"stats": { "extra_vitality": 2,"extra_agility": 0.05,}, "applied": false},
+	"overhydration": {"stats": { "extra_vitality": -0.02,"extra_agility": -0.05,}, "applied": false},
+	"dehydration": {"stats": { "extra_intelligence": -0.25,"extra_agility": -0.25,}, "applied": false},
+	"bloated": {"stats": {"extra_intelligence": -0.02,"extra_agility": -0.15,}, "applied": false},
+	"hungry": {"stats": {"extra_intelligence": -0.22,"extra_agility": -0.05,}, "applied": false},
 	"bleeding": {"stats": {}, "applied": false},
 	"stunned": {"stats": {}, "applied": false},
 	"frozen": {"stats": {}, "applied": false},
@@ -2083,14 +2089,14 @@ var effects = {
 	"sleep": {"stats": {}, "applied": false},
 	"weakness": {"stats": {}, "applied": false},
 	"poisoned": {"stats": {}, "applied": false},
-	"confused": {"stats": { "intelligence": -0.75}, "applied": false},
-	"impaired": {"stats": { "dexterity": -0.25}, "applied": false},
+	"confused": {"stats": { "extra_intelligence": -0.75}, "applied": false},
+	"impaired": {"stats": { "extra_dexterity": -0.25}, "applied": false},
 	"lethargy": {"stats": {}, "applied": false},
 	"redpotion": {"stats": {}, "applied": false},
 	#equipment effects______________________________________________________________________________
 	"helm1": {"stats": {"blunt_resistance": 3,"heat_resistance": 6,"cold_resistance": 3,"radiant_resistance": 6}, "applied": false},
 	"garment1": {"stats": {"slash_resistance": 3,"pierce_resistance": 1,"heat_resistance": 12,"cold_resistance": 12}, "applied": false},
-	"belt1": {"stats": {"extra_balance": 0.03,"extra_charm": 0.011 }, "applied": false},
+	"belt1": {"stats": {"extra_balance": 0.03,"extra_charisma": 0.011 }, "applied": false},
 	"pants1": {"stats": {"slash_resistance": 4,"pierce_resistance": 3,"heat_resistance": 6,"cold_resistance": 8}, "applied": false},
 	"Lshoe1": {"stats": {"slash_resistance": 1,"blunt_resistance": 3,"pierce_resistance": 1,"heat_resistance": 1,"cold_resistance": 6,"jolt_resistance": 15}, "applied": false},
 	"Rshoe1": {"stats": {"slash_resistance": 1,"blunt_resistance": 3,"pierce_resistance": 1,"heat_resistance": 1,"cold_resistance": 6,"jolt_resistance": 15}, "applied": false},
@@ -2438,45 +2444,44 @@ var scale_factor = 1
 #leveling
 var skill_points = 0
 
-var sanity  = 1
-var wisdom = 1
-var memory = 1
-var intelligence = 1
-var instinct = 1
+var sanity: float  = 1
+var wisdom: float = 1
+var memory: float = 1
+var intelligence: float = 1
+var instinct: float = 1
 
-var force = 1
-var strength = 1
-var impact = 1
-var ferocity  = 1 
-var fury = 1 
+var force: float = 1
+var strength: float = 1
+var impact: float = 1
+var ferocity: float  = 1 
+var fury: float = 1 
 
-var accuracy = 1
-var dexterity = 1
-var poise = 1
-var balance = 1
-var focus = 1
+var accuracy: float = 1
+var dexterity: float = 1
+var poise: float = 1
+var balance: float = 1
+var focus: float = 1
 
-var haste = 1
-var agility = 1
-var celerity = 1
-var flexibility = 1
-var deflection = 1
+var haste: float = 1
+var agility: float = 1
+var celerity: float = 1
+var flexibility: float = 1
+var deflection: float = 1
 
-var endurance = 1
-var stamina = 1
-var vitality = 1
-var resistance = 1
-var tenacity = 1
+var endurance: float = 1
+var stamina: float = 1
+var vitality: float = 1
+var resistance: float = 1
+var tenacity: float = 1
 
 const base_charisma = 1 
-var charisma = 1
-var charisma_multiplier = 1 
-var loyalty = 1 
-var diplomacy = 1
-var authority = 1
-var empathy = 1
-var courage = 1 
-var recovery = 1
+var charisma: float = 1
+var charisma_multiplier: float = 1 
+var loyalty: float = 1 
+var diplomacy: float = 1
+var authority: float = 1
+var courage: float = 1 
+
 
 const base_melee_atk_speed: int = 1 
 var melee_atk_speed: float = 1 
@@ -2524,13 +2529,84 @@ var radiant_dmg: int = 0
 var casting_speed: float = 1 
 
 #equipment variables
-var extra_charm : float = 0
-var extra_balance: float = 0 
-var extra_agility: float = 0 
-var additional_melee_atk_speed : float = 0
+var extra_sanity: float  = 0
+var extra_wisdom: float = 0
+var extra_memory: float = 0
+var extra_intelligence: float = 0
+var extra_instinct: float = 0
+
+var extra_force: float = 0
+var extra_strength: float = 0
+var extra_impact: float = 0
+var extra_ferocity: float  = 0
+var extra_fury: float = 0
+
+var extra_accuracy: float = 0
+var extra_dexterity: float = 0
+var extra_poise: float = 0
+var extra_balance: float = 0
+var extra_focus: float = 0
+
+var extra_haste: float = 0
+var extra_agility: float = 0
+var extra_celerity: float = 0
+var extra_flexibility: float = 0
+var extra_deflection: float = 0
+
+var extra_endurance: float = 0
+var extra_stamina: float = 0
+var extra_vitality: float = 0
+var extra_resistance: float = 0
+var extra_tenacity: float = 0
 
 
+var extra_charisma : float = 0
+var extra_loyalty : float = 0
+var extra_diplomacy : float = 0
+var extra_authority : float = 0
+var extra_courage : float = 0
+
+
+
+
+var extra_melee_atk_speed : float = 0
+
+
+var total_sanity: float = 0
+var total_wisdom: float = 0
+var total_memory: float = 0
+var total_intelligence: float = 0
+var total_instinct: float = 0
+
+var total_force: float = 0
+var total_strength: float = 0
+var total_impact: float = 0
+var total_ferocity: float = 0
+var total_fury: float = 0
+
+var total_accuracy: float = 0
+var total_dexterity: float = 0
+var total_poise: float = 0
+var total_balance: float = 0
+var total_focus: float = 0
+
+var total_haste: float = 0
 var total_agility: float = 0
+var total_celerity: float = 0
+var total_flexibility: float = 0
+var total_deflection: float = 0
+
+var total_endurance: float = 0
+var total_stamina: float = 0
+var total_vitality: float = 0
+var total_resistance: float = 0
+var total_tenacity: float = 0
+
+var total_charisma: float = 0
+var total_loyalty: float = 0
+var total_diplomacy: float = 0
+var total_authority: float = 0
+var total_courage: float = 0
 
 
 func regenStats():
@@ -2542,9 +2618,9 @@ func regenAefisNefis():
 	nefis = min(nefis + instinct, max_nefis)
 	
 	if water >= 0.75 * max_water and kilocalories >= 0.75 * max_kilocalories:
-		breath = min(breath + recovery, max_breath)
-		resolve = min(resolve + recovery, max_resolve)
-		health = min(health + recovery, max_health)
+		breath = min(breath + 0.05, max_breath)
+		resolve = min(resolve + 0.05, max_resolve)
+		health = min(health + 0.05, max_health)
 
 
 
@@ -2556,7 +2632,47 @@ func limitStatsToMaximum():
 		resolve = max_resolve
 
 func convertStats():
+	total_sanity = extra_sanity + sanity
+	total_wisdom = extra_wisdom + wisdom
+	total_memory = extra_memory + memory
+	total_intelligence = extra_intelligence + intelligence
+	total_instinct = extra_instinct + instinct
+
+	total_force = extra_force + force
+	total_strength = extra_strength + strength
+	total_impact = extra_impact + impact
+	total_ferocity = extra_ferocity + ferocity
+	total_fury = extra_fury + fury
+
+	total_force = extra_force + force
+	total_strength = extra_strength + strength
+	total_impact = extra_impact + impact
+	total_ferocity = extra_ferocity + ferocity
+	total_fury = extra_fury + fury
+
+	total_accuracy = extra_accuracy + accuracy
+	total_dexterity = extra_dexterity + dexterity
+	total_poise = extra_poise + poise
+	total_balance = extra_balance + balance
+	total_focus = extra_focus + focus
+
+	total_haste = extra_haste + haste
 	total_agility = extra_agility + agility
+	total_celerity = extra_celerity + celerity
+	total_flexibility = extra_flexibility + flexibility
+	total_deflection = extra_deflection + deflection
+
+	total_endurance = extra_endurance + endurance
+	total_stamina = extra_stamina + stamina
+	total_vitality = extra_vitality + vitality
+	total_resistance = extra_resistance + resistance
+	total_tenacity = extra_tenacity + tenacity
+
+	total_charisma = extra_charisma + charisma
+	total_loyalty = extra_loyalty + loyalty
+	total_diplomacy = extra_diplomacy + diplomacy
+	total_authority = extra_authority + authority
+	total_courage = extra_courage + courage
 	
 	max_health = base_max_health * vitality
 	max_sprint_speed = base_max_sprint_speed * total_agility
@@ -2567,13 +2683,15 @@ func convertStats():
 #___________atks speed formulas
 	var bonus_universal_speed = (celerity -1) * 0.15
 	var atk_speed_formula = (dexterity - scale_factor ) * 0.5 
-	melee_atk_speed = base_melee_atk_speed + atk_speed_formula + bonus_universal_speed + additional_melee_atk_speed
+	melee_atk_speed = base_melee_atk_speed + atk_speed_formula + bonus_universal_speed + extra_melee_atk_speed
 	
 	var atk_speed_formula_ranged = (strength -1) * 0.5
 	ranged_atk_speed = base_ranged_atk_speed + atk_speed_formula_ranged + bonus_universal_speed
 	
 	var atk_speed_formula_casting = (instinct -1) * 0.35 + ((memory-1) * 0.05) + bonus_universal_speed
 	casting_speed = base_casting_speed + atk_speed_formula_casting	
+	
+	
 #____________resistance attribute formula
 	var additional_resistance: float  = 0
 	var res_multiplier : float  = 0.5
@@ -2606,7 +2724,7 @@ func updateCritical():
 func updateScaleRelatedAttributes():
 	var scale_multiplication: float 
 	scale_multiplication = base_charisma * (charisma_multiplier * 0.8699 * (scale_factor * 1.15))
-	charisma = scale_multiplication + extra_charm
+	charisma = scale_multiplication 
 
 
 func updateAefisNefis():
@@ -2699,7 +2817,7 @@ func displayLabels():
 	displayStats(life_steal_label,life_steal)
 	
 	var int_lab = $UI/GUI/Equipment/Attributes/Intelligence/value
-	displayStats(int_lab, intelligence)
+	displayStats(int_lab, total_intelligence)
 	var value_ins = $UI/GUI/Equipment/Attributes/Instinct/value
 	var value_wis = $UI/GUI/Equipment/Attributes/Wisdom/value
 	var value_mem = $UI/GUI/Equipment/Attributes/Memory/value
@@ -2730,40 +2848,40 @@ func displayLabels():
 
 
 	var val_cha = $UI/GUI/Equipment/Attributes/Charisma/value
-	displayStats(val_cha,charisma)
+	displayStats(val_cha,total_charisma)
 	var val_dip = $UI/GUI/Equipment/Attributes/Diplomacy/value
-	displayStats(val_dip,diplomacy)
+	displayStats(val_dip,total_diplomacy)
 	var val_au = $UI/GUI/Equipment/Attributes/Authority/value
-	displayStats(val_au,authority)	
+	displayStats(val_au,total_authority)	
 	var val_cou = $UI/GUI/Equipment/Attributes/Courage/value
-	displayStats(val_cou,courage)
+	displayStats(val_cou,total_courage)
 	var val_loy = $UI/GUI/Equipment/Attributes/Loyalty/value
-	displayStats(val_loy,loyalty)
+	displayStats(val_loy,total_loyalty)
 	
-	displayStats(value_ins, instinct)
-	displayStats(value_wis, wisdom)
-	displayStats(value_mem, memory)
-	displayStats(value_san, sanity)
-	displayStats(value_force, force)
-	displayStats(value_strength, strength)
-	displayStats(value_impact, impact)
-	displayStats(value_ferocity, ferocity)
-	displayStats(value_fury, fury)	
-	displayStats(value_accuracy, accuracy)
-	displayStats(value_dexterity, dexterity)
-	displayStats(value_poise, poise)
-	displayStats(value_balance, balance + extra_balance)
-	displayStats(value_focus, focus)
-	displayStats(value_haste, haste)
-	displayStats(value_agility, total_agility)
-	displayStats(value_celerity, celerity)
-	displayStats(value_flexibility, flexibility)
-	displayStats(value_deflection, deflection)
-	displayStats(value_endurance, endurance)
-	displayStats(value_stamina, stamina)
-	displayStats(value_vitality, vitality)
-	displayStats(value_resistance, resistance)
-	displayStats(value_tenacity, tenacity)
+	displayStats(value_ins,total_instinct)
+	displayStats(value_wis,total_wisdom)
+	displayStats(value_mem,total_memory)
+	displayStats(value_san,total_sanity)
+	displayStats(value_force,total_force)
+	displayStats(value_strength,total_strength)
+	displayStats(value_impact,total_impact)
+	displayStats(value_ferocity,total_ferocity)
+	displayStats(value_fury,total_fury)	
+	displayStats(value_accuracy,total_accuracy)
+	displayStats(value_dexterity,total_dexterity)
+	displayStats(value_poise,total_poise)
+	displayStats(value_balance,total_balance)
+	displayStats(value_focus,total_focus)
+	displayStats(value_haste,total_haste)
+	displayStats(value_agility,total_agility)
+	displayStats(value_celerity,total_celerity)
+	displayStats(value_flexibility,total_flexibility)
+	displayStats(value_deflection,total_deflection)
+	displayStats(value_endurance,total_endurance)
+	displayStats(value_stamina,total_stamina)
+	displayStats(value_vitality,total_vitality)
+	displayStats(value_resistance,total_resistance)
+	displayStats(value_tenacity,total_tenacity)
 	
 	
 	#resistances________________________________________________________________
@@ -4989,7 +5107,7 @@ func savePlayerData():
 		"endurance": endurance,
 		"stamina": stamina,
 		"vitality": vitality,
-		"recovery": recovery,
+
 		"resistance": resistance,
 		"tenacity": tenacity,
 #Social attributes 
@@ -4997,7 +5115,6 @@ func savePlayerData():
 		"loyalty": loyalty,
 		"diplomacy": diplomacy,
 		"authority": authority,
-		"empathy": empathy,
 		"courage": courage,
 		
 		
@@ -5179,8 +5296,7 @@ func loadPlayerData():
 				stamina = player_data["stamina"]
 			if "vitality" in player_data:
 				vitality = player_data["vitality"]
-			if "recovery" in player_data:
-				recovery = player_data["recovery"]
+
 #Social attributes 
 			if "charisma_multiplier" in player_data:
 				charisma_multiplier = player_data["charisma_multiplier"]
@@ -5190,8 +5306,6 @@ func loadPlayerData():
 				diplomacy = player_data["diplomacy"]
 			if "authority" in player_data:
 				authority = player_data["authority"]
-			if "empathy" in player_data:
-				empathy = player_data["empathy"]
 			if "courage" in player_data:
 				courage = player_data["courage"]
 			
