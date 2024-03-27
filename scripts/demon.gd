@@ -481,7 +481,7 @@ func slash():
 					#insert sound effect here
 					if randf() <= critical_chance:
 						var critical_damage = damage * critical_strength
-						enemy.takeDamage(critical_damage,aggro_power,self,stagger_chance,"heat")
+						enemy.takeDamage(critical_damage,aggro_power,self,stagger_chance,"slash")
 					else:
 						enemy.takeDamage(damage,aggro_power,self,stagger_chance,damage_type)
 

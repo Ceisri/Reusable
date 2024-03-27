@@ -27,8 +27,10 @@ func _on_SlowTimer_timeout():
 	allResourcesBarsAndLabels()
 	showEnemyStats()
 	potionEffects()
+	switchHead()
 	switchTorso()
-	switchFeet()
+	switchFootL()
+	switchFootR()
 	switchLegs()
 	convertStats()
 	money()
@@ -41,10 +43,10 @@ func _on_SlowTimer_timeout():
 	
 	
 	
-	#testing random stats for mitigation 
-	slash_resistance += 1
-	blunt_resistance += 1
+
 func _on_3FPS_timeout():
+
+
 	crafting()
 	displayResources(hp_bar,hp_label,health,max_health,"HP")
 	curtainsDown()
@@ -130,23 +132,7 @@ func walk(delta):
 			is_aiming = false
 			is_crouching = false
 			movement_speed = run_speed
-		elif Input.is_action_pressed("crouch"):
-			sprint_speed = 10
-			is_crouching = true 
-			is_running = false
-			is_sprinting = false
-			is_aiming = false
-			movement_speed = walk_speed * 0.5
-		elif Input.is_action_pressed("attack"):
-			sprint_speed = 10
-			is_crouching = false
-			is_running = false
-			is_sprinting = false
-			is_aiming = false
-			is_attacking = true 
-			movement_speed = 3
-		elif health < (max_health * 0.1):
-			movement_speed = walk_speed * 0.5
+
 		else: # Walk State and speed
 			sprint_speed = 10
 			sprint_animation_speed = 1
@@ -546,7 +532,6 @@ func showEnemyStats():
 
 #______________________________________________Animations___________________________________________
 var weapon_type: String = "fist"
-
 var animation_state: String = "idle"
 func matchAnimationStates():
 	match animation_state:
@@ -720,44 +705,40 @@ func animations():
 			animation_state = "swim"
 		else:
 			animation_state = "idle water"
-			
 #on land
 	elif dodge_animation_duration > 0 and resolve >0:
 		resolve -= 0.2
 		animation_state = "slide"
+		jump_animation_duration = 0 
 
 
 	elif not is_on_floor() and not is_climbing and not is_swimming:
 		animation_state = "fall"
+		jump_animation_duration = 0 
 	elif double_atk_animation_duration > 0 and !cursor_visible: 
 		animation_state = "double attack"
+		jump_animation_duration = 0 
 	elif Input.is_action_pressed("rclick") and Input.is_action_pressed("attack") and !cursor_visible:
 		animation_state = "guard attack"
+		jump_animation_duration = 0 
 	elif Input.is_action_pressed("rclick") and !cursor_visible:
 		if !is_walking:
 			animation_state = "guard"
+			jump_animation_duration = 0 
 		else:
 			animation_state = "guard walk"
+			jump_animation_duration = 0 
 #attacks________________________________________________________________________
 	elif Input.is_action_pressed("attack") and Input.is_action_pressed("run") and !cursor_visible: 
 		animation_state = "run attack"
+		jump_animation_duration = 0 
 	elif Input.is_action_pressed("attack") and Input.is_action_pressed("sprint") and !cursor_visible: 
 		animation_state = "sprint attack"
+		jump_animation_duration = 0 
 	elif Input.is_action_pressed("attack") and !cursor_visible:
 			animation_state = "base attack"
+			jump_animation_duration = 0 
 #_______________________________________________________________________________
-	elif is_sprinting:
-			animation_state = "sprint"
-	elif is_running:
-			animation_state = "run"
-
-	elif Input.is_action_pressed("crouch"):
-		if is_walking:
-			animation_state = "crouch walk"
-		else:
-			animation_state = "crouch"
-	elif is_walking:
-			animation_state = "walk"
 			
 #skills put these below the walk elif statment in case of keybinding bugs, as of now it works so no need
 	elif Input.is_action_pressed("1"):
@@ -800,7 +781,23 @@ func animations():
 		animation_state = "testV"
 	elif Input.is_action_pressed("B"):
 		animation_state = "testB" 
-			
+#_______________________________________________________________________________
+		
+	elif is_sprinting == true:
+			animation_state = "sprint"
+			jump_animation_duration = 0 
+	elif is_running:
+			animation_state = "run"
+			jump_animation_duration = 0 
+	elif is_walking:
+			animation_state = "walk"
+			jump_animation_duration = 0 
+
+	
+	elif Input.is_action_pressed("crouch"):
+		animation_state = "crouch" 
+		jump_animation_duration = 0 
+	
 	elif jump_animation_duration != 0:
 		animation_state = "jump"
 	else:
@@ -967,10 +964,18 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
 	var random = randf()
 	var damage_to_take = damage
 	var text = floatingtext_damage.instance()
+	
 	if damage_type == "slash":
-		var mitigation = slash_resistance / (slash_resistance + 100.0)
+		var mitigation: float
+		if slash_resistance >= 0:
+			mitigation = slash_resistance / (slash_resistance + 100.0)
+		else:
+			# For every negative point of slash resistance, add to damage to take directly
+			damage_to_take += -slash_resistance
+	
 		damage_to_take *= (1.0 - mitigation)
-		print(damage_to_take )
+		print(damage_to_take)
+
 		if instigator.has_method("lifesteal"):
 			instigator.lifesteal(damage_to_take)
 			
@@ -1300,7 +1305,7 @@ func _on_inventory_slot_pressed(index):
 		last_pressed_index = index
 		last_press_time = current_time
 		savePlayerData()
-
+#__Hover inventory slots
 func _on_inventory_slot_mouse_entered(index):
 	var button = inventory_grid.get_node("InventorySlot" + str(index))
 	var icon_texture = button.get_node("Icon").texture
@@ -1319,10 +1324,19 @@ func _on_inventory_slot_mouse_entered(index):
 			
 			
 		#equipment icons
+		elif icon_texture.get_path() == "res://Equipment icons/hat1.png":
+			callToolTip(instance,"Farmer Hat","+3 blunt resistance.\n +6 heat resistance.\n +3 cold resistance.\n +6 radiant resistance.")
 		elif icon_texture.get_path() == "res://Equipment icons/garment1.png":
-			callToolTip(instance,"Farmer Jacket","+3 slash resistance +1 pierce resistance")
-			
-			
+			callToolTip(instance,"Farmer Jacket","+3 slash resistance.\n +1 pierce resistance.\n +12 heat resistance.\n +12 cold resistance.")
+		elif icon_texture.get_path() == "res://Equipment icons/belt1.png":
+			callToolTip(instance,"Farmer Belt","+3 slash resistance.\n +1 pierce resistance.\n +12 heat resistance.\n +12 cold resistance.")
+		elif icon_texture.get_path() == "res://Equipment icons/glove1.png":
+			callToolTip(instance,"Farmer Glove","+3 slash resistance.\n +1 pierce resistance.\n +12 heat resistance.\n +12 cold resistance.")
+		elif icon_texture.get_path() == "res://Equipment icons/pants1.png":
+			callToolTip(instance,"Farmer Pants","+3 slash resistance.\n +1 pierce resistance.\n +12 heat resistance.\n +12 cold resistance.")
+		elif icon_texture.get_path() == "res://Equipment icons/shoe1.png":
+			callToolTip(instance,"Farmer Shoe","+1 slash resistance.\n +1 blunt resistance.\n +3 pierce resistance.\n +1 heat resistance.\n +6 cold resistance.\n +15 jolt resistance.\n")
+
 			
 func _on_inventory_slot_mouse_exited(index):
 	for child in gui.get_children():
@@ -1849,13 +1863,21 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 			removeSecWeapon()
 			secondary_weapon = "null"
 			applyEffect(self, "effect1", false)	
+#_______________________________head____________________________________________
+	var helm_icon = $UI/GUI/Equipment/EquipmentBG/Helm/Icon
+	if helm_icon != null:
+		if helm_icon.texture != null:
+			if helm_icon.texture.get_path() == "res://Equipment icons/hat1.png":
+				head = "garment1"
+		elif helm_icon.texture == null:
+			head = "naked"
+
 #_______________________________chest___________________________________________
 	var chest_icon = $UI/GUI/Equipment/EquipmentBG/BreastPlate/Icon
 	if chest_icon != null:
 		if chest_icon.texture != null:
 			if chest_icon.texture.get_path() == "res://Equipment icons/garment1.png":
 				torso = "garment1"
-				
 		elif chest_icon.texture == null:
 			torso = "naked"
 
@@ -1865,38 +1887,54 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 		if legs_icon.texture != null:
 			if legs_icon.texture.get_path() == "res://Equipment icons/pants1.png":
 				legs = "cloth1"
-			#player.applyEffect(player, "effect3", true)
 		elif legs_icon.texture == null:
 			legs = "naked"
-			#player.applyEffect(player, "effect3", false)
-#_______________________________foot____________________________________________
-	var foot_icon = $UI/GUI/Equipment/EquipmentBG/ShoeR/Icon
-	if foot_icon != null:
-		if  foot_icon.texture != null:
-			if  foot_icon.texture.get_path() == "res://Equipment icons/shoe1.png":
-				feet = "cloth1"
 
-		elif foot_icon.texture == null:
-			feet = "naked"
+#_______________________________feet____________________________________________
+	var foot_r_icon = $UI/GUI/Equipment/EquipmentBG/ShoeR/Icon
+	if foot_r_icon != null:
+		if  foot_r_icon.texture != null:
+			if  foot_r_icon.texture.get_path() == "res://Equipment icons/shoe1.png":
+				foot_r = "cloth1"
+		elif foot_r_icon.texture == null:
+			foot_r = "naked"
+			
+	var foot_l_icon = $UI/GUI/Equipment/EquipmentBG/ShoeL/Icon
+	if foot_l_icon != null:
+		if  foot_l_icon.texture != null:
+			if  foot_l_icon.texture.get_path() == "res://Equipment icons/shoe1.png":
+				foot_l = "cloth1"
+		elif foot_l_icon.texture == null:
+			foot_l = "naked"
 
-	var headset_icon = $UI/GUI/Equipment/EquipmentBG/Helmet/Icon
+
 	var glove_icon = $UI/GUI/Equipment/EquipmentBG/GloveR/Icon
 	var glove_l_icon = $UI/GUI/Equipment/EquipmentBG/GloveL/Icon
 	var shoulder_r_icon = $UI/GUI/Equipment/EquipmentBG/ShoeR/Icon
 	var shoulder_l_icon = $UI/GUI/Equipment/EquipmentBG/ShoeL/Icon
 	$UI/GUI/Equipment/EquipmentBG/SecWeap/Icon.savedata()
-	headset_icon.savedata()
+	helm_icon.savedata()
 	shoulder_l_icon.savedata()
 	shoulder_r_icon.savedata()
 	chest_icon.savedata()
 	glove_icon.savedata()
 	glove_l_icon.savedata()
 	legs_icon.savedata()
-	foot_icon.savedata()
+	foot_l_icon.savedata()
+	foot_r_icon.savedata()
 	$UI/GUI/Equipment/EquipmentBG/Belt/Icon.savedata()
 	$UI/GUI/Equipment/EquipmentBG/ThirdWeap/Icon.savedata()
 	
 #_____________________________________Equipment 3D______________________________
+var head = "naked"
+func switchHead():
+	var head0 = null
+	var head1 = null
+	match head:
+		"naked":
+			applyEffect(self,"helm1", false)
+		"garment1":
+			applyEffect(self,"helm1", true)
 var torso = "naked"
 func switchTorso():
 	var torso0 = $Mesh/Race/Armature/Skeleton/Torso0
@@ -1910,17 +1948,7 @@ func switchTorso():
 			torso0.visible = false
 			torso1.visible = true
 			applyEffect(self,"garment1", true)
-var feet = "naked"
-func switchFeet():
-	var feet0 = $Mesh/Race/Armature/Skeleton/feet0
-	var feet1 = $Mesh/Race/Armature/Skeleton/feet1
-	match feet:
-		"naked":
-			feet0.visible = true 
-			feet1.visible = false
-		"cloth1":
-			feet0.visible = false
-			feet1.visible = true	
+
 var legs = "naked"
 func switchLegs():
 	var legs0 = $Mesh/Race/Armature/Skeleton/legs0
@@ -1929,12 +1957,39 @@ func switchLegs():
 		"naked":
 			legs0.visible = true 
 			legs1.visible = false
+			applyEffect(self,"pants1", false)
+			
 		"cloth1":
 			legs0.visible = false
 			legs1.visible = true	
-	
-	
-	
+			applyEffect(self,"pants1", true)
+			
+var foot_l = "naked"
+func switchFootL():
+	var feet0 = $Mesh/Race/Armature/Skeleton/feet0
+	var feet1 = $Mesh/Race/Armature/Skeleton/feet1
+	match foot_l:
+		"naked":
+			feet0.visible = true 
+			feet1.visible = false
+			applyEffect(self,"Lshoe1", false)
+		"cloth1":
+			feet0.visible = false
+			feet1.visible = true
+			applyEffect(self,"Lshoe1", true)
+var foot_r = "naked"
+func switchFootR():
+	var feet0 = null
+	var feet1 = null
+	match foot_r:
+		"naked":
+#			feet0.visible = true 
+#			feet1.visible = false
+			applyEffect(self,"Rshoe1", false)
+		"cloth1":
+#			feet0.visible = false
+#			feet1.visible = true
+			applyEffect(self,"Rshoe1", true)	
 #___________________________________Status effects______________________________
 # Define effects and their corresponding stat changes
 var effects = {
@@ -1968,7 +2023,12 @@ var effects = {
 	"impaired": {"stats": { "dexterity": -0.25}, "applied": false},
 	"lethargy": {"stats": {}, "applied": false},
 	"redpotion": {"stats": {}, "applied": false},
-	"garment1": {"stats": {"slash_resistance": 3,"pierce_resistance": 1}, "applied": false},
+	#equipment effects______________________________________________________________________________
+	"helm1": {"stats": {"blunt_resistance": 3,"heat_resistance": 6,"cold_resistance": 3,"radiant_resistance": 6}, "applied": false},
+	"garment1": {"stats": {"slash_resistance": 3,"pierce_resistance": 1,"heat_resistance": 12,"cold_resistance": 12}, "applied": false},
+	"pants1": {"stats": {"slash_resistance": 4,"pierce_resistance": 3,"heat_resistance": 6,"cold_resistance": 8}, "applied": false},
+	"Lshoe1": {"stats": {"slash_resistance": 1,"blunt_resistance": 3,"pierce_resistance": 1,"heat_resistance": 1,"cold_resistance": 6,"jolt_resistance": 15}, "applied": false},
+	"Rshoe1": {"stats": {"slash_resistance": 1,"blunt_resistance": 3,"pierce_resistance": 1,"heat_resistance": 1,"cold_resistance": 6,"jolt_resistance": 15}, "applied": false},
 }
 
 # Function to apply or remove effects
@@ -2562,7 +2622,24 @@ func displayLabels():
 	displayStats(val_blunt, blunt_resistance)
 	var val_pierce : Label = $UI/GUI/Equipment/DmgDef/Defenses/Pierceval
 	displayStats(val_pierce, pierce_resistance)
-
+	var val_sonic : Label = $UI/GUI/Equipment/DmgDef/Defenses/Sonicval
+	displayStats(val_sonic, sonic_resistance)
+	var val_heat : Label = $UI/GUI/Equipment/DmgDef/Defenses/Heatval
+	displayStats(val_heat, heat_resistance)
+	var val_cold : Label = $UI/GUI/Equipment/DmgDef/Defenses/Coldval
+	displayStats(val_cold, cold_resistance)
+	var val_jolt : Label = $UI/GUI/Equipment/DmgDef/Defenses/Joltval
+	displayStats(val_jolt, jolt_resistance)
+	var val_toxic : Label = $UI/GUI/Equipment/DmgDef/Defenses/Toxicval
+	displayStats(val_toxic, toxic_resistance)
+	var val_acid : Label = $UI/GUI/Equipment/DmgDef/Defenses/Acidval
+	displayStats(val_acid, acid_resistance)
+	var val_bleed : Label = $UI/GUI/Equipment/DmgDef/Defenses/Bleedval
+	displayStats(val_bleed, bleed_resistance)
+	var val_neuro : Label = $UI/GUI/Equipment/DmgDef/Defenses/Neuroval
+	displayStats(val_neuro, neuro_resistance)
+	var val_radiant : Label = $UI/GUI/Equipment/DmgDef/Defenses/Radiantval
+	displayStats(val_radiant, radiant_resistance)
 
 func displayStats(label, value):
 	var rounded_value = str(round(value * 1000) / 1000)
@@ -2913,43 +2990,254 @@ func connectHoveredResistanceLabels():
 	pierce_label.mouse_filter = Control.MOUSE_FILTER_STOP
 	pierce_label.connect("mouse_entered", self, "pierceResHovered")
 	pierce_label.connect("mouse_exited", self, "pierceResExited")
+	var sonic_label = $UI/GUI/Equipment/DmgDef/Defenses/Sonic
+	sonic_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	sonic_label.connect("mouse_entered", self, "sonicResHovered")
+	sonic_label.connect("mouse_exited", self, "sonicResExited")
+	var heat_label = $UI/GUI/Equipment/DmgDef/Defenses/Heat
+	heat_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	heat_label.connect("mouse_entered", self, "heatResHovered")
+	heat_label.connect("mouse_exited", self, "heatResExited")
+	var cold_label = $UI/GUI/Equipment/DmgDef/Defenses/Cold
+	cold_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	cold_label.connect("mouse_entered", self, "coldResHovered")
+	cold_label.connect("mouse_exited", self, "coldResExited")
+	var jolt_label = $UI/GUI/Equipment/DmgDef/Defenses/Jolt
+	jolt_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	jolt_label.connect("mouse_entered", self, "joltResHovered")
+	jolt_label.connect("mouse_exited", self, "joltResExited")
+	var toxic_label = $UI/GUI/Equipment/DmgDef/Defenses/Toxic
+	toxic_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	toxic_label.connect("mouse_entered", self, "toxicResHovered")
+	toxic_label.connect("mouse_exited", self, "toxicResExited")
+	var acid_label = $UI/GUI/Equipment/DmgDef/Defenses/Acid
+	acid_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	acid_label.connect("mouse_entered", self, "acidResHovered")
+	acid_label.connect("mouse_exited", self, "acidResExited")
+	var bleed_label = $UI/GUI/Equipment/DmgDef/Defenses/Bleed
+	bleed_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	bleed_label.connect("mouse_entered", self, "bleedResHovered")
+	bleed_label.connect("mouse_exited", self, "bleedResExited")
+	var neuro_label = $UI/GUI/Equipment/DmgDef/Defenses/Neuro
+	neuro_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	neuro_label.connect("mouse_entered", self, "neuroResHovered")
+	neuro_label.connect("mouse_exited", self, "neuroResExited")
+	var radiant_label = $UI/GUI/Equipment/DmgDef/Defenses/Radiant
+	radiant_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	radiant_label.connect("mouse_entered", self, "radiantResHovered")
+	radiant_label.connect("mouse_exited", self, "radiantResExited")
+
 
 func slashResHovered():
-	# Instantiate the tooltip scene
 	var instance = preload("res://tooltip.tscn").instance()
-	var mitigation: float = slash_resistance / (slash_resistance + 100.0)
-	mitigation = round(mitigation * 1000) / 1000  # round to 3 decimal place
+	# Calculate the mitigation
+	var mitigation: float
+	if slash_resistance >= 0:
+		mitigation = slash_resistance / (slash_resistance + 100.0)
+	else:
+		# Calculate extra damage taken penalty
+		var extra_damage_penalty = 1.0 - (-slash_resistance)
+		mitigation = 1.0 - (1.0 / extra_damage_penalty)
 	# Set the tooltip text
-	var tooltip_text: String = "protection:  " + str(mitigation * 100) + "%"
+	var tooltip_text: String
+	if slash_resistance >= 0:
+		tooltip_text = "protection:  " + str(mitigation * 100) + "%"
+	else:
+		tooltip_text = "extra damage: " + str(-slash_resistance) + " extra damage"
 	# Call a function to display the tooltip
 	callToolTip(instance, "Slash Resistance", tooltip_text)
 func slashResExited():
 	deleteTooltip()
 	
 func bluntResHovered():
-	# Instantiate the tooltip scene
 	var instance = preload("res://tooltip.tscn").instance()
-	var mitigation: float = blunt_resistance / (blunt_resistance + 100.0)
-	mitigation = round(mitigation * 1000) / 1000  # round to 3 decimal place
-	# Set the tooltip text
-	var tooltip_text: String = "protection:  " + str(mitigation * 100) + "%"
-	# Call a function to display the tooltip
-	callToolTip(instance, "blunt Resistance", tooltip_text)
+	var mitigation: float
+	if blunt_resistance >= 0:
+		mitigation = blunt_resistance / (blunt_resistance + 100.0)
+	else:
+		var extra_damage_penalty = 1.0 - (-blunt_resistance)
+		mitigation = 1.0 - (1.0 / extra_damage_penalty)
+	var tooltip_text: String
+	if blunt_resistance >= 0:
+		tooltip_text = "protection:  " + str(mitigation * 100) + "%"
+	else:
+		tooltip_text = "extra damage: " + str(-blunt_resistance) + " extra damage"
+	callToolTip(instance, "Blunt Resistance", tooltip_text)
 func bluntResExited():
 	deleteTooltip()
 
 func pierceResHovered():
-	# Instantiate the tooltip scene
 	var instance = preload("res://tooltip.tscn").instance()
-	var mitigation: float = pierce_resistance / (pierce_resistance + 100.0)
-	mitigation = round(mitigation * 1000) / 1000  # round to 3 decimal place
-	# Set the tooltip text
-	var tooltip_text: String = "protection:  " + str(mitigation * 100) + "%"
-	# Call a function to display the tooltip
-	callToolTip(instance, "pierce Resistance", tooltip_text)
+	var mitigation: float
+	if pierce_resistance >= 0:
+		mitigation = pierce_resistance / (pierce_resistance + 100.0)
+	else:
+		var extra_damage_penalty = 1.0 - (-pierce_resistance)
+		mitigation = 1.0 - (1.0 / extra_damage_penalty)
+	var tooltip_text: String
+	if pierce_resistance >= 0:
+		tooltip_text = "protection:  " + str(mitigation * 100) + "%"
+	else:
+		tooltip_text = "extra damage: " + str(-pierce_resistance) + " extra damage"
+	callToolTip(instance, "Pierce Resistance", tooltip_text)
 func pierceResExited():
 	deleteTooltip()
 
+func sonicResHovered():
+	var instance = preload("res://tooltip.tscn").instance()
+	var mitigation: float
+	if sonic_resistance >= 0:
+		mitigation = sonic_resistance / (sonic_resistance + 100.0)
+	else:
+		var extra_damage_penalty = 1.0 - (-sonic_resistance)
+		mitigation = 1.0 - (1.0 / extra_damage_penalty)
+	var tooltip_text: String
+	if sonic_resistance >= 0:
+		tooltip_text = "protection:  " + str(mitigation * 100) + "%"
+	else:
+		tooltip_text = "extra damage: " + str(-sonic_resistance) + " extra damage"
+	callToolTip(instance, "Sonic Resistance", tooltip_text)
+func sonicResExited():
+	deleteTooltip()
+
+func heatResHovered():
+	var instance = preload("res://tooltip.tscn").instance()
+	var mitigation: float
+	if heat_resistance >= 0:
+		mitigation = heat_resistance / (heat_resistance + 100.0)
+	else:
+		var extra_damage_penalty = 1.0 - (-heat_resistance)
+		mitigation = 1.0 - (1.0 / extra_damage_penalty)
+	var tooltip_text: String
+	if heat_resistance >= 0:
+		tooltip_text = "protection:  " + str(mitigation * 100) + "%"
+	else:
+		tooltip_text = "extra damage: " + str(-heat_resistance) + " extra damage"
+	callToolTip(instance, "Heat Resistance", tooltip_text)
+func heatResExited():
+	deleteTooltip()
+
+func coldResHovered():
+	var instance = preload("res://tooltip.tscn").instance()
+	var mitigation: float
+	if cold_resistance >= 0:
+		mitigation = cold_resistance / (cold_resistance + 100.0)
+	else:
+		var extra_damage_penalty = 1.0 - (-cold_resistance)
+		mitigation = 1.0 - (1.0 / extra_damage_penalty)
+	var tooltip_text: String
+	if cold_resistance >= 0:
+		tooltip_text = "protection:  " + str(mitigation * 100) + "%"
+	else:
+		tooltip_text = "extra damage: " + str(-cold_resistance) + " extra damage"
+	callToolTip(instance, "Cold Resistance", tooltip_text)
+func coldResExited():
+	deleteTooltip()
+
+func joltResHovered():
+	var instance = preload("res://tooltip.tscn").instance()
+	var mitigation: float
+	if jolt_resistance >= 0:
+		mitigation = jolt_resistance / (jolt_resistance + 100.0)
+	else:
+		var extra_damage_penalty = 1.0 - (-jolt_resistance)
+		mitigation = 1.0 - (1.0 / extra_damage_penalty)
+	var tooltip_text: String
+	if cold_resistance >= 0:
+		tooltip_text = "protection:  " + str(mitigation * 100) + "%"
+	else:
+		tooltip_text = "extra damage: " + str(-jolt_resistance) + " extra damage"
+	callToolTip(instance, "Colt Resistance", tooltip_text)	
+func joltResExited():
+	deleteTooltip()
+	
+func toxicResHovered():
+	var instance = preload("res://tooltip.tscn").instance()
+	var mitigation: float
+	if toxic_resistance >= 0:
+		mitigation = toxic_resistance / (toxic_resistance + 100.0)
+	else:
+		var extra_damage_penalty = 1.0 - (-toxic_resistance)
+		mitigation = 1.0 - (1.0 / extra_damage_penalty)
+	var tooltip_text: String
+	if toxic_resistance >= 0:
+		tooltip_text = "protection:  " + str(mitigation * 100) + "%"
+	else:
+		tooltip_text = "extra damage: " + str(-toxic_resistance) + " extra damage"
+	callToolTip(instance, "Toxic Resistance", tooltip_text)
+func toxicResExited():
+	deleteTooltip()
+	
+func acidResHovered():
+	var instance = preload("res://tooltip.tscn").instance()
+	var mitigation: float
+	if acid_resistance >= 0:
+		mitigation = acid_resistance / (acid_resistance + 100.0)
+	else:
+		var extra_damage_penalty = 1.0 - (-acid_resistance)
+		mitigation = 1.0 - (1.0 / extra_damage_penalty)
+	var tooltip_text: String
+	if acid_resistance >= 0:
+		tooltip_text = "protection:  " + str(mitigation * 100) + "%"
+	else:
+		tooltip_text = "extra damage: " + str(-acid_resistance) + " extra damage"
+	callToolTip(instance, "Acid Resistance", tooltip_text)
+func acidResExited():
+	deleteTooltip()
+
+
+func bleedResHovered():
+	var instance = preload("res://tooltip.tscn").instance()
+	var mitigation: float
+	if bleed_resistance >= 0:
+		mitigation = bleed_resistance / (bleed_resistance + 100.0)
+	else:
+		var extra_damage_penalty = 1.0 - (-bleed_resistance)
+		mitigation = 1.0 - (1.0 / extra_damage_penalty)
+	var tooltip_text: String
+	if bleed_resistance >= 0:
+		tooltip_text = "protection:  " + str(mitigation * 100) + "%"
+	else:
+		tooltip_text = "extra damage: " + str(-bleed_resistance) + " extra damage"
+	callToolTip(instance, "Bleed Resistance", tooltip_text)
+func bleedResExited():
+	deleteTooltip()
+
+func neuroResHovered():
+	var instance = preload("res://tooltip.tscn").instance()
+	var mitigation: float
+	if neuro_resistance >= 0:
+		mitigation = neuro_resistance / (neuro_resistance + 100.0)
+	else:
+		var extra_damage_penalty = 1.0 - (-neuro_resistance)
+		mitigation = 1.0 - (1.0 / extra_damage_penalty)
+	var tooltip_text: String
+	if neuro_resistance >= 0:
+		tooltip_text = "protection:  " + str(mitigation * 100) + "%"
+	else:
+		tooltip_text = "extra damage: " + str(-neuro_resistance) + " extra damage"
+	callToolTip(instance, "Neuro Resistance", tooltip_text)
+func neuroResExited():
+	deleteTooltip()
+
+func radiantResHovered():
+	var instance = preload("res://tooltip.tscn").instance()
+	var mitigation: float
+	if radiant_resistance >= 0:
+		mitigation = radiant_resistance / (radiant_resistance + 100.0)
+	else:
+		var extra_damage_penalty = 1.0 - (-radiant_resistance)
+		mitigation = 1.0 - (1.0 / extra_damage_penalty)
+	var tooltip_text: String
+	if radiant_resistance >= 0:
+		tooltip_text = "protection:  " + str(mitigation * 100) + "%"
+	else:
+		tooltip_text = "extra damage: " + str(-radiant_resistance) + " extra damage"
+	callToolTip(instance, "Radiant Resistance", tooltip_text)
+func radiantResExited():
+	deleteTooltip()
+
+	
 func deleteTooltip():
 	# Remove all children from the TextureButton
 	for child in gui.get_children():

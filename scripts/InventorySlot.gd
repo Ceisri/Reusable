@@ -32,7 +32,7 @@ func displayQuantity():
 			quantity_label.text = ""
 
 func get_drag_data(position: Vector2):
-
+	$"../../../../../..".saveInventoryData()
 	var slot = get_parent().get_name()
 	var data = {
 		"origin_node": self,
@@ -63,6 +63,7 @@ func can_drop_data(position, data):
 
 
 func drop_data(position, data):
+	
 	var origin_texture = data["origin_texture"]
 	var target_texture = icon.texture
 	var origin_quantity = data["origin_quantity"]

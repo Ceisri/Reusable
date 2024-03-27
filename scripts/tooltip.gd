@@ -2,8 +2,8 @@ extends Node2D
 
 
 func showTooltip(title,text):
-	$Tooltip/Label2.text = text 
-	$Tooltip/Label.text = title
+	$Label2.text = text 
+	$Label.text = title
 
 var offset_from_mouse = Vector2(10, -10) # Adjust this offset according to your preference
 
