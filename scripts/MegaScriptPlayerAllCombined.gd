@@ -29,9 +29,11 @@ func _on_SlowTimer_timeout():
 	potionEffects()
 	switchHead()
 	switchTorso()
+	switchBelt()
+	switchLegs()
 	switchFootL()
 	switchFootR()
-	switchLegs()
+	
 	convertStats()
 	money()
 	hunger()
@@ -41,12 +43,10 @@ func _on_SlowTimer_timeout():
 	displayLabels()
 	regenStats()
 	
-	
+	resistanceMath()
 	
 
 func _on_3FPS_timeout():
-
-
 	crafting()
 	displayResources(hp_bar,hp_label,health,max_health,"HP")
 	curtainsDown()
@@ -1329,7 +1329,7 @@ func _on_inventory_slot_mouse_entered(index):
 		elif icon_texture.get_path() == "res://Equipment icons/garment1.png":
 			callToolTip(instance,"Farmer Jacket","+3 slash resistance.\n +1 pierce resistance.\n +12 heat resistance.\n +12 cold resistance.")
 		elif icon_texture.get_path() == "res://Equipment icons/belt1.png":
-			callToolTip(instance,"Farmer Belt","+3 slash resistance.\n +1 pierce resistance.\n +12 heat resistance.\n +12 cold resistance.")
+			callToolTip(instance,"Farmer Belt","+3% balance.\n +1.1% charisma.")
 		elif icon_texture.get_path() == "res://Equipment icons/glove1.png":
 			callToolTip(instance,"Farmer Glove","+3 slash resistance.\n +1 pierce resistance.\n +12 heat resistance.\n +12 cold resistance.")
 		elif icon_texture.get_path() == "res://Equipment icons/pants1.png":
@@ -1409,8 +1409,6 @@ onready var crafting_slot13 = $UI/GUI/Crafting/CraftingGrid/craftingSlot13/Icon
 onready var crafting_slot14 = $UI/GUI/Crafting/CraftingGrid/craftingSlot14/Icon
 onready var crafting_slot15 = $UI/GUI/Crafting/CraftingGrid/craftingSlot15/Icon
 onready var crafting_slot16 = $UI/GUI/Crafting/CraftingGrid/craftingSlot16/Icon
-
-
 onready var crafting_result = $UI/GUI/Crafting/CraftingResultSlot/Icon
 onready var icon = $CraftingResultSlot/Icon
 
@@ -1534,11 +1532,24 @@ func money():
 	
 	
 #_____________________________________more GUI stuff________________________________________________
-onready var fps_label = $UI/GUI/Portrait/MinimapHolder/FPS
+onready var fps_label: Label = $UI/GUI/Portrait/MinimapHolder/FPS
 func frameRate():
 	var current_fps = Engine.get_frames_per_second()
-	var new_fps = current_fps + 15
+	var new_fps: float
+	
+	if current_fps > 59:
+		new_fps = current_fps + 20
+	elif current_fps > 39:
+		new_fps = current_fps + 15
+	elif current_fps > 34:
+		new_fps = current_fps + 10
+	elif current_fps > 29:
+		new_fps = current_fps + 5
+	else:
+		new_fps = current_fps
+	
 	fps_label.text = str(new_fps)
+
 
 func _on_FPS_pressed():
 	savePlayerData()
@@ -1880,7 +1891,14 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 				torso = "garment1"
 		elif chest_icon.texture == null:
 			torso = "naked"
-
+#_______________________________belt___________________________________________
+	var belt_icon = $UI/GUI/Equipment/EquipmentBG/Belt/Icon
+	if belt_icon != null:
+		if belt_icon.texture != null:
+			if belt_icon.texture.get_path() == "res://Equipment icons/belt1.png":
+				belt = "belt1"
+		elif belt_icon.texture == null:
+			belt = "naked"
 #_______________________________legs____________________________________________
 	var legs_icon = $UI/GUI/Equipment/EquipmentBG/Pants/Icon
 	if legs_icon != null:
@@ -1948,6 +1966,13 @@ func switchTorso():
 			torso0.visible = false
 			torso1.visible = true
 			applyEffect(self,"garment1", true)
+var belt = "naked"
+func switchBelt():
+	match belt:
+		"naked":
+			applyEffect(self,"belt1", false)
+		"belt1":
+			applyEffect(self,"belt1", true)
 
 var legs = "naked"
 func switchLegs():
@@ -2026,6 +2051,7 @@ var effects = {
 	#equipment effects______________________________________________________________________________
 	"helm1": {"stats": {"blunt_resistance": 3,"heat_resistance": 6,"cold_resistance": 3,"radiant_resistance": 6}, "applied": false},
 	"garment1": {"stats": {"slash_resistance": 3,"pierce_resistance": 1,"heat_resistance": 12,"cold_resistance": 12}, "applied": false},
+	"belt1": {"stats": {"extra_balance": 0.03,"extra_charm": 0.011 }, "applied": false},
 	"pants1": {"stats": {"slash_resistance": 4,"pierce_resistance": 3,"heat_resistance": 6,"cold_resistance": 8}, "applied": false},
 	"Lshoe1": {"stats": {"slash_resistance": 1,"blunt_resistance": 3,"pierce_resistance": 1,"heat_resistance": 1,"cold_resistance": 6,"jolt_resistance": 15}, "applied": false},
 	"Rshoe1": {"stats": {"slash_resistance": 1,"blunt_resistance": 3,"pierce_resistance": 1,"heat_resistance": 1,"cold_resistance": 6,"jolt_resistance": 15}, "applied": false},
@@ -2439,10 +2465,31 @@ var bleed_resistance: int = 0
 var neuro_resistance: int = 0
 var radiant_resistance: int = 0
 
+
 var stagger_resistance: float = 0.5
 var deflection_chance : float = 0.33
 
 var staggered = 0 
+
+
+var slash_dmg: int = 0 
+var pierce_dmg: int = 0
+var blunt_dmg: int = 0
+var sonic_dmg: int = 0
+var heat_dmg: int = 0
+var cold_dmg: int = 0
+var jolt_dmg: int = 0
+var toxic_dmg: int = 0
+var acid_dmg: int = 0
+var bleed_dmg: int = 0
+var neuro_dmg: int = 0
+var radiant_dmg: int = 0
+
+
+#equipment variables
+var extra_charm : float = 0
+var extra_balance: float = 0 
+
 
 func regenStats():
 	#regen resolve
@@ -2579,7 +2626,7 @@ func displayLabels():
 
 
 	var val_cha = $UI/GUI/Equipment/Attributes/Charisma/value
-	displayStats(val_cha,charisma_multiplier)
+	displayStats(val_cha,charisma)
 	var val_dip = $UI/GUI/Equipment/Attributes/Diplomacy/value
 	displayStats(val_dip,diplomacy)
 	var val_au = $UI/GUI/Equipment/Attributes/Authority/value
@@ -2601,7 +2648,7 @@ func displayLabels():
 	displayStats(value_accuracy, accuracy)
 	displayStats(value_dexterity, dexterity)
 	displayStats(value_poise, poise)
-	displayStats(value_balance, balance)
+	displayStats(value_balance, balance + extra_balance)
 	displayStats(value_focus, focus)
 	displayStats(value_haste, haste)
 	displayStats(value_agility, agility)
@@ -2615,7 +2662,7 @@ func displayLabels():
 	displayStats(value_tenacity, tenacity)
 	
 	
-	#resistances and damages________________________________________________
+	#resistances________________________________________________________________
 	var val_slash : Label = $UI/GUI/Equipment/DmgDef/Defenses/Slaval
 	displayStats(val_slash, slash_resistance)
 	var val_blunt : Label = $UI/GUI/Equipment/DmgDef/Defenses/Bluntval
@@ -2640,6 +2687,34 @@ func displayLabels():
 	displayStats(val_neuro, neuro_resistance)
 	var val_radiant : Label = $UI/GUI/Equipment/DmgDef/Defenses/Radiantval
 	displayStats(val_radiant, radiant_resistance)
+	#damages____________________________________________________________________
+	var val_dmg_slash : Label = $UI/GUI/Equipment/DmgDef/Damages/Slaval
+	displayStats(val_dmg_slash, slash_dmg)
+	var val_dmg_blunt : Label = $UI/GUI/Equipment/DmgDef/Damages/Bluntval
+	displayStats(val_dmg_blunt, blunt_dmg)
+	var val_dmg_pierce : Label = $UI/GUI/Equipment/DmgDef/Damages/Pierceval
+	displayStats(val_dmg_pierce, pierce_dmg)
+	var val_dmg_sonic : Label = $UI/GUI/Equipment/DmgDef/Damages/Sonicval
+	displayStats(val_dmg_sonic, sonic_dmg)
+	var val_dmg_heat : Label = $UI/GUI/Equipment/DmgDef/Damages/Heatval
+	displayStats(val_dmg_heat, heat_dmg)
+	var val_dmg_cold : Label = $UI/GUI/Equipment/DmgDef/Damages/Coldval
+	displayStats(val_dmg_cold, cold_dmg)
+	var val_dmg_jolt : Label = $UI/GUI/Equipment/DmgDef/Damages/Joltval
+	displayStats(val_dmg_jolt, jolt_dmg)
+	var val_dmg_toxic : Label = $UI/GUI/Equipment/DmgDef/Damages/Toxicval
+	displayStats(val_dmg_toxic, toxic_dmg)
+	var val_dmg_acid : Label = $UI/GUI/Equipment/DmgDef/Damages/Acidval
+	displayStats(val_dmg_acid, acid_dmg)
+	var val_dmg_bleed : Label = $UI/GUI/Equipment/DmgDef/Damages/Bleedval
+	displayStats(val_dmg_bleed, bleed_dmg)
+	var val_dmg_neuro : Label = $UI/GUI/Equipment/DmgDef/Damages/Neuroval
+	displayStats(val_dmg_neuro, neuro_dmg)
+	var val_dmg_radiant : Label = $UI/GUI/Equipment/DmgDef/Damages/Radiantval
+	displayStats(val_dmg_radiant, radiant_dmg)
+
+
+
 
 func displayStats(label, value):
 	var rounded_value = str(round(value * 1000) / 1000)
@@ -4702,8 +4777,8 @@ onready var critical_str_val = $UI/GUI/Equipment/EquipmentBG/CombatStats/GridCon
 
 
 func resistanceMath():
-	var additional_resistance = 0
-	var res_multiplier = 0.5
+	var additional_resistance: float  = 0
+	var res_multiplier : float  = 0.5
 	if resistance > 1:
 		additional_resistance = res_multiplier * (resistance - 1)
 	elif resistance < 1:
@@ -4740,20 +4815,15 @@ func updateStaggerChance():
 
 
 func updateScaleRelatedAttributes():
-	charisma = base_charisma * (charisma_multiplier * 0.87 * (scale_factor * 1.15))
+	var scale_multiplication: float 
+	scale_multiplication = base_charisma * (charisma_multiplier * 0.8699 * (scale_factor * 1.15))
+	charisma = scale_multiplication + extra_charm
 
 func updateAllStats():
 	updateAttackSpeed()
 	updateScaleRelatedAttributes()
 	updateCritical()
 	updateStaggerChance()
-
-
-
-
-
-
-
 
 
 
