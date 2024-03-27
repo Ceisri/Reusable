@@ -31,6 +31,8 @@ func _on_SlowTimer_timeout():
 	switchTorso()
 	switchBelt()
 	switchLegs()
+	switchHandL()
+	switchHandR()
 	switchFootL()
 	switchFootR()
 	
@@ -73,6 +75,7 @@ func _physics_process(delta: float) -> void:
 	climbing()
 	gravity(delta)
 	jump()
+	dodgeIframe()
 	dodgeBack(delta)
 	dodgeFront(delta)
 	dodgeLeft(delta)
@@ -717,7 +720,6 @@ func animations():
 		animation_state = "slide"
 		jump_animation_duration = 0 
 
-
 	elif not is_on_floor() and not is_climbing and not is_swimming:
 		animation_state = "fall"
 		jump_animation_duration = 0 
@@ -812,6 +814,14 @@ func animations():
 
 #_______________________________________________Combat______________________________________________
 
+func dodgeIframe():#apparently combat is too shitty without iframes, more realistic but as boring as watching olympic wrestling or judo, fucking utter ridiculous shit
+	if animation_state == "slide":
+		set_collision_layer(6)  # Set to the desired collision layer
+		set_collision_mask(6)   # Set to the desired collision mask
+	else:
+		set_collision_layer(1)  # Set to the original collision layer
+		set_collision_mask(1)   # Set to the original collision mask
+
 func attack():
 	if Input.is_action_pressed("attack"):
 		is_attacking = true
@@ -838,24 +848,42 @@ func doubleAttack(delta):
 				double_atk_animation_duration -= 0.1 
 			elif double_atk_animation_duration < 0: 
 					double_atk_animation_duration = 0
+					
+					
+					
+					
 func stompKickDealDamage():
 	shake_camera(0.2, 0.05, 0, 1)
 	var damage_type = "blunt"
-	var damage = 25 + blunt_dmg
+	var damage = 0 + blunt_dmg
 	var aggro_power = damage + 20
 	var enemies = $Mesh/Detector.get_overlapping_bodies()
 	for enemy in enemies:
 		if enemy.is_in_group("enemy"):
 			enemy.applyEffect(enemy,"effect1", true)
 			if enemy.has_method("takeDamage"):
+				pushEnemyAway(5, enemy,1)
 				if is_on_floor():
 					#insert sound effect here
-					if randf() <= critical_chance *2:
+					if randf() <= critical_chance *0:
 						var critical_damage = damage * critical_strength
 						enemy.takeDamage(critical_damage,aggro_power,self,stagger_chance,damage_type)
 					else:
 						enemy.takeDamage(damage,aggro_power,self,stagger_chance,damage_type)
 
+func pushEnemyAway(push_distance, enemy, push_speed):
+	var direction_to_enemy = enemy.global_transform.origin - global_transform.origin
+	direction_to_enemy.y = 0  #no vertical push
+	direction_to_enemy = direction_to_enemy.normalized()
+	
+	var motion = direction_to_enemy * push_speed
+	var collision = enemy.move_and_collide(motion)
+	if collision: # extra collision if the dipshit hits a wall after being pushed away 
+		enemy.takeDamage(10, 100, self, 1, "bleed")
+
+
+
+	
 
 
 func slideDealDamage():
@@ -1100,8 +1128,8 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
 			staggered += 0.5
 			text.status = "Staggered"
 	if animation_state == "guard":
-		health -= (damage_to_take * 0.3)
-		text.amount = ((damage_to_take * 0.3) * 100)/ 100
+		health -= (damage_to_take / guard_dmg_absorbition)
+		text.amount = ((damage_to_take / guard_dmg_absorbition) * 100)/ 100
 		text.status = "Guarded"
 		text.state = damage_type
 	else:
@@ -1316,11 +1344,8 @@ func _on_inventory_slot_pressed(index):
 		if last_pressed_index == index and current_time - last_press_time <= double_press_time_inv:
 			print("Inventory slot", index, "pressed twice")
 
-			if icon_texture.get_path() == "res://UI/graphics/mushrooms/PNG/background/1.png":
-					kilocalories += 22
-					water += 92
-					button.quantity -=1
-			elif icon_texture.get_path() == "res://Potions/Red potion.png":
+
+			if icon_texture.get_path() == add_item.red_potion.get_path():
 					kilocalories += 100
 					health += 100
 					water += 250
@@ -1328,17 +1353,17 @@ func _on_inventory_slot_pressed(index):
 					red_potion_duration += 5
 					button.quantity -=1
 					add_item.addStackableItem(inventory_grid,add_item.empty_potion,1)
-			elif icon_texture.get_path() == "res://Food Icons/Fruits/strawberry.png":
+			elif icon_texture.get_path() == add_item.strawberry.get_path():
 					kilocalories +=1
 					health += 5
 					water += 2
 					button.quantity -=1
-			elif icon_texture.get_path() == "res://Food Icons/Fruits/raspberries.png":
+			elif icon_texture.get_path() == add_item.raspberry.get_path():
 					kilocalories += 4
 					health += 3
 					water += 3
 					button.quantity -=1
-			elif icon_texture.get_path() == "res://Food Icons/Vegetables/beetroot.png":
+			elif icon_texture.get_path() == add_item.beetroot.get_path():
 					kilocalories += 32
 					health += 15
 					water += 71.8
@@ -1358,30 +1383,30 @@ func _on_inventory_slot_mouse_entered(index):
 	var icon_texture = button.get_node("Icon").texture
 	var instance = preload("res://tooltip.tscn").instance()
 	if icon_texture != null:
-		if icon_texture.get_path() == "res://Potions/Red potion.png":
+		if icon_texture.get_path() == add_item.red_potion.get_path():
 			callToolTip(instance, "Red Potion", "+100 kcals +250 grams of water.\nHeals by 100 health instantly then by 10 every second, drinking more potions stacks the duration")
 		
 		
-		elif icon_texture.get_path() == "res://Food Icons/Fruits/strawberry.png":
+		elif icon_texture.get_path() == add_item.strawberry.get_path():
 			callToolTip(instance,"Strawberry","+5 health points +9 kcals +24 grams of water")
-		elif icon_texture.get_path() == "res://Food Icons/Fruits/raspberries.png":
+		elif icon_texture.get_path() == add_item.raspberry.get_path():
 			callToolTip(instance,"Raspberry","+3 health points +1 kcals +2 grams of water")
-		elif icon_texture.get_path() == "res://Food Icons/Vegetables/beetroot.png":
+		elif icon_texture.get_path() == add_item.beetroot.get_path():
 			callToolTip(instance,"beetroot","+15 health points +32 kcals +71.8 grams of water")
 			
 			
 		#equipment icons
-		elif icon_texture.get_path() == "res://Equipment icons/hat1.png":
+		elif icon_texture.get_path() == add_item.hat1.get_path():
 			callToolTip(instance,"Farmer Hat","+3 blunt resistance.\n +6 heat resistance.\n +3 cold resistance.\n +6 radiant resistance.")
-		elif icon_texture.get_path() == "res://Equipment icons/garment1.png":
+		elif icon_texture.get_path() == add_item.garment1.get_path():
 			callToolTip(instance,"Farmer Jacket","+3 slash resistance.\n +1 pierce resistance.\n +12 heat resistance.\n +12 cold resistance.")
-		elif icon_texture.get_path() == "res://Equipment icons/belt1.png":
+		elif icon_texture.get_path() == add_item.belt1.get_path():
 			callToolTip(instance,"Farmer Belt","+3% balance.\n +1.1% charisma.")
-		elif icon_texture.get_path() == "res://Equipment icons/glove1.png":
-			callToolTip(instance,"Farmer Glove","+3 slash resistance.\n +1 pierce resistance.\n +12 heat resistance.\n +12 cold resistance.")
-		elif icon_texture.get_path() == "res://Equipment icons/pants1.png":
+		elif icon_texture.get_path() == add_item.glove1.get_path():
+			callToolTip(instance,"Farmer Glove","+1 slash resistance.\n +1 blunt resistance.\n  +1 pierce resistance.\n +3 cold resistance.\n +5 jolt resistance.\n +3 acid resistance.")
+		elif icon_texture.get_path() == add_item.pants1.get_path():
 			callToolTip(instance,"Farmer Pants","+3 slash resistance.\n +1 pierce resistance.\n +12 heat resistance.\n +12 cold resistance.")
-		elif icon_texture.get_path() == "res://Equipment icons/shoe1.png":
+		elif icon_texture.get_path() == add_item.shoe1.get_path():
 			callToolTip(instance,"Farmer Shoe","+1 slash resistance.\n +1 blunt resistance.\n +3 pierce resistance.\n +1 heat resistance.\n +6 cold resistance.\n +15 jolt resistance.\n")
 
 			
@@ -1904,7 +1929,7 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 	if main_weap_icon != null:
 		main_weap_icon.savedata()
 		if main_weap_icon.texture != null:
-			if main_weap_icon.texture.get_path() == "res://0.png":
+			if main_weap_icon.texture.get_path() == add_item.wood_sword.get_path():
 				main_weapon = "sword0"
 				applyEffect(self, "effect2", true)
 		elif main_weap_icon.texture == null:
@@ -1914,7 +1939,7 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 #__________________________sec weapon___________________________________________
 	if sec_weap_icon != null:
 		if sec_weap_icon.texture != null:
-			if sec_weap_icon.texture.get_path() == "res://0.png":
+			if sec_weap_icon.texture.get_path() == add_item.wood_sword.get_path():
 				secondary_weapon = "sword0"
 				applyEffect(self, "effect1", true)
 		elif sec_weap_icon.texture == null:
@@ -1925,7 +1950,7 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 	var helm_icon = $UI/GUI/Equipment/EquipmentBG/Helm/Icon
 	if helm_icon != null:
 		if helm_icon.texture != null:
-			if helm_icon.texture.get_path() == "res://Equipment icons/hat1.png":
+			if helm_icon.texture.get_path() == add_item.hat1.get_path():
 				head = "garment1"
 		elif helm_icon.texture == null:
 			head = "naked"
@@ -1934,7 +1959,7 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 	var chest_icon = $UI/GUI/Equipment/EquipmentBG/BreastPlate/Icon
 	if chest_icon != null:
 		if chest_icon.texture != null:
-			if chest_icon.texture.get_path() == "res://Equipment icons/garment1.png":
+			if chest_icon.texture.get_path() == add_item.garment1.get_path():
 				torso = "garment1"
 		elif chest_icon.texture == null:
 			torso = "naked"
@@ -1942,7 +1967,7 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 	var belt_icon = $UI/GUI/Equipment/EquipmentBG/Belt/Icon
 	if belt_icon != null:
 		if belt_icon.texture != null:
-			if belt_icon.texture.get_path() == "res://Equipment icons/belt1.png":
+			if belt_icon.texture.get_path() == add_item.belt1.get_path():
 				belt = "belt1"
 		elif belt_icon.texture == null:
 			belt = "naked"
@@ -1950,16 +1975,31 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 	var legs_icon = $UI/GUI/Equipment/EquipmentBG/Pants/Icon
 	if legs_icon != null:
 		if legs_icon.texture != null:
-			if legs_icon.texture.get_path() == "res://Equipment icons/pants1.png":
+			if legs_icon.texture.get_path() == add_item.pants1.get_path():
 				legs = "cloth1"
 		elif legs_icon.texture == null:
 			legs = "naked"
+#_______________________________hands___________________________________________
+	var hand_l_icon = $UI/GUI/Equipment/EquipmentBG/GloveL/Icon
+	if hand_l_icon != null:
+		if hand_l_icon.texture != null:
+			if hand_l_icon.texture.get_path() == add_item.glove1.get_path():
+				hand_l = "cloth1"
+		elif hand_l_icon.texture == null:
+			hand_l = "naked"
+	var hand_r_icon = $UI/GUI/Equipment/EquipmentBG/GloveR/Icon
+	if hand_r_icon != null:
+		if hand_r_icon.texture != null:
+			if hand_r_icon.texture.get_path() == add_item.glove1.get_path():
+				hand_r = "cloth1"
+		elif hand_r_icon.texture == null:
+			hand_r = "naked"
 
 #_______________________________feet____________________________________________
 	var foot_r_icon = $UI/GUI/Equipment/EquipmentBG/ShoeR/Icon
 	if foot_r_icon != null:
 		if  foot_r_icon.texture != null:
-			if  foot_r_icon.texture.get_path() == "res://Equipment icons/shoe1.png":
+			if  foot_r_icon.texture.get_path() == add_item.shoe1.get_path():
 				foot_r = "cloth1"
 		elif foot_r_icon.texture == null:
 			foot_r = "naked"
@@ -1967,7 +2007,7 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 	var foot_l_icon = $UI/GUI/Equipment/EquipmentBG/ShoeL/Icon
 	if foot_l_icon != null:
 		if  foot_l_icon.texture != null:
-			if  foot_l_icon.texture.get_path() == "res://Equipment icons/shoe1.png":
+			if  foot_l_icon.texture.get_path() == add_item.shoe1.get_path():
 				foot_l = "cloth1"
 		elif foot_l_icon.texture == null:
 			foot_l = "naked"
@@ -2036,6 +2076,25 @@ func switchLegs():
 			legs1.visible = true	
 			applyEffect(self,"pants1", true)
 			
+var hand_l = "naked"
+func switchHandL():
+	var hand_l0 = null
+	var hand_l1 = null
+	match hand_l:
+		"naked":
+			applyEffect(self,"Lhand1", false)
+		"cloth1":
+			applyEffect(self,"Lhand1", true)
+var hand_r = "naked"
+func switchHandR():
+	var hand_r0 = null
+	var hand_r1 = null
+	match hand_r:
+		"naked":
+			applyEffect(self,"Rhand1", false)
+		"cloth1":
+			applyEffect(self,"Rhand1", true)
+			
 var foot_l = "naked"
 func switchFootL():
 	var feet0 = $Mesh/Race/Armature/Skeleton/feet0
@@ -2098,6 +2157,8 @@ var effects = {
 	"garment1": {"stats": {"slash_resistance": 3,"pierce_resistance": 1,"heat_resistance": 12,"cold_resistance": 12}, "applied": false},
 	"belt1": {"stats": {"extra_balance": 0.03,"extra_charisma": 0.011 }, "applied": false},
 	"pants1": {"stats": {"slash_resistance": 4,"pierce_resistance": 3,"heat_resistance": 6,"cold_resistance": 8}, "applied": false},
+	"Lhand1": {"stats": {"slash_resistance": 1,"blunt_resistance": 1,"pierce_resistance": 1,"cold_resistance": 3,"jolt_resistance": 5,"acid_resistance": 3}, "applied": false},
+	"Rhand1": {"stats": {"slash_resistance": 1,"blunt_resistance": 1,"pierce_resistance": 1,"cold_resistance": 3,"jolt_resistance": 5,"acid_resistance": 3}, "applied": false},
 	"Lshoe1": {"stats": {"slash_resistance": 1,"blunt_resistance": 3,"pierce_resistance": 1,"heat_resistance": 1,"cold_resistance": 6,"jolt_resistance": 15}, "applied": false},
 	"Rshoe1": {"stats": {"slash_resistance": 1,"blunt_resistance": 3,"pierce_resistance": 1,"heat_resistance": 1,"cold_resistance": 6,"jolt_resistance": 15}, "applied": false},
 }
@@ -2510,6 +2571,10 @@ var radiant_resistance: int = 0
 var stagger_resistance: float = 0.5
 var deflection_chance : float = 0.33
 
+
+var guard_dmg_absorbition: float = 2 #total damage taken will be divided by this when guarding
+
+
 var staggered = 0 
 
 
@@ -2815,6 +2880,8 @@ func displayLabels():
 	displayStats(atk_spd_label,melee_atk_speed)
 	var life_steal_label: Label = $UI/GUI/Equipment/EquipmentBG/CombatStats/GridContainer/LifeStealValue
 	displayStats(life_steal_label,life_steal)
+	var stagger_chance_label: Label = $UI/GUI/Equipment/EquipmentBG/CombatStats/GridContainer/StaggerChanceValue
+	displayStats(stagger_chance_label,stagger_chance)
 	
 	var int_lab = $UI/GUI/Equipment/Attributes/Intelligence/value
 	displayStats(int_lab, total_intelligence)

@@ -382,10 +382,10 @@ func updateStats():
 #stats______________________________________________________________________________________________
 var entity_name = "Demon"
 var level = 1
-var health = 1000
-const base_health = 1000
-var max_health = 1000
-const base_max_health = 1000
+var health = 100
+const base_health = 100
+var max_health = 100
+const base_max_health = 100
 var energy = 100
 var max_energy = 100
 const base_max_energy = 100
@@ -501,7 +501,7 @@ func slash():
 
 
 	
-	var damage = 100
+	var damage = 15
 	var aggro_power = damage + 20
 	var enemies = $Area.get_overlapping_bodies()
 	for enemy in enemies:
@@ -515,7 +515,7 @@ func slash():
 						enemy.takeDamage(damage,aggro_power,self,stagger_chance,damage_type)
 
 var lifesteal_pop = preload("res://UI/lifestealandhealing.tscn")
-var life_steal: float = 0.3
+var life_steal: float = 0
 func lifesteal(damage_to_take):
 	if life_steal > 0:
 		var text = lifesteal_pop.instance()
