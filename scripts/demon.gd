@@ -529,13 +529,11 @@ func lifesteal(damage_to_take):
 #___________________________________Status effects______________________________
 # Define effects and their corresponding stat changes
 var effects = {
-	"effect0": {"stats": {"agility": -0.05, "strength": 0.1}, "applied": false},
-	"effect1": {"stats": {"energy": -500000000, "mana": 10}, "applied": false},
-	"effect2": {"stats": {"health": -5, "mana": 10, "intelligence": 2,"agility": 0.05,}, "applied": false},
-	"overhydration": {"stats": {"max_health": -5,  "intelligence": -0.02,"agility": -0.05,}, "applied": false},
-	"dehydration": {"stats": {"max_health": -25, "intelligence": -0.25,"agility": -0.25,}, "applied": false},
-	"bloated": {"stats": {"max_health": -5,"intelligence": -0.02,"agility": -0.15,}, "applied": false},
-	"hungry": {"stats": {"max_health": -5,"intelligence": -0.22,"agility": -0.05,}, "applied": false},
+	"effect2": {"stats": { "extra_vitality": 2,"extra_agility": 0.05,}, "applied": false},
+	"overhydration": {"stats": { "extra_vitality": -0.02,"extra_agility": -0.05,}, "applied": false},
+	"dehydration": {"stats": { "extra_intelligence": -0.25,"extra_agility": -0.25,}, "applied": false},
+	"bloated": {"stats": {"extra_intelligence": -0.02,"extra_agility": -0.15,}, "applied": false},
+	"hungry": {"stats": {"extra_intelligence": -0.22,"extra_agility": -0.05,}, "applied": false},
 	"bleeding": {"stats": {}, "applied": false},
 	"stunned": {"stats": {}, "applied": false},
 	"frozen": {"stats": {}, "applied": false},
@@ -543,6 +541,31 @@ var effects = {
 	"terrorized": {"stats": {}, "applied": false},
 	"scared": {"stats": {}, "applied": false},
 	"intimidated": {"stats": {}, "applied": false},
+	"rooted": {"stats": {}, "applied": false},
+	"blockbuffs": {"stats": {}, "applied": false},
+	"blockactive": {"stats": {}, "applied": false},
+	"blockpassive": {"stats": {}, "applied": false},
+	"brokendefense": {"stats": {}, "applied": false},
+	"healreduction": {"stats": {}, "applied": false},
+	"bomb": {"stats": {}, "applied": false},
+	"slow": {"stats": {}, "applied": false},
+	"burn": {"stats": {}, "applied": false},
+	"sleep": {"stats": {}, "applied": false},
+	"weakness": {"stats": {}, "applied": false},
+	"poisoned": {"stats": {}, "applied": false},
+	"confused": {"stats": { "extra_intelligence": -0.75}, "applied": false},
+	"impaired": {"stats": { "extra_dexterity": -0.25}, "applied": false},
+	"lethargy": {"stats": {}, "applied": false},
+	"redpotion": {"stats": {}, "applied": false},
+	#equipment effects______________________________________________________________________________
+	"helm1": {"stats": {"blunt_resistance": 3,"heat_resistance": 6,"cold_resistance": 3,"radiant_resistance": 6}, "applied": false},
+	"garment1": {"stats": {"slash_resistance": 3,"pierce_resistance": 1,"heat_resistance": 12,"cold_resistance": 12}, "applied": false},
+	"belt1": {"stats": {"extra_balance": 0.03,"extra_charisma": 0.011 }, "applied": false},
+	"pants1": {"stats": {"slash_resistance": 4,"pierce_resistance": 3,"heat_resistance": 6,"cold_resistance": 8}, "applied": false},
+	"Lhand1": {"stats": {"slash_resistance": 1,"blunt_resistance": 1,"pierce_resistance": 1,"cold_resistance": 3,"jolt_resistance": 5,"acid_resistance": 3}, "applied": false},
+	"Rhand1": {"stats": {"slash_resistance": 1,"blunt_resistance": 1,"pierce_resistance": 1,"cold_resistance": 3,"jolt_resistance": 5,"acid_resistance": 3}, "applied": false},
+	"Lshoe1": {"stats": {"slash_resistance": 1,"blunt_resistance": 3,"pierce_resistance": 1,"heat_resistance": 1,"cold_resistance": 6,"jolt_resistance": 15}, "applied": false},
+	"Rshoe1": {"stats": {"slash_resistance": 1,"blunt_resistance": 3,"pierce_resistance": 1,"heat_resistance": 1,"cold_resistance": 6,"jolt_resistance": 15}, "applied": false},
 }
 
 # Function to apply or remove effects
@@ -564,19 +587,9 @@ func applyEffect(player: Node, effect_name: String, active: bool):
 	else:
 		print("Effect not found:", effect_name)
 
-
-func showStatusIcon(icon1, icon2, icon3, icon4, icon5, icon6, icon7, icon8, icon9, icon10, icon11, icon12, icon13, icon14, icon15, icon16, icon17, icon18, icon19, icon20):
-#	applyEffect(self, "bleeding", true)
-#	applyEffect(self, "hungry", true)
-	applyEffect(self, "frozen", true)
-	applyEffect(self, "stunned", true)
-	applyEffect(self, "blinded", true)
-#	applyEffect(self, "terrorized", true)
-#	applyEffect(self, "scared", true)
-#	applyEffect(self, "intimidated", true)
-
-	# Reset all icons
-	var all_icons = [icon1, icon2, icon3, icon4, icon5, icon6, icon7, icon8, icon9, icon10, icon11, icon12, icon13, icon14, icon15, icon16, icon17, icon18, icon19, icon20]
+func showStatusIcon(icon1, icon2, icon3, icon4, icon5, icon6, icon7, icon8, icon9, icon10, icon11, icon12, icon13, icon14, icon15, icon16, icon17, icon18, icon19, icon20, icon21, icon22, icon23, icon24):
+	
+	var all_icons = [icon1, icon2, icon3, icon4, icon5, icon6, icon7, icon8, icon9, icon10, icon11, icon12, icon13, icon14, icon15, icon16, icon17, icon18, icon19, icon20, icon21, icon22, icon23, icon24]
 	for icon in all_icons:
 		icon.texture = null
 		icon.modulate = Color(1, 1, 1)
@@ -593,7 +606,22 @@ func showStatusIcon(icon1, icon2, icon3, icon4, icon5, icon6, icon7, icon8, icon
 	var terrorized_texture = preload("res://DebuffIcons/terrorized.png")
 	var scared_texture = preload("res://DebuffIcons/scared.png")
 	var intimidated_texture = preload("res://DebuffIcons/intimidated.png")
-	var effect1_texture = preload("res://DebuffIcons/bleed.png")
+	var rooted_texture = preload("res://DebuffIcons/chained.png")
+	var blockbuffs_texture = preload("res://DebuffIcons/blockbuffs.png")
+	var block_active_texture = preload("res://DebuffIcons/blockactiveskills.png") 
+	var block_passive_texture = preload("res://DebuffIcons/blockpassive.png")
+	var broken_defense_texture = preload("res://DebuffIcons/broken defense.png") 
+	var bomb_texture = preload("res://DebuffIcons/bomb.png") 
+	var heal_reduction_texture = preload("res://DebuffIcons/healreduction.png")
+	var slow_texture = preload("res://DebuffIcons/slow.png")
+	var burn_texture = preload("res://DebuffIcons/burn.png")
+	var sleep_texture = preload("res://DebuffIcons/sleep.png")
+	var weakness_texture = preload("res://DebuffIcons/weakness.png")
+	var poisoned_texture = preload("res://DebuffIcons/poisoned.png")
+	var confusion_texture = preload("res://DebuffIcons/confusion.png")
+	var impaired_texture = preload("res://DebuffIcons/impaired.png")
+	var lethargy_texture = preload("res://DebuffIcons/Cooldown increased.png")
+	var red_potion_texture = preload("res://Potions/Red potion.png")
 	# Apply status icons based on applied effects
 	var applied_effects = [
 		{"name": "dehydration", "texture": dehydration_texture, "modulation_color": Color(1, 0, 0)},
@@ -607,7 +635,22 @@ func showStatusIcon(icon1, icon2, icon3, icon4, icon5, icon6, icon7, icon8, icon
 		{"name": "terrorized", "texture": terrorized_texture, "modulation_color": Color(1, 1, 1)},
 		{"name": "scared", "texture": scared_texture, "modulation_color": Color(1, 1, 1)},
 		{"name": "intimidated", "texture": intimidated_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "effect1", "texture": effect1_texture, "modulation_color": Color(1, 1, 1)}
+		{"name": "rooted", "texture": rooted_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "blockbuffs", "texture": blockbuffs_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "blockactive", "texture": block_active_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "blockpassive", "texture": block_passive_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "brokendefense", "texture": broken_defense_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "healreduction", "texture": heal_reduction_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "bomb", "texture": bomb_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "slow", "texture": slow_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "burn", "texture": burn_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "sleep", "texture": sleep_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "weakness", "texture": weakness_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "poisoned", "texture": poisoned_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "confused", "texture": confusion_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "impaired", "texture": impaired_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "lethargy", "texture": lethargy_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "redpotion", "texture": red_potion_texture, "modulation_color": Color(1, 1, 1)},
 	]
 
 	for effect in applied_effects:
@@ -617,6 +660,3 @@ func showStatusIcon(icon1, icon2, icon3, icon4, icon5, icon6, icon7, icon8, icon
 					icon.texture = effect["texture"]
 					icon.modulate = effect["modulation_color"]
 					break  # Exit loop after applying status to the first available icon
-
-
-

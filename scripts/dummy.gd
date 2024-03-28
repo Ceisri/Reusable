@@ -292,18 +292,9 @@ func applyEffect(player: Node, effect_name: String, active: bool):
 		print("Effect not found:", effect_name)
 
 
-func showStatusIcon(icon1, icon2, icon3, icon4, icon5, icon6, icon7, icon8, icon9, icon10, icon11, icon12, icon13, icon14, icon15, icon16, icon17, icon18, icon19, icon20):
-##	applyEffect(self, "bleeding", true)
-##	applyEffect(self, "hungry", true)
-#	applyEffect(self, "frozen", true)
-#	applyEffect(self, "stunned", true)
-#	applyEffect(self, "blinded", true)
-	applyEffect(self, "terrorized", true)
-	applyEffect(self, "scared", true)
-	applyEffect(self, "intimidated", true)
-
-	# Reset all icons
-	var all_icons = [icon1, icon2, icon3, icon4, icon5, icon6, icon7, icon8, icon9, icon10, icon11, icon12, icon13, icon14, icon15, icon16, icon17, icon18, icon19, icon20]
+func showStatusIcon(icon1, icon2, icon3, icon4, icon5, icon6, icon7, icon8, icon9, icon10, icon11, icon12, icon13, icon14, icon15, icon16, icon17, icon18, icon19, icon20, icon21, icon22, icon23, icon24):
+	
+	var all_icons = [icon1, icon2, icon3, icon4, icon5, icon6, icon7, icon8, icon9, icon10, icon11, icon12, icon13, icon14, icon15, icon16, icon17, icon18, icon19, icon20, icon21, icon22, icon23, icon24]
 	for icon in all_icons:
 		icon.texture = null
 		icon.modulate = Color(1, 1, 1)
@@ -320,7 +311,22 @@ func showStatusIcon(icon1, icon2, icon3, icon4, icon5, icon6, icon7, icon8, icon
 	var terrorized_texture = preload("res://DebuffIcons/terrorized.png")
 	var scared_texture = preload("res://DebuffIcons/scared.png")
 	var intimidated_texture = preload("res://DebuffIcons/intimidated.png")
-	var effect1_texture = preload("res://DebuffIcons/bleed.png")
+	var rooted_texture = preload("res://DebuffIcons/chained.png")
+	var blockbuffs_texture = preload("res://DebuffIcons/blockbuffs.png")
+	var block_active_texture = preload("res://DebuffIcons/blockactiveskills.png") 
+	var block_passive_texture = preload("res://DebuffIcons/blockpassive.png")
+	var broken_defense_texture = preload("res://DebuffIcons/broken defense.png") 
+	var bomb_texture = preload("res://DebuffIcons/bomb.png") 
+	var heal_reduction_texture = preload("res://DebuffIcons/healreduction.png")
+	var slow_texture = preload("res://DebuffIcons/slow.png")
+	var burn_texture = preload("res://DebuffIcons/burn.png")
+	var sleep_texture = preload("res://DebuffIcons/sleep.png")
+	var weakness_texture = preload("res://DebuffIcons/weakness.png")
+	var poisoned_texture = preload("res://DebuffIcons/poisoned.png")
+	var confusion_texture = preload("res://DebuffIcons/confusion.png")
+	var impaired_texture = preload("res://DebuffIcons/impaired.png")
+	var lethargy_texture = preload("res://DebuffIcons/Cooldown increased.png")
+	var red_potion_texture = preload("res://Potions/Red potion.png")
 	# Apply status icons based on applied effects
 	var applied_effects = [
 		{"name": "dehydration", "texture": dehydration_texture, "modulation_color": Color(1, 0, 0)},
@@ -334,7 +340,22 @@ func showStatusIcon(icon1, icon2, icon3, icon4, icon5, icon6, icon7, icon8, icon
 		{"name": "terrorized", "texture": terrorized_texture, "modulation_color": Color(1, 1, 1)},
 		{"name": "scared", "texture": scared_texture, "modulation_color": Color(1, 1, 1)},
 		{"name": "intimidated", "texture": intimidated_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "effect1", "texture": effect1_texture, "modulation_color": Color(1, 1, 1)}
+		{"name": "rooted", "texture": rooted_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "blockbuffs", "texture": blockbuffs_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "blockactive", "texture": block_active_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "blockpassive", "texture": block_passive_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "brokendefense", "texture": broken_defense_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "healreduction", "texture": heal_reduction_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "bomb", "texture": bomb_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "slow", "texture": slow_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "burn", "texture": burn_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "sleep", "texture": sleep_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "weakness", "texture": weakness_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "poisoned", "texture": poisoned_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "confused", "texture": confusion_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "impaired", "texture": impaired_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "lethargy", "texture": lethargy_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "redpotion", "texture": red_potion_texture, "modulation_color": Color(1, 1, 1)},
 	]
 
 	for effect in applied_effects:

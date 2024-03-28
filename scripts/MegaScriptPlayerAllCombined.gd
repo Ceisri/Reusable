@@ -274,7 +274,7 @@ func physicsSauce():
 	move_and_slide(movement, Vector3.UP)
 #__________________________________________More action based movement_______________________________
 # Dodge
-export var double_press_time: float = 0.4
+export var double_press_time: float = 0.25
 var dash_countback: int = 0
 var dash_timerback: float = 0.0
 # Dodge Left
@@ -526,8 +526,13 @@ func showEnemyStats():
 	$UI/GUI/EnemyUI/StatusGrid/Icon17,
 	$UI/GUI/EnemyUI/StatusGrid/Icon18,
 	$UI/GUI/EnemyUI/StatusGrid/Icon19,
-	$UI/GUI/EnemyUI/StatusGrid/Icon20
+	$UI/GUI/EnemyUI/StatusGrid/Icon20,
+	$UI/GUI/EnemyUI/StatusGrid/Icon21,
+	$UI/GUI/EnemyUI/StatusGrid/Icon22,
+	$UI/GUI/EnemyUI/StatusGrid/Icon23,
+	$UI/GUI/EnemyUI/StatusGrid/Icon24
 )
+
 
 		else:
 			# Start tween to fade out
@@ -849,9 +854,6 @@ func doubleAttack(delta):
 			elif double_atk_animation_duration < 0: 
 					double_atk_animation_duration = 0
 					
-					
-					
-					
 func stompKickDealDamage():
 	shake_camera(0.2, 0.05, 0, 1)
 	var damage_type = "blunt"
@@ -860,9 +862,9 @@ func stompKickDealDamage():
 	var enemies = $Mesh/Detector.get_overlapping_bodies()
 	for enemy in enemies:
 		if enemy.is_in_group("enemy"):
-			enemy.applyEffect(enemy,"effect1", true)
+			enemy.applyEffect(enemy,"bleeding", true)
 			if enemy.has_method("takeDamage"):
-				pushEnemyAway(5, enemy,1)
+				pushEnemyAway(2, enemy,0.25)
 				if is_on_floor():
 					#insert sound effect here
 					if randf() <= critical_chance *0:
@@ -871,19 +873,65 @@ func stompKickDealDamage():
 					else:
 						enemy.takeDamage(damage,aggro_power,self,stagger_chance,damage_type)
 
+
+
 func pushEnemyAway(push_distance, enemy, push_speed):
 	var direction_to_enemy = enemy.global_transform.origin - global_transform.origin
-	direction_to_enemy.y = 0  #no vertical push
+	direction_to_enemy.y = 0  # No vertical push
 	direction_to_enemy = direction_to_enemy.normalized()
 	
 	var motion = direction_to_enemy * push_speed
+	var acceleration_time = push_speed / 2.0
+	var deceleration_distance = motion.length() * acceleration_time * 0.5
+	
 	var collision = enemy.move_and_collide(motion)
-	if collision: # extra collision if the dipshit hits a wall after being pushed away 
+	if collision:
+		# Extra collision handling if the enemy hits a wall after being pushed away
+		enemy.takeDamage(10, 100, self, 1, "bleed")
+		
+		# Calculate bounce-back direction
+		var normal = collision.normal
+		var bounce_motion = -2 * normal * normal.dot(motion) + motion
+		
+		# Move the enemy slightly away from the wall to avoid sticking
+		enemy.translation += normal * 0.1 * collision.travel
+		
+		# Tween the bounce-back motion
+		tween.interpolate_property(enemy, "translation", enemy.translation, enemy.translation + bounce_motion * push_distance, acceleration_time, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
+		tween.start()
+	else:
+		# Tween the movement over time with initial acceleration followed by instant stop
+		tween.interpolate_property(enemy, "translation", enemy.translation, enemy.translation + motion * push_distance, acceleration_time, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
+		tween.interpolate_property(enemy, "translation", enemy.translation + motion * push_distance, enemy.translation + motion * (push_distance - deceleration_distance), acceleration_time, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT, acceleration_time)
+
+		tween.start()
+
+
+
+
+
+func bouncheEnemy(push_distance, enemy, push_speed):
+	var direction_to_enemy = enemy.global_transform.origin - global_transform.origin
+	direction_to_enemy.y = 0  # No vertical push
+	direction_to_enemy = direction_to_enemy.normalized()
+	var acceleration_time = push_speed / 2.0  # Adjust as needed for faster or slower acceleration
+	# Calculate distance for deceleration
+	
+	var motion = direction_to_enemy * push_speed
+	var deceleration_distance = motion.length() * acceleration_time * 0.5
+	var collision = enemy.move_and_collide(motion)
+	if collision: 
+		# Extra collision handling if the enemy hits a wall after being pushed away
 		enemy.takeDamage(10, 100, self, 1, "bleed")
 
-
-
+	# Calculate time to reach full speed (acceleration time)
 	
+	
+	# Tween the movement over time with initial acceleration followed by instant stop
+	tween.interpolate_property(enemy, "translation", enemy.translation, enemy.translation + motion * push_distance, acceleration_time, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
+	tween.interpolate_property(enemy, "translation", enemy.translation + motion * push_distance, enemy.translation, acceleration_time, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT, acceleration_time)
+	tween.start()
+
 
 
 func slideDealDamage():
@@ -1945,11 +1993,11 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 		if sec_weap_icon.texture != null:
 			if sec_weap_icon.texture.get_path() == add_item.wood_sword.get_path():
 				secondary_weapon = "sword0"
-				applyEffect(self, "effect1", true)
+
 		elif sec_weap_icon.texture == null:
 			removeSecWeapon()
 			secondary_weapon = "null"
-			applyEffect(self, "effect1", false)	
+
 #_______________________________head____________________________________________
 	var helm_icon = $UI/GUI/Equipment/EquipmentBG/Helm/Icon
 	if helm_icon != null:
@@ -2446,7 +2494,7 @@ func _on_Toilet1_pressed():
 		var enemies = $Mesh/Piss.get_node("Area").get_overlapping_bodies()
 		for enemy in enemies:
 			if enemy.is_in_group("enemy"):
-				enemy.applyEffect(enemy,"effect1", true)
+				enemy.applyEffect(enemy,"slow", true)
 				if enemy.has_method("takeDamage"):
 					if is_on_floor():
 						#insert sound effect here
@@ -5422,4 +5470,3 @@ func _on_pressme2_pressed():
 	bleed_resistance= rng.randi_range(-125, 125)
 	neuro_resistance= rng.randi_range(-125, 125)
 	radiant_resistance= rng.randi_range(-125, 125)
-
