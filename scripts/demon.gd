@@ -97,12 +97,13 @@ func rotateTowardsTarget(target: PlayerAggro):
 		if not is_idle:
 			move_and_slide(getSlideVelocity(walk_speed))
 
+var direction
 
 func moveTowardsPlayerWithHighestAggro():
 	var target = findTargetWithHighestAggro()
 	if target and not is_target_at_melee_range:
 		# Assuming the enemy has a KinematicBody and a speed variable
-		var direction = (target.player.global_transform.origin - global_transform.origin).normalized()
+		direction = (target.player.global_transform.origin - global_transform.origin).normalized()
 		direction.y = 0  # Set the Y component to 0 to prevent flying
 		move_and_slide(direction * speed)
 #________________This Section is dedicated to moving towards random directions______________________
@@ -514,31 +515,64 @@ func slash():
 						enemy.takeDamage(damage,aggro_power,self,stagger_chance,damage_type)
 onready var tween = $Tween
 func pushEnemyAway(push_distance, enemy, push_speed):
-	var direction_to_enemy = enemy.global_transform.origin - global_transform.origin
-	direction_to_enemy.y = 0  # No vertical push
-	direction_to_enemy = direction_to_enemy.normalized()
-	
-	var motion = direction_to_enemy * push_speed
-	var acceleration_time = push_speed / 2.0
-	var deceleration_distance = motion.length() * acceleration_time * 0.5
-	var collision = enemy.move_and_collide(motion)
-	if collision: #this checks the dipshit hits a wall after you punch him 
-		#the dipshit takes damage from being pushed into something
-		#afterwards he is pushed back...like ball bouncing back but made of meat
-		enemy.takeDamage(10, 100, self, 1, "bleed")
-		# Calculate bounce-back direction
-		var normal = collision.normal
-		var bounce_motion = -2 * normal * normal.dot(motion) + motion
-		# Move the enemy slightly away from the wall to avoid sticking
-		enemy.translation += normal * 0.1 * collision.travel
-		# Tween the bounce-back motion
-		tween.interpolate_property(enemy, "translation", enemy.translation, enemy.translation + bounce_motion * push_distance, acceleration_time, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
-		tween.start()
+	if enemy.animation_state != null:
+		if enemy.animation_state != "guard":
+			if not isFacingSelf(enemy,0.45):
+				print("player is not facing the enemy")
+				if enemy.animation_state != "guard attack":
+					if enemy.animation_state != "guard walk":
+						var direction_to_enemy = enemy.global_transform.origin - global_transform.origin
+						direction_to_enemy.y = 0  # No vertical push
+						direction_to_enemy = direction_to_enemy.normalized()
+						
+						var motion = direction_to_enemy * push_speed
+						var acceleration_time = push_speed / 2.0
+						var deceleration_distance = motion.length() * acceleration_time * 0.5
+						var collision = enemy.move_and_collide(motion)
+						if collision: #this checks the dipshit hits a wall after you punch him 
+							#the dipshit takes damage from being pushed into something
+							#afterwards he is pushed back...like ball bouncing back but made of meat
+							enemy.takeDamage(10, 100, self, 1, "bleed")
+							# Calculate bounce-back direction
+							var normal = collision.normal
+							var bounce_motion = -2 * normal * normal.dot(motion) + motion
+							# Move the enemy slightly away from the wall to avoid sticking
+							enemy.translation += normal * 0.1 * collision.travel
+							# Tween the bounce-back motion
+							tween.interpolate_property(enemy, "translation", enemy.translation, enemy.translation + bounce_motion * push_distance, acceleration_time, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
+							tween.start()
+						else:
+							# Tween the movement over time with initial acceleration followed by instant stop
+							tween.interpolate_property(enemy, "translation", enemy.translation, enemy.translation + motion * push_distance, acceleration_time, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
+							tween.interpolate_property(enemy, "translation", enemy.translation + motion * push_distance, enemy.translation + motion * (push_distance - deceleration_distance), acceleration_time, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT, acceleration_time)
+							tween.start()
+
+
+func isFacingSelf(enemy: Node, threshold: float) -> bool:
+	# Get the global transform of the enemy
+	var enemy_global_transform = enemy.global_transform
+	# Get the global position of the calling object (self)
+	var self_global_transform = get_global_transform()
+	var self_position = self_global_transform.origin
+	# Get the global position of the enemy
+	var enemy_position = enemy_global_transform.origin
+	# Calculate the direction vector from the calling object (self) to the enemy
+	var direction_to_enemy = (enemy_position - self_position).normalized()
+	# Get the facing direction of the enemy from its Mesh node
+	var enemy_facing_direction = Vector3.ZERO
+	var enemy_mesh = enemy.get_node("Mesh")
+	if enemy_mesh:
+		enemy_facing_direction = enemy_mesh.global_transform.basis.z.normalized()
 	else:
-		# Tween the movement over time with initial acceleration followed by instant stop
-		tween.interpolate_property(enemy, "translation", enemy.translation, enemy.translation + motion * push_distance, acceleration_time, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
-		tween.interpolate_property(enemy, "translation", enemy.translation + motion * push_distance, enemy.translation + motion * (push_distance - deceleration_distance), acceleration_time, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT, acceleration_time)
-		tween.start()
+		# If Mesh node is not found, use the default facing direction of the enemy
+		enemy_facing_direction = enemy_global_transform.basis.z.normalized()
+	# Calculate the dot product between the enemy's facing direction and the direction to the calling object (self)
+	var dot_product = -enemy_facing_direction.dot(direction_to_enemy)
+	# If the dot product is greater than a certain threshold, consider the enemy is facing the calling object (self)
+	return dot_product >= threshold
+
+
+
 
 
 

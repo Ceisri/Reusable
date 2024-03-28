@@ -209,7 +209,7 @@ func checkWallInclination():
 	else:
 		wall_incline = 0  # Set to 0 if there is no collision
 		is_wall_in_range = false
-var jump_animation_duration = 0
+export var  jump_animation_duration = 0
 var jump_animation_max_duration = 3
 var jump_mov_animation_duration = 0
 var jump_mov_animation_max_duration = 3
@@ -558,7 +558,7 @@ func matchAnimationStates():
 				horizontal_velocity = direction * slide_mov_speed
 			movement_speed = int(slide_mov_speed)
 		"base attack":
-			animation.play("full combo cycle",0.3,1.25)
+			animation.play("full combo cycle",0.3,melee_atk_speed)
 			if can_move == true:
 				horizontal_velocity = direction * 3
 				movement_speed = 3
@@ -567,7 +567,7 @@ func matchAnimationStates():
 				movement_speed = 0
 		"double attack":
 			if weapon_type == "fist":
-				animation.play("high kick",0.3,1)
+				animation.play("high kick",0.3,melee_atk_speed)
 			if can_move and !is_on_wall():
 				horizontal_velocity = direction * 7
 				movement_speed = 7
@@ -575,7 +575,7 @@ func matchAnimationStates():
 				horizontal_velocity = direction * 0.3
 				movement_speed = 0
 		"guard attack":
-			animation.play("stomp cycle",0.55,1)
+			animation.play("stomp cycle",0.55,melee_atk_speed + 0.05)
 			if can_move and !is_on_wall():
 				horizontal_velocity = direction * 2
 				movement_speed = 2
@@ -583,7 +583,7 @@ func matchAnimationStates():
 				horizontal_velocity = direction * 0.01
 				movement_speed = 0
 		"run attack":
-			animation.play("low kick",0.3)#placeholder
+			animation.play("low kick",0.3, melee_atk_speed)#placeholder
 			if can_move and !is_on_wall():
 				horizontal_velocity = direction * 2
 				movement_speed = 2
@@ -591,7 +591,7 @@ func matchAnimationStates():
 				horizontal_velocity = direction * 0.01
 				movement_speed = 0
 		"sprint attack":
-			animation.play("stomp kick",0.3)#placeholder
+			animation.play("stomp kick",0.3, melee_atk_speed)#placeholder
 			if can_move and !is_on_wall():
 				horizontal_velocity = direction * 2
 				movement_speed = 2
@@ -852,6 +852,10 @@ func doubleAttack(delta):
 				double_atk_animation_duration -= 0.1 
 			elif double_atk_animation_duration < 0: 
 					double_atk_animation_duration = 0
+func stopDoubleAttack():
+	double_atk_animation_duration = 0
+					
+					
 					
 func stompKickDealDamage():
 	shake_camera(0.2, 0.05, 0, 1)
@@ -870,8 +874,10 @@ func stompKickDealDamage():
 						var critical_damage = damage * critical_strength
 						enemy.takeDamage(critical_damage,aggro_power,self,stagger_chance,damage_type)
 					else:
-						enemy.takeDamage(damage,aggro_power,self,stagger_chance,damage_type)
-
+						if isFacingSelf(enemy,0.45):
+							enemy.takeDamage(damage,aggro_power,self,stagger_chance,damage_type)
+						else:
+							enemy.takeDamage(100,aggro_power,self,stagger_chance,"jolt")
 func pushEnemyAway(push_distance, enemy, push_speed):
 	var direction_to_enemy = enemy.global_transform.origin - global_transform.origin
 	direction_to_enemy.y = 0  # No vertical push
@@ -887,7 +893,7 @@ func pushEnemyAway(push_distance, enemy, push_speed):
 		enemy.takeDamage(10, 100, self, 1, "bleed")
 		# Calculate bounce-back direction
 		var normal = collision.normal
-		var bounce_motion = -2 * normal * normal.dot(motion) + motion
+		var bounce_motion = -4 * normal * normal.dot(motion) + motion
 		# Move the enemy slightly away from the wall to avoid sticking
 		enemy.translation += normal * 0.1 * collision.travel
 		# Tween the bounce-back motion
@@ -898,6 +904,32 @@ func pushEnemyAway(push_distance, enemy, push_speed):
 		tween.interpolate_property(enemy, "translation", enemy.translation, enemy.translation + motion * push_distance, acceleration_time, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
 		tween.interpolate_property(enemy, "translation", enemy.translation + motion * push_distance, enemy.translation + motion * (push_distance - deceleration_distance), acceleration_time, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT, acceleration_time)
 		tween.start()
+
+
+
+func isFacingSelf(enemy: Node, threshold: float) -> bool:
+	# Get the global transform of the enemy
+	var enemy_global_transform = enemy.global_transform
+	# Get the global position of the calling object (self)
+	var self_global_transform = get_global_transform()
+	var self_position = self_global_transform.origin
+	# Get the global position of the enemy
+	var enemy_position = enemy_global_transform.origin
+	# Calculate the direction vector from the calling object (self) to the enemy
+	var direction_to_enemy = (enemy_position - self_position).normalized()
+	# Get the facing direction of the enemy from its Mesh node
+	var enemy_facing_direction = Vector3.ZERO
+	var enemy_mesh = enemy.get_node("Mesh")
+	if enemy_mesh:
+		enemy_facing_direction = enemy_mesh.global_transform.basis.z.normalized()
+	else:
+		# If Mesh node is not found, use the default facing direction of the enemy
+		enemy_facing_direction = enemy_global_transform.basis.z.normalized()
+	# Calculate the dot product between the enemy's facing direction and the direction to the calling object (self)
+	var dot_product = -enemy_facing_direction.dot(direction_to_enemy)
+	# If the dot product is greater than a certain threshold, consider the enemy is facing the calling object (self)
+	return dot_product >= threshold
+
 
 
 func bouncheEnemy(push_distance, enemy, push_speed):
@@ -1167,6 +1199,7 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
 			staggered += 0.5
 			text.status = "Staggered"
 	if animation_state == "guard":
+		parryIcon()
 		health -= (damage_to_take / guard_dmg_absorbition)
 		text.amount = ((damage_to_take / guard_dmg_absorbition) * 100)/ 100
 		text.status = "Guarded"
@@ -1177,9 +1210,27 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
 		text.state = damage_type
 	take_damage_view.add_child(text)
 
+#__________________________________Combat UI____________________________________
+
+onready var parry_icon = $UI/GUI/ParryIcon
+var animation_duration = 500  # Animation duration in milliseconds
+var start_time = 0
+var total_elapsed_time = 0  # Total elapsed time since the animation started
+var fading_in = true
+
+func parryIcon():
+	var parry_icon: TextureRect = $UI/GUI/ParryIcon
+	var icon_duration: float = 0.5
+
+	# Check if the tween is already active
+	if not tween.is_active():
+		# Modulating the alpha value over time
+		tween.interpolate_property(parry_icon, "modulate:a", 1.0, 0.0, icon_duration,
+									Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
+		tween.start()
 
 
-#___________________________________close buttons/inputs_______________________________
+#_____________________________close buttons/inputs______________________________
 
 var cursor_visible: bool = false
 onready var keybinds: Control = $UI/GUI/Keybinds
