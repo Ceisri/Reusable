@@ -63,6 +63,7 @@ func _on_3FPS_timeout():
 func _physics_process(delta: float) -> void:
 	$Debug.text = animation_state
 #	displayClock()
+	convertStats()
 	ChopTree()
 	limitStatsToMaximum()
 	cameraRotation(delta)
@@ -858,26 +859,34 @@ func stopDoubleAttack():
 					
 					
 func stompKickDealDamage():
-	shake_camera(0.2, 0.05, 0, 1)
+	convertStats()
 	var damage_type = "blunt"
-	var damage = 0 + blunt_dmg
+	var damage = 10 + blunt_dmg 
+	var damage_flank = damage + flank_dmg
+	var critical_damage : float  = damage * critical_strength
+	var critical_flank_damage : float  = damage_flank * critical_strength
 	var aggro_power = damage + 20
 	var enemies = $Mesh/Detector.get_overlapping_bodies()
 	for enemy in enemies:
 		if enemy.is_in_group("enemy"):
-			enemy.applyEffect(enemy,"bleeding", true)
 			if enemy.has_method("takeDamage"):
 				pushEnemyAway(2, enemy,0.25)
 				if is_on_floor():
+					convertStats()
 					#insert sound effect here
-					if randf() <= critical_chance *0:
-						var critical_damage = damage * critical_strength
-						enemy.takeDamage(critical_damage,aggro_power,self,stagger_chance,damage_type)
+					if randf() <= critical_chance:
+						convertStats()
+						if isFacingSelf(enemy,0.30): #check if the enemy is looking at me 
+							enemy.takeDamage(critical_damage,aggro_power,self,stagger_chance,"acid")
+						else: #apparently the enemy is showing his back or flanks, extra damagec
+							enemy.takeDamage(critical_flank_damage,aggro_power,self,stagger_chance,"toxic")
 					else:
-						if isFacingSelf(enemy,0.45):
-							enemy.takeDamage(damage,aggro_power,self,stagger_chance,damage_type)
-						else:
-							enemy.takeDamage(100,aggro_power,self,stagger_chance,"jolt")
+						convertStats()
+						if isFacingSelf(enemy,0.30): #check if the enemy is looking at me 
+							enemy.takeDamage(damage,aggro_power,self,stagger_chance,"heat")
+						else: #apparently the enemy is showing his back or flanks, extra damagec
+							enemy.takeDamage(damage_flank,aggro_power,self,stagger_chance,"jolt")
+
 func pushEnemyAway(push_distance, enemy, push_speed):
 	var direction_to_enemy = enemy.global_transform.origin - global_transform.origin
 	direction_to_enemy.y = 0  # No vertical push
@@ -932,6 +941,8 @@ func isFacingSelf(enemy: Node, threshold: float) -> bool:
 
 
 
+
+
 func bouncheEnemy(push_distance, enemy, push_speed):
 	var direction_to_enemy = enemy.global_transform.origin - global_transform.origin
 	direction_to_enemy.y = 0  # No vertical push
@@ -965,17 +976,20 @@ func slideDealDamage():
 					#insert sound effect here
 					if randf() <= critical_chance:
 						var critical_damage = damage * critical_strength
-						enemy.takeDamage(critical_damage,aggro_power,self,stagger_chance,damage_type)
+						enemy.takeDamage(critical_damage,aggro_power,self,stagger_chance,"heat")
 					else:
-						enemy.takeDamage(damage,aggro_power,self,stagger_chance,damage_type)
+						if isFacingSelf(enemy,0.30): #check if the enemy is looking at me 
+							enemy.takeDamage(damage,aggro_power,self,stagger_chance,damage_type)
+						else: #apparently the enemy is showing his back or flanks, extra damagec
+							enemy.takeDamage(7,aggro_power,self,stagger_chance,"jolt")
 				else:#jump attack kick slide
 					pushEnemyAway(5, enemy,0.25)
 					#insert sound effect here
 					if randf() <= critical_chance:
 						var critical_damage = damage * critical_strength
-						enemy.takeDamage(critical_damage *2,aggro_power,self,stagger_chance,damage_type)
+						enemy.takeDamage(critical_damage,aggro_power,self,stagger_chance,damage_type)
 					else:
-						enemy.takeDamage(damage *2 ,aggro_power,self,stagger_chance,damage_type)
+						enemy.takeDamage(30,aggro_power,self,stagger_chance,damage_type)
 func PunchDealDamage1():
 	var damage_type = "blunt"
 	var damage = 10
@@ -991,14 +1005,17 @@ func PunchDealDamage1():
 						var critical_damage = damage * critical_strength
 						enemy.takeDamage(critical_damage,aggro_power,self,stagger_chance,damage_type)
 					else:
-						enemy.takeDamage(damage,aggro_power,self,stagger_chance,damage_type)
+						if isFacingSelf(enemy,0.30): #check if the enemy is looking at me 
+							enemy.takeDamage(damage,aggro_power,self,stagger_chance,damage_type)
+						else: #apparently the enemy is showing his back or flanks, extra damagec
+							enemy.takeDamage(damage * 1.5,aggro_power,self,stagger_chance,"jolt")
 				else:#jump attack kick slide
 					#insert sound effect here
 					if randf() <= critical_chance:
 						var critical_damage = damage * critical_strength
 						enemy.takeDamage(critical_damage *2,aggro_power,self,stagger_chance,damage_type)
 					else:
-						enemy.takeDamage(damage *2 ,aggro_power,self,stagger_chance,damage_type)
+						enemy.takeDamage(30,aggro_power,self,stagger_chance,damage_type)
 func PunchDealDamage2():
 	var damage_type = "blunt"
 	var damage = 5
@@ -1014,14 +1031,17 @@ func PunchDealDamage2():
 						var critical_damage = damage * critical_strength
 						enemy.takeDamage(critical_damage,aggro_power,self,stagger_chance,damage_type)
 					else:
-						enemy.takeDamage(damage,aggro_power,self,stagger_chance,damage_type)
+						if isFacingSelf(enemy,0.30): #check if the enemy is looking at me 
+							enemy.takeDamage(damage,aggro_power,self,stagger_chance,damage_type)
+						else: #apparently the enemy is showing his back or flanks, extra damagec
+							enemy.takeDamage(damage * 1.5,aggro_power,self,stagger_chance,"jolt")
 				else:#jump attack kick slide
 					#insert sound effect here
 					if randf() <= critical_chance:
 						var critical_damage = damage * critical_strength
 						enemy.takeDamage(critical_damage *2,aggro_power,self,stagger_chance,damage_type)
 					else:
-						enemy.takeDamage(damage *2 ,aggro_power,self,stagger_chance,damage_type)
+						enemy.takeDamage(30 ,aggro_power,self,stagger_chance,damage_type)
 func PunchDealDamage3():
 	var damage_type = "blunt"
 	var damage = 15
@@ -1037,7 +1057,10 @@ func PunchDealDamage3():
 						var critical_damage = damage * critical_strength
 						enemy.takeDamage(critical_damage,aggro_power,self,stagger_chance,damage_type)
 					else:
-						enemy.takeDamage(damage,aggro_power,self,stagger_chance,damage_type)
+						if isFacingSelf(enemy,0.30): #check if the enemy is looking at me 
+							enemy.takeDamage(damage,aggro_power,self,stagger_chance,damage_type)
+						else: #apparently the enemy is showing his back or flanks, extra damagec
+							enemy.takeDamage(30,aggro_power,self,stagger_chance,"jolt")
 				else:#jump attack kick slide
 					#insert sound effect here
 					if randf() <= critical_chance:
@@ -2644,7 +2667,7 @@ const base_ranged_atk_speed: int = 1
 var ranged_atk_speed: float = 1 
 const base_casting_speed: int  = 1 
 var critical_chance: float = 0.00
-var critical_strength: float = 2
+var critical_strength: float = 2.0
 var stagger_chance: float = 0.00
 var life_steal: float = 0
 #resistances
@@ -2671,10 +2694,15 @@ var guard_dmg_absorbition: float = 2 #total damage taken will be divided by this
 
 var staggered = 0 
 
+var base_flank_dmg : float = 10.0
+var flank_dmg: float = 10.0 #extra damage to add to backstabs 
+
+var extra_melee_atk_speed : float = 0
+
 
 var slash_dmg: int = 0 
 var pierce_dmg: int = 0
-var blunt_dmg: int = 0
+var blunt_dmg: int = 10
 var sonic_dmg: int = 0
 var heat_dmg: int = 0
 var cold_dmg: int = 0
@@ -2724,11 +2752,6 @@ var extra_loyalty : float = 0
 var extra_diplomacy : float = 0
 var extra_authority : float = 0
 var extra_courage : float = 0
-
-
-
-
-var extra_melee_atk_speed : float = 0
 
 
 var total_sanity: float = 0
@@ -2791,6 +2814,10 @@ func limitStatsToMaximum():
 		resolve = max_resolve
 
 func convertStats():
+	resistanceMath()
+	attackSpeedMath()
+	flankDamageMath()
+	updateCritical()
 	total_sanity = extra_sanity + sanity
 	total_wisdom = extra_wisdom + wisdom
 	total_memory = extra_memory + memory
@@ -2839,7 +2866,12 @@ func convertStats():
 	
 	stagger_chance = max(0, (impact - 1.00) * 0.45) +  max(0, (ferocity - 1.00) * 0.005) 
 	
-#___________atks speed formulas
+func flankDamageMath():
+	flank_dmg = (base_flank_dmg * (ferocity + accuracy)) 
+
+
+
+func attackSpeedMath():
 	var bonus_universal_speed = (celerity -1) * 0.15
 	var atk_speed_formula = (dexterity - scale_factor ) * 0.5 
 	melee_atk_speed = base_melee_atk_speed + atk_speed_formula + bonus_universal_speed + extra_melee_atk_speed
@@ -2851,7 +2883,7 @@ func convertStats():
 	casting_speed = base_casting_speed + atk_speed_formula_casting	
 	
 	
-#____________resistance attribute formula
+func resistanceMath():
 	var additional_resistance: float  = 0
 	var res_multiplier : float  = 0.5
 	if resistance > 1:
@@ -2864,7 +2896,6 @@ func convertStats():
 	max_resolve = base_max_resolve * (tenacity + additional_resistance)
 
 
-	
 
 
 
@@ -2872,11 +2903,10 @@ func convertStats():
 
 
 func updateCritical():
-	critical_chance = max(0, (accuracy - 1.00) * 0.5) +  max(0, (impact - 1.00) * 0.005) 
-	critical_strength = ((ferocity -1) * 2) 
+	var critical_chance = max(0, (accuracy - 1.00) * 0.5) +  max(0, (impact - 1.00) * 0.005) 
+	var critical_strength = max(1.0, ((ferocity - 1) * 2))  # Ensure critical_strength is at least 1.0
 	critical_chance_val.text = str(round(critical_chance * 100 * 1000) / 1000) + "%"
 	critical_str_val.text = "x" + str(critical_strength)
-
 
 
 
@@ -2976,6 +3006,11 @@ func displayLabels():
 	displayStats(life_steal_label,life_steal)
 	var stagger_chance_label: Label = $UI/GUI/Equipment/EquipmentBG/CombatStats/GridContainer/StaggerChanceValue
 	displayStats(stagger_chance_label,stagger_chance)
+	
+	
+	var flank_dmg_label = $UI/GUI/Equipment/EquipmentBG/CombatStats/GridContainer/FlankDMGValue
+	displayStats(flank_dmg_label,flank_dmg)
+	
 	
 	var int_lab = $UI/GUI/Equipment/Attributes/Intelligence/value
 	displayStats(int_lab, total_intelligence)

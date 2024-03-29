@@ -237,21 +237,21 @@ var empathy = 1
 
 #__________________________________________Defenses and stuff_______________________________________
 #resistances
-var slash_resistance = 25
-var pierce_resistance = 25
-var blunt_resistance = 25
-var sonic_resistance = 25
-var heat_resistance = 25
-var cold_resistance = 25
-var jolt_resistance = 25
-var toxic_resistance = 25
-var acid_resistance = 25
-var bleed_resistance = 25
-var neuro_resistance = 25
-var radiant_resistance = 25
+var slash_resistance = 12
+var pierce_resistance = 12
+var blunt_resistance = 12
+var sonic_resistance = 12
+var heat_resistance = 12
+var cold_resistance = 12
+var jolt_resistance = 12
+var toxic_resistance = 12
+var acid_resistance = 15
+var bleed_resistance = 15
+var neuro_resistance = 5
+var radiant_resistance = 15
 
 var stagger_resistance = 0.5
-var deflection_chance = 0.33
+var deflection_chance = 0
 
 #___________________________________Status effects______________________________
 # Define effects and their corresponding stat changes
