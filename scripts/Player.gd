@@ -1,6 +1,8 @@
 extends KinematicBody
 onready var player_mesh = $Mesh
-onready var animation = $Mesh/Race/AnimationPlayer
+onready var animation: AnimationPlayer = $Mesh/Race/AnimationPlayer
+
+
 var rng = RandomNumberGenerator.new()
 var injured: bool = false
 var blend: float = 0.25
@@ -35,7 +37,7 @@ func _on_SlowTimer_timeout():
 	switchHandR()
 	switchFootL()
 	switchFootR()
-	
+	saveSkillBarData()
 	convertStats()
 	money()
 	hunger()
@@ -710,6 +712,12 @@ func skills(slot):
 					animation.play("combo attack 2hander cycle", 0.35)
 				elif slot.texture.resource_path == "res://UI/graphics/SkillIcons/selfheal.png":
 					animation.play("crawl cycle", 0.35)
+				elif slot.texture.resource_path == "res://Classes/Necromant/Class Icons/SummonShadow.png":
+					animation.play("idle crouch", 0.35)
+					#slot.get_parent().get_node("CD").text = str($UI/GUI/SkillTrees/Background/Necromant.lastSummonTime)
+					$UI/GUI/SkillTrees/Background/Necromant.summonDemon()
+				elif slot.texture.resource_path == "res://Classes/Necromant/Class Icons/Dominion.png":	
+					$UI/GUI/SkillTrees/Background/Necromant.commandSwitch()
 				else:
 					pass
 var sprint_animation_speed : float = 1
@@ -859,7 +867,6 @@ func stopDoubleAttack():
 					
 					
 func stompKickDealDamage():
-	convertStats()
 	var damage_type = "blunt"
 	var damage = 10 + blunt_dmg 
 	var damage_flank = damage + flank_dmg
@@ -872,16 +879,13 @@ func stompKickDealDamage():
 			if enemy.has_method("takeDamage"):
 				pushEnemyAway(2, enemy,0.25)
 				if is_on_floor():
-					convertStats()
 					#insert sound effect here
 					if randf() <= critical_chance:
-						convertStats()
 						if isFacingSelf(enemy,0.30): #check if the enemy is looking at me 
 							enemy.takeDamage(critical_damage,aggro_power,self,stagger_chance,"acid")
 						else: #apparently the enemy is showing his back or flanks, extra damagec
 							enemy.takeDamage(critical_flank_damage,aggro_power,self,stagger_chance,"toxic")
 					else:
-						convertStats()
 						if isFacingSelf(enemy,0.30): #check if the enemy is looking at me 
 							enemy.takeDamage(damage,aggro_power,self,stagger_chance,"heat")
 						else: #apparently the enemy is showing his back or flanks, extra damagec
@@ -1424,10 +1428,27 @@ func saveInventoryData():
 			if child.get_node("Icon").has_method("savedata"):
 				child.get_node("Icon").savedata()
 func saveSkillBarData():
-	for child in $UI/GUI/SkillBar/GridContainer.get_children():
-		if child.has_method("savedata"):
-			child.savedata()
-
+	$UI/GUI/SkillBar/GridContainer/SlotQ/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/SlotE/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/SlotR/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/SlotT/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/SlotF/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/SlotG/Icon.savedata()	
+	$UI/GUI/SkillBar/GridContainer/SlotY/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/SlotH/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/SlotV/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/SlotB/Icon.savedata()
+	
+	$UI/GUI/SkillBar/GridContainer/Slot1/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/Slot2/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/Slot3/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/Slot4/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/Slot5/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/Slot6/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/Slot7/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/Slot8/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/Slot9/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/Slot0/Icon.savedata()	
 #__________________________________Inventory____________________________________
 #for this to work either preload all the item icons here or add the "AddItemToInventory.gd"
 #as an autoload, i called it add_item in my project, and i used it to to compre the path 
@@ -1526,7 +1547,6 @@ func _on_inventory_slot_mouse_entered(index):
 		elif icon_texture.get_path() == add_item.shoe1.get_path():
 			callToolTip(instance,"Farmer Shoe","+1 slash resistance.\n +1 blunt resistance.\n +3 pierce resistance.\n +1 heat resistance.\n +6 cold resistance.\n +15 jolt resistance.\n")
 
-			
 func _on_inventory_slot_mouse_exited(index):
 	for child in gui.get_children():
 		if child.is_in_group("Tooltip"):
@@ -1538,6 +1558,7 @@ func callToolTip(instance,title, text):
 # Function to combine slots when pressed
 func _on_CombineSlots_pressed():
 	savePlayerData()
+	saveSkillBarData()
 	saveInventoryData()
 	var combined_items = {}  # Dictionary to store combined items
 	for child in inventory_grid.get_children():
@@ -2896,25 +2917,16 @@ func resistanceMath():
 	max_resolve = base_max_resolve * (tenacity + additional_resistance)
 
 
-
-
-
-
-
-
 func updateCritical():
 	var critical_chance = max(0, (accuracy - 1.00) * 0.5) +  max(0, (impact - 1.00) * 0.005) 
 	var critical_strength = max(1.0, ((ferocity - 1) * 2))  # Ensure critical_strength is at least 1.0
 	critical_chance_val.text = str(round(critical_chance * 100 * 1000) / 1000) + "%"
 	critical_str_val.text = "x" + str(critical_strength)
 
-
-
 func updateScaleRelatedAttributes():
 	var scale_multiplication: float 
 	scale_multiplication = base_charisma * (charisma_multiplier * 0.8699 * (scale_factor * 1.15))
 	charisma = scale_multiplication 
-
 
 func updateAefisNefis():
 	var intelligence_portion = intelligence * 0.5
@@ -2922,8 +2934,6 @@ func updateAefisNefis():
 
 	max_aefis = base_max_aefis * (wisdom_portion + intelligence_portion)
 	max_nefis = base_max_nefis * instinct
-
-
 
 onready var hp_bar = $UI/GUI/Portrait/LifeBar
 onready var hp_label = $UI/GUI/Portrait/LifeLabel

@@ -85,50 +85,131 @@ var floatingtext_damage = preload("res://UI/floatingtext.tscn")
 onready var take_damage_audio = $TakeHit
 onready var take_damage_view  = $TakeDamageView/Viewport
 func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
-	take_damage_audio.play()
 	var random = randf()
 	var damage_to_take = damage
-	var instigatorAggro = getOrCreatePlayerAggro(instigator)
 	var text = floatingtext_damage.instance()
+	
 	if damage_type == "slash":
-		var mitigation = slash_resistance / (slash_resistance + 100.0)
+		var mitigation: float
+		if slash_resistance >= 0:
+			mitigation = slash_resistance / (slash_resistance + 100.0)
+		else:
+			# For every negative point of slash resistance, add to damage to take directly
+			damage_to_take += -slash_resistance
 		damage_to_take *= (1.0 - mitigation)
-		instigator.lifesteal(damage_to_take)
+		if instigator.has_method("lifesteal"):
+			instigator.lifesteal(damage_to_take)
+			
 	elif damage_type == "pierce":
-		var mitigation = pierce_resistance / (pierce_resistance + 100.0)
+		var mitigation: float
+		if pierce_resistance >= 0:
+			mitigation = pierce_resistance / (pierce_resistance + 100.0)
+		else:
+			damage_to_take += -pierce_resistance
 		damage_to_take *= (1.0 - mitigation)
-		instigator.lifesteal(damage_to_take)
+		if instigator.has_method("lifesteal"):
+			instigator.lifesteal(damage_to_take)
+			
 	elif damage_type == "blunt":
-		var mitigation = blunt_resistance / (blunt_resistance + 100.0)
+		var mitigation: float
+		if blunt_resistance >= 0:
+			mitigation = blunt_resistance / (blunt_resistance + 100.0)
+		else:
+			damage_to_take += -blunt_resistance
 		damage_to_take *= (1.0 - mitigation)
+		if instigator.has_method("lifesteal"):
+			instigator.lifesteal(damage_to_take)
+			
 	elif damage_type == "sonic":
-		var mitigation = sonic_resistance / (sonic_resistance + 100.0)
+		var mitigation: float
+		if sonic_resistance >= 0:
+			mitigation = sonic_resistance / (sonic_resistance + 100.0)
+		else:
+			damage_to_take += -sonic_resistance
 		damage_to_take *= (1.0 - mitigation)
+		if instigator.has_method("lifesteal"):
+			instigator.lifesteal(damage_to_take)
+			
 	elif damage_type == "heat":
-		var mitigation = heat_resistance / (heat_resistance + 100.0)
+		var mitigation: float
+		if heat_resistance >= 0:
+			mitigation = heat_resistance / (heat_resistance + 100.0)
+		else:
+			damage_to_take += -heat_resistance
 		damage_to_take *= (1.0 - mitigation)
-		instigator.lifesteal(damage_to_take)
+		if instigator.has_method("lifesteal"):
+			instigator.lifesteal(damage_to_take)
+			
 	elif damage_type == "cold":
-		var mitigation = cold_resistance / (cold_resistance + 100.0)
+		var mitigation: float
+		if cold_resistance >= 0:
+			mitigation = cold_resistance / (cold_resistance + 100.0)
+		else:
+			damage_to_take += -cold_resistance
 		damage_to_take *= (1.0 - mitigation)
+		if instigator.has_method("lifesteal"):
+			instigator.lifesteal(damage_to_take)
+			
 	elif damage_type == "jolt":
-		var mitigation = jolt_resistance / (jolt_resistance + 100.0)
+		var mitigation: float
+		if jolt_resistance >= 0:
+			mitigation = jolt_resistance / (jolt_resistance + 100.0)
+		else:
+			damage_to_take += -jolt_resistance
 		damage_to_take *= (1.0 - mitigation)
+		if instigator.has_method("lifesteal"):
+			instigator.lifesteal(damage_to_take)
+		
 	elif damage_type == "toxic":
-		var mitigation = toxic_resistance / (toxic_resistance + 100.0)
+		var mitigation: float
+		if toxic_resistance >= 0:
+			mitigation = toxic_resistance / (toxic_resistance + 100.0)
+		else:
+			damage_to_take += -toxic_resistance
 		damage_to_take *= (1.0 - mitigation)
+		if instigator.has_method("lifesteal"):
+			instigator.lifesteal(damage_to_take)
+		
 	elif damage_type == "acid":
-		var mitigation = acid_resistance / (acid_resistance + 100.0)
+		var mitigation: float
+		if acid_resistance >= 0:
+			mitigation = acid_resistance / (acid_resistance + 100.0)
+		else:
+			damage_to_take += -acid_resistance
 		damage_to_take *= (1.0 - mitigation)
+		if instigator.has_method("lifesteal"):
+			instigator.lifesteal(damage_to_take)
+		
 	elif damage_type == "bleed":
-		var mitigation = bleed_resistance / (bleed_resistance + 100.0)
+		var mitigation: float
+		if bleed_resistance >= 0:
+			mitigation = bleed_resistance / (bleed_resistance + 100.0)
+		else:
+			damage_to_take += -acid_resistance
 		damage_to_take *= (1.0 - mitigation)
+		if instigator.has_method("lifesteal"):
+			instigator.lifesteal(damage_to_take)
+		
 	elif damage_type == "neuro":
-		var mitigation = neuro_resistance / (neuro_resistance + 100.0)
+		var mitigation: float
+		if neuro_resistance >= 0:
+			mitigation = neuro_resistance / (neuro_resistance + 100.0)
+		else:
+			damage_to_take += -neuro_resistance
 		damage_to_take *= (1.0 - mitigation)
+		if instigator.has_method("lifesteal"):
+			instigator.lifesteal(damage_to_take)
+		
 	elif damage_type == "radiant":
-		var mitigation = radiant_resistance / (radiant_resistance + 100.0)
+		var mitigation: float
+		if radiant_resistance >= 0:
+			mitigation = radiant_resistance / (radiant_resistance + 100.0)
+		else:
+			damage_to_take += -radiant_resistance
 		damage_to_take *= (1.0 - mitigation)
+		if instigator.has_method("lifesteal"):
+			instigator.lifesteal(damage_to_take)
+		
 	if random < deflection_chance:
 		damage_to_take = damage_to_take / 2
 		text.status = "Deflected"
@@ -137,8 +218,9 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
 			staggered += 0.5
 			text.status = "Staggered"
 
-	health -= damage_to_take	
-	instigatorAggro.aggro += damage_to_take + aggro_power
+
+
+	health -= damage_to_take
 	text.amount =round(damage_to_take * 100)/ 100
 	text.state = damage_type
 	take_damage_view.add_child(text)
