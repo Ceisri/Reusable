@@ -718,6 +718,8 @@ func skills(slot):
 					$UI/GUI/SkillTrees/Background/Necromant.summonDemon()
 				elif slot.texture.resource_path == "res://Classes/Necromant/Class Icons/Dominion.png":	
 					$UI/GUI/SkillTrees/Background/Necromant.commandSwitch()
+				elif slot.texture.resource_path == "res://Classes/Necromant/Class Icons/Servitude in Death.png":	
+					
 				else:
 					pass
 var sprint_animation_speed : float = 1
