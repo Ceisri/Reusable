@@ -10,7 +10,7 @@ var base_damage: float = 15.0
 var damage: float = 15.0
 var aggro: float = 15.0
 var stagger_chance: float = 0.5
-var life_time: int = 1000
+var life_time: int = 200
 var velocity: Vector3 = Vector3.ZERO # Initial velocity
 var speed:float = 8.00
 

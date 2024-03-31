@@ -47,6 +47,8 @@ func burn():
 			if body.has_method("takeHealing"):
 					if instigator.isFacingSelf(body,0.30):
 						body.takeHealing(damage * 2,instigator)
+					else:
+						body.takeHealing(damage / 2,instigator)
 func die():
 	life_time -= 1 
 	if life_time <=0:
