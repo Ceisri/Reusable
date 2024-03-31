@@ -723,6 +723,8 @@ func skills(slot):
 					necromant.commandSwitch()
 				elif slot.texture.resource_path == autload.tribute.get_path():	
 					necromant.tribute()
+				elif slot.texture.resource_path == autload.servitude.get_path():	
+					necromant.areaSpell()
 				else:
 					pass
 var sprint_animation_speed : float = 1
