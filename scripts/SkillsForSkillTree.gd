@@ -15,7 +15,6 @@ func get_drag_data(position: Vector2):
 		"origin_slot": slot,
 		"origin_texture": icon.texture,
 		"origin_quantity": quantity,
-		"origin_item": item,
 		"type": type
 	}
 	var dragPreview = DRAGPREVIEW.instance()

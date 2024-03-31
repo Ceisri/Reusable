@@ -19,6 +19,7 @@ func _ready():
 	add_to_group("Entity")
 	connectUIButtons()
 	connectInventoryButtons()
+	connectSkillBarButtons()
 	connectAttributeButtons()
 	connectAttributeHovering()
 	connectHoveredResistanceLabels()
@@ -1502,15 +1503,15 @@ func connectInventoryButtons():
 		if child.is_in_group("Inventory"):
 			var index_str = child.get_name().split("InventorySlot")[1]
 			var index = int(index_str)
-			child.connect("pressed", self, "_on_inventory_slot_pressed", [index])
-			child.connect("mouse_entered", self, "_on_inventory_slot_mouse_entered", [index])
-			child.connect("mouse_exited", self, "_on_inventory_slot_mouse_exited", [index])
+			child.connect("pressed", self, "inventorySlotPressed", [index])
+			child.connect("mouse_entered", self, "inventoryMouseEntered", [index])
+			child.connect("mouse_exited", self, "inventoryMouseExited", [index])
 
 var last_pressed_index: int = -1
 var last_press_time: float = 0.0
 export var double_press_time_inv: float = 0.4
 
-func _on_inventory_slot_pressed(index):
+func inventorySlotPressed(index):
 	var button = inventory_grid.get_node("InventorySlot" + str(index))
 	var icon_texture_rect = button.get_node("Icon")
 	var icon_texture = icon_texture_rect.texture	
@@ -1555,23 +1556,19 @@ func _on_inventory_slot_pressed(index):
 		last_press_time = current_time
 		savePlayerData()
 #__Hover inventory slots
-func _on_inventory_slot_mouse_entered(index):
+func inventoryMouseEntered(index):
 	var button = inventory_grid.get_node("InventorySlot" + str(index))
 	var icon_texture = button.get_node("Icon").texture
 	var instance = preload("res://tooltip.tscn").instance()
 	if icon_texture != null:
 		if icon_texture.get_path() == autload.red_potion.get_path():
 			callToolTip(instance, "Red Potion", "+100 kcals +250 grams of water.\nHeals by 100 health instantly then by 10 every second, drinking more potions stacks the duration")
-		
-		
 		elif icon_texture.get_path() == autload.strawberry.get_path():
 			callToolTip(instance,"Strawberry","+5 health points +9 kcals +24 grams of water")
 		elif icon_texture.get_path() == autload.raspberry.get_path():
 			callToolTip(instance,"Raspberry","+3 health points +1 kcals +2 grams of water")
 		elif icon_texture.get_path() == autload.beetroot.get_path():
 			callToolTip(instance,"beetroot","+15 health points +32 kcals +71.8 grams of water")
-			
-			
 		#equipment icons
 		elif icon_texture.get_path() == autload.hat1.get_path():
 			callToolTip(instance,"Farmer Hat","+3 blunt resistance.\n +6 heat resistance.\n +3 cold resistance.\n +6 radiant resistance.")
@@ -1586,10 +1583,8 @@ func _on_inventory_slot_mouse_entered(index):
 		elif icon_texture.get_path() == autload.shoe1.get_path():
 			callToolTip(instance,"Farmer Shoe","+1 slash resistance.\n +1 blunt resistance.\n +3 pierce resistance.\n +1 heat resistance.\n +6 cold resistance.\n +15 jolt resistance.\n")
 
-func _on_inventory_slot_mouse_exited(index):
-	for child in gui.get_children():
-		if child.is_in_group("Tooltip"):
-			child.queue_free()
+func inventoryMouseExited(index):
+	deleteTooltip()
 
 func callToolTip(instance,title, text):
 		gui.add_child(instance)
@@ -1640,6 +1635,47 @@ func _on_SplitFirstSlot_pressed():
 							child.quantity += original_quantity / 2
 							break
 
+#_____________________________________Skill_Bar_________________________________
+onready var skill_bar_grid: GridContainer = $UI/GUI/SkillBar/GridContainer
+func connectSkillBarButtons():
+	for child in skill_bar_grid.get_children():
+		if child.is_in_group("Shortcut"):
+			var index_str = child.get_name().split("Slot")[1]
+			var index = int(index_str)
+			child.connect("pressed", self, "skillBarSlotPressed", [index])
+			child.connect("mouse_entered", self, "skillBarMouseEntered", [index])
+			child.connect("mouse_exited", self, "skillBarMouseExited", [index])
+
+func skillBarMouseEntered(index):
+	var button = skill_bar_grid.get_node("Slot" + str(index))
+	var icon_texture = button.get_node("Icon").texture
+	var instance = preload("res://tooltipSkills.tscn").instance()
+	if icon_texture != null:
+		if icon_texture.get_path() == autload.arcane_blast.get_path():
+			callToolTip(instance, "Arcane Blast", "base damage: 15        nefis cost: 7 \nbonus damage: +10% maximum nefis\ndeals acid damage from the flanks and toxic damage from the front")
+		elif icon_texture.get_path() == autload.strawberry.get_path():
+			callToolTip(instance,"Strawberry","+5 health points +9 kcals +24 grams of water")
+		elif icon_texture.get_path() == autload.raspberry.get_path():
+			callToolTip(instance,"Raspberry","+3 health points +1 kcals +2 grams of water")
+		elif icon_texture.get_path() == autload.beetroot.get_path():
+			callToolTip(instance,"beetroot","+15 health points +32 kcals +71.8 grams of water")
+		#equipment icons
+		elif icon_texture.get_path() == autload.hat1.get_path():
+			callToolTip(instance,"Farmer Hat","+3 blunt resistance.\n +6 heat resistance.\n +3 cold resistance.\n +6 radiant resistance.")
+		elif icon_texture.get_path() == autload.garment1.get_path():
+			callToolTip(instance,"Farmer Jacket","+3 slash resistance.\n +1 pierce resistance.\n +12 heat resistance.\n +12 cold resistance.")
+		elif icon_texture.get_path() == autload.belt1.get_path():
+			callToolTip(instance,"Farmer Belt","+3% balance.\n +1.1% charisma.")
+		elif icon_texture.get_path() == autload.glove1.get_path():
+			callToolTip(instance,"Farmer Glove","+1 slash resistance.\n +1 blunt resistance.\n  +1 pierce resistance.\n +3 cold resistance.\n +5 jolt resistance.\n +3 acid resistance.")
+		elif icon_texture.get_path() == autload.pants1.get_path():
+			callToolTip(instance,"Farmer Pants","+3 slash resistance.\n +1 pierce resistance.\n +12 heat resistance.\n +12 cold resistance.")
+		elif icon_texture.get_path() == autload.shoe1.get_path():
+			callToolTip(instance,"Farmer Shoe","+1 slash resistance.\n +1 blunt resistance.\n +3 pierce resistance.\n +1 heat resistance.\n +6 cold resistance.\n +15 jolt resistance.\n")
+
+func skillBarMouseExited(index):
+	deleteTooltip()
+	
 #______________________________________Crafting_________________________________
 
 onready var crafting_slot1 = $UI/GUI/Crafting/CraftingGrid/craftingSlot1/Icon

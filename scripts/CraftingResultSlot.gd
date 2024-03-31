@@ -41,7 +41,7 @@ func get_drag_data(position: Vector2):
 		"origin_slot": slot,
 		"origin_texture": icon.texture,
 		"origin_quantity": quantity,
-		"origin_item": item,
+
 		"type": type
 	}
 	var dragPreview = DRAG_PREVIEW.instance()
@@ -57,7 +57,6 @@ func can_drop_data(position, data):
 	var target_slot = get_parent().get_name()
 	data["target_texture"] = icon.texture
 	data["target_quantity"] = quantity
-	data["target_item"] = item
 	if data["type"] != "skill":
 		return true
 	else:

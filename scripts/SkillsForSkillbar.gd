@@ -6,7 +6,7 @@ onready var icon = $Icon
 
 var quantity = 0
 var item = "null"
-var type = "item"
+var type = "skill"
 
 
 
@@ -53,7 +53,7 @@ func drop_data(position, data):
 	if data["type"] == "skill":
 		icon.texture = origin_texture
 
-	if origin_item == target_item:
+	if origin_texture == target_texture:
 		# Combine quantities if items are the same
 		quantity += data["origin_quantity"]
 		origin_node.quantity = 0  # Reset the origin quantity
