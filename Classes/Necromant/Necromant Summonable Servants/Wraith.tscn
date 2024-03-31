@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=6 format=2]
 
 [ext_resource path="res://Classes/Necromant/Necromant Summonable Servants/DemonRanger_MI.material" type="Material" id=1]
 [ext_resource path="res://Classes/Necromant/Necromant Summonable Servants/Wraith.gd" type="Script" id=2]
@@ -20,6 +20,9 @@ surfaces/0 = {
 
 [sub_resource type="BoxShape" id=2]
 
+[sub_resource type="ViewportTexture" id=3]
+viewport_path = NodePath("TakeDamageView/Viewport")
+
 [node name="Wraith" type="KinematicBody"]
 script = ExtResource( 2 )
 
@@ -32,3 +35,18 @@ mesh = SubResource( 1 )
 [node name="CollisionShape" type="CollisionShape" parent="."]
 transform = Transform( 0.440258, 0, 0, 0, 0.440258, 0, 0, 0, 0.440258, 0, 0.650056, 0 )
 shape = SubResource( 2 )
+
+[node name="TakeDamageView" type="Spatial" parent="."]
+transform = Transform( 0.439535, 0, 0, 0, 0.439535, 0, 0, 0, 0.439535, 1.70912, 0.612972, 1.57288 )
+
+[node name="Viewport" type="Viewport" parent="TakeDamageView"]
+size = Vector2( 600, 600 )
+size_override_stretch = true
+own_world = true
+transparent_bg = true
+
+[node name="Sprite3D" type="Sprite3D" parent="TakeDamageView"]
+transform = Transform( 1.35809, 0, 0, 0, 1.38244, 0, 0, 0, 1, -0.373585, 1.53941, -2.70357 )
+flip_v = true
+billboard = 1
+texture = SubResource( 3 )

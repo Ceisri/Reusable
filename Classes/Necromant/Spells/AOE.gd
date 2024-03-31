@@ -27,10 +27,26 @@ func burn():
 	var bodies = area.get_overlapping_bodies()
 	for body in bodies:
 		if body != summoner:
-			if body.has_method("takeDamage"):
-				body.takeDamage(damage,aggro,instigator,stagger_chance,damage_type)
+			if body.is_in_group("Servant"):
+				if body.has_method("takeHealing"):
+					if instigator.isFacingSelf(body,0.30):
+						body.takeHealing(damage * 2,instigator)
+					else:
+						body.takeHealing(damage,instigator)
+					if body.has_method("scaleUP"):
+						body.scaleUP()
+						
+					
+			elif body.is_in_group("Enemy"):
+					if body.has_method("takeDamage"):
+						if instigator.isFacingSelf(body,0.30):
+							body.takeDamage(damage,aggro,instigator,stagger_chance,damage_type)
+						else:
+							body.takeDamage(damage * 2,aggro,instigator,stagger_chance,"acid")
 		else:
-			body.health += damage
+			if body.has_method("takeHealing"):
+					if instigator.isFacingSelf(body,0.30):
+						body.takeHealing(damage * 2,instigator)
 func die():
 	life_time -= 1 
 	if life_time <=0:
