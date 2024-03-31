@@ -66,6 +66,7 @@ func addNotStackableItem(inventory_grid,item_texture):
 			elif icon.texture.get_path() == item_texture.get_path():
 				continue  # Move to the next slot if this one already has a sword
 func addStackableItem(inventory_grid,item_texture,quantity):
+	
 		for child in inventory_grid.get_children():
 			if child.is_in_group("Inventory"):
 				var icon = child.get_node("Icon")
@@ -83,3 +84,74 @@ func addFloatingIcon(parent,texture,quantity):
 	instance.get_node("TextureRect").texture = texture
 	instance.amount = quantity
 	parent.add_child(instance)
+#__________________________________Effects______________________________________
+
+var effects = {
+	"effect1": {"stats": { "extra_vitality": 2,"extra_agility": 0.05,}, "applied": false},
+	"effect2": {"stats": { "extra_vitality": 2,"extra_agility": 0.05,}, "applied": false},
+	"overhydration": {"stats": { "extra_vitality": -0.02,"extra_agility": -0.05,}, "applied": false},
+	"dehydration": {"stats": { "extra_intelligence": -0.25,"extra_agility": -0.25,}, "applied": false},
+	"bloated": {"stats": {"extra_intelligence": -0.02,"extra_agility": -0.15,}, "applied": false},
+	"hungry": {"stats": {"extra_intelligence": -0.22,"extra_agility": -0.05,}, "applied": false},
+	"bleeding": {"stats": {}, "applied": false},
+	"stunned": {"stats": {}, "applied": false},
+	"frozen": {"stats": {}, "applied": false},
+	"blinded": {"stats": {}, "applied": false},
+	"terrorized": {"stats": {}, "applied": false},
+	"scared": {"stats": {}, "applied": false},
+	"intimidated": {"stats": {}, "applied": false},
+	"rooted": {"stats": {}, "applied": false},
+	"blockbuffs": {"stats": {}, "applied": false},
+	"blockactive": {"stats": {}, "applied": false},
+	"blockpassive": {"stats": {}, "applied": false},
+	"brokendefense": {"stats": {}, "applied": false},
+	"healreduction": {"stats": {}, "applied": false},
+	"bomb": {"stats": {}, "applied": false},
+	"slow": {"stats": {}, "applied": false},
+	"burn": {"stats": {}, "applied": false},
+	"sleep": {"stats": {}, "applied": false},
+	"weakness": {"stats": {}, "applied": false},
+	"poisoned": {"stats": {}, "applied": false},
+	"confused": {"stats": { "extra_intelligence": -0.75}, "applied": false},
+	"impaired": {"stats": { "extra_dexterity": -0.25}, "applied": false},
+	"lethargy": {"stats": {}, "applied": false},
+	"redpotion": {"stats": {}, "applied": false},
+	#equipment effects______________________________________________________________________________
+	"helm1": {"stats": {"blunt_resistance": 3,"heat_resistance": 6,"cold_resistance": 3,"radiant_resistance": 6}, "applied": false},
+	"garment1": {"stats": {"slash_resistance": 3,"pierce_resistance": 1,"heat_resistance": 12,"cold_resistance": 12}, "applied": false},
+	"belt1": {"stats": {"extra_balance": 0.03,"extra_charisma": 0.011 }, "applied": false},
+	"pants1": {"stats": {"slash_resistance": 4,"pierce_resistance": 3,"heat_resistance": 6,"cold_resistance": 8}, "applied": false},
+	"Lhand1": {"stats": {"slash_resistance": 1,"blunt_resistance": 1,"pierce_resistance": 1,"cold_resistance": 3,"jolt_resistance": 5,"acid_resistance": 3}, "applied": false},
+	"Rhand1": {"stats": {"slash_resistance": 1,"blunt_resistance": 1,"pierce_resistance": 1,"cold_resistance": 3,"jolt_resistance": 5,"acid_resistance": 3}, "applied": false},
+	"Lshoe1": {"stats": {"slash_resistance": 1,"blunt_resistance": 3,"pierce_resistance": 1,"heat_resistance": 1,"cold_resistance": 6,"jolt_resistance": 15}, "applied": false},
+	"Rshoe1": {"stats": {"slash_resistance": 1,"blunt_resistance": 3,"pierce_resistance": 1,"heat_resistance": 1,"cold_resistance": 6,"jolt_resistance": 15}, "applied": false},
+}
+
+# Function to apply or remove effects
+func applyEffect(player: Node, effect_name: String, active: bool):
+	if effects.has(effect_name):
+		var effect = effects[effect_name]
+		if active and not effect["applied"]:
+			# Apply effect
+			for stat_name in effect["stats"].keys():
+				if stat_name in player:
+					player[stat_name] += effect["stats"][stat_name]
+			effect["applied"] = true
+		elif not active and effect["applied"]:
+			# Remove effect
+			for stat_name in effect["stats"].keys():
+				if stat_name in player:
+					player[stat_name] -= effect["stats"][stat_name]
+			effect["applied"] = false
+	else:
+		print("Effect not found:", effect_name)
+		
+
+
+
+
+#_________________________________Skill icons___________________________________
+
+onready var dominion =  preload("res://Classes/Necromant/Class Icons/Dominion.png")
+onready var summon_shadow =  preload("res://Classes/Necromant/Class Icons/SummonShadow.png")
+onready var tribute =  preload("res://Classes/Necromant/Class Icons/Tribute.png")
