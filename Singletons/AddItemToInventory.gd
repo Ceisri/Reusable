@@ -155,3 +155,6 @@ func applyEffect(player: Node, effect_name: String, active: bool):
 onready var dominion =  preload("res://Classes/Necromant/Class Icons/Dominion.png")
 onready var summon_shadow =  preload("res://Classes/Necromant/Class Icons/SummonShadow.png")
 onready var tribute =  preload("res://Classes/Necromant/Class Icons/Tribute.png")
+onready var servitude =  preload("res://Classes/Necromant/Class Icons/Servitude in Death.png")
+onready var sacrifice =  preload("res://Classes/Necromant/Class Icons/Sacrifice.png")
+onready var arcane_blast =  preload("res://Classes/Necromant/Class Icons/Arcane Blast.png")
