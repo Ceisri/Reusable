@@ -42,6 +42,15 @@ func updateCooldownLabel() -> void:
 					label.text = str(round(remaining_cooldown * 100)/ 100)
 				else:
 					label.text = ""
+		elif icon != null and icon.texture != null and icon.texture.resource_path == autload.servitude.get_path():
+			var label: Label = child.get_node("CD")
+			var remaining_cooldown:float  = max(0, spell_cooldown - (current_time - last_spell_time))
+			if label != null:
+				if remaining_cooldown >0:
+					label.text = str(round(remaining_cooldown * 100)/ 100)
+				else:
+					label.text = ""
+					
 		else:
 			var label: Label = child.get_node("CD")
 			label.text = ""
@@ -147,3 +156,83 @@ func tribute():
 				
 		last_tribute_time = current_time
 
+
+var area_spell : PackedScene = preload("res://Classes/Necromant/Spells/AOE.tscn")
+var spell_cooldown: float = 3
+var last_spell_time: float = 0.0 
+var spell_distance: float = 12
+
+func areaSpell() -> void:
+	var camera: Camera = $"../../../../../Camroot/h/v/Camera"
+	
+	var current_time: float = OS.get_ticks_msec() / 1000.0
+	if current_time - last_spell_time >= spell_cooldown:
+		var player_global_transform: Transform = player.global_transform
+		var player_forward: Vector3 = player_global_transform.basis.z.normalized()
+		var camera_transform: Transform = camera.global_transform
+		# Get the direction the camera is facing, only influencing the Y-axis
+		var camera_forward_y: float = -camera_transform.basis.z.normalized().y
+		# Calculate spawn position based on camera direction's Y-component
+		var spawn_position: Vector3 = player_global_transform.origin + player_forward * spell_distance
+		spawn_position.y += camera_forward_y * demon_distance
+		
+		# Ensure spawn_position.y is not lower than the player's position
+		spawn_position.y = max(spawn_position.y, player_global_transform.origin.y)
+
+		var area_spell_instance: Node = area_spell.instance()
+		area_spell_instance.instigator = player.get_parent()
+		area_spell_instance.summoner = player.get_parent()
+		area_spell_instance.global_transform.origin = spawn_position
+		var damage_partial: float = area_spell_instance.base_damage * (player.get_parent().intelligence + player.get_parent().instinct)
+		area_spell_instance.damage = damage_partial + (player.get_parent().max_nefis * 0.1)
+		get_tree().current_scene.add_child(area_spell_instance)
+
+		last_spell_time = current_time
+
+
+
+
+
+#func areaSpell() -> void:
+#	var camera: Camera = $"../../../../../Camroot/h/v/Camera"
+#
+#	var current_time: float = OS.get_ticks_msec() / 1000.0
+#	if current_time - last_spell_time >= spell_cooldown:
+#		var player_global_transform: Transform = player.global_transform
+#		var camera_transform: Transform = camera.global_transform
+#
+#		# Get the direction the camera is facing
+#		var camera_forward: Vector3 = -camera_transform.basis.z.normalized()
+#
+#		# Calculate spawn position based on camera direction
+#		var spawn_position: Vector3 = player_global_transform.origin + camera_forward * demon_distance
+#
+#		var area_spell_instance: Node = area_spell.instance()
+#		area_spell_instance.instigator = player.get_parent()
+#		area_spell_instance.summoner = player.get_parent()
+#		area_spell_instance.global_transform.origin = spawn_position
+#		get_tree().current_scene.add_child(area_spell_instance)
+#
+#		last_spell_time = current_time
+
+
+
+#
+#func areaSpell() -> void:
+#
+#
+#	var current_time: float = OS.get_ticks_msec() / 1000.0
+#	if current_time - last_spell_time >= spell_cooldown:
+#		var player_global_transform: Transform = player.global_transform
+#		var player_forward: Vector3 = player_global_transform.basis.z.normalized()
+#		var spawn_position: Vector3 = player_global_transform.origin + player_forward * demon_distance
+#
+#
+#
+#		var area_spell_instance: Node = area_spell.instance()
+#		area_spell_instance.instigator = player.get_parent()
+#		area_spell_instance.summoner = player.get_parent()
+#		area_spell_instance.global_transform.origin = spawn_position
+#		get_tree().current_scene.add_child(area_spell_instance)
+#
+#		last_spell_time = current_time
