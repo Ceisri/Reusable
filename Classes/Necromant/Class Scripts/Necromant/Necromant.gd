@@ -233,28 +233,33 @@ var last_arcane_blast_time: float = 0.0
 func arcaneBlast():
 	var current_time: float = OS.get_ticks_msec() / 1000.0
 	if current_time - last_arcane_blast_time >= arcane_blast_cooldown:
-		var camera: Camera = $"../../../../../Camroot/h/v/Camera"
-		var player_global_transform: Transform = player.global_transform
-		var player_forward: Vector3 = player_global_transform.basis.z.normalized()
-		var spawn_position: Vector3 = player_global_transform.origin + player_forward * 1
-		var player_direction = player.get_parent().direction # Assuming direction is a property of the player's parent node
-		var arcane_blast_instance: KinematicBody = arcane_blast.instance()
-		var camera_transform: Transform = camera.global_transform
+		if player.get_parent().nefis >= 7:
+			var camera: Camera = $"../../../../../Camroot/h/v/Camera"
+			var player_global_transform: Transform = player.global_transform
+			var player_forward: Vector3 = player_global_transform.basis.z.normalized()
+			var spawn_position: Vector3 = player_global_transform.origin + player_forward * 1
+			var player_direction = player.get_parent().direction # Assuming direction is a property of the player's parent node
+			var arcane_blast_instance: KinematicBody = arcane_blast.instance()
+			var camera_transform: Transform = camera.global_transform
 
-		var camera_forward_y: float = -camera_transform.basis.z.normalized().y
-		var strength_factor: float = 1.0
-		if camera_forward_y > 0:
-			strength_factor = 2.5
-		else:
-			strength_factor = 0.5
-		var modified_direction: Vector3 = player_direction + Vector3.UP * camera_forward_y * strength_factor
-		arcane_blast_instance.direction = modified_direction.normalized()
-		spawn_position.y = max(spawn_position.y + 1, player_global_transform.origin.y)
-		arcane_blast_instance.instigator =  player.get_parent()
-		arcane_blast_instance.summoner =  player.get_parent()
-		arcane_blast_instance.global_transform.origin = spawn_position
-		get_tree().current_scene.add_child(arcane_blast_instance)
-		last_arcane_blast_time = current_time
+			var camera_forward_y: float = -camera_transform.basis.z.normalized().y
+			var strength_factor: float = 1.0
+			if camera_forward_y > 0:
+				strength_factor = 2.5
+			else:
+				strength_factor = 0.5
+			var modified_direction: Vector3 = player_direction + Vector3.UP * camera_forward_y * strength_factor
+			arcane_blast_instance.direction = modified_direction.normalized()
+			spawn_position.y = max(spawn_position.y + 1, player_global_transform.origin.y)
+			arcane_blast_instance.instigator =  player.get_parent()
+			arcane_blast_instance.summoner =  player.get_parent()
+			
+			arcane_blast_instance.damage = arcane_blast_instance.base_damage + (player.get_parent().max_nefis * 0.1)		
+			
+			arcane_blast_instance.global_transform.origin = spawn_position
+			get_tree().current_scene.add_child(arcane_blast_instance)
+			player.get_parent().nefis -= 7
+			last_arcane_blast_time = current_time
 
 
 #func arcaneBlast():

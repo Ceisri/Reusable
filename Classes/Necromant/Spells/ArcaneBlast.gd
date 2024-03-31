@@ -12,7 +12,7 @@ var aggro: float = 15.0
 var stagger_chance: float = 0.5
 var life_time: int = 200
 var velocity: Vector3 = Vector3.ZERO # Initial velocity
-var speed:float = 8.00
+var speed:float = 0.1
 
 func _ready():
 	# Set up initial velocity (for example, moving forward)
@@ -22,7 +22,8 @@ func _physics_process(delta: float) -> void:
 	burn()
 	# Move the bullet using direction
 	move_and_collide(direction.normalized() * speed * delta)
-
+	
+	speed += 2
 	# Decrease lifetime
 	life_time -= 1
 	if life_time <= 0:
