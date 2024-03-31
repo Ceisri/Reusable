@@ -59,8 +59,7 @@ func gatherAggroInformation() -> Array:
 		var player = playerAggro.player
 		var distance = eyes.global_transform.origin.distance_to(player.global_transform.origin)
 		# Aggro change logic moved to _on_AggroTimer_timeout
-		if player.entity_name != null:
-			aggro_info.append(player.entity_name + " ID: " + str(player.get_instance_id()) + " Aggro: " + str(playerAggro.aggro))
+		aggro_info.append(player.entity_name + " ID: " + str(player.get_instance_id()) + " Aggro: " + str(playerAggro.aggro))
 	return aggro_info
 
 

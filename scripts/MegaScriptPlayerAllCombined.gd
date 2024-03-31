@@ -1,8 +1,6 @@
 extends KinematicBody
-onready var player_mesh: Node = $Mesh
-onready var animation: AnimationPlayer = $Mesh/Race/AnimationPlayer
-
-
+onready var player_mesh = $Mesh
+onready var animation = $Mesh/Race/AnimationPlayer
 var rng = RandomNumberGenerator.new()
 var injured: bool = false
 var blend: float = 0.25
@@ -15,8 +13,6 @@ var is_running = bool()
 
 
 func _ready():
-	add_to_group("Player")
-	add_to_group("Entity")
 	connectUIButtons()
 	connectInventoryButtons()
 	connectAttributeButtons()
@@ -39,7 +35,7 @@ func _on_SlowTimer_timeout():
 	switchHandR()
 	switchFootL()
 	switchFootR()
-	saveSkillBarData()
+	
 	convertStats()
 	money()
 	hunger()
@@ -67,7 +63,6 @@ func _on_3FPS_timeout():
 func _physics_process(delta: float) -> void:
 	$Debug.text = animation_state
 #	displayClock()
-	convertStats()
 	ChopTree()
 	limitStatsToMaximum()
 	cameraRotation(delta)
@@ -214,7 +209,7 @@ func checkWallInclination():
 	else:
 		wall_incline = 0  # Set to 0 if there is no collision
 		is_wall_in_range = false
-export var  jump_animation_duration = 0
+var jump_animation_duration = 0
 var jump_animation_max_duration = 3
 var jump_mov_animation_duration = 0
 var jump_mov_animation_max_duration = 3
@@ -279,7 +274,7 @@ func physicsSauce():
 	move_and_slide(movement, Vector3.UP)
 #__________________________________________More action based movement_______________________________
 # Dodge
-export var double_press_time: float = 0.25
+export var double_press_time: float = 0.4
 var dash_countback: int = 0
 var dash_timerback: float = 0.0
 # Dodge Left
@@ -531,13 +526,8 @@ func showEnemyStats():
 	$UI/GUI/EnemyUI/StatusGrid/Icon17,
 	$UI/GUI/EnemyUI/StatusGrid/Icon18,
 	$UI/GUI/EnemyUI/StatusGrid/Icon19,
-	$UI/GUI/EnemyUI/StatusGrid/Icon20,
-	$UI/GUI/EnemyUI/StatusGrid/Icon21,
-	$UI/GUI/EnemyUI/StatusGrid/Icon22,
-	$UI/GUI/EnemyUI/StatusGrid/Icon23,
-	$UI/GUI/EnemyUI/StatusGrid/Icon24
+	$UI/GUI/EnemyUI/StatusGrid/Icon20
 )
-
 
 		else:
 			# Start tween to fade out
@@ -563,7 +553,7 @@ func matchAnimationStates():
 				horizontal_velocity = direction * slide_mov_speed
 			movement_speed = int(slide_mov_speed)
 		"base attack":
-			animation.play("full combo cycle",0.3,melee_atk_speed)
+			animation.play("full combo cycle",0.3,1.25)
 			if can_move == true:
 				horizontal_velocity = direction * 3
 				movement_speed = 3
@@ -572,7 +562,7 @@ func matchAnimationStates():
 				movement_speed = 0
 		"double attack":
 			if weapon_type == "fist":
-				animation.play("high kick",0.3,melee_atk_speed)
+				animation.play("high kick",0.3,1)
 			if can_move and !is_on_wall():
 				horizontal_velocity = direction * 7
 				movement_speed = 7
@@ -580,7 +570,7 @@ func matchAnimationStates():
 				horizontal_velocity = direction * 0.3
 				movement_speed = 0
 		"guard attack":
-			animation.play("stomp cycle",0.55,melee_atk_speed + 0.05)
+			animation.play("stomp cycle",0.55,1)
 			if can_move and !is_on_wall():
 				horizontal_velocity = direction * 2
 				movement_speed = 2
@@ -588,7 +578,7 @@ func matchAnimationStates():
 				horizontal_velocity = direction * 0.01
 				movement_speed = 0
 		"run attack":
-			animation.play("low kick",0.3, melee_atk_speed)#placeholder
+			animation.play("low kick",0.3)#placeholder
 			if can_move and !is_on_wall():
 				horizontal_velocity = direction * 2
 				movement_speed = 2
@@ -596,7 +586,7 @@ func matchAnimationStates():
 				horizontal_velocity = direction * 0.01
 				movement_speed = 0
 		"sprint attack":
-			animation.play("stomp kick",0.3, melee_atk_speed)#placeholder
+			animation.play("stomp kick",0.3)#placeholder
 			if can_move and !is_on_wall():
 				horizontal_velocity = direction * 2
 				movement_speed = 2
@@ -708,21 +698,12 @@ func matchAnimationStates():
 			var slot = $UI/GUI/SkillBar/GridContainer/SlotB/Icon
 			skills(slot)
 func skills(slot):
-	var necromant = $UI/GUI/SkillTrees/Background/Necromant
 	if slot != null:
 			if slot.texture != null:
 				if slot.texture.resource_path == "res://UI/graphics/SkillIcons/rush.png":
 					animation.play("combo attack 2hander cycle", 0.35)
 				elif slot.texture.resource_path == "res://UI/graphics/SkillIcons/selfheal.png":
 					animation.play("crawl cycle", 0.35)
-				elif slot.texture.resource_path == autload.summon_shadow.get_path():
-					animation.play("idle crouch", 0.35)
-					#slot.get_parent().get_node("CD").text = str($UI/GUI/SkillTrees/Background/Necromant.lastSummonTime)
-					necromant.summonDemon()
-				elif slot.texture.resource_path == autload.dominion.get_path():	
-					necromant.commandSwitch()
-				elif slot.texture.resource_path == autload.tribute.get_path():	
-					necromant.tribute()
 				else:
 					pass
 var sprint_animation_speed : float = 1
@@ -830,6 +811,7 @@ func animations():
 	else:
 		animation_state = "idle"
 
+
 #_______________________________________________Combat______________________________________________
 
 func dodgeIframe():#apparently combat is too shitty without iframes, more realistic but as boring as watching olympic wrestling or judo, fucking utter ridiculous shit
@@ -866,110 +848,42 @@ func doubleAttack(delta):
 				double_atk_animation_duration -= 0.1 
 			elif double_atk_animation_duration < 0: 
 					double_atk_animation_duration = 0
-func stopDoubleAttack():
-	double_atk_animation_duration = 0
+					
 					
 					
 					
 func stompKickDealDamage():
+	shake_camera(0.2, 0.05, 0, 1)
 	var damage_type = "blunt"
-	var damage = 10 + blunt_dmg 
-	var damage_flank = damage + flank_dmg
-	var critical_damage : float  = damage * critical_strength
-	var critical_flank_damage : float  = damage_flank * critical_strength
+	var damage = 0 + blunt_dmg
 	var aggro_power = damage + 20
 	var enemies = $Mesh/Detector.get_overlapping_bodies()
 	for enemy in enemies:
 		if enemy.is_in_group("enemy"):
+			enemy.applyEffect(enemy,"effect1", true)
 			if enemy.has_method("takeDamage"):
-				pushEnemyAway(2, enemy,0.25)
+				pushEnemyAway(5, enemy,1)
 				if is_on_floor():
 					#insert sound effect here
-					if randf() <= critical_chance:
-						if isFacingSelf(enemy,0.30): #check if the enemy is looking at me 
-							enemy.takeDamage(critical_damage,aggro_power,self,stagger_chance,"acid")
-						else: #apparently the enemy is showing his back or flanks, extra damagec
-							enemy.takeDamage(critical_flank_damage,aggro_power,self,stagger_chance,"toxic")
+					if randf() <= critical_chance *0:
+						var critical_damage = damage * critical_strength
+						enemy.takeDamage(critical_damage,aggro_power,self,stagger_chance,damage_type)
 					else:
-						if isFacingSelf(enemy,0.30): #check if the enemy is looking at me 
-							enemy.takeDamage(damage,aggro_power,self,stagger_chance,"heat")
-						else: #apparently the enemy is showing his back or flanks, extra damagec
-							enemy.takeDamage(damage_flank,aggro_power,self,stagger_chance,"jolt")
+						enemy.takeDamage(damage,aggro_power,self,stagger_chance,damage_type)
 
 func pushEnemyAway(push_distance, enemy, push_speed):
 	var direction_to_enemy = enemy.global_transform.origin - global_transform.origin
-	direction_to_enemy.y = 0  # No vertical push
+	direction_to_enemy.y = 0  #no vertical push
 	direction_to_enemy = direction_to_enemy.normalized()
 	
 	var motion = direction_to_enemy * push_speed
-	var acceleration_time = push_speed / 2.0
-	var deceleration_distance = motion.length() * acceleration_time * 0.5
 	var collision = enemy.move_and_collide(motion)
-	if collision: #this checks the dipshit hits a wall after you punch him 
-		#the dipshit takes damage from being pushed into something
-		#afterwards he is pushed back...like ball bouncing back but made of meat
+	if collision: # extra collision if the dipshit hits a wall after being pushed away 
 		enemy.takeDamage(10, 100, self, 1, "bleed")
-		# Calculate bounce-back direction
-		var normal = collision.normal
-		var bounce_motion = -4 * normal * normal.dot(motion) + motion
-		# Move the enemy slightly away from the wall to avoid sticking
-		enemy.translation += normal * 0.1 * collision.travel
-		# Tween the bounce-back motion
-		tween.interpolate_property(enemy, "translation", enemy.translation, enemy.translation + bounce_motion * push_distance, acceleration_time, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
-		tween.start()
-	else:
-		# Tween the movement over time with initial acceleration followed by instant stop
-		tween.interpolate_property(enemy, "translation", enemy.translation, enemy.translation + motion * push_distance, acceleration_time, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
-		tween.interpolate_property(enemy, "translation", enemy.translation + motion * push_distance, enemy.translation + motion * (push_distance - deceleration_distance), acceleration_time, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT, acceleration_time)
-		tween.start()
 
 
 
-func isFacingSelf(enemy: Node, threshold: float) -> bool:
-	# Get the global transform of the enemy
-	var enemy_global_transform = enemy.global_transform
-	# Get the global position of the calling object (self)
-	var self_global_transform = get_global_transform()
-	var self_position = self_global_transform.origin
-	# Get the global position of the enemy
-	var enemy_position = enemy_global_transform.origin
-	# Calculate the direction vector from the calling object (self) to the enemy
-	var direction_to_enemy = (enemy_position - self_position).normalized()
-	# Get the facing direction of the enemy from its Mesh node
-	var enemy_facing_direction = Vector3.ZERO
-	var enemy_mesh = enemy.get_node("Mesh")
-	if enemy_mesh:
-		enemy_facing_direction = enemy_mesh.global_transform.basis.z.normalized()
-	else:
-		# If Mesh node is not found, use the default facing direction of the enemy
-		enemy_facing_direction = enemy_global_transform.basis.z.normalized()
-	# Calculate the dot product between the enemy's facing direction and the direction to the calling object (self)
-	var dot_product = -enemy_facing_direction.dot(direction_to_enemy)
-	# If the dot product is greater than a certain threshold, consider the enemy is facing the calling object (self)
-	return dot_product >= threshold
-
-
-
-
-
-func bouncheEnemy(push_distance, enemy, push_speed):
-	var direction_to_enemy = enemy.global_transform.origin - global_transform.origin
-	direction_to_enemy.y = 0  # No vertical push
-	direction_to_enemy = direction_to_enemy.normalized()
-	var acceleration_time = push_speed / 2.0  # Adjust as needed for faster or slower acceleration
-	# Calculate distance for deceleration
 	
-	var motion = direction_to_enemy * push_speed
-	var deceleration_distance = motion.length() * acceleration_time * 0.5
-	var collision = enemy.move_and_collide(motion)
-	if collision: 
-		# Extra collision handling if the enemy hits a wall after being pushed away
-		enemy.takeDamage(10, 100, self, 1, "bleed")
-	# Tween the movement over time with initial acceleration followed by instant stop
-	tween.interpolate_property(enemy, "translation", enemy.translation, enemy.translation + motion * push_distance, acceleration_time, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
-	tween.interpolate_property(enemy, "translation", enemy.translation + motion * push_distance, enemy.translation, acceleration_time, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT, acceleration_time)
-	tween.start()
-
 
 
 func slideDealDamage():
@@ -981,24 +895,19 @@ func slideDealDamage():
 		if enemy.is_in_group("enemy"):
 			if enemy.has_method("takeDamage"):
 				if is_on_floor():
-					pushEnemyAway(1, enemy,0.25)
-					#insert sound effect here
-					if randf() <= critical_chance:
-						var critical_damage = damage * critical_strength
-						enemy.takeDamage(critical_damage,aggro_power,self,stagger_chance,"heat")
-					else:
-						if isFacingSelf(enemy,0.30): #check if the enemy is looking at me 
-							enemy.takeDamage(damage,aggro_power,self,stagger_chance,damage_type)
-						else: #apparently the enemy is showing his back or flanks, extra damagec
-							enemy.takeDamage(7,aggro_power,self,stagger_chance,"jolt")
-				else:#jump attack kick slide
-					pushEnemyAway(5, enemy,0.25)
 					#insert sound effect here
 					if randf() <= critical_chance:
 						var critical_damage = damage * critical_strength
 						enemy.takeDamage(critical_damage,aggro_power,self,stagger_chance,damage_type)
 					else:
-						enemy.takeDamage(30,aggro_power,self,stagger_chance,damage_type)
+						enemy.takeDamage(damage,aggro_power,self,stagger_chance,damage_type)
+				else:#jump attack kick slide
+					#insert sound effect here
+					if randf() <= critical_chance:
+						var critical_damage = damage * critical_strength
+						enemy.takeDamage(critical_damage *2,aggro_power,self,stagger_chance,damage_type)
+					else:
+						enemy.takeDamage(damage *2 ,aggro_power,self,stagger_chance,damage_type)
 func PunchDealDamage1():
 	var damage_type = "blunt"
 	var damage = 10
@@ -1008,23 +917,19 @@ func PunchDealDamage1():
 		if enemy.is_in_group("enemy"):
 			if enemy.has_method("takeDamage"):
 				if is_on_floor():
-					pushEnemyAway(0.25, enemy,0.25)
 					#insert sound effect here
 					if randf() <= critical_chance:
 						var critical_damage = damage * critical_strength
 						enemy.takeDamage(critical_damage,aggro_power,self,stagger_chance,damage_type)
 					else:
-						if isFacingSelf(enemy,0.30): #check if the enemy is looking at me 
-							enemy.takeDamage(damage,aggro_power,self,stagger_chance,damage_type)
-						else: #apparently the enemy is showing his back or flanks, extra damagec
-							enemy.takeDamage(damage * 1.5,aggro_power,self,stagger_chance,"jolt")
+						enemy.takeDamage(damage,aggro_power,self,stagger_chance,damage_type)
 				else:#jump attack kick slide
 					#insert sound effect here
 					if randf() <= critical_chance:
 						var critical_damage = damage * critical_strength
 						enemy.takeDamage(critical_damage *2,aggro_power,self,stagger_chance,damage_type)
 					else:
-						enemy.takeDamage(30,aggro_power,self,stagger_chance,damage_type)
+						enemy.takeDamage(damage *2 ,aggro_power,self,stagger_chance,damage_type)
 func PunchDealDamage2():
 	var damage_type = "blunt"
 	var damage = 5
@@ -1033,24 +938,20 @@ func PunchDealDamage2():
 	for enemy in enemies:
 		if enemy.is_in_group("enemy"):
 			if enemy.has_method("takeDamage"):
-				pushEnemyAway(0.25, enemy,0.25)
 				if is_on_floor():
 					#insert sound effect here
 					if randf() <= critical_chance:
 						var critical_damage = damage * critical_strength
 						enemy.takeDamage(critical_damage,aggro_power,self,stagger_chance,damage_type)
 					else:
-						if isFacingSelf(enemy,0.30): #check if the enemy is looking at me 
-							enemy.takeDamage(damage,aggro_power,self,stagger_chance,damage_type)
-						else: #apparently the enemy is showing his back or flanks, extra damagec
-							enemy.takeDamage(damage * 1.5,aggro_power,self,stagger_chance,"jolt")
+						enemy.takeDamage(damage,aggro_power,self,stagger_chance,damage_type)
 				else:#jump attack kick slide
 					#insert sound effect here
 					if randf() <= critical_chance:
 						var critical_damage = damage * critical_strength
 						enemy.takeDamage(critical_damage *2,aggro_power,self,stagger_chance,damage_type)
 					else:
-						enemy.takeDamage(30 ,aggro_power,self,stagger_chance,damage_type)
+						enemy.takeDamage(damage *2 ,aggro_power,self,stagger_chance,damage_type)
 func PunchDealDamage3():
 	var damage_type = "blunt"
 	var damage = 15
@@ -1060,16 +961,12 @@ func PunchDealDamage3():
 		if enemy.is_in_group("enemy"):
 			if enemy.has_method("takeDamage"):
 				if is_on_floor():
-					pushEnemyAway(0.5, enemy,0.25)
 					#insert sound effect here
 					if randf() <= critical_chance:
 						var critical_damage = damage * critical_strength
 						enemy.takeDamage(critical_damage,aggro_power,self,stagger_chance,damage_type)
 					else:
-						if isFacingSelf(enemy,0.30): #check if the enemy is looking at me 
-							enemy.takeDamage(damage,aggro_power,self,stagger_chance,damage_type)
-						else: #apparently the enemy is showing his back or flanks, extra damagec
-							enemy.takeDamage(30,aggro_power,self,stagger_chance,"jolt")
+						enemy.takeDamage(damage,aggro_power,self,stagger_chance,damage_type)
 				else:#jump attack kick slide
 					#insert sound effect here
 					if randf() <= critical_chance:
@@ -1231,7 +1128,6 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
 			staggered += 0.5
 			text.status = "Staggered"
 	if animation_state == "guard":
-		parryIcon()
 		health -= (damage_to_take / guard_dmg_absorbition)
 		text.amount = ((damage_to_take / guard_dmg_absorbition) * 100)/ 100
 		text.status = "Guarded"
@@ -1242,27 +1138,9 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
 		text.state = damage_type
 	take_damage_view.add_child(text)
 
-#__________________________________Combat UI____________________________________
-
-onready var parry_icon = $UI/GUI/ParryIcon
-var animation_duration = 500  # Animation duration in milliseconds
-var start_time = 0
-var total_elapsed_time = 0  # Total elapsed time since the animation started
-var fading_in = true
-
-func parryIcon():
-	var parry_icon: TextureRect = $UI/GUI/ParryIcon
-	var icon_duration: float = 0.5
-
-	# Check if the tween is already active
-	if not tween.is_active():
-		# Modulating the alpha value over time
-		tween.interpolate_property(parry_icon, "modulate:a", 1.0, 0.0, icon_duration,
-									Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
-		tween.start()
 
 
-#_____________________________close buttons/inputs______________________________
+#___________________________________close buttons/inputs_______________________________
 
 var cursor_visible: bool = false
 onready var keybinds: Control = $UI/GUI/Keybinds
@@ -1433,32 +1311,11 @@ func saveInventoryData():
 			if child.get_node("Icon").has_method("savedata"):
 				child.get_node("Icon").savedata()
 func saveSkillBarData():
-	$UI/GUI/SkillBar/GridContainer/SlotQ/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/SlotE/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/SlotR/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/SlotT/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/SlotF/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/SlotG/Icon.savedata()	
-	$UI/GUI/SkillBar/GridContainer/SlotY/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/SlotH/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/SlotV/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/SlotB/Icon.savedata()
-	
-	$UI/GUI/SkillBar/GridContainer/Slot1/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/Slot2/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/Slot3/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/Slot4/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/Slot5/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/Slot6/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/Slot7/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/Slot8/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/Slot9/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/Slot0/Icon.savedata()	
+	for child in $UI/GUI/SkillBar/GridContainer.get_children():
+		if child.has_method("savedata"):
+			child.savedata()
+
 #__________________________________Inventory____________________________________
-#for this to work either preload all the item icons here or add the "AddItemToInventory.gd"
-#as an autoload, i called it add_item in my project, and i used it to to compre the path 
-#of icons, if the path matches with the icon i need, i do the effect of the specific item 
-#i also use the same autoload to add items to inventory 
 onready var inventory_grid = $UI/GUI/Inventory/ScrollContainer/InventoryGrid
 onready var gui = $UI/GUI
 
@@ -1488,25 +1345,25 @@ func _on_inventory_slot_pressed(index):
 			print("Inventory slot", index, "pressed twice")
 
 
-			if icon_texture.get_path() == autload.red_potion.get_path():
+			if icon_texture.get_path() == add_item.red_potion.get_path():
 					kilocalories += 100
 					health += 100
 					water += 250
 					applyEffect(self,"redpotion",true)
 					red_potion_duration += 5
 					button.quantity -=1
-					autload.addStackableItem(inventory_grid,autload.empty_potion,1)
-			elif icon_texture.get_path() == autload.strawberry.get_path():
+					add_item.addStackableItem(inventory_grid,add_item.empty_potion,1)
+			elif icon_texture.get_path() == add_item.strawberry.get_path():
 					kilocalories +=1
 					health += 5
 					water += 2
 					button.quantity -=1
-			elif icon_texture.get_path() == autload.raspberry.get_path():
+			elif icon_texture.get_path() == add_item.raspberry.get_path():
 					kilocalories += 4
 					health += 3
 					water += 3
 					button.quantity -=1
-			elif icon_texture.get_path() == autload.beetroot.get_path():
+			elif icon_texture.get_path() == add_item.beetroot.get_path():
 					kilocalories += 32
 					health += 15
 					water += 71.8
@@ -1526,32 +1383,33 @@ func _on_inventory_slot_mouse_entered(index):
 	var icon_texture = button.get_node("Icon").texture
 	var instance = preload("res://tooltip.tscn").instance()
 	if icon_texture != null:
-		if icon_texture.get_path() == autload.red_potion.get_path():
+		if icon_texture.get_path() == add_item.red_potion.get_path():
 			callToolTip(instance, "Red Potion", "+100 kcals +250 grams of water.\nHeals by 100 health instantly then by 10 every second, drinking more potions stacks the duration")
 		
 		
-		elif icon_texture.get_path() == autload.strawberry.get_path():
+		elif icon_texture.get_path() == add_item.strawberry.get_path():
 			callToolTip(instance,"Strawberry","+5 health points +9 kcals +24 grams of water")
-		elif icon_texture.get_path() == autload.raspberry.get_path():
+		elif icon_texture.get_path() == add_item.raspberry.get_path():
 			callToolTip(instance,"Raspberry","+3 health points +1 kcals +2 grams of water")
-		elif icon_texture.get_path() == autload.beetroot.get_path():
+		elif icon_texture.get_path() == add_item.beetroot.get_path():
 			callToolTip(instance,"beetroot","+15 health points +32 kcals +71.8 grams of water")
 			
 			
 		#equipment icons
-		elif icon_texture.get_path() == autload.hat1.get_path():
+		elif icon_texture.get_path() == add_item.hat1.get_path():
 			callToolTip(instance,"Farmer Hat","+3 blunt resistance.\n +6 heat resistance.\n +3 cold resistance.\n +6 radiant resistance.")
-		elif icon_texture.get_path() == autload.garment1.get_path():
+		elif icon_texture.get_path() == add_item.garment1.get_path():
 			callToolTip(instance,"Farmer Jacket","+3 slash resistance.\n +1 pierce resistance.\n +12 heat resistance.\n +12 cold resistance.")
-		elif icon_texture.get_path() == autload.belt1.get_path():
+		elif icon_texture.get_path() == add_item.belt1.get_path():
 			callToolTip(instance,"Farmer Belt","+3% balance.\n +1.1% charisma.")
-		elif icon_texture.get_path() == autload.glove1.get_path():
+		elif icon_texture.get_path() == add_item.glove1.get_path():
 			callToolTip(instance,"Farmer Glove","+1 slash resistance.\n +1 blunt resistance.\n  +1 pierce resistance.\n +3 cold resistance.\n +5 jolt resistance.\n +3 acid resistance.")
-		elif icon_texture.get_path() == autload.pants1.get_path():
+		elif icon_texture.get_path() == add_item.pants1.get_path():
 			callToolTip(instance,"Farmer Pants","+3 slash resistance.\n +1 pierce resistance.\n +12 heat resistance.\n +12 cold resistance.")
-		elif icon_texture.get_path() == autload.shoe1.get_path():
+		elif icon_texture.get_path() == add_item.shoe1.get_path():
 			callToolTip(instance,"Farmer Shoe","+1 slash resistance.\n +1 blunt resistance.\n +3 pierce resistance.\n +1 heat resistance.\n +6 cold resistance.\n +15 jolt resistance.\n")
 
+			
 func _on_inventory_slot_mouse_exited(index):
 	for child in gui.get_children():
 		if child.is_in_group("Tooltip"):
@@ -1563,7 +1421,6 @@ func callToolTip(instance,title, text):
 # Function to combine slots when pressed
 func _on_CombineSlots_pressed():
 	savePlayerData()
-	saveSkillBarData()
 	saveInventoryData()
 	var combined_items = {}  # Dictionary to store combined items
 	for child in inventory_grid.get_children():
@@ -1649,27 +1506,27 @@ func ChopTree():
 				# 25% chance for wood
 				if random_value < 0.2:
 					loot_amount = rng.randi_range(1, 2)
-					autload.addStackableItem(inventory_grid,autload.aubergine,loot_amount)
-					autload.addFloatingIcon(take_damage_view,autload.aubergine,loot_amount)
+					add_item.addStackableItem(inventory_grid,add_item.aubergine,loot_amount)
+					add_item.addFloatingIcon(take_damage_view,add_item.aubergine,loot_amount)
 				# 25% chance for acorn
 				elif random_value < 0.4:
 					loot_amount = rng.randi_range(5, 45)
-					autload.addStackableItem(inventory_grid,autload.raspberry,loot_amount)
-					autload.addFloatingIcon(take_damage_view,autload.raspberry,loot_amount)
+					add_item.addStackableItem(inventory_grid,add_item.raspberry,loot_amount)
+					add_item.addFloatingIcon(take_damage_view,add_item.raspberry,loot_amount)
 				# 25% chance for branch
 				elif random_value < 0.6:
 					loot_amount = rng.randi_range(3, 5)
-					autload.addStackableItem(inventory_grid,autload.potato,loot_amount)
-					autload.addFloatingIcon(take_damage_view,autload.potato,loot_amount)
+					add_item.addStackableItem(inventory_grid,add_item.potato,loot_amount)
+					add_item.addFloatingIcon(take_damage_view,add_item.potato,loot_amount)
 				elif random_value < 0.8:
 					loot_amount = rng.randi_range(15, 25)
-					autload.addStackableItem(inventory_grid,autload.onion,loot_amount)
-					autload.addFloatingIcon(take_damage_view,autload.onion,loot_amount)
+					add_item.addStackableItem(inventory_grid,add_item.onion,loot_amount)
+					add_item.addFloatingIcon(take_damage_view,add_item.onion,loot_amount)
 		# 25% chance for resin
 				else:
 					loot_amount = rng.randi_range(1, 5)
-					autload.addStackableItem(inventory_grid,autload.beetroot,loot_amount)
-					autload.addFloatingIcon(take_damage_view,autload.beetroot,loot_amount)
+					add_item.addStackableItem(inventory_grid,add_item.beetroot,loot_amount)
+					add_item.addFloatingIcon(take_damage_view,add_item.beetroot,loot_amount)
 
 
 
@@ -1696,32 +1553,32 @@ func addItemToInventory():
 #			add_item.addNotStackableItem(inventory_grid,add_item.shoe1)
 func _on_GiveMeItems_pressed():
 	coins += 55
-	autload.addStackableItem(inventory_grid,autload.garlic,200)
-	autload.addFloatingIcon(take_damage_view,autload.garlic,200)
+	add_item.addStackableItem(inventory_grid,add_item.garlic,200)
+	add_item.addFloatingIcon(take_damage_view,add_item.garlic,200)
 	
-	autload.addStackableItem(inventory_grid,autload.potato,200)
-	autload.addFloatingIcon(take_damage_view,autload.potato,200)
-	autload.addStackableItem(inventory_grid,autload.onion,200)
-	autload.addStackableItem(inventory_grid,autload.carrot,200)
-	autload.addStackableItem(inventory_grid,autload.corn,200)
-	autload.addStackableItem(inventory_grid,autload.cabbage,200)
-	autload.addStackableItem(inventory_grid,autload.bell_pepper,200)
-	autload.addStackableItem(inventory_grid,autload.aubergine,200)
-	autload.addStackableItem(inventory_grid,autload.tomato,200)
+	add_item.addStackableItem(inventory_grid,add_item.potato,200)
+	add_item.addFloatingIcon(take_damage_view,add_item.potato,200)
+	add_item.addStackableItem(inventory_grid,add_item.onion,200)
+	add_item.addStackableItem(inventory_grid,add_item.carrot,200)
+	add_item.addStackableItem(inventory_grid,add_item.corn,200)
+	add_item.addStackableItem(inventory_grid,add_item.cabbage,200)
+	add_item.addStackableItem(inventory_grid,add_item.bell_pepper,200)
+	add_item.addStackableItem(inventory_grid,add_item.aubergine,200)
+	add_item.addStackableItem(inventory_grid,add_item.tomato,200)
 
 	
-	autload.addStackableItem(inventory_grid,autload.raspberry,200)
-	autload.addStackableItem(inventory_grid,autload.pants1,200)
-	autload.addStackableItem(inventory_grid,autload.hat1,200)
-	autload.addStackableItem(inventory_grid,autload.red_potion,200)
-	autload.addStackableItem(inventory_grid,autload.strawberry,200)
-	autload.addStackableItem(inventory_grid,autload.beetroot,200)
-	autload.addStackableItem(inventory_grid,autload.rosehip,200)
-	autload.addStackableItem(inventory_grid,autload.belt1,200)
-	autload.addStackableItem(inventory_grid,autload.glove1,200)
-	autload.addNotStackableItem(inventory_grid,autload.wood_sword)
-	autload.addNotStackableItem(inventory_grid,autload.garment1)
-	autload.addNotStackableItem(inventory_grid,autload.shoe1)
+	add_item.addStackableItem(inventory_grid,add_item.raspberry,200)
+	add_item.addStackableItem(inventory_grid,add_item.pants1,200)
+	add_item.addStackableItem(inventory_grid,add_item.hat1,200)
+	add_item.addStackableItem(inventory_grid,add_item.red_potion,200)
+	add_item.addStackableItem(inventory_grid,add_item.strawberry,200)
+	add_item.addStackableItem(inventory_grid,add_item.beetroot,200)
+	add_item.addStackableItem(inventory_grid,add_item.rosehip,200)
+	add_item.addStackableItem(inventory_grid,add_item.belt1,200)
+	add_item.addStackableItem(inventory_grid,add_item.glove1,200)
+	add_item.addNotStackableItem(inventory_grid,add_item.wood_sword)
+	add_item.addNotStackableItem(inventory_grid,add_item.garment1)
+	add_item.addNotStackableItem(inventory_grid,add_item.shoe1)
 	
 	
 	
@@ -1857,7 +1714,7 @@ func switch():
 			if currentInstance == null:
 				currentInstance = sword0.instance()
 				fixInstance()
-				addItemToCharacterSheet(main_weap_icon,main_weap_slot,autload.wood_sword,"sword0")
+				addItemToCharacterSheet(main_weap_icon,main_weap_slot,add_item.wood_sword,"sword0")
 		"sword1":    
 			if currentInstance == null:
 				currentInstance = sword1.instance()
@@ -1968,7 +1825,7 @@ func switchSec():
 			if sec_currentInstance == null:
 				sec_currentInstance = sword0.instance()
 				fixSecInstance()
-				addItemToCharacterSheet(sec_weap_icon,sec_weap_slot,autload.wood_sword,"sword0")
+				addItemToCharacterSheet(sec_weap_icon,sec_weap_slot,add_item.wood_sword,"sword0")
 		"sword1":    
 			if sec_currentInstance == null:
 				sec_currentInstance = sword1.instance()
@@ -2072,7 +1929,7 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 	if main_weap_icon != null:
 		main_weap_icon.savedata()
 		if main_weap_icon.texture != null:
-			if main_weap_icon.texture.get_path() == autload.wood_sword.get_path():
+			if main_weap_icon.texture.get_path() == add_item.wood_sword.get_path():
 				main_weapon = "sword0"
 				applyEffect(self, "effect2", true)
 		elif main_weap_icon.texture == null:
@@ -2082,18 +1939,18 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 #__________________________sec weapon___________________________________________
 	if sec_weap_icon != null:
 		if sec_weap_icon.texture != null:
-			if sec_weap_icon.texture.get_path() == autload.wood_sword.get_path():
+			if sec_weap_icon.texture.get_path() == add_item.wood_sword.get_path():
 				secondary_weapon = "sword0"
-
+				applyEffect(self, "effect1", true)
 		elif sec_weap_icon.texture == null:
 			removeSecWeapon()
 			secondary_weapon = "null"
-
+			applyEffect(self, "effect1", false)	
 #_______________________________head____________________________________________
 	var helm_icon = $UI/GUI/Equipment/EquipmentBG/Helm/Icon
 	if helm_icon != null:
 		if helm_icon.texture != null:
-			if helm_icon.texture.get_path() == autload.hat1.get_path():
+			if helm_icon.texture.get_path() == add_item.hat1.get_path():
 				head = "garment1"
 		elif helm_icon.texture == null:
 			head = "naked"
@@ -2102,7 +1959,7 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 	var chest_icon = $UI/GUI/Equipment/EquipmentBG/BreastPlate/Icon
 	if chest_icon != null:
 		if chest_icon.texture != null:
-			if chest_icon.texture.get_path() == autload.garment1.get_path():
+			if chest_icon.texture.get_path() == add_item.garment1.get_path():
 				torso = "garment1"
 		elif chest_icon.texture == null:
 			torso = "naked"
@@ -2110,7 +1967,7 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 	var belt_icon = $UI/GUI/Equipment/EquipmentBG/Belt/Icon
 	if belt_icon != null:
 		if belt_icon.texture != null:
-			if belt_icon.texture.get_path() == autload.belt1.get_path():
+			if belt_icon.texture.get_path() == add_item.belt1.get_path():
 				belt = "belt1"
 		elif belt_icon.texture == null:
 			belt = "naked"
@@ -2118,7 +1975,7 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 	var legs_icon = $UI/GUI/Equipment/EquipmentBG/Pants/Icon
 	if legs_icon != null:
 		if legs_icon.texture != null:
-			if legs_icon.texture.get_path() == autload.pants1.get_path():
+			if legs_icon.texture.get_path() == add_item.pants1.get_path():
 				legs = "cloth1"
 		elif legs_icon.texture == null:
 			legs = "naked"
@@ -2126,14 +1983,14 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 	var hand_l_icon = $UI/GUI/Equipment/EquipmentBG/GloveL/Icon
 	if hand_l_icon != null:
 		if hand_l_icon.texture != null:
-			if hand_l_icon.texture.get_path() == autload.glove1.get_path():
+			if hand_l_icon.texture.get_path() == add_item.glove1.get_path():
 				hand_l = "cloth1"
 		elif hand_l_icon.texture == null:
 			hand_l = "naked"
 	var hand_r_icon = $UI/GUI/Equipment/EquipmentBG/GloveR/Icon
 	if hand_r_icon != null:
 		if hand_r_icon.texture != null:
-			if hand_r_icon.texture.get_path() == autload.glove1.get_path():
+			if hand_r_icon.texture.get_path() == add_item.glove1.get_path():
 				hand_r = "cloth1"
 		elif hand_r_icon.texture == null:
 			hand_r = "naked"
@@ -2142,7 +1999,7 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 	var foot_r_icon = $UI/GUI/Equipment/EquipmentBG/ShoeR/Icon
 	if foot_r_icon != null:
 		if  foot_r_icon.texture != null:
-			if  foot_r_icon.texture.get_path() == autload.shoe1.get_path():
+			if  foot_r_icon.texture.get_path() == add_item.shoe1.get_path():
 				foot_r = "cloth1"
 		elif foot_r_icon.texture == null:
 			foot_r = "naked"
@@ -2150,7 +2007,7 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 	var foot_l_icon = $UI/GUI/Equipment/EquipmentBG/ShoeL/Icon
 	if foot_l_icon != null:
 		if  foot_l_icon.texture != null:
-			if  foot_l_icon.texture.get_path() == autload.shoe1.get_path():
+			if  foot_l_icon.texture.get_path() == add_item.shoe1.get_path():
 				foot_l = "cloth1"
 		elif foot_l_icon.texture == null:
 			foot_l = "naked"
@@ -2585,7 +2442,7 @@ func _on_Toilet1_pressed():
 		var enemies = $Mesh/Piss.get_node("Area").get_overlapping_bodies()
 		for enemy in enemies:
 			if enemy.is_in_group("enemy"):
-				enemy.applyEffect(enemy,"slow", true)
+				enemy.applyEffect(enemy,"effect1", true)
 				if enemy.has_method("takeDamage"):
 					if is_on_floor():
 						#insert sound effect here
@@ -2693,7 +2550,7 @@ const base_ranged_atk_speed: int = 1
 var ranged_atk_speed: float = 1 
 const base_casting_speed: int  = 1 
 var critical_chance: float = 0.00
-var critical_strength: float = 2.0
+var critical_strength: float = 2
 var stagger_chance: float = 0.00
 var life_steal: float = 0
 #resistances
@@ -2720,15 +2577,10 @@ var guard_dmg_absorbition: float = 2 #total damage taken will be divided by this
 
 var staggered = 0 
 
-var base_flank_dmg : float = 10.0
-var flank_dmg: float = 10.0 #extra damage to add to backstabs 
-
-var extra_melee_atk_speed : float = 0
-
 
 var slash_dmg: int = 0 
 var pierce_dmg: int = 0
-var blunt_dmg: int = 10
+var blunt_dmg: int = 0
 var sonic_dmg: int = 0
 var heat_dmg: int = 0
 var cold_dmg: int = 0
@@ -2778,6 +2630,11 @@ var extra_loyalty : float = 0
 var extra_diplomacy : float = 0
 var extra_authority : float = 0
 var extra_courage : float = 0
+
+
+
+
+var extra_melee_atk_speed : float = 0
 
 
 var total_sanity: float = 0
@@ -2840,10 +2697,6 @@ func limitStatsToMaximum():
 		resolve = max_resolve
 
 func convertStats():
-	resistanceMath()
-	attackSpeedMath()
-	flankDamageMath()
-	updateCritical()
 	total_sanity = extra_sanity + sanity
 	total_wisdom = extra_wisdom + wisdom
 	total_memory = extra_memory + memory
@@ -2892,12 +2745,7 @@ func convertStats():
 	
 	stagger_chance = max(0, (impact - 1.00) * 0.45) +  max(0, (ferocity - 1.00) * 0.005) 
 	
-func flankDamageMath():
-	flank_dmg = (base_flank_dmg * (ferocity + accuracy)) 
-
-
-
-func attackSpeedMath():
+#___________atks speed formulas
 	var bonus_universal_speed = (celerity -1) * 0.15
 	var atk_speed_formula = (dexterity - scale_factor ) * 0.5 
 	melee_atk_speed = base_melee_atk_speed + atk_speed_formula + bonus_universal_speed + extra_melee_atk_speed
@@ -2909,7 +2757,7 @@ func attackSpeedMath():
 	casting_speed = base_casting_speed + atk_speed_formula_casting	
 	
 	
-func resistanceMath():
+#____________resistance attribute formula
 	var additional_resistance: float  = 0
 	var res_multiplier : float  = 0.5
 	if resistance > 1:
@@ -2922,16 +2770,27 @@ func resistanceMath():
 	max_resolve = base_max_resolve * (tenacity + additional_resistance)
 
 
+	
+
+
+
+
+
+
 func updateCritical():
-	var critical_chance = max(0, (accuracy - 1.00) * 0.5) +  max(0, (impact - 1.00) * 0.005) 
-	var critical_strength = max(1.0, ((ferocity - 1) * 2))  # Ensure critical_strength is at least 1.0
+	critical_chance = max(0, (accuracy - 1.00) * 0.5) +  max(0, (impact - 1.00) * 0.005) 
+	critical_strength = ((ferocity -1) * 2) 
 	critical_chance_val.text = str(round(critical_chance * 100 * 1000) / 1000) + "%"
 	critical_str_val.text = "x" + str(critical_strength)
+
+
+
 
 func updateScaleRelatedAttributes():
 	var scale_multiplication: float 
 	scale_multiplication = base_charisma * (charisma_multiplier * 0.8699 * (scale_factor * 1.15))
 	charisma = scale_multiplication 
+
 
 func updateAefisNefis():
 	var intelligence_portion = intelligence * 0.5
@@ -2939,6 +2798,8 @@ func updateAefisNefis():
 
 	max_aefis = base_max_aefis * (wisdom_portion + intelligence_portion)
 	max_nefis = base_max_nefis * instinct
+
+
 
 onready var hp_bar = $UI/GUI/Portrait/LifeBar
 onready var hp_label = $UI/GUI/Portrait/LifeLabel
@@ -3021,11 +2882,6 @@ func displayLabels():
 	displayStats(life_steal_label,life_steal)
 	var stagger_chance_label: Label = $UI/GUI/Equipment/EquipmentBG/CombatStats/GridContainer/StaggerChanceValue
 	displayStats(stagger_chance_label,stagger_chance)
-	
-	
-	var flank_dmg_label = $UI/GUI/Equipment/EquipmentBG/CombatStats/GridContainer/FlankDMGValue
-	displayStats(flank_dmg_label,flank_dmg)
-	
 	
 	var int_lab = $UI/GUI/Equipment/Attributes/Intelligence/value
 	displayStats(int_lab, total_intelligence)
@@ -5562,3 +5418,4 @@ func _on_pressme2_pressed():
 	bleed_resistance= rng.randi_range(-125, 125)
 	neuro_resistance= rng.randi_range(-125, 125)
 	radiant_resistance= rng.randi_range(-125, 125)
+
