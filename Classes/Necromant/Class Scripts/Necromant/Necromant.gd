@@ -53,6 +53,14 @@ func updateCooldownLabel() -> void:
 					label.text = str(round(remaining_cooldown * 100)/ 100)
 				else:
 					label.text = ""
+		elif icon != null and icon.texture != null and icon.texture.resource_path == autload.arcane_blast.get_path():
+			var label: Label = child.get_node("CD")
+			var remaining_cooldown:float  = max(0, arcane_blast_cooldown - (current_time - last_arcane_blast_time))
+			if label != null:
+				if remaining_cooldown >0:
+					label.text = str(round(remaining_cooldown * 100)/ 100)
+				else:
+					label.text = ""
 					
 		else:
 			var label: Label = child.get_node("CD")
@@ -207,10 +215,7 @@ func areaSpell() -> void:
 		# Calculate spawn position based on camera direction's Y-component
 		var spawn_position: Vector3 = player_global_transform.origin + player_forward * spell_distance
 		spawn_position.y += camera_forward_y * spell_distance
-		
-		# Ensure spawn_position.y is not lower than the player's position
 		spawn_position.y = max(spawn_position.y + 1, player_global_transform.origin.y)
-
 		var area_spell_instance: Node = area_spell.instance()
 		area_spell_instance.instigator = player.get_parent()
 		area_spell_instance.summoner = player.get_parent()
@@ -218,11 +223,13 @@ func areaSpell() -> void:
 		var damage_partial: float = area_spell_instance.base_damage * (player.get_parent().intelligence + player.get_parent().instinct)
 		area_spell_instance.damage = damage_partial + (player.get_parent().max_nefis * 0.1)
 		get_tree().current_scene.add_child(area_spell_instance)
-
 		last_spell_time = current_time
 
-var arcane_blast: PackedScene = preload("res://Classes/Necromant/Spells/ArcaneBlast.tscn")
 
+
+var arcane_blast: PackedScene = preload("res://Classes/Necromant/Spells/ArcaneBlast.tscn")
+var arcane_blast_cooldown: float = 1
+var last_arcane_blast_time: float = 0.0 
 func arcaneBlast():
 	var camera: Camera = $"../../../../../Camroot/h/v/Camera"
 	var player_global_transform: Transform = player.global_transform
@@ -235,8 +242,15 @@ func arcaneBlast():
 	# Calculate camera's vertical orientation
 	var camera_forward_y: float = -camera_transform.basis.z.normalized().y
 	
-	# Apply camera's vertical orientation to the bullet's direction
-	var modified_direction: Vector3 = player_direction + Vector3.UP * camera_forward_y
+	# Amplify the influence when looking upwards and weaken it when looking downwards
+	var strength_factor: float = 1.0
+	if camera_forward_y > 0:
+		strength_factor = 3.0
+	else:
+		strength_factor = 0.5
+	
+	# Modify the bullet's direction based on the strength factor
+	var modified_direction: Vector3 = player_direction + Vector3.UP * camera_forward_y * strength_factor
 	
 	# Set the direction of the bullet instance
 	arcane_blast_instance.direction = modified_direction.normalized()
@@ -252,3 +266,23 @@ func arcaneBlast():
 	# Add the bullet instance to the scene
 	get_tree().current_scene.add_child(arcane_blast_instance)
 
+
+#func arcaneBlast():
+#	var current_time: float = OS.get_ticks_msec() / 1000.0
+#	if current_time - last_arcane_blast_time >= arcane_blast_cooldown:
+#		var camera: Camera = $"../../../../../Camroot/h/v/Camera"
+#		var player_global_transform: Transform = player.global_transform
+#		var player_forward: Vector3 = player_global_transform.basis.z.normalized()
+#		var spawn_position: Vector3 = player_global_transform.origin + player_forward * 1
+#		var player_direction = player.get_parent().direction # Assuming direction is a property of the player's parent node
+#		var arcane_blast_instance: KinematicBody = arcane_blast.instance()
+#		var camera_transform: Transform = camera.global_transform
+#		var camera_forward_y: float = -camera_transform.basis.z.normalized().y
+#		var modified_direction: Vector3 = player_direction + Vector3.UP * camera_forward_y
+#		arcane_blast_instance.direction = modified_direction.normalized()
+#		spawn_position.y = max(spawn_position.y + 1, player_global_transform.origin.y)
+#		arcane_blast_instance.instigator =  player.get_parent()
+#		arcane_blast_instance.summoner =  player.get_parent()
+#		arcane_blast_instance.global_transform.origin = spawn_position
+#		get_tree().current_scene.add_child(arcane_blast_instance)
+#		last_arcane_blast_time = current_time
