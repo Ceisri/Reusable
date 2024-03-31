@@ -382,17 +382,8 @@ func updateStats():
 	
 #stats______________________________________________________________________________________________
 var entity_name = "Demon"
-var level = 1
-var health = 100
-const base_health = 100
-var max_health = 100
-const base_max_health = 100
-var energy = 100
-var max_energy = 100
-const base_max_energy = 100
-var resolve = 100
-var max_resolve = 100
-const base_max_resolve = 100
+var level: int = 100
+
 
 const base_weight = 60
 var weight = 60
@@ -407,70 +398,212 @@ var jumping_power = 20
 const base_dash_power = 20
 var dash_power = 20
 var attribute = 1000
-var skill_points = 1000
+
 var defense =  10
+const base_defense = 0
+
+#magic energy systems 
+const base_max_aefis = 100
+var max_aefis = 100 
+var aefis = 100 
+#______________________
+const base_max_nefis = 100
+var max_nefis = 100 
+var nefis = 100 
+#_______________________
+const base_max_vifis = 100
+var max_vifis = 100 
+var vifis = 100 
+
+#health system 
+const base_max_health = 100
+var max_health = 100
+var health = 100
+#________________________
 
 
+#additional combat energy systems
+const base_max_resolve = 100
+var max_resolve = 100
+var resolve = 100
+#__________________________
+const base_max_breath = 100
+var max_breath = 100
+var breath = 100
+
+
+var scale_factor = 1
 #attributes 
-var coordination = 1
-var creativity = 1
-var wisdom = 1
-var memory = 1
-var intelligence = 1
-var willpower = 1
+#leveling
+var skill_points = 0
 
-var power = 1
-var strength = 1.5
-var impact = 1
-var resistance = 1
-var tenacity = 1
+var sanity: float  = 1
+var wisdom: float = 1
+var memory: float = 1
+var intelligence: float = 1
+var instinct: float = 1
 
-var accuracy = 1
-var dexterity = 1
+var force: float = 1
+var strength: float = 1
+var impact: float = 1
+var ferocity: float  = 1 
+var fury: float = 1 
 
-var balance = 1
-var focus = 1
+var accuracy: float = 1
+var dexterity: float = 1
+var poise: float = 1
+var balance: float = 1
+var focus: float = 1
 
-var acrobatics = 1
-var agility = 1
-var athletics = 1
-var flexibility = 1
-var placeholder_ = 1
+var haste: float = 1
+var agility: float = 1
+var celerity: float = 1
+var flexibility: float = 1
+var deflection: float = 1
 
-var endurance = 1
-var stamina = 1
-var vitality = 1
-var vigor = 1
-var recovery = 1
+var endurance: float = 1
+var stamina: float = 1
+var vitality: float = 1
+var resistance: float = 1
+var tenacity: float = 1
 
-var charisma = 1
-var loyalty = 1 
-var diplomacy = 1
-var leadership = 1
-var empathy = 1
+const base_charisma = 1 
+var charisma: float = 1
+var charisma_multiplier: float = 1 
+var loyalty: float = 1 
+var diplomacy: float = 1
+var authority: float = 1
+var courage: float = 1 
 
-#__________________________________________Defenses and stuff_______________________________________
+
+const base_melee_atk_speed: int = 1 
+var melee_atk_speed: float = 1 
+const base_ranged_atk_speed: int = 1 
+var ranged_atk_speed: float = 1 
+const base_casting_speed: int  = 1 
+var critical_chance: float = 0.00
+var critical_strength: float = 2.0
+var stagger_chance: float = 0.00
+var life_steal: float = 0
 #resistances
-var slash_resistance = 25
-var pierce_resistance = 25
-var blunt_resistance = 25
-var sonic_resistance = 25
-var heat_resistance = 25
-var cold_resistance = 25
-var jolt_resistance = 25
-var toxic_resistance = 25
-var acid_resistance = 25
-var bleed_resistance = 25
-var neuro_resistance = 25
-var radiant_resistance = 25
-
-var stagger_resistance = 0.5
-var deflection_chance = 0.33
+var slash_resistance: int = 0 #50 equals 33.333% damage reduction 100 equals 50% damage reduction, 200 equals 66.666% damage reduction
+var pierce_resistance: int = 0
+var blunt_resistance: int = 0
+var sonic_resistance: int = 0
+var heat_resistance: int = 0
+var cold_resistance: int = 0
+var jolt_resistance: int = 0
+var toxic_resistance: int = 0
+var acid_resistance: int = 0
+var bleed_resistance: int = 0
+var neuro_resistance: int = 0
+var radiant_resistance: int = 0
 
 
-var critical_chance = 0.3
-var critical_strength = 2
-var stagger_chance = 0.3
+var stagger_resistance: float = 0.5
+var deflection_chance : float = 0.33
+
+
+var guard_dmg_absorbition: float = 2 #total damage taken will be divided by this when guarding
+
+
+var base_flank_dmg : float = 10.0
+var flank_dmg: float = 10.0 #extra damage to add to backstabs 
+
+var extra_melee_atk_speed : float = 0
+
+
+var slash_dmg: int = 0 
+var pierce_dmg: int = 0
+var blunt_dmg: int = 10
+var sonic_dmg: int = 0
+var heat_dmg: int = 0
+var cold_dmg: int = 0
+var jolt_dmg: int = 0
+var toxic_dmg: int = 0
+var acid_dmg: int = 0
+var bleed_dmg: int = 0
+var neuro_dmg: int = 0
+var radiant_dmg: int = 0
+
+var casting_speed: float = 1 
+
+#equipment variables
+var extra_sanity: float  = 0
+var extra_wisdom: float = 0
+var extra_memory: float = 0
+var extra_intelligence: float = 0
+var extra_instinct: float = 0
+
+var extra_force: float = 0
+var extra_strength: float = 0
+var extra_impact: float = 0
+var extra_ferocity: float  = 0
+var extra_fury: float = 0
+
+var extra_accuracy: float = 0
+var extra_dexterity: float = 0
+var extra_poise: float = 0
+var extra_balance: float = 0
+var extra_focus: float = 0
+
+var extra_haste: float = 0
+var extra_agility: float = 0
+var extra_celerity: float = 0
+var extra_flexibility: float = 0
+var extra_deflection: float = 0
+
+var extra_endurance: float = 0
+var extra_stamina: float = 0
+var extra_vitality: float = 0
+var extra_resistance: float = 0
+var extra_tenacity: float = 0
+
+
+var extra_charisma : float = 0
+var extra_loyalty : float = 0
+var extra_diplomacy : float = 0
+var extra_authority : float = 0
+var extra_courage : float = 0
+
+
+var total_sanity: float = 0
+var total_wisdom: float = 0
+var total_memory: float = 0
+var total_intelligence: float = 0
+var total_instinct: float = 0
+
+var total_force: float = 0
+var total_strength: float = 0
+var total_impact: float = 0
+var total_ferocity: float = 0
+var total_fury: float = 0
+
+var total_accuracy: float = 0
+var total_dexterity: float = 0
+var total_poise: float = 0
+var total_balance: float = 0
+var total_focus: float = 0
+
+var total_haste: float = 0
+var total_agility: float = 0
+var total_celerity: float = 0
+var total_flexibility: float = 0
+var total_deflection: float = 0
+
+var total_endurance: float = 0
+var total_stamina: float = 0
+var total_vitality: float = 0
+var total_resistance: float = 0
+var total_tenacity: float = 0
+
+var total_charisma: float = 0
+var total_loyalty: float = 0
+var total_diplomacy: float = 0
+var total_authority: float = 0
+var total_courage: float = 0
+
+
 func slash():
 	var rand_num = randi() % 12  # Generate a random number between 0 and 11
 	var damage_type: String = ""
@@ -579,7 +712,7 @@ func isFacingSelf(enemy: Node, threshold: float) -> bool:
 
 
 var lifesteal_pop = preload("res://UI/lifestealandhealing.tscn")
-var life_steal: float = 0
+
 func lifesteal(damage_to_take):
 	if life_steal > 0:
 		var text = lifesteal_pop.instance()

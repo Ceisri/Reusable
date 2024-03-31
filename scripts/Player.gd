@@ -442,8 +442,14 @@ func crossHair():
 				crosshair_tween.interpolate_property(crosshair, "modulate", crosshair.modulate, Color(0.85, 0, 0), 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
 				crosshair_tween.start()
 			elif body.is_in_group("Entity"):
-				crosshair_tween.interpolate_property(crosshair, "modulate", crosshair.modulate, Color(0.6, 0.05, 0.8), 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
-				crosshair_tween.start()
+				if body.is_in_group("Servant"):
+					if body.summoner != null:
+						if body.summoner == self:
+							crosshair_tween.interpolate_property(crosshair, "modulate", crosshair.modulate, Color(0,0.75, 0), 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
+							crosshair_tween.start()
+				else:
+					crosshair_tween.interpolate_property(crosshair, "modulate", crosshair.modulate, Color(0.6, 0.05, 0.8), 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
+					crosshair_tween.start()
 			else:
 				crosshair_tween.interpolate_property(crosshair, "modulate", crosshair.modulate, Color(1, 1, 1), 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
 				crosshair_tween.start()
@@ -501,53 +507,68 @@ var fade_duration : float = 0.3
 func showEnemyStats():
 	if ray.is_colliding():
 		var body = ray.get_collider()
-		if body.is_in_group("Entity") and body != self:
-			# Instantly turn alpha to maximum
-			entity_graphic_interface.modulate.a = 1.0
-			enemy_health_bar.value = body.health
-			enemy_health_bar.max_value = body.max_health
-			enemy_health_label.text = "HP:" + str(round(body.health* 100) / 100) + "/" + str(body.max_health)
-			enemy_energy_bar.value = body.energy
-			enemy_energy_bar.max_value = body.max_energy
-			enemy_energy_label.text = "EP:" + str(round(body.energy* 100) / 100) + "/" + str(body.max_energy)
-			if body.has_method("showStatusIcon"):
-				body.showStatusIcon(
-	$UI/GUI/EnemyUI/StatusGrid/Icon1,
-	$UI/GUI/EnemyUI/StatusGrid/Icon2,
-	$UI/GUI/EnemyUI/StatusGrid/Icon3,
-	$UI/GUI/EnemyUI/StatusGrid/Icon4,
-	$UI/GUI/EnemyUI/StatusGrid/Icon5,
-	$UI/GUI/EnemyUI/StatusGrid/Icon6,
-	$UI/GUI/EnemyUI/StatusGrid/Icon7,
-	$UI/GUI/EnemyUI/StatusGrid/Icon8,
-	$UI/GUI/EnemyUI/StatusGrid/Icon9,
-	$UI/GUI/EnemyUI/StatusGrid/Icon10,
-	$UI/GUI/EnemyUI/StatusGrid/Icon11,
-	$UI/GUI/EnemyUI/StatusGrid/Icon12,
-	$UI/GUI/EnemyUI/StatusGrid/Icon13,
-	$UI/GUI/EnemyUI/StatusGrid/Icon14,
-	$UI/GUI/EnemyUI/StatusGrid/Icon15,
-	$UI/GUI/EnemyUI/StatusGrid/Icon16,
-	$UI/GUI/EnemyUI/StatusGrid/Icon17,
-	$UI/GUI/EnemyUI/StatusGrid/Icon18,
-	$UI/GUI/EnemyUI/StatusGrid/Icon19,
-	$UI/GUI/EnemyUI/StatusGrid/Icon20,
-	$UI/GUI/EnemyUI/StatusGrid/Icon21,
-	$UI/GUI/EnemyUI/StatusGrid/Icon22,
-	$UI/GUI/EnemyUI/StatusGrid/Icon23,
-	$UI/GUI/EnemyUI/StatusGrid/Icon24
-)
+		if body != null:
+			if body != self:
+				if body.has_method("showStatusIcon"):
+						body.showStatusIcon(
+			$UI/GUI/EnemyUI/StatusGrid/Icon1,
+			$UI/GUI/EnemyUI/StatusGrid/Icon2,
+			$UI/GUI/EnemyUI/StatusGrid/Icon3,
+			$UI/GUI/EnemyUI/StatusGrid/Icon4,
+			$UI/GUI/EnemyUI/StatusGrid/Icon5,
+			$UI/GUI/EnemyUI/StatusGrid/Icon6,
+			$UI/GUI/EnemyUI/StatusGrid/Icon7,
+			$UI/GUI/EnemyUI/StatusGrid/Icon8,
+			$UI/GUI/EnemyUI/StatusGrid/Icon9,
+			$UI/GUI/EnemyUI/StatusGrid/Icon10,
+			$UI/GUI/EnemyUI/StatusGrid/Icon11,
+			$UI/GUI/EnemyUI/StatusGrid/Icon12,
+			$UI/GUI/EnemyUI/StatusGrid/Icon13,
+			$UI/GUI/EnemyUI/StatusGrid/Icon14,
+			$UI/GUI/EnemyUI/StatusGrid/Icon15,
+			$UI/GUI/EnemyUI/StatusGrid/Icon16,
+			$UI/GUI/EnemyUI/StatusGrid/Icon17,
+			$UI/GUI/EnemyUI/StatusGrid/Icon18,
+			$UI/GUI/EnemyUI/StatusGrid/Icon19,
+			$UI/GUI/EnemyUI/StatusGrid/Icon20,
+			$UI/GUI/EnemyUI/StatusGrid/Icon21,
+			$UI/GUI/EnemyUI/StatusGrid/Icon22,
+			$UI/GUI/EnemyUI/StatusGrid/Icon23,
+			$UI/GUI/EnemyUI/StatusGrid/Icon24
+		)
 
-
+				if body.is_in_group("Entity") and body != self:
+					# Instantly turn alpha to maximum
+					entity_graphic_interface.modulate.a = 1.0
+					enemy_health_bar.value = body.health
+					enemy_health_bar.max_value = body.max_health
+					enemy_health_label.text = "HP:" + str(round(body.health* 100) / 100) + "/" + str(body.max_health)
+					enemy_energy_bar.value = body.nefis
+					enemy_energy_bar.max_value = body.max_nefis
+					enemy_energy_label.text = "EP:" + str(round(body.nefis* 100) / 100) + "/" + str(body.max_nefis)
+							
+				else:
+					# Start tween to fade out
+					enemy_ui_tween.interpolate_property(entity_graphic_interface, "modulate:a", entity_graphic_interface.modulate.a, 0.0, fade_duration, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
+					enemy_ui_tween.start()
+			else:
+				# Start tween to fade out
+				enemy_ui_tween.interpolate_property(entity_graphic_interface, "modulate:a", entity_graphic_interface.modulate.a, 0.0, fade_duration, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
+				enemy_ui_tween.start()
 		else:
 			# Start tween to fade out
-			enemy_ui_tween.interpolate_property(entity_graphic_interface, "modulate:a", entity_graphic_interface.modulate.a, 0.0, fade_duration, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
+			enemy_ui_tween.interpolate_property(entity_graphic_interface, "modulate:a", entity_graphic_interface.modulate.a, 0.0,fade_duration/3, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
 			enemy_ui_tween.start()
-	else:
-		# Start tween to fade out
-		enemy_ui_tween.interpolate_property(entity_graphic_interface, "modulate:a", entity_graphic_interface.modulate.a, 0.0,fade_duration/3, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
-		enemy_ui_tween.start()
-		#print(str(fade_duration))
+			#print(str(fade_duration))
+
+
+
+
+
+
+
+
+
 
 #______________________________________________Animations___________________________________________
 var weapon_type: String = "fist"
@@ -707,8 +728,9 @@ func matchAnimationStates():
 		"testB":
 			var slot = $UI/GUI/SkillBar/GridContainer/SlotB/Icon
 			skills(slot)
+onready var necromant = $UI/GUI/SkillTrees/Background/Necromant		
 func skills(slot):
-	var necromant = $UI/GUI/SkillTrees/Background/Necromant
+	
 	if slot != null:
 			if slot.texture != null:
 				if slot.texture.resource_path == "res://UI/graphics/SkillIcons/rush.png":
@@ -725,6 +747,8 @@ func skills(slot):
 					necromant.tribute()
 				elif slot.texture.resource_path == autload.servitude.get_path():	
 					necromant.areaSpell()
+				elif slot.texture.resource_path == autload.arcane_blast.get_path():	
+					necromant.arcaneBlast()
 				else:
 					pass
 var sprint_animation_speed : float = 1
@@ -884,6 +908,7 @@ func stompKickDealDamage():
 	for enemy in enemies:
 		if enemy.is_in_group("enemy"):
 			if enemy.has_method("takeDamage"):
+				enemy.applyEffect(enemy,"bleeding", true)	
 				pushEnemyAway(2, enemy,0.25)
 				if is_on_floor():
 					#insert sound effect here
@@ -1244,6 +1269,13 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
 		text.state = damage_type
 	take_damage_view.add_child(text)
 
+func takeHealing(healing,healer):
+
+	health += healing
+	var text = floatingtext_damage.instance()
+	text.amount =round(healing * 100)/ 100
+	text.state = "healing"
+	take_damage_view.add_child(text)
 #__________________________________Combat UI____________________________________
 
 onready var parry_icon = $UI/GUI/ParryIcon
@@ -1627,7 +1659,7 @@ onready var crafting_slot14 = $UI/GUI/Crafting/CraftingGrid/craftingSlot14/Icon
 onready var crafting_slot15 = $UI/GUI/Crafting/CraftingGrid/craftingSlot15/Icon
 onready var crafting_slot16 = $UI/GUI/Crafting/CraftingGrid/craftingSlot16/Icon
 onready var crafting_result = $UI/GUI/Crafting/CraftingResultSlot/Icon
-onready var icon = $CraftingResultSlot/Icon
+onready var icon = $UI/GUI/Crafting/CraftingResultSlot/Icon
 
 func crafting():
 	if crafting_slot1.texture != null:
@@ -2025,7 +2057,7 @@ func removeSecWeapon():
 		attachment_hip_sec.remove_child(sec_currentInstance)
 		got_sec_weapon = false
 #Shield_____________________________________________________________________________________________
-onready var attachment_s = $Mesh/Armature020/Skeleton/HoldL2
+onready var attachment_s = $Mesh/Armature/Skeleton/HoldL2
 var shield0: PackedScene = preload("res://itemTest.tscn")
 var shield_currentInstance: Node = null 
 var has_shield0 = false
@@ -2461,8 +2493,8 @@ func redPotion():
 		else:
 			applyEffect(self,"redpotion",false)
 #_____________________________Hunger system and Hydration System___________________________
-onready var kilocalories_label = $UI/GUI/Portrait/Kilocalories
-onready var kilocalories_bar = $UI/GUI/Portrait/KilocaloriesBar
+onready var kilocalories_label = $UI/GUI/Portrait/MinimapHolder/FoodLabel
+onready var kilocalories_bar = $UI/GUI/Portrait/MinimapHolder/FoodBar
 const base_kilocaries = 2000
 var max_kilocalories = 2000
 var kilocalories = 2000
@@ -2595,7 +2627,7 @@ func _on_Toilet1_pressed():
 
 
 #Stats__________________________________________________________________________
-var level = 100
+var level: int = 100
 
 
 const base_weight = 60
@@ -2720,8 +2752,8 @@ var deflection_chance : float = 0.33
 var guard_dmg_absorbition: float = 2 #total damage taken will be divided by this when guarding
 
 
-var staggered = 0 
 
+var staggered = 0 
 var base_flank_dmg : float = 10.0
 var flank_dmg: float = 10.0 #extra damage to add to backstabs 
 
@@ -3189,7 +3221,7 @@ func connectAttributeHovering():
 	var loyalty_label = $UI/GUI/Equipment/Attributes/Loyalty
 	var diplomacy_label = $UI/GUI/Equipment/Attributes/Diplomacy
 	var authority_label = $UI/GUI/Equipment/Attributes/Authority
-	var empathy_label = $UI/GUI/Equipment/Attributes/Empathy
+
 	var courage_label = $UI/GUI/Equipment/Attributes/Courage	
 	
 	
@@ -5332,9 +5364,9 @@ func savePlayerData():
 		
 		
 		
+		"wraith":necromant.summoned_demons,
 		
-		
-		"effects": effects,
+
 		}
 	var dir = Directory.new()
 	if !dir.dir_exists(SAVE_DIR):
@@ -5540,8 +5572,8 @@ func loadPlayerData():
 				max_water = player_data["max_water"]
 #			if "effects" in player_data:
 #				effects = player_data["effects"]
-
-
+			if "wraith" in player_data:
+				necromant.summoned_demons = player_data["wraith"]
 func _on_pressme_pressed():
 	health = 5
 	breath = 5

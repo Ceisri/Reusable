@@ -38,6 +38,9 @@ func _ready():
 		"radiant":
 			label.add_color_override("font_color", Color("fffa85")) 
 			label.add_color_override("font_outline", Color("fffa85")) 
+		"healing":
+			label.add_color_override("font_color", Color("a9f08f")) 
+			label.add_color_override("font_outline", Color("000000")) 
 	label.text = str(amount)
 	status_label.text = status + "  "
 	
