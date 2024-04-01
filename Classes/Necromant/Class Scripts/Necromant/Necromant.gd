@@ -21,7 +21,7 @@ func updateCooldownLabel() -> void:
 	
 	for child in grid.get_children():
 		var icon = child.get_node("Icon")
-		if icon != null and icon.texture != null and icon.texture.resource_path == autload.summon_shadow.get_path():
+		if icon != null and icon.texture != null and icon.texture.resource_path == autoload.summon_shadow.get_path():
 			var remaining_cooldown: float = max(0, summon_cooldown - (current_time - last_summon_time))
 			var label: Label = child.get_node("CD")
 			if label != null:
@@ -29,7 +29,7 @@ func updateCooldownLabel() -> void:
 					label.text = str(round(remaining_cooldown * 100)/ 100)
 				else:
 					label.text = ""
-		elif icon != null and icon.texture != null and icon.texture.resource_path == autload.dominion.get_path():
+		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.dominion.get_path():
 			var label: Label = child.get_node("CD")
 			var remaining_cooldown:float  = max(0, switch_cooldown - (current_time - last_switch_time))
 			if label != null:
@@ -37,7 +37,7 @@ func updateCooldownLabel() -> void:
 					label.text = str(round(remaining_cooldown * 100)/ 100)
 				else:
 					label.text = ""
-		elif icon != null and icon.texture != null and icon.texture.resource_path == autload.tribute.get_path():
+		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.tribute.get_path():
 			var label: Label = child.get_node("CD")
 			var remaining_cooldown:float  = max(0, tribute_cooldown - (current_time - last_tribute_time))
 			if label != null:
@@ -45,7 +45,7 @@ func updateCooldownLabel() -> void:
 					label.text = str(round(remaining_cooldown * 100)/ 100)
 				else:
 					label.text = ""
-		elif icon != null and icon.texture != null and icon.texture.resource_path == autload.servitude.get_path():
+		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.servitude.get_path():
 			var label: Label = child.get_node("CD")
 			var remaining_cooldown:float  = max(0, spell_cooldown - (current_time - last_spell_time))
 			if label != null:
@@ -53,7 +53,7 @@ func updateCooldownLabel() -> void:
 					label.text = str(round(remaining_cooldown * 100)/ 100)
 				else:
 					label.text = ""
-		elif icon != null and icon.texture != null and icon.texture.resource_path == autload.arcane_blast.get_path():
+		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.arcane_blast.get_path():
 			var label: Label = child.get_node("CD")
 			var remaining_cooldown:float  = max(0, arcane_blast_cooldown - (current_time - last_arcane_blast_time))
 			if label != null:
@@ -245,7 +245,7 @@ func arcaneBlast():
 			var camera_forward_y: float = -camera_transform.basis.z.normalized().y
 			var strength_factor: float = 1.0
 			if camera_forward_y > 0:
-				strength_factor = 2.5
+				strength_factor = 2
 			else:
 				strength_factor = 0.5
 			var modified_direction: Vector3 = player_direction + Vector3.UP * camera_forward_y * strength_factor
