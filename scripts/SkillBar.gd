@@ -2,16 +2,29 @@
 
 func _ready():
 	load_keybinds()
-	skill_slot1.connect("pressed", self, "_on_Slot1_pressed")
-	skill_slot2.connect("pressed", self, "_on_Slot2_pressed")
-	skill_slot3.connect("pressed", self, "_on_Slot3_pressed")
-	skill_slot4.connect("pressed", self, "_on_Slot4_pressed")
-	skill_slot5.connect("pressed", self, "_on_Slot5_pressed")
-	skill_slot6.connect("pressed", self, "_on_Slot6_pressed")
-	skill_slot7.connect("pressed", self, "_on_Slot7_pressed")
-	skill_slot8.connect("pressed", self, "_on_Slot8_pressed")
-	skill_slot9.connect("pressed", self, "_on_Slot9_pressed")
-	skill_slot10.connect("pressed", self, "_on_Slot10_pressed")
+	connectSkillSlots()
+func connectSkillSlots():
+	skill_slot1.connect("pressed", self, "slot1Pressed")
+	skill_slot2.connect("pressed", self, "slot2Pressed")
+	skill_slot3.connect("pressed", self, "slot3Pressed")
+	skill_slot4.connect("pressed", self, "slot4Pressed")
+	skill_slot5.connect("pressed", self, "slot5Pressed")
+	skill_slot6.connect("pressed", self, "slot6Pressed")
+	skill_slot7.connect("pressed", self, "slot7Pressed")
+	skill_slot8.connect("pressed", self, "slot8Pressed")
+	skill_slot9.connect("pressed", self, "slot9Pressed")
+	skill_slot10.connect("pressed", self, "slot10Pressed")
+	skill_slot11.connect("pressed", self, "slot11Pressed")
+	skill_slot12.connect("pressed", self, "slot12Pressed")
+	skill_slot13.connect("pressed", self, "slot13Pressed")
+	skill_slot14.connect("pressed", self, "slot14Pressed")
+	skill_slot15.connect("pressed", self, "slot15Pressed")
+	skill_slot16.connect("pressed", self, "slot16Pressed")
+	skill_slot17.connect("pressed", self, "slot17Pressed")
+	skill_slot18.connect("pressed", self, "slot18Pressed")
+	skill_slot19.connect("pressed", self, "slot19Pressed")
+	skill_slot20.connect("pressed", self, "slot20Pressed")
+
 
 var edit = false 
 func _on_Edit_pressed():
@@ -29,7 +42,20 @@ onready var skill_slot6 = $GridContainer/Slot6
 onready var skill_slot7 = $GridContainer/Slot7
 onready var skill_slot8 = $GridContainer/Slot8
 onready var skill_slot9 = $GridContainer/Slot9
-onready var skill_slot10 = $GridContainer/Slot0
+onready var skill_slot10 = $GridContainer/Slot10
+onready var skill_slot11 = $GridContainer/Slot11
+onready var skill_slot12 = $GridContainer/Slot12
+onready var skill_slot13 = $GridContainer/Slot13
+onready var skill_slot14 = $GridContainer/Slot14
+onready var skill_slot15 = $GridContainer/Slot15
+onready var skill_slot16 = $GridContainer/Slot16
+onready var skill_slot17 = $GridContainer/Slot17
+onready var skill_slot18 = $GridContainer/Slot18
+onready var skill_slot19 = $GridContainer/Slot19
+onready var skill_slot20 = $GridContainer/Slot20
+
+
+
 
 onready var skill_slot_label_1 = $GridContainer/Slot1/Label
 onready var skill_slot_label_2 = $GridContainer/Slot2/Label 
@@ -40,7 +66,10 @@ onready var skill_slot_label_6 = $GridContainer/Slot6/Label
 onready var skill_slot_label_7 = $GridContainer/Slot7/Label 
 onready var skill_slot_label_8 = $GridContainer/Slot8/Label
 onready var skill_slot_label_9 = $GridContainer/Slot9/Label 
-onready var skill_slot_label_10 = $GridContainer/Slot0/Label
+onready var skill_slot_label_10 = $GridContainer/Slot10/Label
+
+
+
 
 var capturing_input1 = false
 var capturing_input2 = false
@@ -52,69 +81,68 @@ var capturing_input7 = false
 var capturing_input8 = false
 var capturing_input9 = false
 var capturing_input10 = false
-func _on_Slot1_pressed():
+func slot1Pressed():
 	if edit:
 		capturing_input1 = true
 		skill_slot_label_1.text = "..."
-func _on_Slot2_pressed():
+
+func slot2Pressed():
 	if edit:
 		capturing_input2 = true
 		skill_slot_label_2.text = "..."
-func _on_Slot3_pressed():
+
+func slot3Pressed():
 	if edit:
 		capturing_input3 = true
 		skill_slot_label_3.text = "..."
-func _on_Slot4_pressed():
+
+func slot4Pressed():
 	if edit:
 		capturing_input4 = true
 		skill_slot_label_4.text = "..."
-func _on_Slot5_pressed():
+func slot5Pressed():
 	if edit:
 		capturing_input5 = true
 		skill_slot_label_5.text = "..."
-func _on_Slot6_pressed():
+
+func slot6Pressed():
 	if edit:
 		capturing_input6 = true
 		skill_slot_label_6.text = "..."
-func _on_Slot7_pressed():
+
+func slot7Pressed():
 	if edit:
 		capturing_input7 = true
 		skill_slot_label_7.text = "..."
-func _on_Slot8_pressed():
+
+func slot8Pressed():
 	if edit:
 		capturing_input8 = true
 		skill_slot_label_8.text = "..."
-func _on_Slot9_pressed():
+
+func slot9Pressed():
 	if edit:
 		capturing_input9 = true
 		skill_slot_label_9.text = "..."
-func _on_Slot10_pressed():
+
+func slot10Pressed():
 	if edit:
 		capturing_input10 = true
 		skill_slot_label_10.text = "..."
 
-#upper row of shortcut keybinds ____________________________________________________________________
-onready var skill_slot_Q = $GridContainer/SlotQ
-onready var skill_slot_E = $GridContainer/SlotE
-onready var skill_slot_R = $GridContainer/SlotR
-onready var skill_slot_T = $GridContainer/SlotT
-onready var skill_slot_F = $GridContainer/SlotF
-onready var skill_slot_G = $GridContainer/SlotG
-onready var skill_slot_Y = $GridContainer/SlotY
-onready var skill_slot_H = $GridContainer/SlotH
-onready var skill_slot_V = $GridContainer/SlotV
-onready var skill_slot_B = $GridContainer/SlotB
 
-onready var skill_slot_label_Q = $GridContainer/SlotQ/Label
-onready var skill_slot_label_E = $GridContainer/SlotE/Label
-onready var skill_slot_label_R = $GridContainer/SlotR/Label
-onready var skill_slot_label_T = $GridContainer/SlotT/Label
-onready var skill_slot_label_F = $GridContainer/SlotF/Label
-onready var skill_slot_label_G = $GridContainer/SlotG/Label
-onready var skill_slot_label_Y = $GridContainer/SlotY/Label
-onready var skill_slot_label_H = $GridContainer/SlotH/Label
-onready var skill_slot_label_V = $GridContainer/SlotV/Label
-onready var skill_slot_label_B = $GridContainer/SlotB/Label
+#upper row of shortcut keybinds ____________________________________________________________________
+
+onready var skill_slot_label_11 = $GridContainer/Slot11/Label
+onready var skill_slot_label_12 = $GridContainer/Slot12/Label
+onready var skill_slot_label_13 = $GridContainer/Slot13/Label
+onready var skill_slot_label_14 = $GridContainer/Slot14/Label
+onready var skill_slot_label_15 = $GridContainer/Slot15/Label
+onready var skill_slot_label_16 = $GridContainer/Slot16/Label
+onready var skill_slot_label_17 = $GridContainer/Slot17/Label
+onready var skill_slot_label_18 = $GridContainer/Slot18/Label
+onready var skill_slot_label_19 = $GridContainer/Slot19/Label
+onready var skill_slot_label_20 = $GridContainer/Slot20/Label
 
 
 var capturing_input1UP = false
@@ -128,54 +156,54 @@ var capturing_input8UP = false
 var capturing_input9UP = false
 var capturing_input10UP = false
 
-func _on_SlotQ_pressed():
+func slot11Pressed():
 	if edit:
 		capturing_input1UP = true
-		skill_slot_label_Q.text = "..."
-func _on_SlotE_pressed():
+		skill_slot_label_11.text = "..."
+func slot12Pressed():
 	if edit:
 		capturing_input2UP = true
-		skill_slot_label_E.text = "..."
+		skill_slot_label_12.text = "..."
 		
-func _on_SlotR_pressed():
+func slot13Pressed():
 	if edit:
 		capturing_input3UP = true
-		skill_slot_label_R.text = "..."
+		skill_slot_label_13.text = "..."
 		
-func _on_SlotT_pressed():
+func slot14Pressed():
 	if edit:
 		capturing_input4UP = true
-		skill_slot_label_T.text = "..."
+		skill_slot_label_14.text = "..."
 		
-func _on_SlotF_pressed():
+func slot15Pressed():
 	if edit:
 		capturing_input5UP = true
-		skill_slot_label_F.text = "..."
+		skill_slot_label_15.text = "..."
 		
-func _on_SlotG_pressed():
+func slot16Pressed():
 	if edit:
 		capturing_input6UP = true
-		skill_slot_label_G.text = "..."
+		skill_slot_label_16.text = "..."
 		
-func _on_SlotY_pressed():
+func slot17Pressed():
 	if edit:
 		capturing_input7UP = true
-		skill_slot_label_Y.text = "..."
+		skill_slot_label_17.text = "..."
 		
-func _on_SlotH_pressed():
+func slot18Pressed():
 	if edit:
 		capturing_input8UP = true
-		skill_slot_label_H.text = "..."
+		skill_slot_label_18.text = "..."
 		
-func _on_SlotV_pressed():
+func slot19Pressed():
 	if edit:
 		capturing_input9UP = true
-		skill_slot_label_V.text = "..."
+		skill_slot_label_19.text = "..."
 		
-func _on_SlotB_pressed():
+func slot20Pressed():
 	if edit:
 		capturing_input10UP = true
-		skill_slot_label_B.text = "..."
+		skill_slot_label_20.text = "..."
 
 
 
@@ -206,25 +234,25 @@ func _input(event):
 		handle_input_event(event, "0", skill_slot_label_10)
 #___________________________________________________________________________________________________
 	if capturing_input1UP:
-		handle_input_event(event, "Q", skill_slot_label_Q)
+		handle_input_event(event, "Q", skill_slot_label_11)
 	if capturing_input2UP:
-		handle_input_event(event, "E", skill_slot_label_E)
+		handle_input_event(event, "E", skill_slot_label_12)
 	if capturing_input3UP:
-		handle_input_event(event, "R", skill_slot_label_R)
+		handle_input_event(event, "R", skill_slot_label_13)
 	if capturing_input4UP:
-		handle_input_event(event, "T", skill_slot_label_T)
+		handle_input_event(event, "T", skill_slot_label_14)
 	if capturing_input5UP:
-		handle_input_event(event, "F", skill_slot_label_F)
+		handle_input_event(event, "F", skill_slot_label_15)
 	if capturing_input6UP:
-		handle_input_event(event, "G", skill_slot_label_G)
+		handle_input_event(event, "G", skill_slot_label_16)
 	if capturing_input7UP:
-		handle_input_event(event, "Y", skill_slot_label_Y)
+		handle_input_event(event, "Y", skill_slot_label_17)
 	if capturing_input8UP:
-		handle_input_event(event, "H", skill_slot_label_H)
+		handle_input_event(event, "H", skill_slot_label_18)
 	if capturing_input9UP:
-		handle_input_event(event, "V", skill_slot_label_V)
+		handle_input_event(event, "V", skill_slot_label_19)
 	if capturing_input10UP:
-		handle_input_event(event, "B", skill_slot_label_B)
+		handle_input_event(event, "B", skill_slot_label_20)
 
 
 
@@ -321,34 +349,34 @@ func save_keybinds():
 	config.set_value("Keybinds", "Skill10", skill_slot_label_10.text)
 	config.set_value("Keybinds", "0", InputMap.get_action_list("0"))
 #___________________________________________________________________________________________________
-	config.set_value("Keybinds", "SkillQ", skill_slot_label_Q.text)
+	config.set_value("Keybinds", "SkillQ", skill_slot_label_11.text)
 	config.set_value("Keybinds", "Q", InputMap.get_action_list("Q"))
 	
-	config.set_value("Keybinds", "SkillE", skill_slot_label_E.text)
+	config.set_value("Keybinds", "SkillE", skill_slot_label_12.text)
 	config.set_value("Keybinds", "E", InputMap.get_action_list("E"))
 
-	config.set_value("Keybinds", "SkillR", skill_slot_label_R.text)
+	config.set_value("Keybinds", "SkillR", skill_slot_label_13.text)
 	config.set_value("Keybinds", "R", InputMap.get_action_list("R"))
 
-	config.set_value("Keybinds", "SkillT", skill_slot_label_T.text)
+	config.set_value("Keybinds", "SkillT", skill_slot_label_14.text)
 	config.set_value("Keybinds", "T", InputMap.get_action_list("T"))
 
-	config.set_value("Keybinds", "SkillF", skill_slot_label_F.text)
+	config.set_value("Keybinds", "SkillF", skill_slot_label_15.text)
 	config.set_value("Keybinds", "F", InputMap.get_action_list("F"))
 
-	config.set_value("Keybinds", "SkillG", skill_slot_label_G.text)
+	config.set_value("Keybinds", "SkillG", skill_slot_label_16.text)
 	config.set_value("Keybinds", "G", InputMap.get_action_list("G"))
 
-	config.set_value("Keybinds", "SkillY", skill_slot_label_Y.text)
+	config.set_value("Keybinds", "SkillY", skill_slot_label_17.text)
 	config.set_value("Keybinds", "Y", InputMap.get_action_list("Y"))
 
-	config.set_value("Keybinds", "SkillH", skill_slot_label_H.text)
+	config.set_value("Keybinds", "SkillH", skill_slot_label_18.text)
 	config.set_value("Keybinds", "H", InputMap.get_action_list("H"))
 
-	config.set_value("Keybinds", "SkillV", skill_slot_label_V.text)
+	config.set_value("Keybinds", "SkillV", skill_slot_label_19.text)
 	config.set_value("Keybinds", "V", InputMap.get_action_list("V"))
 
-	config.set_value("Keybinds", "SkillB", skill_slot_label_B.text)
+	config.set_value("Keybinds", "SkillB", skill_slot_label_20.text)
 	config.set_value("Keybinds", "B", InputMap.get_action_list("B"))
 	
 	var error = config.save(CONFIG_FILE_PATH)
@@ -407,27 +435,27 @@ func load_keybinds():
 		InputMap.action_erase_events("V")
 		InputMap.action_erase_events("B")
 		
-		load_keybind("Q", skill_slot_Q, "Q", config)
-		load_keybind("E", skill_slot_E, "E", config)
-		load_keybind("R", skill_slot_R, "R", config)
-		load_keybind("T", skill_slot_T, "T", config)
-		load_keybind("F", skill_slot_F, "F", config)
-		load_keybind("G", skill_slot_G, "G", config)
-		load_keybind("Y", skill_slot_Y, "Y", config)
-		load_keybind("H", skill_slot_H, "H", config)
-		load_keybind("V", skill_slot_V, "V", config)
-		load_keybind("B", skill_slot_B, "B", config)
+		load_keybind("Q", skill_slot11, "Q", config)
+		load_keybind("E", skill_slot12, "E", config)
+		load_keybind("R", skill_slot13, "R", config)
+		load_keybind("T", skill_slot14, "T", config)
+		load_keybind("F", skill_slot15, "F", config)
+		load_keybind("G", skill_slot16, "G", config)
+		load_keybind("Y", skill_slot17, "Y", config)
+		load_keybind("H", skill_slot18, "H", config)
+		load_keybind("V", skill_slot19, "V", config)
+		load_keybind("B", skill_slot20, "B", config)
 		
-		skill_slot_label_Q.text = config.get_value("Keybinds", "SkillQ", "")
-		skill_slot_label_E.text = config.get_value("Keybinds", "SkillE", "")
-		skill_slot_label_R.text = config.get_value("Keybinds", "SkillR", "")
-		skill_slot_label_T.text = config.get_value("Keybinds", "SkillT", "")
-		skill_slot_label_F.text = config.get_value("Keybinds", "SkillF", "")
-		skill_slot_label_G.text = config.get_value("Keybinds", "SkillG", "")
-		skill_slot_label_Y.text = config.get_value("Keybinds", "SkillY", "")
-		skill_slot_label_H.text = config.get_value("Keybinds", "SkillH", "")
-		skill_slot_label_V.text = config.get_value("Keybinds", "SkillV", "")
-		skill_slot_label_B.text = config.get_value("Keybinds", "SkillB", "")
+		skill_slot_label_11.text = config.get_value("Keybinds", "SkillQ", "")
+		skill_slot_label_12.text = config.get_value("Keybinds", "SkillE", "")
+		skill_slot_label_13.text = config.get_value("Keybinds", "SkillR", "")
+		skill_slot_label_14.text = config.get_value("Keybinds", "SkillT", "")
+		skill_slot_label_15.text = config.get_value("Keybinds", "SkillF", "")
+		skill_slot_label_16.text = config.get_value("Keybinds", "SkillG", "")
+		skill_slot_label_17.text = config.get_value("Keybinds", "SkillY", "")
+		skill_slot_label_18.text = config.get_value("Keybinds", "SkillH", "")
+		skill_slot_label_19.text = config.get_value("Keybinds", "SkillV", "")
+		skill_slot_label_20.text = config.get_value("Keybinds", "SkillB", "")
 
 	else:
 		print("Error loading keybinds:", error)
@@ -437,11 +465,3 @@ func load_keybind(action_name, button, input_action, config):
 	for keybind in keybinds:
 		InputMap.action_add_event(input_action, keybind)
 	var key_name = OS.get_scancode_string(keybinds[0].scancode) if keybinds else "Unknown"
-
-
-
-
-
-
-
-

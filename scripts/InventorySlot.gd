@@ -8,8 +8,8 @@ var quantity = 0
 var item = "null"
 var type = "item"
 var stackable = true
-var max_quantity = 9999999999
-
+var max_quantity = 9999999
+var skill_tree = false
 
 
 func _physics_process(delta):
@@ -22,11 +22,12 @@ func slotFunctions():
 
 
 func displayQuantity():
-		if quantity != 0: 
+		if quantity > 0: 
 			quantity_label.text = str(round(quantity))
-		elif quantity == 0:
+		else:
 			quantity_label.text = ""
-			icon.texture = null
+			icon.texture = null	
+			
 		if icon.texture == null:
 			quantity = 0
 			quantity_label.text = ""

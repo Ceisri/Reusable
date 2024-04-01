@@ -7,9 +7,21 @@ onready var icon = $Icon
 var quantity = 0
 var item = "null"
 var type = "skill"
+var skill_tree = false
 
 
 
+
+
+func displayQuantity():
+		if quantity > 0: 
+			pass
+		else:
+			icon.texture = null	
+			
+		if icon.texture == null:
+			quantity = 0
+		
 
 func get_drag_data(position: Vector2):
 	var slot = get_parent().get_name()
@@ -39,7 +51,6 @@ func can_drop_data(position, data):
 func drop_data(position, data):
 	var origin_texture = data["origin_texture"]
 	var target_texture = icon.texture
-	var origin_item = data["origin_item"]
 	var target_item = item
 	var origin_quantity = data["origin_quantity"]
 	var target_quantity = quantity
@@ -50,8 +61,8 @@ func drop_data(position, data):
 	icon.savedata()
 	
 	
-	if data["type"] == "skill":
-		icon.texture = origin_texture
+
+	icon.texture = origin_texture
 
 	if origin_texture == target_texture:
 		# Combine quantities if items are the same
@@ -59,9 +70,10 @@ func drop_data(position, data):
 		origin_node.quantity = 0  # Reset the origin quantity
 	else:
 		# Swap quantities if items are different
-		var temp_quantity = quantity
-		quantity = origin_quantity
-		origin_node.quantity = temp_quantity # swap quantities
-		origin_icon.texture = target_texture # swap textures
+		if origin_node.skill_tree == false:
+				var temp_quantity = quantity
+				quantity = origin_quantity
+				origin_node.quantity = temp_quantity # swap quantities
+				origin_icon.texture = target_texture # swap textures
 
 

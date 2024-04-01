@@ -29,6 +29,7 @@ func _ready():
 	SwitchEquipmentBasedOnEquipmentIcons()
 	direction = Vector3.BACK.rotated(Vector3.UP, $Camroot/h.global_transform.basis.get_euler().y)
 func _on_SlowTimer_timeout():
+	nefis += 10
 	allResourcesBarsAndLabels()
 	showEnemyStats()
 	potionEffects()
@@ -697,59 +698,68 @@ func matchAnimationStates():
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot9/Icon
 			skills(slot)
 		"test0":
-			var slot = $UI/GUI/SkillBar/GridContainer/Slot0/Icon
+			var slot = $UI/GUI/SkillBar/GridContainer/Slot10/Icon
 			skills(slot)
 		"testQ":
-			var slot = $UI/GUI/SkillBar/GridContainer/SlotQ/Icon
+			var slot = $UI/GUI/SkillBar/GridContainer/Slot11/Icon
 			skills(slot)
 		"testE":
-			var slot = $UI/GUI/SkillBar/GridContainer/SlotE/Icon
+			var slot = $UI/GUI/SkillBar/GridContainer/Slot12/Icon
 			skills(slot)
 		"testR":
-			var slot = $UI/GUI/SkillBar/GridContainer/SlotR/Icon
+			var slot = $UI/GUI/SkillBar/GridContainer/Slot13/Icon
 			skills(slot)
 		"testT":
-			var slot = $UI/GUI/SkillBar/GridContainer/SlotT/Icon
+			var slot = $UI/GUI/SkillBar/GridContainer/Slot14/Icon
 			skills(slot)
 		"testF":
-			var slot = $UI/GUI/SkillBar/GridContainer/SlotF/Icon
+			var slot = $UI/GUI/SkillBar/GridContainer/Slot15/Icon
 			skills(slot)
 		"testG":
-			var slot = $UI/GUI/SkillBar/GridContainer/SlotG/Icon
+			var slot = $UI/GUI/SkillBar/GridContainer/Slot16/Icon
 			skills(slot)
 		"testY":
-			var slot = $UI/GUI/SkillBar/GridContainer/SlotY/Icon
+			var slot = $UI/GUI/SkillBar/GridContainer/Slot17/Icon
 			skills(slot)
 		"testH":
-			var slot = $UI/GUI/SkillBar/GridContainer/SlotH/Icon
+			var slot = $UI/GUI/SkillBar/GridContainer/Slot18/Icon
 			skills(slot)
 		"testV":
-			var slot = $UI/GUI/SkillBar/GridContainer/SlotV/Icon
+			var slot = $UI/GUI/SkillBar/GridContainer/Slot19/Icon
 			skills(slot)
 		"testB":
-			var slot = $UI/GUI/SkillBar/GridContainer/SlotB/Icon
+			var slot = $UI/GUI/SkillBar/GridContainer/Slot20/Icon
 			skills(slot)
 onready var necromant = $UI/GUI/SkillTrees/Background/Necromant		
 func skills(slot):
-	
 	if slot != null:
 			if slot.texture != null:
 				if slot.texture.resource_path == "res://UI/graphics/SkillIcons/rush.png":
 					animation.play("combo attack 2hander cycle", 0.35)
 				elif slot.texture.resource_path == "res://UI/graphics/SkillIcons/selfheal.png":
 					animation.play("crawl cycle", 0.35)
-				elif slot.texture.resource_path == autload.summon_shadow.get_path():
+				elif slot.texture.resource_path == autoload.summon_shadow.get_path():
 					animation.play("idle crouch", 0.35)
 					#slot.get_parent().get_node("CD").text = str($UI/GUI/SkillTrees/Background/Necromant.lastSummonTime)
 					necromant.summonDemon()
-				elif slot.texture.resource_path == autload.dominion.get_path():	
+				elif slot.texture.resource_path == autoload.dominion.get_path():	
 					necromant.commandSwitch()
-				elif slot.texture.resource_path == autload.tribute.get_path():	
+				elif slot.texture.resource_path == autoload.tribute.get_path():	
 					necromant.tribute()
-				elif slot.texture.resource_path == autload.servitude.get_path():	
+				elif slot.texture.resource_path == autoload.servitude.get_path():	
 					necromant.areaSpell()
-				elif slot.texture.resource_path == autload.arcane_blast.get_path():	
+				elif slot.texture.resource_path == autoload.arcane_blast.get_path():	
 					necromant.arcaneBlast()
+				elif slot.texture.resource_path == autoload.red_potion.get_path():
+					slot.get_parent().displayQuantity()
+					for child in inventory_grid.get_children():
+						if child.is_in_group("Inventory"):
+							var index_str = child.get_name().split("InventorySlot")[1]
+							var index = int(index_str)
+							var button = inventory_grid.get_node("InventorySlot" + str(index))
+							button = inventory_grid.get_node("InventorySlot" + str(index))
+							autoload.consumeRedPotion(self,button,inventory_grid,true,slot.get_parent())
+
 				else:
 					pass
 var sprint_animation_speed : float = 1
@@ -830,6 +840,8 @@ func animations():
 	elif Input.is_action_pressed("G"):
 		animation_state = "testG"
 	elif Input.is_action_pressed("H"):
+		animation_state = "testH"
+	elif Input.is_action_pressed("Y"):
 		animation_state = "testY"
 	elif Input.is_action_pressed("V"):
 		animation_state = "testV"
@@ -1468,17 +1480,6 @@ func saveInventoryData():
 			if child.get_node("Icon").has_method("savedata"):
 				child.get_node("Icon").savedata()
 func saveSkillBarData():
-	$UI/GUI/SkillBar/GridContainer/SlotQ/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/SlotE/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/SlotR/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/SlotT/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/SlotF/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/SlotG/Icon.savedata()	
-	$UI/GUI/SkillBar/GridContainer/SlotY/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/SlotH/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/SlotV/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/SlotB/Icon.savedata()
-	
 	$UI/GUI/SkillBar/GridContainer/Slot1/Icon.savedata()
 	$UI/GUI/SkillBar/GridContainer/Slot2/Icon.savedata()
 	$UI/GUI/SkillBar/GridContainer/Slot3/Icon.savedata()
@@ -1488,7 +1489,18 @@ func saveSkillBarData():
 	$UI/GUI/SkillBar/GridContainer/Slot7/Icon.savedata()
 	$UI/GUI/SkillBar/GridContainer/Slot8/Icon.savedata()
 	$UI/GUI/SkillBar/GridContainer/Slot9/Icon.savedata()
-	$UI/GUI/SkillBar/GridContainer/Slot0/Icon.savedata()	
+	$UI/GUI/SkillBar/GridContainer/Slot10/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/Slot11/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/Slot12/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/Slot13/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/Slot14/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/Slot15/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/Slot16/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/Slot17/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/Slot18/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/Slot19/Icon.savedata()
+	$UI/GUI/SkillBar/GridContainer/Slot20/Icon.savedata()
+
 #__________________________________Inventory____________________________________
 #for this to work either preload all the item icons here or add the "AddItemToInventory.gd"
 #as an autoload, i called it add_item in my project, and i used it to to compre the path 
@@ -1499,6 +1511,8 @@ onready var gui = $UI/GUI
 
 
 func connectInventoryButtons():
+	var combine_slots_button = $UI/GUI/Inventory/CombineSlots
+	combine_slots_button.connect("pressed", self, "combineSlots")
 	for child in inventory_grid.get_children():
 		if child.is_in_group("Inventory"):
 			var index_str = child.get_name().split("InventorySlot")[1]
@@ -1523,25 +1537,19 @@ func inventorySlotPressed(index):
 			print("Inventory slot", index, "pressed twice")
 
 
-			if icon_texture.get_path() == autload.red_potion.get_path():
-					kilocalories += 100
-					health += 100
-					water += 250
-					applyEffect(self,"redpotion",true)
-					red_potion_duration += 5
-					button.quantity -=1
-					autload.addStackableItem(inventory_grid,autload.empty_potion,1)
-			elif icon_texture.get_path() == autload.strawberry.get_path():
+			if icon_texture.get_path() == autoload.red_potion.get_path():
+				autoload.consumeRedPotion(self,button,inventory_grid,false,null)
+			elif icon_texture.get_path() == autoload.strawberry.get_path():
 					kilocalories +=1
 					health += 5
 					water += 2
 					button.quantity -=1
-			elif icon_texture.get_path() == autload.raspberry.get_path():
+			elif icon_texture.get_path() == autoload.raspberry.get_path():
 					kilocalories += 4
 					health += 3
 					water += 3
 					button.quantity -=1
-			elif icon_texture.get_path() == autload.beetroot.get_path():
+			elif icon_texture.get_path() == autoload.beetroot.get_path():
 					kilocalories += 32
 					health += 15
 					water += 71.8
@@ -1561,26 +1569,26 @@ func inventoryMouseEntered(index):
 	var icon_texture = button.get_node("Icon").texture
 	var instance = preload("res://tooltip.tscn").instance()
 	if icon_texture != null:
-		if icon_texture.get_path() == autload.red_potion.get_path():
+		if icon_texture.get_path() == autoload.red_potion.get_path():
 			callToolTip(instance, "Red Potion", "+100 kcals +250 grams of water.\nHeals by 100 health instantly then by 10 every second, drinking more potions stacks the duration")
-		elif icon_texture.get_path() == autload.strawberry.get_path():
+		elif icon_texture.get_path() == autoload.strawberry.get_path():
 			callToolTip(instance,"Strawberry","+5 health points +9 kcals +24 grams of water")
-		elif icon_texture.get_path() == autload.raspberry.get_path():
+		elif icon_texture.get_path() == autoload.raspberry.get_path():
 			callToolTip(instance,"Raspberry","+3 health points +1 kcals +2 grams of water")
-		elif icon_texture.get_path() == autload.beetroot.get_path():
+		elif icon_texture.get_path() == autoload.beetroot.get_path():
 			callToolTip(instance,"beetroot","+15 health points +32 kcals +71.8 grams of water")
 		#equipment icons
-		elif icon_texture.get_path() == autload.hat1.get_path():
+		elif icon_texture.get_path() == autoload.hat1.get_path():
 			callToolTip(instance,"Farmer Hat","+3 blunt resistance.\n +6 heat resistance.\n +3 cold resistance.\n +6 radiant resistance.")
-		elif icon_texture.get_path() == autload.garment1.get_path():
+		elif icon_texture.get_path() == autoload.garment1.get_path():
 			callToolTip(instance,"Farmer Jacket","+3 slash resistance.\n +1 pierce resistance.\n +12 heat resistance.\n +12 cold resistance.")
-		elif icon_texture.get_path() == autload.belt1.get_path():
+		elif icon_texture.get_path() == autoload.belt1.get_path():
 			callToolTip(instance,"Farmer Belt","+3% balance.\n +1.1% charisma.")
-		elif icon_texture.get_path() == autload.glove1.get_path():
+		elif icon_texture.get_path() == autoload.glove1.get_path():
 			callToolTip(instance,"Farmer Glove","+1 slash resistance.\n +1 blunt resistance.\n  +1 pierce resistance.\n +3 cold resistance.\n +5 jolt resistance.\n +3 acid resistance.")
-		elif icon_texture.get_path() == autload.pants1.get_path():
+		elif icon_texture.get_path() == autoload.pants1.get_path():
 			callToolTip(instance,"Farmer Pants","+3 slash resistance.\n +1 pierce resistance.\n +12 heat resistance.\n +12 cold resistance.")
-		elif icon_texture.get_path() == autload.shoe1.get_path():
+		elif icon_texture.get_path() == autoload.shoe1.get_path():
 			callToolTip(instance,"Farmer Shoe","+1 slash resistance.\n +1 blunt resistance.\n +3 pierce resistance.\n +1 heat resistance.\n +6 cold resistance.\n +15 jolt resistance.\n")
 
 func inventoryMouseExited(index):
@@ -1590,7 +1598,7 @@ func callToolTip(instance,title, text):
 		gui.add_child(instance)
 		instance.showTooltip(title, text)
 # Function to combine slots when pressed
-func _on_CombineSlots_pressed():
+func combineSlots():
 	savePlayerData()
 	saveSkillBarData()
 	saveInventoryData()
@@ -1651,27 +1659,8 @@ func skillBarMouseEntered(index):
 	var icon_texture = button.get_node("Icon").texture
 	var instance = preload("res://tooltipSkills.tscn").instance()
 	if icon_texture != null:
-		if icon_texture.get_path() == autload.arcane_blast.get_path():
+		if icon_texture.get_path() == autoload.arcane_blast.get_path():
 			callToolTip(instance, "Arcane Blast", "base damage: 15        nefis cost: 7 \nbonus damage: +10% maximum nefis\ndeals acid damage from the flanks and toxic damage from the front")
-		elif icon_texture.get_path() == autload.strawberry.get_path():
-			callToolTip(instance,"Strawberry","+5 health points +9 kcals +24 grams of water")
-		elif icon_texture.get_path() == autload.raspberry.get_path():
-			callToolTip(instance,"Raspberry","+3 health points +1 kcals +2 grams of water")
-		elif icon_texture.get_path() == autload.beetroot.get_path():
-			callToolTip(instance,"beetroot","+15 health points +32 kcals +71.8 grams of water")
-		#equipment icons
-		elif icon_texture.get_path() == autload.hat1.get_path():
-			callToolTip(instance,"Farmer Hat","+3 blunt resistance.\n +6 heat resistance.\n +3 cold resistance.\n +6 radiant resistance.")
-		elif icon_texture.get_path() == autload.garment1.get_path():
-			callToolTip(instance,"Farmer Jacket","+3 slash resistance.\n +1 pierce resistance.\n +12 heat resistance.\n +12 cold resistance.")
-		elif icon_texture.get_path() == autload.belt1.get_path():
-			callToolTip(instance,"Farmer Belt","+3% balance.\n +1.1% charisma.")
-		elif icon_texture.get_path() == autload.glove1.get_path():
-			callToolTip(instance,"Farmer Glove","+1 slash resistance.\n +1 blunt resistance.\n  +1 pierce resistance.\n +3 cold resistance.\n +5 jolt resistance.\n +3 acid resistance.")
-		elif icon_texture.get_path() == autload.pants1.get_path():
-			callToolTip(instance,"Farmer Pants","+3 slash resistance.\n +1 pierce resistance.\n +12 heat resistance.\n +12 cold resistance.")
-		elif icon_texture.get_path() == autload.shoe1.get_path():
-			callToolTip(instance,"Farmer Shoe","+1 slash resistance.\n +1 blunt resistance.\n +3 pierce resistance.\n +1 heat resistance.\n +6 cold resistance.\n +15 jolt resistance.\n")
 
 func skillBarMouseExited(index):
 	deleteTooltip()
@@ -1719,27 +1708,27 @@ func ChopTree():
 				# 25% chance for wood
 				if random_value < 0.2:
 					loot_amount = rng.randi_range(1, 2)
-					autload.addStackableItem(inventory_grid,autload.aubergine,loot_amount)
-					autload.addFloatingIcon(take_damage_view,autload.aubergine,loot_amount)
+					autoload.addStackableItem(inventory_grid,autoload.aubergine,loot_amount)
+					autoload.addFloatingIcon(take_damage_view,autoload.aubergine,loot_amount)
 				# 25% chance for acorn
 				elif random_value < 0.4:
 					loot_amount = rng.randi_range(5, 45)
-					autload.addStackableItem(inventory_grid,autload.raspberry,loot_amount)
-					autload.addFloatingIcon(take_damage_view,autload.raspberry,loot_amount)
+					autoload.addStackableItem(inventory_grid,autoload.raspberry,loot_amount)
+					autoload.addFloatingIcon(take_damage_view,autoload.raspberry,loot_amount)
 				# 25% chance for branch
 				elif random_value < 0.6:
 					loot_amount = rng.randi_range(3, 5)
-					autload.addStackableItem(inventory_grid,autload.potato,loot_amount)
-					autload.addFloatingIcon(take_damage_view,autload.potato,loot_amount)
+					autoload.addStackableItem(inventory_grid,autoload.potato,loot_amount)
+					autoload.addFloatingIcon(take_damage_view,autoload.potato,loot_amount)
 				elif random_value < 0.8:
 					loot_amount = rng.randi_range(15, 25)
-					autload.addStackableItem(inventory_grid,autload.onion,loot_amount)
-					autload.addFloatingIcon(take_damage_view,autload.onion,loot_amount)
+					autoload.addStackableItem(inventory_grid,autoload.onion,loot_amount)
+					autoload.addFloatingIcon(take_damage_view,autoload.onion,loot_amount)
 		# 25% chance for resin
 				else:
 					loot_amount = rng.randi_range(1, 5)
-					autload.addStackableItem(inventory_grid,autload.beetroot,loot_amount)
-					autload.addFloatingIcon(take_damage_view,autload.beetroot,loot_amount)
+					autoload.addStackableItem(inventory_grid,autoload.beetroot,loot_amount)
+					autoload.addFloatingIcon(take_damage_view,autoload.beetroot,loot_amount)
 
 
 
@@ -1766,32 +1755,32 @@ func addItemToInventory():
 #			add_item.addNotStackableItem(inventory_grid,add_item.shoe1)
 func _on_GiveMeItems_pressed():
 	coins += 55
-	autload.addStackableItem(inventory_grid,autload.garlic,200)
-	autload.addFloatingIcon(take_damage_view,autload.garlic,200)
+	autoload.addStackableItem(inventory_grid,autoload.garlic,200)
+	autoload.addFloatingIcon(take_damage_view,autoload.garlic,200)
 	
-	autload.addStackableItem(inventory_grid,autload.potato,200)
-	autload.addFloatingIcon(take_damage_view,autload.potato,200)
-	autload.addStackableItem(inventory_grid,autload.onion,200)
-	autload.addStackableItem(inventory_grid,autload.carrot,200)
-	autload.addStackableItem(inventory_grid,autload.corn,200)
-	autload.addStackableItem(inventory_grid,autload.cabbage,200)
-	autload.addStackableItem(inventory_grid,autload.bell_pepper,200)
-	autload.addStackableItem(inventory_grid,autload.aubergine,200)
-	autload.addStackableItem(inventory_grid,autload.tomato,200)
+	autoload.addStackableItem(inventory_grid,autoload.potato,200)
+	autoload.addFloatingIcon(take_damage_view,autoload.potato,200)
+	autoload.addStackableItem(inventory_grid,autoload.onion,200)
+	autoload.addStackableItem(inventory_grid,autoload.carrot,200)
+	autoload.addStackableItem(inventory_grid,autoload.corn,200)
+	autoload.addStackableItem(inventory_grid,autoload.cabbage,200)
+	autoload.addStackableItem(inventory_grid,autoload.bell_pepper,200)
+	autoload.addStackableItem(inventory_grid,autoload.aubergine,200)
+	autoload.addStackableItem(inventory_grid,autoload.tomato,200)
 
 	
-	autload.addStackableItem(inventory_grid,autload.raspberry,200)
-	autload.addStackableItem(inventory_grid,autload.pants1,200)
-	autload.addStackableItem(inventory_grid,autload.hat1,200)
-	autload.addStackableItem(inventory_grid,autload.red_potion,200)
-	autload.addStackableItem(inventory_grid,autload.strawberry,200)
-	autload.addStackableItem(inventory_grid,autload.beetroot,200)
-	autload.addStackableItem(inventory_grid,autload.rosehip,200)
-	autload.addStackableItem(inventory_grid,autload.belt1,200)
-	autload.addStackableItem(inventory_grid,autload.glove1,200)
-	autload.addNotStackableItem(inventory_grid,autload.wood_sword)
-	autload.addNotStackableItem(inventory_grid,autload.garment1)
-	autload.addNotStackableItem(inventory_grid,autload.shoe1)
+	autoload.addStackableItem(inventory_grid,autoload.raspberry,200)
+	autoload.addStackableItem(inventory_grid,autoload.pants1,200)
+	autoload.addStackableItem(inventory_grid,autoload.hat1,200)
+	autoload.addStackableItem(inventory_grid,autoload.red_potion,200)
+	autoload.addStackableItem(inventory_grid,autoload.strawberry,200)
+	autoload.addStackableItem(inventory_grid,autoload.beetroot,200)
+	autoload.addStackableItem(inventory_grid,autoload.rosehip,200)
+	autoload.addStackableItem(inventory_grid,autoload.belt1,200)
+	autoload.addStackableItem(inventory_grid,autoload.glove1,200)
+	autoload.addNotStackableItem(inventory_grid,autoload.wood_sword)
+	autoload.addNotStackableItem(inventory_grid,autoload.garment1)
+	autoload.addNotStackableItem(inventory_grid,autoload.shoe1)
 	
 	
 	
@@ -1927,7 +1916,7 @@ func switch():
 			if currentInstance == null:
 				currentInstance = sword0.instance()
 				fixInstance()
-				addItemToCharacterSheet(main_weap_icon,main_weap_slot,autload.wood_sword,"sword0")
+				addItemToCharacterSheet(main_weap_icon,main_weap_slot,autoload.wood_sword,"sword0")
 		"sword1":    
 			if currentInstance == null:
 				currentInstance = sword1.instance()
@@ -2038,7 +2027,7 @@ func switchSec():
 			if sec_currentInstance == null:
 				sec_currentInstance = sword0.instance()
 				fixSecInstance()
-				addItemToCharacterSheet(sec_weap_icon,sec_weap_slot,autload.wood_sword,"sword0")
+				addItemToCharacterSheet(sec_weap_icon,sec_weap_slot,autoload.wood_sword,"sword0")
 		"sword1":    
 			if sec_currentInstance == null:
 				sec_currentInstance = sword1.instance()
@@ -2142,7 +2131,7 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 	if main_weap_icon != null:
 		main_weap_icon.savedata()
 		if main_weap_icon.texture != null:
-			if main_weap_icon.texture.get_path() == autload.wood_sword.get_path():
+			if main_weap_icon.texture.get_path() == autoload.wood_sword.get_path():
 				main_weapon = "sword0"
 				applyEffect(self, "effect2", true)
 		elif main_weap_icon.texture == null:
@@ -2152,7 +2141,7 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 #__________________________sec weapon___________________________________________
 	if sec_weap_icon != null:
 		if sec_weap_icon.texture != null:
-			if sec_weap_icon.texture.get_path() == autload.wood_sword.get_path():
+			if sec_weap_icon.texture.get_path() == autoload.wood_sword.get_path():
 				secondary_weapon = "sword0"
 
 		elif sec_weap_icon.texture == null:
@@ -2163,7 +2152,7 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 	var helm_icon = $UI/GUI/Equipment/EquipmentBG/Helm/Icon
 	if helm_icon != null:
 		if helm_icon.texture != null:
-			if helm_icon.texture.get_path() == autload.hat1.get_path():
+			if helm_icon.texture.get_path() == autoload.hat1.get_path():
 				head = "garment1"
 		elif helm_icon.texture == null:
 			head = "naked"
@@ -2172,7 +2161,7 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 	var chest_icon = $UI/GUI/Equipment/EquipmentBG/BreastPlate/Icon
 	if chest_icon != null:
 		if chest_icon.texture != null:
-			if chest_icon.texture.get_path() == autload.garment1.get_path():
+			if chest_icon.texture.get_path() == autoload.garment1.get_path():
 				torso = "garment1"
 		elif chest_icon.texture == null:
 			torso = "naked"
@@ -2180,7 +2169,7 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 	var belt_icon = $UI/GUI/Equipment/EquipmentBG/Belt/Icon
 	if belt_icon != null:
 		if belt_icon.texture != null:
-			if belt_icon.texture.get_path() == autload.belt1.get_path():
+			if belt_icon.texture.get_path() == autoload.belt1.get_path():
 				belt = "belt1"
 		elif belt_icon.texture == null:
 			belt = "naked"
@@ -2188,7 +2177,7 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 	var legs_icon = $UI/GUI/Equipment/EquipmentBG/Pants/Icon
 	if legs_icon != null:
 		if legs_icon.texture != null:
-			if legs_icon.texture.get_path() == autload.pants1.get_path():
+			if legs_icon.texture.get_path() == autoload.pants1.get_path():
 				legs = "cloth1"
 		elif legs_icon.texture == null:
 			legs = "naked"
@@ -2196,14 +2185,14 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 	var hand_l_icon = $UI/GUI/Equipment/EquipmentBG/GloveL/Icon
 	if hand_l_icon != null:
 		if hand_l_icon.texture != null:
-			if hand_l_icon.texture.get_path() == autload.glove1.get_path():
+			if hand_l_icon.texture.get_path() == autoload.glove1.get_path():
 				hand_l = "cloth1"
 		elif hand_l_icon.texture == null:
 			hand_l = "naked"
 	var hand_r_icon = $UI/GUI/Equipment/EquipmentBG/GloveR/Icon
 	if hand_r_icon != null:
 		if hand_r_icon.texture != null:
-			if hand_r_icon.texture.get_path() == autload.glove1.get_path():
+			if hand_r_icon.texture.get_path() == autoload.glove1.get_path():
 				hand_r = "cloth1"
 		elif hand_r_icon.texture == null:
 			hand_r = "naked"
@@ -2212,7 +2201,7 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 	var foot_r_icon = $UI/GUI/Equipment/EquipmentBG/ShoeR/Icon
 	if foot_r_icon != null:
 		if  foot_r_icon.texture != null:
-			if  foot_r_icon.texture.get_path() == autload.shoe1.get_path():
+			if  foot_r_icon.texture.get_path() == autoload.shoe1.get_path():
 				foot_r = "cloth1"
 		elif foot_r_icon.texture == null:
 			foot_r = "naked"
@@ -2220,7 +2209,7 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 	var foot_l_icon = $UI/GUI/Equipment/EquipmentBG/ShoeL/Icon
 	if foot_l_icon != null:
 		if  foot_l_icon.texture != null:
-			if  foot_l_icon.texture.get_path() == autload.shoe1.get_path():
+			if  foot_l_icon.texture.get_path() == autoload.shoe1.get_path():
 				foot_l = "cloth1"
 		elif foot_l_icon.texture == null:
 			foot_l = "naked"
@@ -2526,6 +2515,7 @@ func redPotion():
 		if red_potion_duration >0:
 			health += 10
 			red_potion_duration -= 1
+			applyEffect(self,"redpotion",true)
 		else:
 			applyEffect(self,"redpotion",false)
 #_____________________________Hunger system and Hydration System___________________________
@@ -2625,8 +2615,8 @@ onready var black_screen = $UI/GUI/BlackScreen
 onready var tween = $Camroot/h/v/Camera/Aim/Cross/Tween
 func _on_Toilet2_pressed():
 	if water > 500 or kilocalories > 125:
-		kilocalories -= 500
-		water -= 125
+		kilocalories = kilocalories /2
+		water = water/2
 		if resolve > 25:
 			resolve -= 25
 		if breath > 30:

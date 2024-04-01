@@ -26,14 +26,18 @@ func _physics_process(delta):
 
 
 func _on_AggroTimer_timeout():
-	for playerAggro in targets:
-		var distance = eyes.global_transform.origin.distance_to(playerAggro.player.global_transform.origin)
-		var aggro_change = calculateAggroChange(distance, playerAggro.aggro)
+	if targets != null:
+		for playerAggro in targets:
+			if playerAggro != null and playerAggro.player != null:
+				var distance = eyes.global_transform.origin.distance_to(playerAggro.player.global_transform.origin)
+				if distance != null and playerAggro.aggro != null:
+					var aggro_change = calculateAggroChange(distance, playerAggro.aggro)
 
-		if distance <= aggro_gain_radius:
-			playerAggro.aggro += aggro_change
-		else:
-			playerAggro.aggro = max(0, playerAggro.aggro - 5)
+					if distance <= aggro_gain_radius:
+						playerAggro.aggro += aggro_change
+					else:
+						playerAggro.aggro = max(0, playerAggro.aggro - 5)
+
 func gatherAggroInformation() -> Array:
 	var aggro_info = []  # Array to store player aggro information
 	for player in players:
