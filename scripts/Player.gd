@@ -1585,28 +1585,7 @@ func inventoryMouseEntered(index):
 	var button = inventory_grid.get_node("InventorySlot" + str(index))
 	var icon_texture = button.get_node("Icon").texture
 	var instance = preload("res://tooltip.tscn").instance()
-	if icon_texture != null:
-		if icon_texture.get_path() == autoload.red_potion.get_path():
-			callToolTip(instance, "Red Potion", "+100 kcals +250 grams of water.\nHeals by 100 health instantly then by 10 every second, drinking more potions stacks the duration")
-		elif icon_texture.get_path() == autoload.strawberry.get_path():
-			callToolTip(instance,"Strawberry","+5 health points +9 kcals +24 grams of water")
-		elif icon_texture.get_path() == autoload.raspberry.get_path():
-			callToolTip(instance,"Raspberry","+3 health points +1 kcals +2 grams of water")
-		elif icon_texture.get_path() == autoload.beetroot.get_path():
-			callToolTip(instance,"beetroot","+15 health points +32 kcals +71.8 grams of water")
-		#equipment icons
-		elif icon_texture.get_path() == autoload.hat1.get_path():
-			callToolTip(instance,"Farmer Hat","+3 blunt resistance.\n +6 heat resistance.\n +3 cold resistance.\n +6 radiant resistance.")
-		elif icon_texture.get_path() == autoload.garment1.get_path():
-			callToolTip(instance,"Farmer Jacket","+3 slash resistance.\n +1 pierce resistance.\n +12 heat resistance.\n +12 cold resistance.")
-		elif icon_texture.get_path() == autoload.belt1.get_path():
-			callToolTip(instance,"Farmer Belt","+3% balance.\n +1.1% charisma.")
-		elif icon_texture.get_path() == autoload.glove1.get_path():
-			callToolTip(instance,"Farmer Glove","+1 slash resistance.\n +1 blunt resistance.\n  +1 pierce resistance.\n +3 cold resistance.\n +5 jolt resistance.\n +3 acid resistance.")
-		elif icon_texture.get_path() == autoload.pants1.get_path():
-			callToolTip(instance,"Farmer Pants","+3 slash resistance.\n +1 pierce resistance.\n +12 heat resistance.\n +12 cold resistance.")
-		elif icon_texture.get_path() == autoload.shoe1.get_path():
-			callToolTip(instance,"Farmer Shoe","+1 slash resistance.\n +1 blunt resistance.\n +3 pierce resistance.\n +1 heat resistance.\n +6 cold resistance.\n +15 jolt resistance.\n")
+	compareIconsShowToolTips(icon_texture,instance)
 
 func inventoryMouseExited(index):
 	deleteTooltip()
@@ -1670,14 +1649,13 @@ func connectSkillBarButtons():
 			child.connect("pressed", self, "skillBarSlotPressed", [index])
 			child.connect("mouse_entered", self, "skillBarMouseEntered", [index])
 			child.connect("mouse_exited", self, "skillBarMouseExited", [index])
+			
 func skillBarMouseEntered(index):
 	var button = skill_bar_grid.get_node("Slot" + str(index))
 	var icon_texture = button.get_node("Icon").texture
 	var instance = preload("res://tooltipSkills.tscn").instance()
-	if icon_texture != null:
-		if icon_texture.get_path() == autoload.arcane_blast.get_path():
-			callToolTip(instance, "Arcane Blast", "base damage: 15        nefis cost: " + str(necromant.arcane_blast_cost) + "\nbonus damage: +10% maximum nefis\ndeals acid damage from the flanks and toxic damage from the front")
-
+	compareIconsShowToolTips(icon_texture,instance)
+	
 func skillBarMouseExited(index):
 	deleteTooltip()
 	
@@ -1702,11 +1680,44 @@ func skillMouseEntered(tree, index):
 	var button = tree.get_node("skill" + str(index))
 	var icon_texture = button.get_node("Icon").texture
 	var instance = preload("res://tooltipSkills.tscn").instance()
-	if icon_texture.get_path() == autoload.arcane_blast.get_path():
-		callToolTip(instance, "Arcane Blast", "base damage: 15        nefis cost: " + str(necromant.arcane_blast_cost) + "\nbonus damage: +10% maximum nefis\ndeals acid damage from the flanks and toxic damage from the front")
-
+	compareIconsShowToolTips(icon_texture,instance)
 func skillMouseExited(index):
 	deleteTooltip()
+	
+	
+	
+func compareIconsShowToolTips(icon_texture,instance):
+	if icon_texture != null:
+		#skills
+		if icon_texture.get_path() == autoload.arcane_blast.get_path():
+			callToolTip(instance, "Arcane Blast", "base damage: 15        nefis cost: " + str(necromant.arcane_blast_cost) + "\nbonus damage: +10% maximum nefis\ndeals acid damage from the flanks and toxic damage from the front")
+		elif icon_texture.get_path() == autoload.base_attack_necromant.get_path():
+			callToolTip(instance, "base_attack_necromant", "placeholder")
+		#consumablaes
+		elif icon_texture.get_path() == autoload.red_potion.get_path():
+			callToolTip(instance, "Red Potion", "+100 kcals +250 grams of water.\nHeals by 100 health instantly then by 10 every second, drinking more potions stacks the duration")
+		#food
+		elif icon_texture.get_path() == autoload.strawberry.get_path():
+			callToolTip(instance,"Strawberry","+5 health points +9 kcals +24 grams of water")
+		elif icon_texture.get_path() == autoload.raspberry.get_path():
+			callToolTip(instance,"Raspberry","+3 health points +1 kcals +2 grams of water")
+		elif icon_texture.get_path() == autoload.beetroot.get_path():
+			callToolTip(instance,"beetroot","+15 health points +32 kcals +71.8 grams of water")
+			#equipment icons
+		elif icon_texture.get_path() == autoload.hat1.get_path():
+			callToolTip(instance,"Farmer Hat","+3 blunt resistance.\n +6 heat resistance.\n +3 cold resistance.\n +6 radiant resistance.")
+		elif icon_texture.get_path() == autoload.garment1.get_path():
+			callToolTip(instance,"Farmer Jacket","+3 slash resistance.\n +1 pierce resistance.\n +12 heat resistance.\n +12 cold resistance.")
+		elif icon_texture.get_path() == autoload.belt1.get_path():
+			callToolTip(instance,"Farmer Belt","+3% balance.\n +1.1% charisma.")
+		elif icon_texture.get_path() == autoload.glove1.get_path():
+			callToolTip(instance,"Farmer Glove","+1 slash resistance.\n +1 blunt resistance.\n  +1 pierce resistance.\n +3 cold resistance.\n +5 jolt resistance.\n +3 acid resistance.")
+		elif icon_texture.get_path() == autoload.pants1.get_path():
+			callToolTip(instance,"Farmer Pants","+3 slash resistance.\n +1 pierce resistance.\n +12 heat resistance.\n +12 cold resistance.")
+		elif icon_texture.get_path() == autoload.shoe1.get_path():
+			callToolTip(instance,"Farmer Shoe","+1 slash resistance.\n +1 blunt resistance.\n +3 pierce resistance.\n +1 heat resistance.\n +6 cold resistance.\n +15 jolt resistance.\n")
+
+		
 #______________________________________Crafting_________________________________
 
 onready var crafting_slot1 = $UI/GUI/Crafting/CraftingGrid/craftingSlot1/Icon

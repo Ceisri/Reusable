@@ -6,7 +6,7 @@ onready var icon = $Icon
 
 var quantity = 0
 var item = "null"
-var type = "skill"
+var type = "item"
 var skill_tree = false
 
 
