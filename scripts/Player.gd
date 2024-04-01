@@ -20,6 +20,7 @@ func _ready():
 	connectUIButtons()
 	connectInventoryButtons()
 	connectSkillBarButtons()
+	connectSkillTree()
 	connectAttributeButtons()
 	connectAttributeHovering()
 	connectHoveredResistanceLabels()
@@ -1152,6 +1153,8 @@ func startMovement():
 var floatingtext_damage = preload("res://UI/floatingtext.tscn")
 onready var take_damage_view  = $Mesh/TakeDamageView/Viewport
 func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
+	if necromant.masochism >0:
+		nefis += damage * 0.5
 	var random = randf()
 	var damage_to_take = damage
 	var text = floatingtext_damage.instance()
@@ -1481,7 +1484,7 @@ func _on_InventorySaveButton_pressed():
 	saveInventoryData()
 	savePlayerData()
 	saveSkillBarData()
-onready var skills_list1 = $UI/GUI/SkillTrees/Background/SylvanSkills
+onready var skills_list1 = $UI/GUI/SkillTrees/Background/SylvanSkills #placeholder
 func _on_SkillTree1_pressed():
 	closeSwitchOpen(skills_list1)
 	saveSkillBarData()
@@ -1667,18 +1670,43 @@ func connectSkillBarButtons():
 			child.connect("pressed", self, "skillBarSlotPressed", [index])
 			child.connect("mouse_entered", self, "skillBarMouseEntered", [index])
 			child.connect("mouse_exited", self, "skillBarMouseExited", [index])
-
 func skillBarMouseEntered(index):
 	var button = skill_bar_grid.get_node("Slot" + str(index))
 	var icon_texture = button.get_node("Icon").texture
 	var instance = preload("res://tooltipSkills.tscn").instance()
 	if icon_texture != null:
 		if icon_texture.get_path() == autoload.arcane_blast.get_path():
-			callToolTip(instance, "Arcane Blast", "base damage: 15        nefis cost: 7 \nbonus damage: +10% maximum nefis\ndeals acid damage from the flanks and toxic damage from the front")
+			callToolTip(instance, "Arcane Blast", "base damage: 15        nefis cost: " + str(necromant.arcane_blast_cost) + "\nbonus damage: +10% maximum nefis\ndeals acid damage from the flanks and toxic damage from the front")
 
 func skillBarMouseExited(index):
 	deleteTooltip()
 	
+	
+#_____________________________________Skill trees_______________________________
+
+func connectSkillTree():
+	connectGenericSkillTee(necromant)
+	connectGenericSkillTee($UI/GUI/SkillTrees/Background/Test)	
+
+
+func connectGenericSkillTee(tree):
+	for child in tree.get_children():
+		if child.is_in_group("Skill"):
+			var index_str = child.get_name().split("skill")[1]
+			var index = int(index_str)
+			child.connect("pressed", self, "skillPressed", [index])
+			child.connect("mouse_entered", self, "skillMouseEntered", [tree, index]) # Pass 'tree' here
+			child.connect("mouse_exited", self, "skillMouseExited", [index])
+	
+func skillMouseEntered(tree, index):
+	var button = tree.get_node("skill" + str(index))
+	var icon_texture = button.get_node("Icon").texture
+	var instance = preload("res://tooltipSkills.tscn").instance()
+	if icon_texture.get_path() == autoload.arcane_blast.get_path():
+		callToolTip(instance, "Arcane Blast", "base damage: 15        nefis cost: " + str(necromant.arcane_blast_cost) + "\nbonus damage: +10% maximum nefis\ndeals acid damage from the flanks and toxic damage from the front")
+
+func skillMouseExited(index):
+	deleteTooltip()
 #______________________________________Crafting_________________________________
 
 onready var crafting_slot1 = $UI/GUI/Crafting/CraftingGrid/craftingSlot1/Icon

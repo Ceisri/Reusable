@@ -28,12 +28,7 @@ func can_drop_data(position, _data):
 
 func drop_data(position, data):
 	pass
-#	var target_slot = get_parent().get_name()
-#	var origin_node = data["origin_node"]
-#	var dragPreview = origin_node.get_node("Sprite") #find the floating image of the sprite
-#	dragPreview.queue_free()# delete that floating image 	
-#
-#
+
 
 
 
