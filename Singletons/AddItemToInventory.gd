@@ -66,7 +66,6 @@ func addNotStackableItem(inventory_grid,item_texture):
 			elif icon.texture.get_path() == item_texture.get_path():
 				continue  # Move to the next slot if this one already has a sword
 func addStackableItem(inventory_grid,item_texture,quantity):
-	
 		for child in inventory_grid.get_children():
 			if child.is_in_group("Inventory"):
 				var icon = child.get_node("Icon")
@@ -158,3 +157,45 @@ onready var tribute =  preload("res://Classes/Necromant/Class Icons/Tribute.png"
 onready var servitude =  preload("res://Classes/Necromant/Class Icons/Servitude in Death.png")
 onready var sacrifice =  preload("res://Classes/Necromant/Class Icons/Sacrifice.png")
 onready var arcane_blast =  preload("res://Classes/Necromant/Class Icons/Arcane Blast.png")
+
+
+
+
+
+
+
+
+
+
+
+func consumeRedPotion(player:KinematicBody, button: TextureButton,inventory_grid: GridContainer, skill_bar: bool, skill_slot: TextureButton):
+	var icon_texture_rect = button.get_node("Icon")
+	var icon_texture = icon_texture_rect.texture
+
+	if player.kilocalories != null:
+		player.kilocalories += 100
+	if player.health != null:
+		player.health += 100
+	if player.water != null:
+		player.water += 250
+	if player.red_potion_duration != null:
+		player.red_potion_duration += 5
+
+	if skill_bar == false:
+				button.quantity -= 1
+				if inventory_grid != null:
+					addStackableItem(inventory_grid, empty_potion, 1)
+	else:
+		if skill_slot != null:
+			skill_slot.displayQuantity()
+			skill_slot.quantity -= 1
+			if skill_slot.quantity >-1:
+				if inventory_grid != null:
+					addStackableItem(inventory_grid, empty_potion, 1)
+
+	if player.has_method("applyEffect"):
+		player.applyEffect(player, "redpotion", true)
+
+		
+		
+		
