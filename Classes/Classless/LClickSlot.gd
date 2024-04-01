@@ -1,8 +1,8 @@
 extends TextureButton
 
 
-onready var icon = $Icon
-onready var necromant: MarginContainer = $"../../../SkillTrees/Background/Necromant"
+onready var icon: TextureRect = $Icon
+onready var necromant: Node = $"../../../SkillTrees/Background/Necromant"
 
 func switchAttackIcon():
 	if necromant.necro_switch == true:
