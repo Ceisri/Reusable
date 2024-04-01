@@ -29,7 +29,7 @@ func _ready():
 	SwitchEquipmentBasedOnEquipmentIcons()
 	direction = Vector3.BACK.rotated(Vector3.UP, $Camroot/h.global_transform.basis.get_euler().y)
 func _on_SlowTimer_timeout():
-	nefis += 10
+	
 	allResourcesBarsAndLabels()
 	showEnemyStats()
 	potionEffects()
@@ -586,13 +586,8 @@ func matchAnimationStates():
 				horizontal_velocity = direction * slide_mov_speed
 			movement_speed = int(slide_mov_speed)
 		"base attack":
-			animation.play("full combo cycle",0.3,melee_atk_speed)
-			if can_move == true:
-				horizontal_velocity = direction * 3
-				movement_speed = 3
-			elif can_move == false:
-				horizontal_velocity = direction * 0
-				movement_speed = 0
+			var slot = $UI/GUI/SkillBar/GridContainer/LClickSlot/Icon
+			skills(slot)
 		"double attack":
 			if weapon_type == "fist":
 				animation.play("high kick",0.3,melee_atk_speed)
@@ -732,6 +727,7 @@ func matchAnimationStates():
 			skills(slot)
 onready var necromant = $UI/GUI/SkillTrees/Background/Necromant		
 func skills(slot):
+	var l_click_slot: TextureButton = $UI/GUI/SkillBar/GridContainer/LClickSlot
 	if slot != null:
 			if slot.texture != null:
 				if slot.texture.resource_path == "res://UI/graphics/SkillIcons/rush.png":
@@ -750,6 +746,23 @@ func skills(slot):
 					necromant.areaSpell()
 				elif slot.texture.resource_path == autoload.arcane_blast.get_path():	
 					necromant.arcaneBlast()
+
+				elif slot.texture.resource_path == autoload.punch.get_path():
+					animation.play("full combo cycle",0.3,melee_atk_speed)
+					if can_move == true:
+						horizontal_velocity = direction * 3
+						movement_speed = 3
+					elif can_move == false:
+						horizontal_velocity = direction * 0
+						movement_speed = 0
+				elif slot.texture.resource_path == autoload.base_attack_necromant.get_path():
+					necromant.baseAttack() # placeholder
+				elif slot.texture.resource_path == autoload.necromant_switch.get_path():
+					necromant.switchStance()
+					# different stances or weapons switches base attacks
+					l_click_slot.switchAttackIcon()
+				
+#consumables________________________________________________________________________________________
 				elif slot.texture.resource_path == autoload.red_potion.get_path():
 					slot.get_parent().displayQuantity()
 					for child in inventory_grid.get_children():
@@ -759,9 +772,10 @@ func skills(slot):
 							var button = inventory_grid.get_node("InventorySlot" + str(index))
 							button = inventory_grid.get_node("InventorySlot" + str(index))
 							autoload.consumeRedPotion(self,button,inventory_grid,true,slot.get_parent())
-
+				
+				
 				else:
-					pass
+						pass
 var sprint_animation_speed : float = 1
 func animations():
 #on water
@@ -1781,6 +1795,7 @@ func _on_GiveMeItems_pressed():
 	autoload.addNotStackableItem(inventory_grid,autoload.wood_sword)
 	autoload.addNotStackableItem(inventory_grid,autoload.garment1)
 	autoload.addNotStackableItem(inventory_grid,autoload.shoe1)
+	autoload.addNotStackableItem(inventory_grid,autoload.staff1)
 	
 	
 	
@@ -1875,6 +1890,8 @@ onready var main_weap_icon = $UI/GUI/Equipment/EquipmentBG/MainWeap/Icon
 var sword0: PackedScene = preload("res://itemTest.tscn")
 var sword1: PackedScene = preload("res://itemTest.tscn")
 var sword2: PackedScene = preload("res://itemTest.tscn")
+
+var staff1: PackedScene = preload("res://itemTest.tscn")
 var currentInstance: Node = null  
 var main_weapon = "null"
 var got_weapon = false
@@ -1899,11 +1916,11 @@ func switchMainFromHipToHand():
 				#currentInstance.translate(Vector3(0.049,0.019,-0.005))
 				is_primary_weapon_on_hip = true
 
-func addItemToCharacterSheet(icon,slot,texture,item):
+func addItemToCharacterSheet(icon,slot,texture):
 	if icon.texture == null:
 		icon.texture = texture
 		slot.quantity = 1
-		slot.item = item
+
 
 func fixInstance():
 	attachment_r.add_child(currentInstance)
@@ -1916,7 +1933,7 @@ func switch():
 			if currentInstance == null:
 				currentInstance = sword0.instance()
 				fixInstance()
-				addItemToCharacterSheet(main_weap_icon,main_weap_slot,autoload.wood_sword,"sword0")
+				addItemToCharacterSheet(main_weap_icon,main_weap_slot,autoload.wood_sword)
 		"sword1":    
 			if currentInstance == null:
 				currentInstance = sword1.instance()
@@ -1925,6 +1942,8 @@ func switch():
 			if currentInstance == null:
 				currentInstance = sword2.instance()
 				fixInstance()
+		"staff1":
+			addItemToCharacterSheet(main_weap_icon,main_weap_slot,autoload.staff1)
 		"null":
 			currentInstance = null
 			
@@ -2027,7 +2046,7 @@ func switchSec():
 			if sec_currentInstance == null:
 				sec_currentInstance = sword0.instance()
 				fixSecInstance()
-				addItemToCharacterSheet(sec_weap_icon,sec_weap_slot,autoload.wood_sword,"sword0")
+				addItemToCharacterSheet(sec_weap_icon,sec_weap_slot,autoload.wood_sword)
 		"sword1":    
 			if sec_currentInstance == null:
 				sec_currentInstance = sword1.instance()
@@ -5604,7 +5623,7 @@ func _on_pressme_pressed():
 	health = 5
 	breath = 5
 	aefis = 5 
-	nefis = 5 
+	nefis += 25
 	resolve = 5 
 	
 
