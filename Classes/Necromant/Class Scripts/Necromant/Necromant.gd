@@ -61,6 +61,14 @@ func updateCooldownLabel() -> void:
 					label.text = str(round(remaining_cooldown * 100)/ 100)
 				else:
 					label.text = ""
+		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.necromant_switch.get_path():
+			var label: Label = child.get_node("CD")
+			var remaining_cooldown:float  = max(0, necro_switch_cooldown - (current_time - last_necro_switch_time))
+			if label != null:
+				if remaining_cooldown >0:
+					label.text = str(round(remaining_cooldown * 100)/ 100)
+				else:
+					label.text = ""
 					
 		else:
 			var label: Label = child.get_node("CD")
@@ -92,6 +100,39 @@ func findIconInGrid(node):
 			if icon != null:
 				return icon
 	return null
+
+
+
+func  baseAttack():
+	var current_time: float = OS.get_ticks_msec() / 1000.0
+	if player.get_parent().nefis >= 0.5:
+			var camera: Camera = $"../../../../../Camroot/h/v/Camera"
+			var player_global_transform: Transform = player.global_transform
+			var player_forward: Vector3 = player_global_transform.basis.z.normalized()
+			var spawn_position: Vector3 = player_global_transform.origin + player_forward * 1
+			var player_direction = player.get_parent().direction # Assuming direction is a property of the player's parent node
+			var arcane_blast_instance: KinematicBody = arcane_blast.instance()
+			var camera_transform: Transform = camera.global_transform
+
+			var camera_forward_y: float = -camera_transform.basis.z.normalized().y
+			var strength_factor: float = 1.0
+			if camera_forward_y > 0:
+				strength_factor = 1.8
+			else:
+				strength_factor = 0.9
+			var modified_direction: Vector3 = player_direction + Vector3.UP * camera_forward_y * strength_factor
+			arcane_blast_instance.direction = modified_direction.normalized()
+			spawn_position.y = max(spawn_position.y + 1, player_global_transform.origin.y)
+			arcane_blast_instance.instigator =  player.get_parent()
+			arcane_blast_instance.summoner =  player.get_parent()
+			
+			arcane_blast_instance.damage = 0 #placeholder
+			
+			arcane_blast_instance.global_transform.origin = spawn_position
+			get_tree().current_scene.add_child(arcane_blast_instance)
+			player.get_parent().nefis -= 0.5
+
+
 
 
 var summoned_demons: int = 0
@@ -261,6 +302,16 @@ func arcaneBlast():
 			player.get_parent().nefis -= 7
 			last_arcane_blast_time = current_time
 
+
+
+var necro_switch: bool  = false
+var necro_switch_cooldown: float = 1
+var last_necro_switch_time: float = 0.0 
+func switchStance():
+	var current_time: float = OS.get_ticks_msec() / 1000.0
+	if current_time - last_necro_switch_time >= necro_switch_cooldown:
+		necro_switch = !necro_switch
+		last_necro_switch_time = current_time
 
 #func arcaneBlast():
 #	var current_time: float = OS.get_ticks_msec() / 1000.0
