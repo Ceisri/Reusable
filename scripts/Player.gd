@@ -4027,1297 +4027,349 @@ func connectAttributeButtons():
 	var min_loy = $UI/GUI/Equipment/Attributes/Loyalty/Min
 	plus_loy.connect("pressed", self, "plusLoy")
 	min_loy.connect("pressed", self, "minusLoy")
-#intelligence
-func plusInt():
-	if attribute >0:
-		if spent_attribute_points_int < 5:
-			spent_attribute_points_int += 1
-			attribute -= 1 
-			intelligence += attribute_increase_factor
-		elif spent_attribute_points_int < 10:
-			spent_attribute_points_int += 1
-			attribute -= 1 
-			intelligence += attribute_increase_factor * 0.5
-		elif spent_attribute_points_int < 15:
-			spent_attribute_points_int += 1
-			attribute -= 1 
-			intelligence += attribute_increase_factor * 0.2
-		elif spent_attribute_points_int < 20:
-			spent_attribute_points_int += 1
-			attribute -= 1
-			intelligence += attribute_increase_factor * 0.1
-		elif spent_attribute_points_int < 25:
-			spent_attribute_points_int += 1
-			attribute -= 1 
-			intelligence += attribute_increase_factor * 0.05
-		else:
-			spent_attribute_points_int += 1
-			attribute -= 1 
-			intelligence += attribute_increase_factor * 0.01
+func plusInt():#intelligence
+	var result: Array = increaseAttribute(spent_attribute_points_int,intelligence)
+	spent_attribute_points_int = result[0]
+	intelligence = result[1]
+	print(spent_attribute_points_int)
 func minusInt():
-	if intelligence > 0.05:
-		spent_attribute_points_int -= 1
-		attribute += 1 
-		if spent_attribute_points_int < 5:
-			intelligence -= attribute_increase_factor
-		elif spent_attribute_points_int < 10:
-			intelligence -= attribute_increase_factor * 0.5
-		elif spent_attribute_points_int < 15:
-			intelligence -= attribute_increase_factor * 0.2
-		elif spent_attribute_points_int < 20:
-			intelligence -= attribute_increase_factor * 0.1
-		elif spent_attribute_points_int < 25:
-			intelligence -= attribute_increase_factor * 0.05
-		else:
-			intelligence -= attribute_increase_factor * 0.01
-#Instincts
-func plusIns():
-	if attribute > 0:
-		if spent_attribute_points_ins < 5:
-			spent_attribute_points_ins += 1
-			attribute -= 1
-			instinct += attribute_increase_factor
-		elif spent_attribute_points_ins < 10:
-			spent_attribute_points_ins += 1
-			attribute -= 1
-			instinct += attribute_increase_factor * 0.5
-		elif spent_attribute_points_ins < 15:
-			spent_attribute_points_ins += 1
-			attribute -= 1
-			instinct += attribute_increase_factor * 0.2
-		elif spent_attribute_points_ins < 20:
-			spent_attribute_points_ins += 1
-			attribute -= 1
-			instinct += attribute_increase_factor * 0.1
-		elif spent_attribute_points_ins < 25:
-			spent_attribute_points_ins += 1
-			attribute -= 1
-			instinct += attribute_increase_factor * 0.05
-		else:
-			spent_attribute_points_ins += 1
-			attribute -= 1
-			instinct += attribute_increase_factor * 0.01
+	var result: Array = decreaseAttribute(spent_attribute_points_int,intelligence)
+	spent_attribute_points_int = result[0]
+	intelligence = result[1]
+func plusIns():#instinct
+	var result: Array = increaseAttribute(spent_attribute_points_ins,instinct)
+	spent_attribute_points_ins = result[0]
+	instinct = result[1]
+	print(spent_attribute_points_ins)
 func minusIns():
-	if instinct > 0.05:
-		spent_attribute_points_ins -= 1
-		attribute += 1
-		if spent_attribute_points_ins < 5:
-			instinct -= attribute_increase_factor
-		elif spent_attribute_points_ins < 10:
-			instinct -= attribute_increase_factor * 0.5
-		elif spent_attribute_points_ins < 15:
-			instinct -= attribute_increase_factor * 0.2
-		elif spent_attribute_points_ins < 20:
-			instinct -= attribute_increase_factor * 0.1
-		elif spent_attribute_points_ins < 25:
-			instinct -= attribute_increase_factor * 0.05
-		else:
-			instinct -= attribute_increase_factor * 0.01
-# Wisdom
-func plusWis():
-	if attribute > 0:
-		if spent_attribute_points_wis < 5:
-			spent_attribute_points_wis += 1
-			attribute -= 1
-			wisdom += attribute_increase_factor
-		elif spent_attribute_points_wis < 10:
-			spent_attribute_points_wis += 1
-			attribute -= 1
-			wisdom += attribute_increase_factor * 0.5
-		elif spent_attribute_points_wis < 15:
-			spent_attribute_points_wis += 1
-			attribute -= 1
-			wisdom += attribute_increase_factor * 0.2
-		elif spent_attribute_points_wis < 20:
-			spent_attribute_points_wis += 1
-			attribute -= 1
-			wisdom += attribute_increase_factor * 0.1
-		elif spent_attribute_points_wis < 25:
-			spent_attribute_points_wis += 1
-			attribute -= 1
-			wisdom += attribute_increase_factor * 0.05
-		else:
-			spent_attribute_points_wis += 1
-			attribute -= 1
-			wisdom += attribute_increase_factor * 0.01
+	var result: Array = decreaseAttribute(spent_attribute_points_ins,instinct)
+	spent_attribute_points_ins = result[0]
+	instinct = result[1]
+func plusWis():#wisdom
+	var result: Array = increaseAttribute(spent_attribute_points_wis,wisdom)
+	spent_attribute_points_wis = result[0]
+	wisdom = result[1]
+	print(spent_attribute_points_wis)
 func minusWis():
-	if wisdom > 0.05:
-		spent_attribute_points_wis -= 1
-		attribute += 1
-		if spent_attribute_points_wis < 5:
-			wisdom -= attribute_increase_factor
-		elif spent_attribute_points_wis < 10:
-			wisdom -= attribute_increase_factor * 0.5
-		elif spent_attribute_points_wis < 15:
-			wisdom -= attribute_increase_factor * 0.2
-		elif spent_attribute_points_wis < 20:
-			wisdom -= attribute_increase_factor * 0.1
-		elif spent_attribute_points_wis < 25:
-			wisdom -= attribute_increase_factor * 0.05
-		else:
-			wisdom -= attribute_increase_factor * 0.01
-# Memory
-func plusMem():
-	if attribute > 0:
-		if spent_attribute_points_mem < 5:
-			spent_attribute_points_mem += 1
-			attribute -= 1
-			memory += attribute_increase_factor
-		elif spent_attribute_points_mem < 10:
-			spent_attribute_points_mem += 1
-			attribute -= 1
-			memory += attribute_increase_factor * 0.5
-		elif spent_attribute_points_mem < 15:
-			spent_attribute_points_mem += 1
-			attribute -= 1
-			memory += attribute_increase_factor * 0.2
-		elif spent_attribute_points_mem < 20:
-			spent_attribute_points_mem += 1
-			attribute -= 1
-			memory += attribute_increase_factor * 0.1
-		elif spent_attribute_points_mem < 25:
-			spent_attribute_points_mem += 1
-			attribute -= 1
-			memory += attribute_increase_factor * 0.05
-		else:
-			spent_attribute_points_mem += 1
-			attribute -= 1
-			memory += attribute_increase_factor * 0.01
+	var result: Array = decreaseAttribute(spent_attribute_points_wis,wisdom)
+	spent_attribute_points_wis = result[0]
+	wisdom = result[1]
+func plusMem():#memory
+	var result: Array = increaseAttribute(spent_attribute_points_mem,memory)
+	spent_attribute_points_mem = result[0]
+	memory = result[1]
+	print(spent_attribute_points_mem)
 func minusMem():
-	if memory > 0.05:
-		spent_attribute_points_mem -= 1
-		attribute += 1
-		if spent_attribute_points_mem < 5:
-			memory -= attribute_increase_factor
-		elif spent_attribute_points_mem < 10:
-			memory -= attribute_increase_factor * 0.5
-		elif spent_attribute_points_mem < 15:
-			memory -= attribute_increase_factor * 0.2
-		elif spent_attribute_points_mem < 20:
-			memory -= attribute_increase_factor * 0.1
-		elif spent_attribute_points_mem < 25:
-			memory -= attribute_increase_factor * 0.05
-		else:
-			memory -= attribute_increase_factor * 0.01
-# Sanity
-func plusSan():
-	if attribute > 0:
-		if spent_attribute_points_san < 5:
-			spent_attribute_points_san += 1
-			attribute -= 1
-			sanity += attribute_increase_factor
-		elif spent_attribute_points_san < 10:
-			spent_attribute_points_san += 1
-			attribute -= 1
-			sanity += attribute_increase_factor * 0.5
-		elif spent_attribute_points_san < 15:
-			spent_attribute_points_san += 1
-			attribute -= 1
-			sanity += attribute_increase_factor * 0.2
-		elif spent_attribute_points_san < 20:
-			spent_attribute_points_san += 1
-			attribute -= 1
-			sanity += attribute_increase_factor * 0.1
-		elif spent_attribute_points_san < 25:
-			spent_attribute_points_san += 1
-			attribute -= 1
-			sanity += attribute_increase_factor * 0.05
-		else:
-			spent_attribute_points_san += 1
-			attribute -= 1
-			sanity += attribute_increase_factor * 0.01
+	var result: Array = decreaseAttribute(spent_attribute_points_mem,memory)
+	spent_attribute_points_mem = result[0]
+	memory = result[1]
+func plusSan():#sanity
+	var result: Array = increaseAttribute(spent_attribute_points_san,sanity)
+	spent_attribute_points_san = result[0]
+	sanity = result[1]
+	print(spent_attribute_points_san)
 func minusSan():
-	if sanity > 0.05:
-		spent_attribute_points_san -= 1
-		attribute += 1
-		if spent_attribute_points_san < 5:
-			sanity -= attribute_increase_factor
-		elif spent_attribute_points_san < 10:
-			sanity -= attribute_increase_factor * 0.5
-		elif spent_attribute_points_san < 15:
-			sanity -= attribute_increase_factor * 0.2
-		elif spent_attribute_points_san < 20:
-			sanity -= attribute_increase_factor * 0.1
-		elif spent_attribute_points_san < 25:
-			sanity -= attribute_increase_factor * 0.05
-		else:
-			sanity -= attribute_increase_factor * 0.01
-#Strength
-func plusStr():
-	if attribute > 0:
-		if spent_attribute_points_str < 5:
-			spent_attribute_points_str += 1
-			attribute -= 1
-			strength += attribute_increase_factor
-		elif spent_attribute_points_str < 10:
-			spent_attribute_points_str += 1
-			attribute -= 1
-			strength += attribute_increase_factor * 0.5
-		elif spent_attribute_points_str < 15:
-			spent_attribute_points_str += 1
-			attribute -= 1
-			strength += attribute_increase_factor * 0.2
-		elif spent_attribute_points_str < 20:
-			spent_attribute_points_str += 1
-			attribute -= 1
-			strength += attribute_increase_factor * 0.1
-		elif spent_attribute_points_str < 25:
-			spent_attribute_points_str += 1
-			attribute -= 1
-			strength += attribute_increase_factor * 0.05
-		else:
-			spent_attribute_points_str += 1
-			attribute -= 1
-			strength += attribute_increase_factor * 0.01
+	var result: Array = decreaseAttribute(spent_attribute_points_san,sanity)
+	spent_attribute_points_san = result[0]
+	sanity = result[1]
+func plusStr():#strength
+	var result: Array = increaseAttribute(spent_attribute_points_str,strength)
+	spent_attribute_points_str = result[0]
+	strength = result[1]
+	print(spent_attribute_points_str)
 func minusStr():
-	if strength > 0.05:
-		spent_attribute_points_str -= 1
-		attribute += 1
-		if spent_attribute_points_str < 5:
-			strength -= attribute_increase_factor
-		elif spent_attribute_points_str < 10:
-			strength -= attribute_increase_factor * 0.5
-		elif spent_attribute_points_str < 15:
-			strength -= attribute_increase_factor * 0.2
-		elif spent_attribute_points_str < 20:
-			strength -= attribute_increase_factor * 0.1
-		elif spent_attribute_points_str < 25:
-			strength -= attribute_increase_factor * 0.05
-		else:
-			strength -= attribute_increase_factor * 0.01
-#Force
-func plusFor():
-	if attribute > 0:
-		if spent_attribute_points_for < 5:
-			spent_attribute_points_for += 1
-			attribute -= 1
-			force += attribute_increase_factor
-		elif spent_attribute_points_for < 10:
-			spent_attribute_points_for += 1
-			attribute -= 1
-			force += attribute_increase_factor * 0.5
-		elif spent_attribute_points_for < 15:
-			spent_attribute_points_for += 1
-			attribute -= 1
-			force += attribute_increase_factor * 0.2
-		elif spent_attribute_points_for < 20:
-			spent_attribute_points_for += 1
-			attribute -= 1
-			force += attribute_increase_factor * 0.1
-		elif spent_attribute_points_for < 25:
-			spent_attribute_points_for += 1
-			attribute -= 1
-			force += attribute_increase_factor * 0.05
-		else:
-			spent_attribute_points_for += 1
-			attribute -= 1
-			force += attribute_increase_factor * 0.01
+	var result: Array = decreaseAttribute(spent_attribute_points_str,strength)
+	spent_attribute_points_str = result[0]
+	strength = result[1]
+func plusFor():#force
+	var result: Array = increaseAttribute(spent_attribute_points_for,force)
+	spent_attribute_points_for = result[0]
+	force = result[1]
+	print(spent_attribute_points_for)
 func minusFor():
-	if force > 0.05:
-		spent_attribute_points_for -= 1
-		attribute += 1
-		if spent_attribute_points_for < 5:
-			force -= attribute_increase_factor
-		elif spent_attribute_points_for < 10:
-			force -= attribute_increase_factor * 0.5
-		elif spent_attribute_points_for < 15:
-			force -= attribute_increase_factor * 0.2
-		elif spent_attribute_points_for < 20:
-			force -= attribute_increase_factor * 0.1
-		elif spent_attribute_points_for < 25:
-			force -= attribute_increase_factor * 0.05
-		else:
-			force -= attribute_increase_factor * 0.01
-#Impact
-func plusImp():
-	if attribute > 0:
-		if spent_attribute_points_imp < 5:
-			spent_attribute_points_imp += 1
-			attribute -= 1
-			impact += attribute_increase_factor
-		elif spent_attribute_points_imp < 10:
-			spent_attribute_points_imp += 1
-			attribute -= 1
-			impact += attribute_increase_factor * 0.5
-		elif spent_attribute_points_imp < 15:
-			spent_attribute_points_imp += 1
-			attribute -= 1
-			impact += attribute_increase_factor * 0.2
-		elif spent_attribute_points_imp < 20:
-			spent_attribute_points_imp += 1
-			attribute -= 1
-			impact += attribute_increase_factor * 0.1
-		elif spent_attribute_points_imp < 25:
-			spent_attribute_points_imp += 1
-			attribute -= 1
-			impact += attribute_increase_factor * 0.05
-		else:
-			spent_attribute_points_imp += 1
-			attribute -= 1
-			impact += attribute_increase_factor * 0.01
+	var result: Array = decreaseAttribute(spent_attribute_points_for,force)
+	spent_attribute_points_for = result[0]
+	force = result[1]
+func plusImp():#impact
+	var result: Array = increaseAttribute(spent_attribute_points_imp,impact)
+	spent_attribute_points_imp = result[0]
+	impact = result[1]
+	print(spent_attribute_points_imp)
 func minusImp():
-	if impact > 0.05:
-		spent_attribute_points_imp -= 1
-		attribute += 1
-		if spent_attribute_points_imp < 5:
-			impact -= attribute_increase_factor
-		elif spent_attribute_points_imp < 10:
-			impact -= attribute_increase_factor * 0.5
-		elif spent_attribute_points_imp < 15:
-			impact -= attribute_increase_factor * 0.2
-		elif spent_attribute_points_imp < 20:
-			impact -= attribute_increase_factor * 0.1
-		elif spent_attribute_points_imp < 25:
-			impact -= attribute_increase_factor * 0.05
-		else:
-			impact -= attribute_increase_factor * 0.01
-#Ferocity
-func plusFer():
-	if attribute > 0:
-		if spent_attribute_points_fer < 5:
-			spent_attribute_points_fer += 1
-			attribute -= 1
-			ferocity += attribute_increase_factor
-		elif spent_attribute_points_fer < 10:
-			spent_attribute_points_fer += 1
-			attribute -= 1
-			ferocity += attribute_increase_factor * 0.5
-		elif spent_attribute_points_fer < 15:
-			spent_attribute_points_fer += 1
-			attribute -= 1
-			ferocity += attribute_increase_factor * 0.2
-		elif spent_attribute_points_fer < 20:
-			spent_attribute_points_fer += 1
-			attribute -= 1
-			ferocity += attribute_increase_factor * 0.1
-		elif spent_attribute_points_fer < 25:
-			spent_attribute_points_fer += 1
-			attribute -= 1
-			ferocity += attribute_increase_factor * 0.05
-		else:
-			spent_attribute_points_fer += 1
-			attribute -= 1
-			ferocity += attribute_increase_factor * 0.01
+	var result: Array = decreaseAttribute(spent_attribute_points_imp,impact)
+	spent_attribute_points_imp = result[0]
+	impact = result[1]
+func plusFer():#ferocity
+	var result: Array = increaseAttribute(spent_attribute_points_fer,ferocity)
+	spent_attribute_points_fer = result[0]
+	ferocity = result[1]
+	print(spent_attribute_points_fer)
 func minusFer():
-	if ferocity > 0.05:
-		spent_attribute_points_fer -= 1
-		attribute += 1
-		if spent_attribute_points_fer < 5:
-			ferocity -= attribute_increase_factor
-		elif spent_attribute_points_fer < 10:
-			ferocity -= attribute_increase_factor * 0.5
-		elif spent_attribute_points_fer < 15:
-			ferocity -= attribute_increase_factor * 0.2
-		elif spent_attribute_points_fer < 20:
-			ferocity -= attribute_increase_factor * 0.1
-		elif spent_attribute_points_fer < 25:
-			ferocity -= attribute_increase_factor * 0.05
-		else:
-			ferocity -= attribute_increase_factor * 0.01
-#Fury
-func plusFur():
-	if attribute > 0:
-		if spent_attribute_points_fur < 5:
-			spent_attribute_points_fur += 1
-			attribute -= 1
-			fury += attribute_increase_factor
-		elif spent_attribute_points_fur < 10:
-			spent_attribute_points_fur += 1
-			attribute -= 1
-			fury += attribute_increase_factor * 0.5
-		elif spent_attribute_points_fur < 15:
-			spent_attribute_points_fur+= 1
-			attribute -= 1
-			fury += attribute_increase_factor * 0.2
-		elif spent_attribute_points_fur < 20:
-			spent_attribute_points_fur += 1
-			attribute -= 1
-			fury += attribute_increase_factor * 0.1
-		elif spent_attribute_points_fur < 25:
-			spent_attribute_points_fur += 1
-			attribute -= 1
-			fury += attribute_increase_factor * 0.05
-		else:
-			spent_attribute_points_fur += 1
-			attribute -= 1
-			fury += attribute_increase_factor * 0.01
+	var result: Array = decreaseAttribute(spent_attribute_points_fer,ferocity)
+	spent_attribute_points_fer = result[0]
+	ferocity = result[1]
+func plusFur():#fury
+	var result: Array = increaseAttribute(spent_attribute_points_fur,fury)
+	spent_attribute_points_fur = result[0]
+	fury = result[1]
+	print(spent_attribute_points_fur)
 func minusFur():
-	if fury > 0.05:
-		spent_attribute_points_fur -= 1
-		attribute += 1
-		if spent_attribute_points_fur < 5:
-			fury -= attribute_increase_factor
-		elif spent_attribute_points_fur < 10:
-			fury -= attribute_increase_factor * 0.5
-		elif spent_attribute_points_fur < 15:
-			fury -= attribute_increase_factor * 0.2
-		elif spent_attribute_points_fur < 20:
-			fury -= attribute_increase_factor * 0.1
-		elif spent_attribute_points_fur < 25:
-			fury -= attribute_increase_factor * 0.05
-		else:
-			fury -= attribute_increase_factor * 0.01
-#Vitality, for now it only increases health 
-func plusVit():
-	if attribute > 0:
-		if spent_attribute_points_vit < 5:
-			spent_attribute_points_vit += 1
-			attribute -= 1
-			vitality += attribute_increase_factor
-		elif spent_attribute_points_vit < 10:
-			spent_attribute_points_vit += 1
-			attribute -= 1
-			vitality += attribute_increase_factor * 0.5
-		elif spent_attribute_points_vit < 15:
-			spent_attribute_points_vit += 1
-			attribute -= 1
-			vitality += attribute_increase_factor * 0.2
-		elif spent_attribute_points_vit < 20:
-			spent_attribute_points_vit += 1
-			attribute -= 1
-			vitality += attribute_increase_factor * 0.1
-		elif spent_attribute_points_vit < 25:
-			spent_attribute_points_vit += 1
-			attribute -= 1
-			vitality += attribute_increase_factor * 0.05
-		else:
-			spent_attribute_points_vit += 1
-			attribute -= 1
-			vitality += attribute_increase_factor * 0.01
+	var result: Array = decreaseAttribute(spent_attribute_points_fur,fury)
+	spent_attribute_points_fur = result[0]
+	fury = result[1]
+func plusVit():#vitality, for now it only increases health 
+	var result: Array = increaseAttribute(spent_attribute_points_vit,vitality)
+	spent_attribute_points_vit = result[0]
+	vitality = result[1]
+	print(spent_attribute_points_vit)
 func minusVit():
-	if vitality > 0.05:
-		spent_attribute_points_vit -= 1
-		attribute += 1
-		if spent_attribute_points_vit < 5:
-			vitality -= attribute_increase_factor
-		elif spent_attribute_points_vit < 10:
-			vitality -= attribute_increase_factor * 0.5
-		elif spent_attribute_points_vit < 15:
-			vitality -= attribute_increase_factor * 0.2
-		elif spent_attribute_points_vit < 20:
-			vitality -= attribute_increase_factor * 0.1
-		elif spent_attribute_points_vit < 25:
-			vitality -= attribute_increase_factor * 0.05
-		else:
-			vitality -= attribute_increase_factor * 0.01
-#Stamina 
-func plusSta():
-	if attribute > 0:
-		if spent_attribute_points_sta < 5:
-			spent_attribute_points_sta += 1
-			attribute -= 1
-			stamina += attribute_increase_factor
-		elif spent_attribute_points_sta < 10:
-			spent_attribute_points_sta += 1
-			attribute -= 1
-			stamina += attribute_increase_factor * 0.5
-		elif spent_attribute_points_sta < 15:
-			spent_attribute_points_sta += 1
-			attribute -= 1
-			stamina += attribute_increase_factor * 0.2
-		elif spent_attribute_points_sta < 20:
-			spent_attribute_points_sta += 1
-			attribute -= 1
-			stamina += attribute_increase_factor * 0.1
-		elif spent_attribute_points_sta < 25:
-			spent_attribute_points_sta += 1
-			attribute -= 1
-			stamina += attribute_increase_factor * 0.05
-		else:
-			spent_attribute_points_sta += 1
-			attribute -= 1
-			stamina += attribute_increase_factor * 0.01
+	var result: Array = decreaseAttribute(spent_attribute_points_vit,vitality)
+	spent_attribute_points_vit = result[0]
+	vitality = result[1]
+func plusSta():#stamina 
+	var result: Array = increaseAttribute(spent_attribute_points_sta,stamina)
+	spent_attribute_points_sta = result[0]
+	stamina = result[1]
+	print(spent_attribute_points_sta)
 func minusSta():
-	if stamina > 0.05:
-		spent_attribute_points_sta -= 1
-		attribute += 1
-		if spent_attribute_points_sta < 5:
-			stamina -= attribute_increase_factor
-		elif spent_attribute_points_sta < 10:
-			stamina -= attribute_increase_factor * 0.5
-		elif spent_attribute_points_sta < 15:
-			stamina -= attribute_increase_factor * 0.2
-		elif spent_attribute_points_sta < 20:
-			stamina -= attribute_increase_factor * 0.1
-		elif spent_attribute_points_sta < 25:
-			stamina -= attribute_increase_factor * 0.05
-		else:
-			stamina -= attribute_increase_factor * 0.01
-#Endurance
-func plusEnd():
-	if attribute > 0:
-		if spent_attribute_points_end < 5:
-			spent_attribute_points_end += 1
-			attribute -= 1
-			endurance += attribute_increase_factor
-		elif spent_attribute_points_end < 10:
-			spent_attribute_points_end += 1
-			attribute -= 1
-			endurance += attribute_increase_factor * 0.5
-		elif spent_attribute_points_end < 15:
-			spent_attribute_points_end += 1
-			attribute -= 1
-			endurance += attribute_increase_factor * 0.2
-		elif spent_attribute_points_end < 20:
-			spent_attribute_points_end += 1
-			attribute -= 1
-			endurance += attribute_increase_factor * 0.1
-		elif spent_attribute_points_end < 25:
-			spent_attribute_points_end += 1
-			attribute -= 1
-			endurance += attribute_increase_factor * 0.05
-		else:
-			spent_attribute_points_end += 1
-			attribute -= 1
-			endurance += attribute_increase_factor * 0.01
+	var result: Array = decreaseAttribute(spent_attribute_points_sta,stamina)
+	spent_attribute_points_sta = result[0]
+	stamina = result[1]
+func plusEnd():#endurance
+	var result: Array = increaseAttribute(spent_attribute_points_end,endurance)
+	spent_attribute_points_end = result[0]
+	endurance = result[1]
+	print(spent_attribute_points_end)
 func minusEnd():
-	if endurance > 0.05:
-		spent_attribute_points_end -= 1
-		attribute += 1
-		if spent_attribute_points_end < 5:
-			endurance -= attribute_increase_factor
-		elif spent_attribute_points_end < 10:
-			endurance -= attribute_increase_factor * 0.5
-		elif spent_attribute_points_end < 15:
-			endurance -= attribute_increase_factor * 0.2
-		elif spent_attribute_points_end < 20:
-			endurance -= attribute_increase_factor * 0.1
-		elif spent_attribute_points_end < 25:
-			endurance -= attribute_increase_factor * 0.05
-		else:
-			endurance -= attribute_increase_factor * 0.01
-#Resistance, it increases health, energy, resolve, defense at 1/3 value of other attributes
-func plusRes():
-	if attribute > 0:
-		if spent_attribute_points_res < 5:
-			spent_attribute_points_res += 1
-			attribute -= 1
-			resistance += attribute_increase_factor
-		elif spent_attribute_points_res < 10:
-			spent_attribute_points_res += 1
-			attribute -= 1
-			resistance += attribute_increase_factor * 0.5
-		elif spent_attribute_points_res < 15:
-			spent_attribute_points_res += 1
-			attribute -= 1
-			resistance += attribute_increase_factor * 0.2
-		elif spent_attribute_points_res < 20:
-			spent_attribute_points_res += 1
-			attribute -= 1
-			resistance += attribute_increase_factor * 0.1
-		elif spent_attribute_points_res < 25:
-			spent_attribute_points_res += 1
-			attribute -= 1
-			resistance += attribute_increase_factor * 0.05
-		else:
-			spent_attribute_points_res += 1
-			attribute -= 1
-			resistance += attribute_increase_factor * 0.01
+	var result: Array = decreaseAttribute(spent_attribute_points_end,endurance)
+	spent_attribute_points_end = result[0]
+	endurance = result[1]
+func plusRes():#resistance, it increases health, energy, resolve, defense at 1/3 value of other attributes
+	var result: Array = increaseAttribute(spent_attribute_points_res,resistance)
+	spent_attribute_points_res = result[0]
+	resistance = result[1]
+	print(spent_attribute_points_res)
 func minusRes():
-	if resistance > 0.05:
-		spent_attribute_points_res -= 1
-		attribute += 1
-		if spent_attribute_points_res < 5:
-			resistance -= attribute_increase_factor
-		elif spent_attribute_points_res < 10:
-			resistance -= attribute_increase_factor * 0.5
-		elif spent_attribute_points_res < 15:
-			resistance -= attribute_increase_factor * 0.2
-		elif spent_attribute_points_res < 20:
-			resistance -= attribute_increase_factor * 0.1
-		elif spent_attribute_points_res < 25:
-			resistance -= attribute_increase_factor * 0.05
-		else:
-			resistance -= attribute_increase_factor * 0.01
-#Tenacity
-func plusTen():
-	if attribute > 0:
-		if spent_attribute_points_ten < 5:
-			spent_attribute_points_ten += 1
-			attribute -= 1
-			tenacity += attribute_increase_factor
-		elif spent_attribute_points_ten < 10:
-			spent_attribute_points_ten += 1
-			attribute -= 1
-			tenacity += attribute_increase_factor * 0.5
-		elif spent_attribute_points_ten < 15:
-			spent_attribute_points_ten += 1
-			attribute -= 1
-			tenacity += attribute_increase_factor * 0.2
-		elif spent_attribute_points_ten < 20:
-			spent_attribute_points_ten += 1
-			attribute -= 1
-			tenacity += attribute_increase_factor * 0.1
-		elif spent_attribute_points_ten < 25:
-			spent_attribute_points_ten += 1
-			attribute -= 1
-			tenacity += attribute_increase_factor * 0.05
-		else:
-			spent_attribute_points_ten += 1
-			attribute -= 1
-			tenacity += attribute_increase_factor * 0.0
+	var result: Array = decreaseAttribute(spent_attribute_points_res,resistance)
+	spent_attribute_points_res = result[0]
+	resistance = result[1]
+func plusTen():#Tenacity
+	var result: Array = increaseAttribute(spent_attribute_points_ten,tenacity)
+	spent_attribute_points_ten = result[0]
+	tenacity = result[1]
+	print(spent_attribute_points_ten)
 func minusTen():
-	if tenacity > 0.05:
-		spent_attribute_points_ten -= 1
-		attribute += 1
-		if spent_attribute_points_ten < 5:
-			tenacity -= attribute_increase_factor
-		elif spent_attribute_points_ten < 10:
-			tenacity -= attribute_increase_factor * 0.5
-		elif spent_attribute_points_ten < 15:
-			tenacity -= attribute_increase_factor * 0.2
-		elif spent_attribute_points_ten < 20:
-			tenacity -= attribute_increase_factor * 0.1
-		elif spent_attribute_points_ten < 25:
-			tenacity -= attribute_increase_factor * 0.05
-		else:
-			tenacity -= attribute_increase_factor * 0.01
-#Agility 
-func plusAgi():
-	if attribute > 0:
-		if spent_attribute_points_agi < 5:
-			spent_attribute_points_agi += 1
-			attribute -= 1
-			agility += attribute_increase_factor
-		elif spent_attribute_points_agi < 10:
-			spent_attribute_points_agi += 1
-			attribute -= 1
-			agility += attribute_increase_factor * 0.5
-		elif spent_attribute_points_agi < 15:
-			spent_attribute_points_agi += 1
-			attribute -= 1
-			agility += attribute_increase_factor * 0.2
-		elif spent_attribute_points_agi < 20:
-			spent_attribute_points_agi += 1
-			attribute -= 1
-			agility += attribute_increase_factor * 0.1
-		elif spent_attribute_points_agi < 25:
-			spent_attribute_points_agi += 1
-			attribute -= 1
-			agility += attribute_increase_factor * 0.05
-		else:
-			spent_attribute_points_agi += 1
-			attribute -= 1
-			agility += attribute_increase_factor * 0.01
+	var result: Array = decreaseAttribute(spent_attribute_points_ten,tenacity)
+	spent_attribute_points_ten = result[0]
+	tenacity = result[1]
+func plusAgi():#agility 
+	var result: Array = increaseAttribute(spent_attribute_points_agi,agility)
+	spent_attribute_points_agi = result[0]
+	agility = result[1]
+	print(spent_attribute_points_agi)
 func minusAgi():
-	if agility > 0.05:
-		spent_attribute_points_agi -= 1
-		attribute += 1
-		if spent_attribute_points_agi < 5:
-			agility -= attribute_increase_factor
-		elif spent_attribute_points_agi < 10:
-			agility -= attribute_increase_factor * 0.5
-		elif spent_attribute_points_agi < 15:
-			agility -= attribute_increase_factor * 0.2
-		elif spent_attribute_points_agi < 20:
-			agility -= attribute_increase_factor * 0.1
-		elif spent_attribute_points_agi < 25:
-			agility -= attribute_increase_factor * 0.05
-		else:
-			agility -= attribute_increase_factor * 0.01
-#Haste
-func plusHas():
-	if attribute > 0:
-		if spent_attribute_points_has < 5:
-			spent_attribute_points_has += 1
-			attribute -= 1
-			haste += attribute_increase_factor
-		elif spent_attribute_points_has < 10:
-			spent_attribute_points_has += 1
-			attribute -= 1
-			haste += attribute_increase_factor * 0.5
-		elif spent_attribute_points_has < 15:
-			spent_attribute_points_has += 1
-			attribute -= 1
-			haste += attribute_increase_factor * 0.2
-		elif spent_attribute_points_has < 20:
-			spent_attribute_points_has += 1
-			attribute -= 1
-			haste += attribute_increase_factor * 0.1
-		elif spent_attribute_points_has < 25:
-			spent_attribute_points_has += 1
-			attribute -= 1
-			haste += attribute_increase_factor * 0.05
-		else:
-			spent_attribute_points_has += 1
-			attribute -= 1
-			haste += attribute_increase_factor * 0.01
+	var result: Array = decreaseAttribute(spent_attribute_points_agi,agility)
+	spent_attribute_points_agi = result[0]
+	agility = result[1]
+func plusHas():#Haste
+	var result: Array = increaseAttribute(spent_attribute_points_has,haste)
+	spent_attribute_points_has = result[0]
+	haste = result[1]
+	print(spent_attribute_points_has)
 func minusHas():
-	if haste > 0.05:
-		spent_attribute_points_has -= 1
-		attribute += 1
-		if spent_attribute_points_has < 5:
-			haste -= attribute_increase_factor
-		elif spent_attribute_points_has < 10:
-			haste -= attribute_increase_factor * 0.5
-		elif spent_attribute_points_has < 15:
-			haste -= attribute_increase_factor * 0.2
-		elif spent_attribute_points_has < 20:
-			haste -= attribute_increase_factor * 0.1
-		elif spent_attribute_points_has < 25:
-			haste -= attribute_increase_factor * 0.05
-		else:
-			haste -= attribute_increase_factor * 0.01
-#Celerety 
-func plusCel():
-	if attribute > 0:
-		if spent_attribute_points_cel < 5:
-			spent_attribute_points_cel += 1
-			attribute -= 1
-			celerity += attribute_increase_factor
-		elif spent_attribute_points_cel < 10:
-			spent_attribute_points_cel += 1
-			attribute -= 1
-			celerity += attribute_increase_factor * 0.5
-		elif spent_attribute_points_cel < 15:
-			spent_attribute_points_cel += 1
-			attribute -= 1
-			celerity += attribute_increase_factor * 0.2
-		elif spent_attribute_points_cel < 20:
-			spent_attribute_points_cel += 1
-			attribute -= 1
-			celerity += attribute_increase_factor * 0.1
-		elif spent_attribute_points_cel < 25:
-			spent_attribute_points_cel += 1
-			attribute -= 1
-			celerity += attribute_increase_factor * 0.05
-		else:
-			spent_attribute_points_cel += 1
-			attribute -= 1
-			celerity += attribute_increase_factor * 0.01
+	var result: Array = decreaseAttribute(spent_attribute_points_has,haste)
+	spent_attribute_points_has = result[0]
+	haste = result[1]
+func plusCel():#Celerety
+	var result: Array = increaseAttribute(spent_attribute_points_cel,celerity)
+	spent_attribute_points_cel = result[0]
+	celerity = result[1]
+	print(spent_attribute_points_cel)
 func minusCel():
-	if celerity > 0.05:
-		spent_attribute_points_cel -= 1
-		attribute += 1
-		if spent_attribute_points_cel < 5:
-			celerity -= attribute_increase_factor
-		elif spent_attribute_points_cel < 10:
-			celerity -= attribute_increase_factor * 0.5
-		elif spent_attribute_points_cel < 15:
-			celerity -= attribute_increase_factor * 0.2
-		elif spent_attribute_points_cel < 20:
-			celerity -= attribute_increase_factor * 0.1
-		elif spent_attribute_points_cel < 25:
-			celerity -= attribute_increase_factor * 0.05
-		else:
-			celerity -= attribute_increase_factor * 0.01
+	var result: Array = decreaseAttribute(spent_attribute_points_cel,celerity)
+	spent_attribute_points_cel = result[0]
+	celerity = result[1]
+	print(spent_attribute_points_cel)
 #Flexibity.... this is mostly about taking less falling damage or when being knocked down by tackles 
 func plusFle():
-	if attribute > 0:
-		if spent_attribute_points_fle < 5:
-			spent_attribute_points_fle += 1
-			attribute -= 1
-			flexibility += attribute_increase_factor
-		elif spent_attribute_points_fle< 10:
-			spent_attribute_points_fle += 1
-			attribute -= 1
-			flexibility += attribute_increase_factor * 0.5
-		elif spent_attribute_points_fle < 15:
-			spent_attribute_points_fle += 1
-			attribute -= 1
-			flexibility += attribute_increase_factor * 0.2
-		elif spent_attribute_points_fle< 20:
-			spent_attribute_points_fle += 1
-			attribute -= 1
-			flexibility += attribute_increase_factor * 0.1
-		elif spent_attribute_points_fle < 25:
-			spent_attribute_points_fle += 1
-			attribute -= 1
-			flexibility += attribute_increase_factor * 0.05
-		else:
-			spent_attribute_points_fle += 1
-			attribute -= 1
-			flexibility += attribute_increase_factor * 0.01
+	var result: Array = increaseAttribute(spent_attribute_points_fle,flexibility)
+	spent_attribute_points_fle = result[0]
+	flexibility = result[1]
+	print(spent_attribute_points_fle)
 func minusFle():
-	if flexibility > 0.05:
-		spent_attribute_points_fle -= 1
-		attribute += 1
-		if spent_attribute_points_fle < 5:
-			flexibility -= attribute_increase_factor
-		elif spent_attribute_points_fle < 10:
-			flexibility -= attribute_increase_factor * 0.5
-		elif spent_attribute_points_fle < 15:
-			flexibility -= attribute_increase_factor * 0.2
-		elif spent_attribute_points_fle < 20:
-			flexibility -= attribute_increase_factor * 0.1
-		elif spent_attribute_points_fle < 25:
-			flexibility -= attribute_increase_factor * 0.05
-		else:
-			flexibility -= attribute_increase_factor * 0.01
+	var result: Array = decreaseAttribute(spent_attribute_points_fle,flexibility)
+	spent_attribute_points_fle = result[0]
+	flexibility = result[1]
+	print(spent_attribute_points_fle)
 #Deflection
 func plusDef():
-	if attribute > 0:
-		if spent_attribute_points_def < 5:
-			spent_attribute_points_def += 1
-			attribute -= 1
-			deflection += attribute_increase_factor
-		elif spent_attribute_points_def < 10:
-			spent_attribute_points_def += 1
-			attribute -= 1
-			deflection += attribute_increase_factor * 0.5
-		elif spent_attribute_points_def < 15:
-			spent_attribute_points_def += 1
-			attribute -= 1
-			deflection += attribute_increase_factor * 0.2
-		elif spent_attribute_points_def < 20:
-			spent_attribute_points_def += 1
-			attribute -= 1
-			deflection += attribute_increase_factor * 0.1
-		elif spent_attribute_points_def < 25:
-			spent_attribute_points_def += 1
-			attribute -= 1
-			deflection += attribute_increase_factor * 0.05
-		else:
-			spent_attribute_points_def += 1
-			attribute -= 1
-			deflection += attribute_increase_factor * 0.01
+	var result: Array = increaseAttribute(spent_attribute_points_def,deflection)
+	spent_attribute_points_def = result[0]
+	deflection = result[1]
+	print(spent_attribute_points_def)
 func minusDef():
-	if deflection > 0.05:
-		spent_attribute_points_def -= 1
-		attribute += 1
-		if spent_attribute_points_def < 5:
-			deflection -= attribute_increase_factor
-		elif spent_attribute_points_def < 10:
-			deflection -= attribute_increase_factor * 0.5
-		elif spent_attribute_points_def < 15:
-			deflection -= attribute_increase_factor * 0.2
-		elif spent_attribute_points_def < 20:
-			deflection -= attribute_increase_factor * 0.1
-		elif spent_attribute_points_def < 25:
-			deflection -= attribute_increase_factor * 0.05
-		else:
-			deflection -= attribute_increase_factor * 0.01
+	var result: Array = decreaseAttribute(spent_attribute_points_def,deflection)
+	spent_attribute_points_def = result[0]
+	deflection = result[1]
+	print(spent_attribute_points_def)
 #Dexterity
 func plusDex():
-	if attribute > 0:
-		if spent_attribute_points_dex < 5:
-			spent_attribute_points_dex += 1
-			attribute -= 1
-			dexterity += attribute_increase_factor
-		elif spent_attribute_points_dex < 10:
-			spent_attribute_points_dex += 1
-			attribute -= 1
-			dexterity += attribute_increase_factor * 0.5
-		elif spent_attribute_points_dex < 15:
-			spent_attribute_points_dex += 1
-			attribute -= 1
-			dexterity += attribute_increase_factor * 0.2
-		elif spent_attribute_points_dex < 20:
-			spent_attribute_points_dex += 1
-			attribute -= 1
-			dexterity += attribute_increase_factor * 0.1
-		elif spent_attribute_points_dex < 25:
-			spent_attribute_points_dex += 1
-			attribute -= 1
-			dexterity += attribute_increase_factor * 0.05
-		else:
-			spent_attribute_points_dex += 1
-			attribute -= 1
-			dexterity += attribute_increase_factor * 0.01
+	var result: Array = increaseAttribute(spent_attribute_points_dex,dexterity)
+	spent_attribute_points_dex = result[0]
+	dexterity = result[1]
+	print(spent_attribute_points_dex)
 func minusDex():
-	if dexterity > 0.05:
-		spent_attribute_points_dex -= 1
-		attribute += 1
-		if spent_attribute_points_dex < 5:
-			dexterity -= attribute_increase_factor
-		elif spent_attribute_points_dex < 10:
-			dexterity -= attribute_increase_factor * 0.5
-		elif spent_attribute_points_dex < 15:
-			dexterity -= attribute_increase_factor * 0.2
-		elif spent_attribute_points_dex < 20:
-			dexterity -= attribute_increase_factor * 0.1
-		elif spent_attribute_points_dex < 25:
-			dexterity -= attribute_increase_factor * 0.05
-		else:
-			dexterity -= attribute_increase_factor * 0.01
+	var result: Array = decreaseAttribute(spent_attribute_points_dex,dexterity)
+	spent_attribute_points_dex = result[0]
+	dexterity = result[1]
+	print(spent_attribute_points_dex)
 #Accuracy
 func plusAcc():
-	if attribute > 0:
-		if spent_attribute_points_acc < 5:
-			spent_attribute_points_acc += 1
-			attribute -= 1
-			accuracy += attribute_increase_factor
-		elif spent_attribute_points_acc < 10:
-			spent_attribute_points_acc += 1
-			attribute -= 1
-			accuracy += attribute_increase_factor * 0.5
-		elif spent_attribute_points_acc < 15:
-			spent_attribute_points_acc += 1
-			attribute -= 1
-			accuracy += attribute_increase_factor * 0.2
-		elif spent_attribute_points_acc < 20:
-			spent_attribute_points_acc += 1
-			attribute -= 1
-			accuracy += attribute_increase_factor * 0.1
-		elif spent_attribute_points_acc < 25:
-			spent_attribute_points_acc += 1
-			attribute -= 1
-			accuracy += attribute_increase_factor * 0.05
-		else:
-			spent_attribute_points_acc += 1
-			attribute -= 1
-			accuracy += attribute_increase_factor * 0.01
+	var result: Array = increaseAttribute(spent_attribute_points_acc,accuracy)
+	spent_attribute_points_acc = result[0]
+	accuracy = result[1]
+	print(spent_attribute_points_acc)
 func minusAcc():
-	if accuracy > 0.05:
-		spent_attribute_points_acc -= 1
-		attribute += 1
-		if spent_attribute_points_acc < 5:
-			accuracy -= attribute_increase_factor
-		elif spent_attribute_points_acc < 10:
-			accuracy -= attribute_increase_factor * 0.5
-		elif spent_attribute_points_acc < 15:
-			accuracy -= attribute_increase_factor * 0.2
-		elif spent_attribute_points_acc < 20:
-			accuracy -= attribute_increase_factor * 0.1
-		elif spent_attribute_points_acc < 25:
-			accuracy -= attribute_increase_factor * 0.05
-		else:
-			accuracy -= attribute_increase_factor * 0.01
+	var result: Array = decreaseAttribute(spent_attribute_points_acc,accuracy)
+	spent_attribute_points_acc = result[0]
+	accuracy = result[1]
+	print(spent_attribute_points_acc)
 #Focus
 func plusFoc():
-	if attribute > 0:
-		if spent_attribute_points_foc < 5:
-			spent_attribute_points_foc += 1
-			attribute -= 1
-			focus += attribute_increase_factor
-		elif spent_attribute_points_foc < 10:
-			spent_attribute_points_foc += 1
-			attribute -= 1
-			focus += attribute_increase_factor * 0.5
-		elif spent_attribute_points_foc < 15:
-			spent_attribute_points_foc += 1
-			attribute -= 1
-			focus += attribute_increase_factor * 0.2
-		elif spent_attribute_points_foc < 20:
-			spent_attribute_points_foc += 1
-			attribute -= 1
-			focus += attribute_increase_factor * 0.1
-		elif spent_attribute_points_foc < 25:
-			spent_attribute_points_foc += 1
-			attribute -= 1
-			focus += attribute_increase_factor * 0.05
-		else:
-			spent_attribute_points_foc += 1
-			attribute -= 1
-			focus += attribute_increase_factor * 0.01
+	var result: Array = increaseAttribute(spent_attribute_points_foc,focus)
+	spent_attribute_points_foc = result[0]
+	focus = result[1]
+	print(spent_attribute_points_foc)
 func minusFoc():
-	if focus > 0.05:
-		spent_attribute_points_foc -= 1
-		attribute += 1
-		if spent_attribute_points_foc < 5:
-			focus -= attribute_increase_factor
-		elif spent_attribute_points_foc < 10:
-			focus -= attribute_increase_factor * 0.5
-		elif spent_attribute_points_foc < 15:
-			focus -= attribute_increase_factor * 0.2
-		elif spent_attribute_points_foc < 20:
-			focus -= attribute_increase_factor * 0.1
-		elif spent_attribute_points_foc < 25:
-			focus -= attribute_increase_factor * 0.05
-		else:
-			focus -= attribute_increase_factor * 0.01
+	var result: Array = decreaseAttribute(spent_attribute_points_foc,focus)
+	spent_attribute_points_foc = result[0]
+	focus = result[1]
+	print(spent_attribute_points_foc)
 #Poise 
 func plusPoi():
-	if attribute > 0:
-		if spent_attribute_points_poi < 5:
-			spent_attribute_points_poi += 1
-			attribute -= 1
-			poise += attribute_increase_factor
-		elif spent_attribute_points_poi < 10:
-			spent_attribute_points_poi += 1
-			attribute -= 1
-			poise += attribute_increase_factor * 0.5
-		elif spent_attribute_points_poi < 15:
-			spent_attribute_points_poi += 1
-			attribute -= 1
-			poise += attribute_increase_factor * 0.2
-		elif spent_attribute_points_poi < 20:
-			spent_attribute_points_poi += 1
-			attribute -= 1
-			poise += attribute_increase_factor * 0.1
-		elif spent_attribute_points_poi < 25:
-			spent_attribute_points_poi += 1
-			attribute -= 1
-			poise += attribute_increase_factor * 0.05
-		else:
-			spent_attribute_points_poi += 1
-			attribute -= 1
-			poise += attribute_increase_factor * 0.01
+	var result: Array = increaseAttribute(spent_attribute_points_poi,poise)
+	spent_attribute_points_poi = result[0]
+	poise = result[1]
+	print(spent_attribute_points_poi)
 func minusPoi():
-	if poise > 0.05:
-		spent_attribute_points_poi -= 1
-		attribute += 1
-		if spent_attribute_points_poi < 5:
-			poise -= attribute_increase_factor
-		elif spent_attribute_points_poi < 10:
-			poise -= attribute_increase_factor * 0.5
-		elif spent_attribute_points_poi < 15:
-			poise -= attribute_increase_factor * 0.2
-		elif spent_attribute_points_poi < 20:
-			poise -= attribute_increase_factor * 0.1
-		elif spent_attribute_points_poi < 25:
-			poise -= attribute_increase_factor * 0.05
-		else:
-			poise -= attribute_increase_factor * 0.01
+	var result: Array = decreaseAttribute(spent_attribute_points_poi,poise)
+	spent_attribute_points_poi = result[0]
+	poise = result[1]
+	print(spent_attribute_points_poi)
 #Balance
 func plusBal():
-	if attribute > 0:
-		if spent_attribute_points_bal < 5:
-			spent_attribute_points_bal += 1
-			attribute -= 1
-			balance += attribute_increase_factor
-		elif spent_attribute_points_bal < 10:
-			spent_attribute_points_bal += 1
-			attribute -= 1
-			balance += attribute_increase_factor * 0.5
-		elif spent_attribute_points_bal < 15:
-			spent_attribute_points_bal += 1
-			attribute -= 1
-			balance += attribute_increase_factor * 0.2
-		elif spent_attribute_points_bal < 20:
-			spent_attribute_points_bal += 1
-			attribute -= 1
-			balance += attribute_increase_factor * 0.1
-		elif spent_attribute_points_bal < 25:
-			spent_attribute_points_bal += 1
-			attribute -= 1
-			balance += attribute_increase_factor * 0.05
-		else:
-			spent_attribute_points_bal += 1
-			attribute -= 1
-			balance += attribute_increase_factor * 0.01
+	var result: Array = increaseAttribute(spent_attribute_points_bal,balance)
+	spent_attribute_points_bal = result[0]
+	balance = result[1]
+	print(spent_attribute_points_bal)
 func minusBal():
-	if balance > 0.05:
-		spent_attribute_points_bal -= 1
-		attribute += 1
-		if spent_attribute_points_bal < 5:
-			balance -= attribute_increase_factor
-		elif spent_attribute_points_bal < 10:
-			balance -= attribute_increase_factor * 0.5
-		elif spent_attribute_points_bal < 15:
-			balance -= attribute_increase_factor * 0.2
-		elif spent_attribute_points_bal < 20:
-			balance -= attribute_increase_factor * 0.1
-		elif spent_attribute_points_bal < 25:
-			balance -= attribute_increase_factor * 0.05
-		else:
-			balance -= attribute_increase_factor * 0.01
+	var result: Array = decreaseAttribute(spent_attribute_points_bal,balance)
+	spent_attribute_points_bal = result[0]
+	balance = result[1]
+	print(spent_attribute_points_bal)
 #Charisma 
 func plusCha():
-	print("ok")
-	if attribute > 0:
-		if spent_attribute_points_cha < 5:
-			spent_attribute_points_cha += 1
-			attribute -= 1
-			charisma_multiplier += attribute_increase_factor
-		elif spent_attribute_points_cha < 10:
-			spent_attribute_points_cha += 1
-			attribute -= 1
-			charisma_multiplier += attribute_increase_factor * 0.5
-		elif spent_attribute_points_cha < 15:
-			spent_attribute_points_cha += 1
-			attribute -= 1
-			charisma_multiplier += attribute_increase_factor * 0.2
-		elif spent_attribute_points_cha < 20:
-			spent_attribute_points_cha += 1
-			attribute -= 1
-			charisma_multiplier += attribute_increase_factor * 0.1
-		elif spent_attribute_points_cha < 25:
-			spent_attribute_points_cha += 1
-			attribute -= 1
-			charisma_multiplier += attribute_increase_factor * 0.05
-		else:
-			spent_attribute_points_cha += 1
-			attribute -= 1
-			charisma_multiplier += attribute_increase_factor * 0.01
+	var result: Array = increaseAttribute(spent_attribute_points_cha,charisma)
+	spent_attribute_points_cha = result[0]
+	charisma = result[1]
+	print(spent_attribute_points_cha)
 func minusCha():
-	if charisma_multiplier > 0.05:
-		spent_attribute_points_cha -= 1
-		attribute += 1
-		if spent_attribute_points_cha < 5:
-			charisma_multiplier -= attribute_increase_factor
-		elif spent_attribute_points_cha < 10:
-			charisma_multiplier -= attribute_increase_factor * 0.5
-		elif spent_attribute_points_cha < 15:
-			charisma_multiplier -= attribute_increase_factor * 0.2
-		elif spent_attribute_points_cha < 20:
-			charisma_multiplier -= attribute_increase_factor * 0.1
-		elif spent_attribute_points_cha < 25:
-			charisma_multiplier -= attribute_increase_factor * 0.05
-		else:
-			charisma_multiplier -= attribute_increase_factor * 0.01
+	var result: Array = decreaseAttribute(spent_attribute_points_cha,charisma)
+	spent_attribute_points_cha = result[0]
+	charisma = result[1]
+	print(spent_attribute_points_cha)
 #Diplomancy 
 func plusDip():
-	if attribute > 0:
-		if spent_attribute_points_dip < 5:
-			spent_attribute_points_dip += 1
-			attribute -= 1
-			diplomacy += attribute_increase_factor
-		elif spent_attribute_points_dip < 10:
-			spent_attribute_points_dip += 1
-			attribute -= 1
-			diplomacy += attribute_increase_factor * 0.5
-		elif spent_attribute_points_dip < 15:
-			spent_attribute_points_dip += 1
-			attribute -= 1
-			diplomacy += attribute_increase_factor * 0.2
-		elif spent_attribute_points_dip < 20:
-			spent_attribute_points_dip += 1
-			attribute -= 1
-			diplomacy += attribute_increase_factor * 0.1
-		elif spent_attribute_points_dip < 25:
-			spent_attribute_points_dip += 1
-			attribute -= 1
-			diplomacy += attribute_increase_factor * 0.05
-		else:
-			spent_attribute_points_dip += 1
-			attribute -= 1
-			diplomacy += attribute_increase_factor * 0.01
+	var result: Array = increaseAttribute(spent_attribute_points_dip,diplomacy)
+	spent_attribute_points_dip = result[0]
+	diplomacy = result[1]
+	print(spent_attribute_points_dip)
+	
 func minusDip():
-	if diplomacy > 0.05:
-		spent_attribute_points_dip -= 1
-		attribute += 1
-		if spent_attribute_points_dip < 5:
-			diplomacy -= attribute_increase_factor
-		elif spent_attribute_points_dip < 10:
-			diplomacy -= attribute_increase_factor * 0.5
-		elif spent_attribute_points_dip < 15:
-			diplomacy -= attribute_increase_factor * 0.2
-		elif spent_attribute_points_dip < 20:
-			diplomacy -= attribute_increase_factor * 0.1
-		elif spent_attribute_points_dip < 25:
-			diplomacy -= attribute_increase_factor * 0.05
-		else:
-			diplomacy -= attribute_increase_factor * 0.01
+	var result: Array = decreaseAttribute(spent_attribute_points_dip,diplomacy)
+	spent_attribute_points_dip = result[0]
+	diplomacy = result[1]
+	print(spent_attribute_points_dip)
 #Authority
 func plusAut():
-	if attribute > 0:
-		if spent_attribute_points_aut < 5:
-			spent_attribute_points_aut += 1
-			attribute -= 1
-			authority += attribute_increase_factor
-		elif spent_attribute_points_aut < 10:
-			spent_attribute_points_aut += 1
-			attribute -= 1
-			authority += attribute_increase_factor * 0.5
-		elif spent_attribute_points_aut < 15:
-			spent_attribute_points_aut += 1
-			attribute -= 1
-			authority += attribute_increase_factor * 0.2
-		elif spent_attribute_points_aut < 20:
-			spent_attribute_points_aut += 1
-			attribute -= 1
-			authority += attribute_increase_factor * 0.1
-		elif spent_attribute_points_aut < 25:
-			spent_attribute_points_aut += 1
-			attribute -= 1
-			authority += attribute_increase_factor * 0.05
-		else:
-			spent_attribute_points_aut += 1
-			attribute -= 1
-			authority += attribute_increase_factor * 0.01
+	var result: Array = increaseAttribute(spent_attribute_points_aut,authority)
+	spent_attribute_points_aut = result[0]
+	authority = result[1]
+	print(spent_attribute_points_aut)
 func minusAut():
-	if authority > 0.05:
-		spent_attribute_points_aut -= 1
-		attribute += 1
-		if spent_attribute_points_aut < 5:
-			authority -= attribute_increase_factor
-		elif spent_attribute_points_aut < 10:
-			authority -= attribute_increase_factor * 0.5
-		elif spent_attribute_points_aut < 15:
-			authority -= attribute_increase_factor * 0.2
-		elif spent_attribute_points_aut < 20:
-			authority -= attribute_increase_factor * 0.1
-		elif spent_attribute_points_aut < 25:
-			authority -= attribute_increase_factor * 0.05
-		else:
-			authority -= attribute_increase_factor * 0.01
+	var result: Array = decreaseAttribute(spent_attribute_points_aut,authority)
+	spent_attribute_points_aut = result[0]
+	authority = result[1]
+	print(spent_attribute_points_aut)
 #Courage 
 func plusCou():
-	if attribute > 0:
-		if spent_attribute_points_cou < 5:
-			spent_attribute_points_cou += 1
-			attribute -= 1
-			courage += attribute_increase_factor
-		elif spent_attribute_points_cou < 10:
-			spent_attribute_points_cou += 1
-			attribute -= 1
-			courage += attribute_increase_factor * 0.5
-		elif spent_attribute_points_cou < 15:
-			spent_attribute_points_cou += 1
-			attribute -= 1
-			courage += attribute_increase_factor * 0.2
-		elif spent_attribute_points_cou < 20:
-			spent_attribute_points_cou += 1
-			attribute -= 1
-			courage += attribute_increase_factor * 0.1
-		elif spent_attribute_points_cou < 25:
-			spent_attribute_points_cou += 1
-			attribute -= 1
-			courage += attribute_increase_factor * 0.05
-		else:
-			spent_attribute_points_cou += 1
-			attribute -= 1
-			courage += attribute_increase_factor * 0.01
+	var result: Array = increaseAttribute(spent_attribute_points_cou, courage)
+	spent_attribute_points_cou = result[0]
+	courage = result[1]
+	print(spent_attribute_points_cou)
 func minusCou():
-	if courage > 0.05:
-		spent_attribute_points_cou -= 1
-		attribute += 1
-		if spent_attribute_points_cou < 5:
-			courage -= attribute_increase_factor
-		elif spent_attribute_points_cou < 10:
-			courage -= attribute_increase_factor * 0.5
-		elif spent_attribute_points_cou < 15:
-			courage -= attribute_increase_factor * 0.2
-		elif spent_attribute_points_cou < 20:
-			courage -= attribute_increase_factor * 0.1
-		elif spent_attribute_points_cou < 25:
-			courage -= attribute_increase_factor * 0.05
-		else:
-			courage -= attribute_increase_factor * 0.01
+	var result: Array = decreaseAttribute(spent_attribute_points_cou, courage)
+	spent_attribute_points_cou = result[0]
+	courage = result[1]
+	print(spent_attribute_points_cou)
 #Loyalty
 func plusLoy():
-	if attribute > 0:
-		if spent_attribute_points_loy < 5:
-			spent_attribute_points_loy += 1
-			attribute -= 1
-			loyalty += attribute_increase_factor
-		elif spent_attribute_points_loy < 10:
-			spent_attribute_points_loy += 1
-			attribute -= 1
-			loyalty += attribute_increase_factor * 0.5
-		elif spent_attribute_points_loy < 15:
-			spent_attribute_points_loy += 1
-			attribute -= 1
-			loyalty += attribute_increase_factor * 0.2
-		elif spent_attribute_points_loy < 20:
-			spent_attribute_points_loy += 1
-			attribute -= 1
-			loyalty += attribute_increase_factor * 0.1
-		elif spent_attribute_points_loy < 25:
-			spent_attribute_points_loy += 1
-			attribute -= 1
-			loyalty += attribute_increase_factor * 0.05
-		else:
-			spent_attribute_points_loy += 1
-			attribute -= 1
-			loyalty += attribute_increase_factor * 0.01
+	var result: Array = increaseAttribute(spent_attribute_points_loy, loyalty)
+	spent_attribute_points_loy = result[0]
+	loyalty = result[1]
+	print(spent_attribute_points_loy)
 func minusLoy():
-	if loyalty > 0.05:
-		spent_attribute_points_loy -= 1
-		attribute += 1
-		if spent_attribute_points_loy < 5:
-			loyalty -= attribute_increase_factor
-		elif spent_attribute_points_loy < 10:
-			loyalty -= attribute_increase_factor * 0.5
-		elif spent_attribute_points_loy < 15:
-			loyalty -= attribute_increase_factor * 0.2
-		elif spent_attribute_points_loy < 20:
-			loyalty -= attribute_increase_factor * 0.1
-		elif spent_attribute_points_loy < 25:
-			loyalty -= attribute_increase_factor * 0.05
+	var result: Array = decreaseAttribute(spent_attribute_points_loy, loyalty)
+	spent_attribute_points_loy = result[0]
+	loyalty = result[1]
+	print(spent_attribute_points_loy)
+
+
+func increaseAttribute(spent_attribute, x):
+	if attribute > 0:
+		if spent_attribute < 5:
+			spent_attribute += 1
+			attribute -= 1
+			x += attribute_increase_factor
+		elif spent_attribute < 10:
+			spent_attribute += 1
+			attribute -= 1
+			x += attribute_increase_factor * 0.5
+		elif spent_attribute < 15:
+			spent_attribute += 1
+			attribute -= 1
+			x += attribute_increase_factor * 0.2
+		elif spent_attribute < 20:
+			spent_attribute += 1
+			attribute -= 1
+			x += attribute_increase_factor * 0.1
+		elif spent_attribute < 25:
+			spent_attribute += 1
+			attribute -= 1
+			x += attribute_increase_factor * 0.05
 		else:
-			loyalty -= attribute_increase_factor * 0.01
+			spent_attribute += 1
+			attribute -= 1
+			x += attribute_increase_factor * 0.01
+	return [spent_attribute, x]
+			
+func decreaseAttribute(spent_attribute,attribute_name):
+	if attribute_name > 0.05:
+		spent_attribute -= 1
+		attribute += 1
+		if spent_attribute < 5:
+			attribute_name -= attribute_increase_factor
+		elif spent_attribute < 10:
+			attribute_name -= attribute_increase_factor * 0.5
+		elif spent_attribute < 15:
+			attribute_name -= attribute_increase_factor * 0.2
+		elif spent_attribute < 20:
+			attribute_name -= attribute_increase_factor * 0.1
+		elif spent_attribute < 25:
+			attribute_name -= attribute_increase_factor * 0.05
+		else:
+			attribute_name -= attribute_increase_factor * 0.01
+	return [spent_attribute,attribute_name]
 
 
 
@@ -5665,8 +4717,6 @@ func _on_pressme_pressed():
 	nefis += 25
 	resolve = 5 
 	
-
-
 func _on_pressme2_pressed():
 	slash_resistance = rng.randi_range(-125, 125)
 	pierce_resistance = rng.randi_range(-125, 125)
