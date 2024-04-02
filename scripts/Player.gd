@@ -749,7 +749,7 @@ func skills(slot):
 					necromant.arcaneBlast()
 
 				elif slot.texture.resource_path == autoload.punch.get_path():
-					animation.play("full combo cycle",0.3,melee_atk_speed)
+					animation.play("full combo cycle",0.3,melee_atk_speed +0.15)
 					if can_move == true:
 						horizontal_velocity = direction * 3
 						movement_speed = 3

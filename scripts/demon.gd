@@ -58,12 +58,29 @@ func _on_AggroTimer_timeout():
 						playerAggro.aggro = max(0, playerAggro.aggro - 5)
 func gatherAggroInformation() -> Array:
 	var aggro_info = []  # Array to store player aggro information
+	
 	for playerAggro in targets:
-		var player = playerAggro.player
-		var distance = eyes.global_transform.origin.distance_to(player.global_transform.origin)
-		# Aggro change logic moved to _on_AggroTimer_timeout
-		aggro_info.append(player.entity_name + " ID: " + str(player.get_instance_id()) + " Aggro: " + str(playerAggro.aggro))
+		# Check if playerAggro and player are not null
+		if playerAggro != null and playerAggro.player != null:
+			var player = playerAggro.player
+			var player_name = player.entity_name
+			var player_id = player.get_instance_id()
+
+			# Check if eyes is not null
+			if eyes != null:
+				var distance = eyes.global_transform.origin.distance_to(player.global_transform.origin)
+				
+				# Aggro change logic moved to _on_AggroTimer_timeout
+				aggro_info.append(player_name + " ID: " + str(player_id) + " Aggro: " + str(playerAggro.aggro))
+			else:
+				# Handle case where eyes is null
+				print("Eyes node is null!")
+		else:
+			# Handle case where playerAggro or player is null
+			print("playerAggro or player is null!")
+	
 	return aggro_info
+
 
 
 func getOrCreatePlayerAggro(player: Node) -> PlayerAggro:
