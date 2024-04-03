@@ -4278,20 +4278,16 @@ func minusCha():
 	spent_attribute_points_cha = result[0]
 	charisma = result[1]
 	print(spent_attribute_points_cha)
-#Diplomancy 
-func plusDip():
+func plusDip():#Diplomancy 
 	var result: Array = increaseAttribute(spent_attribute_points_dip,diplomacy)
 	spent_attribute_points_dip = result[0]
 	diplomacy = result[1]
-	print(spent_attribute_points_dip)
-	
+	print(spent_attribute_points_dip)	
 func minusDip():
 	var result: Array = decreaseAttribute(spent_attribute_points_dip,diplomacy)
 	spent_attribute_points_dip = result[0]
 	diplomacy = result[1]
-	print(spent_attribute_points_dip)
-#Authority
-func plusAut():
+func plusAut():#Authority
 	var result: Array = increaseAttribute(spent_attribute_points_aut,authority)
 	spent_attribute_points_aut = result[0]
 	authority = result[1]
@@ -4300,9 +4296,7 @@ func minusAut():
 	var result: Array = decreaseAttribute(spent_attribute_points_aut,authority)
 	spent_attribute_points_aut = result[0]
 	authority = result[1]
-	print(spent_attribute_points_aut)
-#Courage 
-func plusCou():
+func plusCou():#Courage 
 	var result: Array = increaseAttribute(spent_attribute_points_cou, courage)
 	spent_attribute_points_cou = result[0]
 	courage = result[1]
@@ -4372,23 +4366,14 @@ func decreaseAttribute(spent_attribute,attribute_name):
 	return [spent_attribute,attribute_name]
 
 
-
-
 onready var critical_chance_val = $UI/GUI/Equipment/EquipmentBG/CombatStats/GridContainer/CritChanceValue
 onready var critical_str_val = $UI/GUI/Equipment/EquipmentBG/CombatStats/GridContainer/CritDamageValue
-
-
-
-
 
 func updateAllStats():
 	updateAefisNefis()
 
 	updateScaleRelatedAttributes()
 	updateCritical()
-
-
-
 
 #___________________________________________Save data system________________________________________
 var entity_name: String = "dai"
@@ -4399,7 +4384,6 @@ func savePlayerData():
 		"position": translation,
 		"camera.translation.y" : camera.translation.y,
 		"camera.translation.z" : camera.translation.z,
-
 		
 		"health": health,
 		"max_health": max_health,
@@ -4498,9 +4482,7 @@ func savePlayerData():
 		"authority": authority,
 		"courage": courage,
 		
-		
-		
-		"wraith":necromant.summoned_demons,
+
 		
 
 		}
@@ -4620,8 +4602,6 @@ func loadPlayerData():
 				spent_attribute_points_fle = player_data["spent_attribute_points_fle"]
 			if "spent_attribute_points_def" in player_data:
 				spent_attribute_points_def = player_data["spent_attribute_points_def"]
-
-
 #Brute attributes
 			if "force" in player_data:
 				force = player_data["force"]
@@ -4689,9 +4669,6 @@ func loadPlayerData():
 				authority = player_data["authority"]
 			if "courage" in player_data:
 				courage = player_data["courage"]
-			
-	
-
 			if "vitality" in player_data:
 				vitality = player_data["vitality"]
 
@@ -4706,10 +4683,6 @@ func loadPlayerData():
 
 			if "max_water" in player_data:
 				max_water = player_data["max_water"]
-#			if "effects" in player_data:
-#				effects = player_data["effects"]
-			if "wraith" in player_data:
-				necromant.summoned_demons = player_data["wraith"]
 func _on_pressme_pressed():
 	health = 5
 	breath = 5
