@@ -271,140 +271,154 @@ var last_arcane_blast_time: float = 0.0
 var arcane_blast_cost: float = 0
 var vertical_spawn_offset: float = 0.8
 var forward_offset: float = 1
+var aiming_mode: String = "camera"
+var damage: float = 20
 func arcaneBlast():
 	var current_time: float = OS.get_ticks_msec() / 1000.0
 	if player.get_parent().nefis >= arcane_blast_cost:
-		var camera: Camera = $"../../../../../Camroot/h/v/Camera"
-		var player_global_transform: Transform = player.global_transform
-		var player_forward: Vector3 = player_global_transform.basis.z.normalized()
-		var shoot_position: Vector3 = player.global_transform.origin
-		shoot_position += player_forward * forward_offset
-		shoot_position.y += vertical_spawn_offset
-
-		var player_direction = player.get_parent().direction
-		var arcane_blast_instance: KinematicBody
-		var camera_transform: Transform = camera.global_transform
-
-		# Get the rotation degrees on the x-axis of the camera
-		var camera_rotation_x: float = camera_transform.basis.get_euler().x
-
-		# Calculate the strength factor based on the rotation of the camera
-		var strength_factor: float = 1.0
-		if camera_rotation_x > 0:
-			strength_factor = 1.8
-		else:
-			strength_factor = 0.9
-
-		# Calculate the modified direction using the rotation of the camera
-		var modified_direction: Vector3 = player_direction + Vector3.UP * camera_rotation_x * strength_factor
-
-		# Shoot the first bullet straight ahead from shoot_spawn_point
-		arcane_blast_instance = arcane_blast.instance()
-		arcane_blast_instance.direction = modified_direction.normalized()
-		arcane_blast_instance.instigator = player.get_parent()
-		arcane_blast_instance.summoner = player.get_parent()
-		arcane_blast_instance.damage = 0 # placeholder
-		arcane_blast_instance.global_transform.origin = shoot_position
-		get_tree().current_scene.add_child(arcane_blast_instance)
-
-
-		# Calculate the rotation of the player in the world
-		var player_rotation = player_global_transform.basis.get_euler()
-
-		# Calculate spawn positions for diagonally shot bullets relative to shoot_spawn_point
-		var spawn_position2: Vector3 = shoot_position + player_forward.rotated(Vector3.UP, deg2rad(-30)).normalized() * 2
-		var spawn_position3: Vector3 = shoot_position + player_forward.rotated(Vector3.UP, deg2rad(30)).normalized() * 2
-
-		# Adjust spawn positions vertically based on the camera's rotation
-		spawn_position2 += Vector3.UP * camera_rotation_x * strength_factor
-		spawn_position3 += Vector3.UP * camera_rotation_x * strength_factor
-
-		# Shoot the second bullet diagonally to the right
-		arcane_blast_instance = arcane_blast.instance()
-		arcane_blast_instance.direction = (spawn_position2 - shoot_position).normalized()
-		arcane_blast_instance.instigator = player.get_parent()
-		arcane_blast_instance.summoner = player.get_parent()
-		arcane_blast_instance.damage = 0 # placeholder
-		arcane_blast_instance.global_transform.origin = spawn_position2
-		get_tree().current_scene.add_child(arcane_blast_instance)
-
-		# Shoot the third bullet diagonally to the left
-		arcane_blast_instance = arcane_blast.instance()
-		arcane_blast_instance.direction = (spawn_position3 - shoot_position).normalized()
-		arcane_blast_instance.instigator = player.get_parent()
-		arcane_blast_instance.summoner = player.get_parent()
-		arcane_blast_instance.damage = 0 # placeholder
-		arcane_blast_instance.global_transform.origin = spawn_position3
-		get_tree().current_scene.add_child(arcane_blast_instance)
-
 		# Deduct the resource (nefis) of the player
 		player.get_parent().nefis -= arcane_blast_cost
+		match aiming_mode:
+			"directional":
+				var camera: Camera = $"../../../../../Camroot/h/v/Camera"
+				var player_global_transform: Transform = player.global_transform
+				var player_forward: Vector3 = player_global_transform.basis.z.normalized()
+				var shoot_position: Vector3 = player.global_transform.origin
+				shoot_position += player_forward * forward_offset
+				shoot_position.y += vertical_spawn_offset
+				var player_direction = player.get_parent().direction
+				var arcane_blast_instance: KinematicBody
+				var camera_transform: Transform = camera.global_transform
+				# Get the rotation degrees on the x-axis of the camera
+				var camera_rotation_x: float = camera_transform.basis.get_euler().x
+				# Calculate the strength factor based on the rotation of the camera
+				var strength_factor: float = 1.0
+				if camera_rotation_x > 0:
+					strength_factor = 2
+				else:
+					strength_factor = 0.9
+				# Calculate the modified direction using the rotation of the camera
+				var modified_direction: Vector3 = player_direction + Vector3.UP * camera_rotation_x * strength_factor
+				# Shoot the first bullet straight ahead from shoot_spawn_point
+				arcane_blast_instance = arcane_blast.instance()
+				arcane_blast_instance.direction = modified_direction.normalized()
+				arcane_blast_instance.instigator = player.get_parent()
+				arcane_blast_instance.summoner = player.get_parent()
+				arcane_blast_instance.damage = damage
+				arcane_blast_instance.global_transform.origin = shoot_position
+				get_tree().current_scene.add_child(arcane_blast_instance)
+				# Calculate the rotation of the player in the world
+				var player_rotation = player_global_transform.basis.get_euler()
+				# Calculate spawn positions for diagonally shot bullets relative to shoot_spawn_point
+				var spawn_position2: Vector3 = shoot_position + player_forward.rotated(Vector3.UP, deg2rad(-30)).normalized() * 2
+				var spawn_position3: Vector3 = shoot_position + player_forward.rotated(Vector3.UP, deg2rad(30)).normalized() * 2
+				# Adjust spawn positions vertically based on the camera's rotation
+				spawn_position2 += Vector3.UP * camera_rotation_x * strength_factor
+				spawn_position3 += Vector3.UP * camera_rotation_x * strength_factor
+				# Shoot the second bullet diagonally to the right
+				arcane_blast_instance = arcane_blast.instance()
+				arcane_blast_instance.direction = (spawn_position2 - shoot_position).normalized()
+				arcane_blast_instance.instigator = player.get_parent()
+				arcane_blast_instance.summoner = player.get_parent()
+				arcane_blast_instance.damage = damage
+				arcane_blast_instance.global_transform.origin = spawn_position2
+				get_tree().current_scene.add_child(arcane_blast_instance)
+				# Shoot the third bullet diagonally to the left
+				arcane_blast_instance = arcane_blast.instance()
+				arcane_blast_instance.direction = (spawn_position3 - shoot_position).normalized()
+				arcane_blast_instance.instigator = player.get_parent()
+				arcane_blast_instance.summoner = player.get_parent()
+				arcane_blast_instance.damage = damage
+				arcane_blast_instance.global_transform.origin = spawn_position3
+				get_tree().current_scene.add_child(arcane_blast_instance)
+			"camera reverse":
+				var camera: Camera = $"../../../../../Camroot/h/v/Camera"
+				var player_global_transform: Transform = player.global_transform
+				var camera_global_transform: Transform = camera.global_transform
+				var shoot_position: Vector3 = player.global_transform.origin
+				shoot_position.y += vertical_spawn_offset
+				var player_direction = player.get_parent().direction
+				var arcane_blast_instance: KinematicBody
+				var camera_forward: Vector3 = camera_global_transform.basis.z.normalized()
+				var camera_up: Vector3 = camera_global_transform.basis.y.normalized()
+				var camera_right: Vector3 = camera_global_transform.basis.x.normalized()
 
+				# Shoot the first bullet towards where the camera is looking at
+				arcane_blast_instance = arcane_blast.instance()
+				arcane_blast_instance.direction = camera_forward
+				arcane_blast_instance.instigator = player.get_parent()
+				arcane_blast_instance.summoner = player.get_parent()
+				arcane_blast_instance.damage = damage
+				arcane_blast_instance.global_transform.origin = shoot_position
+				get_tree().current_scene.add_child(arcane_blast_instance)
 
-#func arcaneBlast():
-#	var current_time: float = OS.get_ticks_msec() / 1000.0
-#	if player.get_parent().nefis >= 0.5:
-#		var camera: Camera = $"../../../../../Camroot/h/v/Camera"
-#		var player_global_transform: Transform = player.global_transform
-#		var player_forward: Vector3 = player_global_transform.basis.z.normalized()
-#		var shoot_position: Vector3 = shoot_spawn_point.global_transform.origin  # Use shoot_spawn_point as the reference position
-#		var player_direction = player.get_parent().direction
-#		var arcane_blast_instance: KinematicBody
-#		var camera_transform: Transform = camera.global_transform
-#
-#		# Get the rotation degrees on the x-axis of the camera
-#		var camera_rotation_x: float = camera_transform.basis.get_euler().x
-#
-#		# Calculate the strength factor based on the rotation of the camera
-#		var strength_factor: float = 1.0
-#		if camera_rotation_x > 0:
-#			strength_factor = 1.8
-#		else:
-#			strength_factor = 0.9
-#
-#		# Calculate the modified direction using the rotation of the camera
-#		var modified_direction: Vector3 = player_direction + Vector3.UP * camera_rotation_x * strength_factor
-#
-#		# Shoot the first bullet straight ahead from shoot_spawn_point
-#		arcane_blast_instance = arcane_blast.instance()
-#		arcane_blast_instance.direction = modified_direction.normalized()
-#		arcane_blast_instance.instigator = player.get_parent()
-#		arcane_blast_instance.summoner = player.get_parent()
-#		arcane_blast_instance.damage = 0 # placeholder
-#		arcane_blast_instance.global_transform.origin = shoot_position
-#		get_tree().current_scene.add_child(arcane_blast_instance)
-#
-#		# Deduct the resource (nefis) of the player
-#		player.get_parent().nefis -= 0.5
-#
-#		# Calculate the rotation of the player in the world
-#		var player_rotation = player_global_transform.basis.get_euler()
-#
-#		# Calculate spawn positions for diagonally shot bullets relative to shoot_spawn_point
-#		var spawn_position2: Vector3 = shoot_position + player_forward.rotated(Vector3.UP, deg2rad(-30)).normalized() * 2
-#		var spawn_position3: Vector3 = shoot_position + player_forward.rotated(Vector3.UP, deg2rad(30)).normalized() * 2
-#
-#		# Shoot the second bullet diagonally to the right
-#		arcane_blast_instance = arcane_blast.instance()
-#		arcane_blast_instance.direction = (spawn_position2 - shoot_position).normalized()
-#		arcane_blast_instance.instigator = player.get_parent()
-#		arcane_blast_instance.summoner = player.get_parent()
-#		arcane_blast_instance.damage = 0 # placeholder
-#		arcane_blast_instance.global_transform.origin = spawn_position2
-#		get_tree().current_scene.add_child(arcane_blast_instance)
-#
-#		# Shoot the third bullet diagonally to the left
-#		arcane_blast_instance = arcane_blast.instance()
-#		arcane_blast_instance.direction = (spawn_position3 - shoot_position).normalized()
-#		arcane_blast_instance.instigator = player.get_parent()
-#		arcane_blast_instance.summoner = player.get_parent()
-#		arcane_blast_instance.damage = 0 # placeholder
-#		arcane_blast_instance.global_transform.origin = spawn_position3
-#		get_tree().current_scene.add_child(arcane_blast_instance)
-#
+				# Calculate spawn positions for diagonally shot bullets relative to shoot_position
+				var spawn_position2: Vector3 = shoot_position + camera_right * forward_offset
+				var spawn_position3: Vector3 = shoot_position - camera_right * forward_offset
 
-# Assuming the camera's vertical rotation is around the x-axis
+				# Shoot the second bullet diagonally to the right
+				arcane_blast_instance = arcane_blast.instance()
+				arcane_blast_instance.direction = (spawn_position2 - shoot_position).normalized()
+				arcane_blast_instance.instigator = player.get_parent()
+				arcane_blast_instance.summoner = player.get_parent()
+				arcane_blast_instance.damage = damage
+				arcane_blast_instance.global_transform.origin = spawn_position2
+				get_tree().current_scene.add_child(arcane_blast_instance)
 
+				# Shoot the third bullet diagonally to the left
+				arcane_blast_instance = arcane_blast.instance()
+				arcane_blast_instance.direction = (spawn_position3 - shoot_position).normalized()
+				arcane_blast_instance.instigator = player.get_parent()
+				arcane_blast_instance.summoner = player.get_parent()
+				arcane_blast_instance.damage = damage
+				arcane_blast_instance.global_transform.origin = spawn_position3
+				get_tree().current_scene.add_child(arcane_blast_instance)
+			"camera":
+				var camera: Camera = $"../../../../../Camroot/h/v/Camera"
+				var player_global_transform: Transform = player.global_transform
+				var camera_global_transform: Transform = camera.global_transform
+				var shoot_position: Vector3 = player.global_transform.origin
+				shoot_position.y += vertical_spawn_offset
+				var player_direction = player.get_parent().direction
+				var arcane_blast_instance: KinematicBody
+				var camera_forward: Vector3 = -camera_global_transform.basis.z.normalized() # Invert the direction
+				var camera_right: Vector3 = camera_global_transform.basis.x.normalized()
+
+				# Shoot the first bullet towards where the camera is looking at
+				arcane_blast_instance = arcane_blast.instance()
+				arcane_blast_instance.direction = camera_forward
+				arcane_blast_instance.instigator = player.get_parent()
+				arcane_blast_instance.summoner = player.get_parent()
+				arcane_blast_instance.damage = damage
+				arcane_blast_instance.global_transform.origin = shoot_position
+				get_tree().current_scene.add_child(arcane_blast_instance)
+
+				# Calculate spawn positions for diagonally shot bullets relative to shoot_position
+				var spawn_position2: Vector3 = shoot_position + camera_right * (forward_offset / 4) # Further reduce the offset
+				var spawn_position3: Vector3 = shoot_position - camera_right * (forward_offset / 4) # Further reduce the offset
+
+				# Calculate directions for the second and third bullets with opposite and reduced offset
+				var deviation_angle: float = 0 
+				var deviation_left: Vector3 = -camera_right.rotated(Vector3.UP, deg2rad(0))  # No deviation
+				var deviation_right: Vector3 = camera_right.rotated(Vector3.UP, deg2rad(0))  # No deviation
+
+				# Shoot the second bullet towards where the camera is looking at, deviated slightly to the left
+				arcane_blast_instance = arcane_blast.instance()
+				arcane_blast_instance.direction = (camera_forward + deviation_left).normalized()
+				arcane_blast_instance.instigator = player.get_parent()
+				arcane_blast_instance.summoner = player.get_parent()
+				arcane_blast_instance.damage = damage
+				arcane_blast_instance.global_transform.origin = spawn_position2
+				get_tree().current_scene.add_child(arcane_blast_instance)
+
+				# Shoot the third bullet towards where the camera is looking at, deviated slightly to the right
+				arcane_blast_instance = arcane_blast.instance()
+				arcane_blast_instance.direction = (camera_forward + deviation_right).normalized()
+				arcane_blast_instance.instigator = player.get_parent()
+				arcane_blast_instance.summoner = player.get_parent()
+				arcane_blast_instance.damage = damage
+				arcane_blast_instance.global_transform.origin = spawn_position3
+				get_tree().current_scene.add_child(arcane_blast_instance)
 
 
 
@@ -417,22 +431,4 @@ func switchStance():
 		necro_switch = !necro_switch
 		last_necro_switch_time = current_time
 
-#func arcaneBlast():
-#	var current_time: float = OS.get_ticks_msec() / 1000.0
-#	if current_time - last_arcane_blast_time >= arcane_blast_cooldown:
-#		var camera: Camera = $"../../../../../Camroot/h/v/Camera"
-#		var player_global_transform: Transform = player.global_transform
-#		var player_forward: Vector3 = player_global_transform.basis.z.normalized()
-#		var spawn_position: Vector3 = player_global_transform.origin + player_forward * 1
-#		var player_direction = player.get_parent().direction # Assuming direction is a property of the player's parent node
-#		var arcane_blast_instance: KinematicBody = arcane_blast.instance()
-#		var camera_transform: Transform = camera.global_transform
-#		var camera_forward_y: float = -camera_transform.basis.z.normalized().y
-#		var modified_direction: Vector3 = player_direction + Vector3.UP * camera_forward_y
-#		arcane_blast_instance.direction = modified_direction.normalized()
-#		spawn_position.y = max(spawn_position.y + 1, player_global_transform.origin.y)
-#		arcane_blast_instance.instigator =  player.get_parent()
-#		arcane_blast_instance.summoner =  player.get_parent()
-#		arcane_blast_instance.global_transform.origin = spawn_position
-#		get_tree().current_scene.add_child(arcane_blast_instance)
-#		last_arcane_blast_time = current_time
+
