@@ -1,8 +1,7 @@
 extends TextureButton
 
 var DRAG_PREVIEW = preload("res://Sprite.tscn")
-onready var icon = $Icon
-onready var quantity_label = $Quantity
+
 
 var quantity = 0
 var item = "null"

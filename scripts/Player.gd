@@ -30,9 +30,7 @@ func _ready():
 	SwitchEquipmentBasedOnEquipmentIcons()
 	direction = Vector3.BACK.rotated(Vector3.UP, $Camroot/h.global_transform.basis.get_euler().y)
 func _on_SlowTimer_timeout():
-	
 	allResourcesBarsAndLabels()
-	showEnemyStats()
 	potionEffects()
 	switchHead()
 	switchTorso()
@@ -51,17 +49,10 @@ func _on_SlowTimer_timeout():
 	showStatusIcon()	
 	displayLabels()
 	regenStats()
-	
-
-	
-
 func _on_3FPS_timeout():
 	$UI/GUI/Equipment/Attributes/AttributePoints.text = "Attributes points left: " + str(attribute)
-# Calculate the sum of all spent attribute points
 	var total_spent_attribute_points = spent_attribute_points_san + spent_attribute_points_wis + spent_attribute_points_mem + spent_attribute_points_int + spent_attribute_points_ins +spent_attribute_points_for + spent_attribute_points_str + spent_attribute_points_fur + spent_attribute_points_imp + spent_attribute_points_fer + spent_attribute_points_foc + spent_attribute_points_bal + spent_attribute_points_dex + spent_attribute_points_acc + spent_attribute_points_poi +spent_attribute_points_has + spent_attribute_points_agi + spent_attribute_points_cel + spent_attribute_points_fle + spent_attribute_points_def + spent_attribute_points_end + spent_attribute_points_sta + spent_attribute_points_vit + spent_attribute_points_res + spent_attribute_points_ten + spent_attribute_points_cha + spent_attribute_points_loy + spent_attribute_points_dip + spent_attribute_points_aut + spent_attribute_points_cou
-	# Update the text in the UI/GUI
 	$UI/GUI/Equipment/Attributes/AttributeSpent.text = "Attributes points Spent: " + str(total_spent_attribute_points)
-
 	crafting()
 	displayResources(hp_bar,hp_label,health,max_health,"HP")
 	curtainsDown()
@@ -90,7 +81,7 @@ func _physics_process(delta: float) -> void:
 	dodgeRight(delta)
 	fullscreen()
 
-	#showEnemyStats()
+	showEnemyStats()
 	matchAnimationStates()
 	animations()
 	attack()
@@ -1290,7 +1281,7 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
 	if animation_state == "guard":
 		parryIcon()
 		health -= (damage_to_take / guard_dmg_absorbition)
-		text.amount = ((damage_to_take / guard_dmg_absorbition) * 100)/ 100
+		text.amount = round((damage_to_take / guard_dmg_absorbition) * 100)/ 100
 		text.status = "Guarded"
 		text.state = damage_type
 	else:
@@ -1692,7 +1683,7 @@ func compareIconsShowToolTips(icon_texture,instance):
 		if icon_texture.get_path() == autoload.arcane_blast.get_path():
 			callToolTip(instance, "Arcane Blast", "base damage: 15        nefis cost: " + str(necromant.arcane_blast_cost) + "\nbonus damage: +10% maximum nefis\ndeals acid damage from the flanks and toxic damage from the front")
 		elif icon_texture.get_path() == autoload.base_attack_necromant.get_path():
-			callToolTip(instance, "base_attack_necromant", "placeholder")
+			callToolTip(instance, "base_attack_necromant", "damage")
 		#consumablaes
 		elif icon_texture.get_path() == autoload.red_potion.get_path():
 			callToolTip(instance, "Red Potion", "+100 kcals +250 grams of water.\nHeals by 100 health instantly then by 10 every second, drinking more potions stacks the duration")

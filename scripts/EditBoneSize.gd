@@ -23,3 +23,6 @@ func _on_smallhead_pressed():
 func _on_resethead_pressed():
 	scale = 1
 	skeleton.set_bone_rest(head_index, head_default_transform)#reset bone scale to default
+
+
+

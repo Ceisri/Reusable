@@ -51,14 +51,12 @@ func _on_AggroTimer_timeout():
 				var distance = eyes.global_transform.origin.distance_to(playerAggro.player.global_transform.origin)
 				if distance != null and playerAggro.aggro != null:
 					var aggro_change = calculateAggroChange(distance, playerAggro.aggro)
-
 					if distance <= aggro_gain_radius:
 						playerAggro.aggro += aggro_change
 					else:
 						playerAggro.aggro = max(0, playerAggro.aggro - 5)
 func gatherAggroInformation() -> Array:
 	var aggro_info = []  # Array to store player aggro information
-	
 	for playerAggro in targets:
 		# Check if playerAggro and player are not null
 		if playerAggro != null and playerAggro.player != null:
@@ -80,7 +78,6 @@ func gatherAggroInformation() -> Array:
 			print("playerAggro or player is null!")
 	
 	return aggro_info
-
 
 
 func getOrCreatePlayerAggro(player: Node) -> PlayerAggro:
@@ -318,7 +315,6 @@ func getKilled(instigator):
 	var instigatorAggro = getOrCreatePlayerAggro(instigator)
 	if instigator.has_method("receiveExperience"):
 		instigator.receiveExperience(150)
-
 func roundToTwoDecimals(number):
 	return round(number * 100.0) / 100.0
 func is_moving() -> bool:
@@ -335,6 +331,8 @@ func dashSpeed():
 func normalSpeed():
 	pass
 var blend = 0.3
+
+			
 func animations(target: PlayerAggro):
 	var animation = $AnimationPlayer
 	if staggered == 0:
@@ -380,30 +378,13 @@ func teleportBehindPlayer():
 			var mesh_basis = mesh.global_transform.basis
 			var teleport_position = target.player.global_transform.origin - mesh_basis.z * 5.0
 			global_transform.origin = teleport_position
-func pushPlayerBackNULL():
-	var target = findTargetWithHighestAggro()
-	#var player_mesh = target.player.find_node("Mesh")  # Assuming "Mesh" is a direct child of the player
-	var player_camera = target.player.find_node("Camera")  # Assuming "Camera" is a direct child of the player
-	if player_camera:
-		var camera_transform = player_camera.global_transform
-		var camera_forward = -camera_transform.basis.z.normalized()
-		# Move the player backward (adjust the distance as needed)
-		var push_distance = 35
-		var movement = camera_forward * push_distance
-		target.player.move_and_slide(movement)
-		
-		
-		
-		
 onready var health_bar = $Viewport/HPbar
 func updateStats():
 	health_bar.value = health
 	health_bar.max_value = max_health
-	
 #stats______________________________________________________________________________________________
 var entity_name = "Demon"
 var level: int = 100
-
 
 const base_weight = 60
 var weight = 60
@@ -626,32 +607,32 @@ var total_courage: float = 0
 
 func slash():
 	var rand_num = randi() % 12  # Generate a random number between 0 and 11
-	var damage_type: String = ""
+	var damage_type: String = "slash"
 
-	if rand_num == 0:
-		damage_type = "slash"
-	elif rand_num == 1:
-		damage_type = "blunt"
-	elif rand_num == 2:
-		damage_type = "pierce"
-	elif rand_num == 3:
-		damage_type = "sonic"
-	elif rand_num == 4:
-		damage_type = "heat"
-	elif rand_num == 5:
-		damage_type = "cold"
-	elif rand_num == 6:
-		damage_type = "jolt"
-	elif rand_num == 7:
-		damage_type = "toxic"
-	elif rand_num == 8:
-		damage_type = "acid"
-	elif rand_num == 9:
-		damage_type = "bleed"
-	elif rand_num == 10:
-		damage_type = "neuro"
-	else:
-		damage_type = "radiant"
+#	if rand_num == 0:
+#		damage_type = "slash"
+#	elif rand_num == 1:
+#		damage_type = "blunt"
+#	elif rand_num == 2:
+#		damage_type = "pierce"
+#	elif rand_num == 3:
+#		damage_type = "sonic"
+#	elif rand_num == 4:
+#		damage_type = "heat"
+#	elif rand_num == 5:
+#		damage_type = "cold"
+#	elif rand_num == 6:
+#		damage_type = "jolt"
+#	elif rand_num == 7:
+#		damage_type = "toxic"
+#	elif rand_num == 8:
+#		damage_type = "acid"
+#	elif rand_num == 9:
+#		damage_type = "bleed"
+#	elif rand_num == 10:
+#		damage_type = "neuro"
+#	else:
+#		damage_type = "radiant"
 
 	var damage = 15
 	var aggro_power = damage + 20
