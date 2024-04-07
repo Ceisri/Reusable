@@ -30,7 +30,9 @@ func _ready():
 	SwitchEquipmentBasedOnEquipmentIcons()
 	direction = Vector3.BACK.rotated(Vector3.UP, $Camroot/h.global_transform.basis.get_euler().y)
 func _on_SlowTimer_timeout():
+	
 	allResourcesBarsAndLabels()
+	showEnemyStats()
 	potionEffects()
 	switchHead()
 	switchTorso()
@@ -49,10 +51,17 @@ func _on_SlowTimer_timeout():
 	showStatusIcon()	
 	displayLabels()
 	regenStats()
+	
+
+	
+
 func _on_3FPS_timeout():
 	$UI/GUI/Equipment/Attributes/AttributePoints.text = "Attributes points left: " + str(attribute)
+# Calculate the sum of all spent attribute points
 	var total_spent_attribute_points = spent_attribute_points_san + spent_attribute_points_wis + spent_attribute_points_mem + spent_attribute_points_int + spent_attribute_points_ins +spent_attribute_points_for + spent_attribute_points_str + spent_attribute_points_fur + spent_attribute_points_imp + spent_attribute_points_fer + spent_attribute_points_foc + spent_attribute_points_bal + spent_attribute_points_dex + spent_attribute_points_acc + spent_attribute_points_poi +spent_attribute_points_has + spent_attribute_points_agi + spent_attribute_points_cel + spent_attribute_points_fle + spent_attribute_points_def + spent_attribute_points_end + spent_attribute_points_sta + spent_attribute_points_vit + spent_attribute_points_res + spent_attribute_points_ten + spent_attribute_points_cha + spent_attribute_points_loy + spent_attribute_points_dip + spent_attribute_points_aut + spent_attribute_points_cou
+	# Update the text in the UI/GUI
 	$UI/GUI/Equipment/Attributes/AttributeSpent.text = "Attributes points Spent: " + str(total_spent_attribute_points)
+
 	crafting()
 	displayResources(hp_bar,hp_label,health,max_health,"HP")
 	curtainsDown()
@@ -81,7 +90,7 @@ func _physics_process(delta: float) -> void:
 	dodgeRight(delta)
 	fullscreen()
 
-	showEnemyStats()
+	#showEnemyStats()
 	matchAnimationStates()
 	animations()
 	attack()
@@ -530,7 +539,6 @@ func showEnemyStats():
 			$UI/GUI/EnemyUI/StatusGrid/Icon23,
 			$UI/GUI/EnemyUI/StatusGrid/Icon24
 		)
-
 				if body.is_in_group("Entity") and body != self:
 					# Instantly turn alpha to maximum
 					entity_graphic_interface.modulate.a = 1.0
@@ -558,12 +566,6 @@ func showEnemyStats():
 
 
 
-
-
-
-
-
-
 #______________________________________________Animations___________________________________________
 var weapon_type: String = "fist"
 var animation_state: String = "idle"
@@ -579,6 +581,9 @@ func matchAnimationStates():
 			movement_speed = int(slide_mov_speed)
 		"base attack":
 			var slot = $UI/GUI/SkillBar/GridContainer/LClickSlot/Icon
+			skills(slot)
+		"guard":
+			var slot = $UI/GUI/SkillBar/GridContainer/RClickSlot/Icon
 			skills(slot)
 		"double attack":
 			if weapon_type == "fist":
@@ -613,11 +618,6 @@ func matchAnimationStates():
 			else:
 				horizontal_velocity = direction * 0.01
 				movement_speed = 0
-#__________________________________guarding states______________________________
-		"guard":
-			animation.play("guard",0.3)
-		"guard walk":
-			pass
 #_________________________________walking states________________________________
 		"walk":
 			if is_in_combat:
@@ -720,6 +720,7 @@ func matchAnimationStates():
 onready var necromant = $UI/GUI/SkillTrees/Background/Necromant		
 func skills(slot):
 	var l_click_slot: TextureButton = $UI/GUI/SkillBar/GridContainer/LClickSlot
+	var r_click_slot: TextureButton = $UI/GUI/SkillBar/GridContainer/RClickSlot
 	if slot != null:
 			if slot.texture != null:
 				if slot.texture.resource_path == "res://UI/graphics/SkillIcons/rush.png":
@@ -738,7 +739,6 @@ func skills(slot):
 					necromant.areaSpell()
 				elif slot.texture.resource_path == autoload.arcane_blast.get_path():	
 					necromant.arcaneBlast()
-
 				elif slot.texture.resource_path == autoload.punch.get_path():
 					animation.play("full combo cycle",0.3,melee_atk_speed +0.15)
 					if can_move == true:
@@ -747,12 +747,22 @@ func skills(slot):
 					elif can_move == false:
 						horizontal_velocity = direction * 0
 						movement_speed = 0
+				elif slot.texture.resource_path == autoload.guard.get_path():
+					if !is_walking:
+						animation.play("guard",0.3)
+						jump_animation_duration = 0 
+					else:
+						animation.play("guard",0.3)
+						jump_animation_duration = 0 
+						
 				elif slot.texture.resource_path == autoload.base_attack_necromant.get_path():
 					necromant.baseAttack() # placeholder
+				elif slot.texture.resource_path == autoload.necro_guard.get_path():
+					pass #necromance guard placeholder
 				elif slot.texture.resource_path == autoload.necromant_switch.get_path():
-					necromant.switchStance()
-					# different stances or weapons switches base attacks
+					necromant.switchStance()# different stances or weapons switches base attacks
 					l_click_slot.switchAttackIcon()
+					r_click_slot.switchAttackIcon()
 				
 #consumables________________________________________________________________________________________
 				elif slot.texture.resource_path == autoload.red_potion.get_path():
@@ -1281,7 +1291,7 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
 	if animation_state == "guard":
 		parryIcon()
 		health -= (damage_to_take / guard_dmg_absorbition)
-		text.amount = round((damage_to_take / guard_dmg_absorbition) * 100)/ 100
+		text.amount = ((damage_to_take / guard_dmg_absorbition) * 100)/ 100
 		text.status = "Guarded"
 		text.state = damage_type
 	else:
@@ -1683,7 +1693,7 @@ func compareIconsShowToolTips(icon_texture,instance):
 		if icon_texture.get_path() == autoload.arcane_blast.get_path():
 			callToolTip(instance, "Arcane Blast", "base damage: 15        nefis cost: " + str(necromant.arcane_blast_cost) + "\nbonus damage: +10% maximum nefis\ndeals acid damage from the flanks and toxic damage from the front")
 		elif icon_texture.get_path() == autoload.base_attack_necromant.get_path():
-			callToolTip(instance, "base_attack_necromant", "damage")
+			callToolTip(instance, "base_attack_necromant", "placeholder")
 		#consumablaes
 		elif icon_texture.get_path() == autoload.red_potion.get_path():
 			callToolTip(instance, "Red Potion", "+100 kcals +250 grams of water.\nHeals by 100 health instantly then by 10 every second, drinking more potions stacks the duration")
@@ -4269,16 +4279,20 @@ func minusCha():
 	spent_attribute_points_cha = result[0]
 	charisma = result[1]
 	print(spent_attribute_points_cha)
-func plusDip():#Diplomancy 
+#Diplomancy 
+func plusDip():
 	var result: Array = increaseAttribute(spent_attribute_points_dip,diplomacy)
 	spent_attribute_points_dip = result[0]
 	diplomacy = result[1]
-	print(spent_attribute_points_dip)	
+	print(spent_attribute_points_dip)
+	
 func minusDip():
 	var result: Array = decreaseAttribute(spent_attribute_points_dip,diplomacy)
 	spent_attribute_points_dip = result[0]
 	diplomacy = result[1]
-func plusAut():#Authority
+	print(spent_attribute_points_dip)
+#Authority
+func plusAut():
 	var result: Array = increaseAttribute(spent_attribute_points_aut,authority)
 	spent_attribute_points_aut = result[0]
 	authority = result[1]
@@ -4287,7 +4301,9 @@ func minusAut():
 	var result: Array = decreaseAttribute(spent_attribute_points_aut,authority)
 	spent_attribute_points_aut = result[0]
 	authority = result[1]
-func plusCou():#Courage 
+	print(spent_attribute_points_aut)
+#Courage 
+func plusCou():
 	var result: Array = increaseAttribute(spent_attribute_points_cou, courage)
 	spent_attribute_points_cou = result[0]
 	courage = result[1]
@@ -4357,14 +4373,23 @@ func decreaseAttribute(spent_attribute,attribute_name):
 	return [spent_attribute,attribute_name]
 
 
+
+
 onready var critical_chance_val = $UI/GUI/Equipment/EquipmentBG/CombatStats/GridContainer/CritChanceValue
 onready var critical_str_val = $UI/GUI/Equipment/EquipmentBG/CombatStats/GridContainer/CritDamageValue
+
+
+
+
 
 func updateAllStats():
 	updateAefisNefis()
 
 	updateScaleRelatedAttributes()
 	updateCritical()
+
+
+
 
 #___________________________________________Save data system________________________________________
 var entity_name: String = "dai"
@@ -4375,6 +4400,7 @@ func savePlayerData():
 		"position": translation,
 		"camera.translation.y" : camera.translation.y,
 		"camera.translation.z" : camera.translation.z,
+
 		
 		"health": health,
 		"max_health": max_health,
@@ -4473,7 +4499,9 @@ func savePlayerData():
 		"authority": authority,
 		"courage": courage,
 		
-
+		
+		
+		"wraith":necromant.summoned_demons,
 		
 
 		}
@@ -4593,6 +4621,8 @@ func loadPlayerData():
 				spent_attribute_points_fle = player_data["spent_attribute_points_fle"]
 			if "spent_attribute_points_def" in player_data:
 				spent_attribute_points_def = player_data["spent_attribute_points_def"]
+
+
 #Brute attributes
 			if "force" in player_data:
 				force = player_data["force"]
@@ -4660,6 +4690,9 @@ func loadPlayerData():
 				authority = player_data["authority"]
 			if "courage" in player_data:
 				courage = player_data["courage"]
+			
+	
+
 			if "vitality" in player_data:
 				vitality = player_data["vitality"]
 
@@ -4674,6 +4707,10 @@ func loadPlayerData():
 
 			if "max_water" in player_data:
 				max_water = player_data["max_water"]
+#			if "effects" in player_data:
+#				effects = player_data["effects"]
+			if "wraith" in player_data:
+				necromant.summoned_demons = player_data["wraith"]
 func _on_pressme_pressed():
 	health = 5
 	breath = 5
