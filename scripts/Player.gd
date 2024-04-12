@@ -934,7 +934,8 @@ func stompKickDealDamage():
 	for enemy in enemies:
 		if enemy.is_in_group("enemy"):
 			if enemy.has_method("takeDamage"):
-				enemy.applyEffect(enemy,"bleeding", true)	
+				if enemy.has_method("applyEffect"):
+					enemy.applyEffect(enemy,"bleeding", true)	
 				pushEnemyAway(2, enemy,0.25)
 				if is_on_floor():
 					#insert sound effect here

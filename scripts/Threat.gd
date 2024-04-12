@@ -1,4 +1,4 @@
-extends Spatial
+extends Node
 
 class ThreatManagement:
 	var player : Node
@@ -9,10 +9,6 @@ var speed = 4
 var velocity = Vector3()
 var max_distance = 30.1
 var threat_info
-
-func _physics_process(delta:float) -> void:
-	threat_info = getThreatInfo()
-	displayThreatInfo()
 
 func createFindThreat(player: Node) -> ThreatManagement:
 	for existing_target in targets:
@@ -43,5 +39,3 @@ func getThreatInfo() -> Array:
 	return threat_info
 	
 	
-func displayThreatInfo():
-	$"../Label3D".text = "\n".join(threat_info)

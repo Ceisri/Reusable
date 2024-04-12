@@ -40,7 +40,7 @@ func _on_AggroTimer_timeout():
 	var entities = get_tree().get_nodes_in_group("Enemy")
 	for enemy in entities:
 		if enemy.has_method("takeThreat"):
-			enemy.takeThreat(rand_range(1,30),self)
+			enemy.takeThreat(rand_range(-15,30),self)
 func gatherAggroInformation() -> Array:
 
 	
