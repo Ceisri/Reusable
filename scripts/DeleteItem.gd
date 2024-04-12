@@ -1,18 +1,6 @@
 extends TextureButton
 
 var DRAG_PREVIEW = preload("res://Sprite.tscn")
-onready var icon = $Icon
-onready var quantity_label = $Quantity
-
-var quantity = 0
-var item = "null"
-var type = "item"
-var stackable = true
-var max_quantity = 9999999
-var skill_tree = false
-
-
-
 
 func can_drop_data(position, data):
 

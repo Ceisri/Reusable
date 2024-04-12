@@ -30,9 +30,7 @@ func _ready():
 	SwitchEquipmentBasedOnEquipmentIcons()
 	direction = Vector3.BACK.rotated(Vector3.UP, $Camroot/h.global_transform.basis.get_euler().y)
 func _on_SlowTimer_timeout():
-	
 	allResourcesBarsAndLabels()
-	showEnemyStats()
 	potionEffects()
 	switchHead()
 	switchTorso()
@@ -89,8 +87,7 @@ func _physics_process(delta: float) -> void:
 	dodgeLeft(delta)
 	dodgeRight(delta)
 	fullscreen()
-
-	#showEnemyStats()
+	showEnemyStats()
 	matchAnimationStates()
 	animations()
 	attack()
