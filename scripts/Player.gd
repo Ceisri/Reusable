@@ -87,7 +87,7 @@ func _physics_process(delta: float) -> void:
 	dodgeLeft(delta)
 	dodgeRight(delta)
 	fullscreen()
-	#showEnemyStats()
+	showEnemyStats()
 	matchAnimationStates()
 	animations()
 	attack()
@@ -545,7 +545,8 @@ func showEnemyStats():
 					enemy_energy_bar.value = body.nefis
 					enemy_energy_bar.max_value = body.max_nefis
 					enemy_energy_label.text = "EP:" + str(round(body.nefis* 100) / 100) + "/" + str(body.max_nefis)
-							
+					var threat_label = $UI/GUI/EnemyUI/Threat
+					body.displayThreatInfo(threat_label)
 				else:
 					# Start tween to fade out
 					enemy_ui_tween.interpolate_property(entity_graphic_interface, "modulate:a", entity_graphic_interface.modulate.a, 0.0, fade_duration, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
