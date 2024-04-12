@@ -87,7 +87,7 @@ func _physics_process(delta: float) -> void:
 	dodgeLeft(delta)
 	dodgeRight(delta)
 	fullscreen()
-	showEnemyStats()
+	#showEnemyStats()
 	matchAnimationStates()
 	animations()
 	attack()

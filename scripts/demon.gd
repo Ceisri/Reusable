@@ -2,7 +2,7 @@ extends KinematicBody
 
 onready var tridi_label = $Label3D
 onready var eyes = $Eyes
-onready var players = get_tree().get_nodes_in_group("Player")
+
 const aggro_gain_radius = 20
 const turn_speed = 3
 const aggro_timer_interval = 1  # Set the interval according to your needs

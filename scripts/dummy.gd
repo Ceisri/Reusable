@@ -37,8 +37,16 @@ func _on_AggroTimer_timeout():
 						playerAggro.aggro += aggro_change
 					else:
 						playerAggro.aggro = max(0, playerAggro.aggro - 5)
-
+	var entities = get_tree().get_nodes_in_group("Enemy")
+	for enemy in entities:
+		if enemy.has_method("takeThreat"):
+			enemy.takeThreat(rand_range(1,30),self)
 func gatherAggroInformation() -> Array:
+
+	
+	
+	
+	
 	var aggro_info = []  # Array to store player aggro information
 	for player in players:
 		var distance = eyes.global_transform.origin.distance_to(player.global_transform.origin)
@@ -171,7 +179,7 @@ func updateStats():
 	health_bar.max_value = max_health
 	
 #stats______________________________________________________________________________________________
-var entity_name = "Demon"
+var entity_name = "dummy " 
 #Stats__________________________________________________________________________
 var level: int = 100
 
