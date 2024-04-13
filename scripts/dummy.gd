@@ -19,128 +19,99 @@ var speed = 4
 
 var max_distance = 30.1
 
-func _physics_process(delta):
-	var aggro_info = gatherAggroInformation()
-	var target = findTargetWithHighestAggro()
-	updateStats()
+onready var threat_system = $Threat
 
 
-func _on_AggroTimer_timeout():
-	if targets != null:
-		for playerAggro in targets:
-			if playerAggro != null and playerAggro.player != null:
-				var distance = eyes.global_transform.origin.distance_to(playerAggro.player.global_transform.origin)
-				if distance != null and playerAggro.aggro != null:
-					var aggro_change = calculateAggroChange(distance, playerAggro.aggro)
+func displayThreatInfo(label):
+	threat_system.threat_info = threat_system.getBestFive()
+	label.text = "\n".join(threat_system.threat_info)
 
-					if distance <= aggro_gain_radius:
-						playerAggro.aggro += aggro_change
-					else:
-						playerAggro.aggro = max(0, playerAggro.aggro - 5)
-	var entities = get_tree().get_nodes_in_group("Enemy")
-	for enemy in entities:
-		if enemy.has_method("takeThreat"):
-			enemy.takeThreat(rand_range(-15,30),self)
-func gatherAggroInformation() -> Array:
 
-	
-	
-	
-	
-	var aggro_info = []  # Array to store player aggro information
-	for player in players:
-		var distance = eyes.global_transform.origin.distance_to(player.global_transform.origin)
-		var playerAggro = getOrCreatePlayerAggro(player)
-		# Aggro change logic moved to _on_AggroTimer_timeout
-		aggro_info.append("ID: " + str(player.get_instance_id()) + " Aggro: " + str(playerAggro.aggro))
-	return aggro_info
-func getOrCreatePlayerAggro(player: Node) -> PlayerAggro:
-	for existingTarget in targets:
-		if existingTarget.player == player:
-			return existingTarget
-	var playerAggro = PlayerAggro.new()
-	playerAggro.player = player
-	targets.append(playerAggro)
-	return playerAggro
 
-func findTargetWithHighestAggro() -> PlayerAggro:
-	var highest_aggro = -1
-	var target : PlayerAggro = null
-	for playerAggro in targets:
-		if playerAggro.aggro > highest_aggro:
-			target = playerAggro
-			highest_aggro = playerAggro.aggro
-	return target
+func takeThreat(aggro_power,instigator):
+	var target = threat_system.createFindThreat(instigator)
+	target.threat += aggro_power
 
-func calculateAggroChange(distance, aggro):
-	if distance <= 1:
-		return 6
-	elif distance <= 5:
-		return 5
-	elif distance <= 7:
-		return 4
-	elif distance <= 9:
-		return 3
-	elif distance <= 10:
-		return 2
-	elif distance <= 15:
-		return 1
-	elif distance <= 20:
-		return 0
-	elif distance <= 25:
-		return -1
-	elif distance <= 30:
-		return max(-2, -aggro)
-	else:
-		return max(-50000, -aggro)
 var floatingtext_damage = preload("res://UI/floatingtext.tscn")
 onready var take_damage_audio = $TakeHit
 onready var take_damage_view  = $TakeDamageView/Viewport
 func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
-	take_damage_audio.play()
 	var random = randf()
 	var damage_to_take = damage
-	var instigatorAggro = getOrCreatePlayerAggro(instigator)
+	takeThreat((aggro_power + damage),instigator)
 	var text = floatingtext_damage.instance()
 	if damage_type == "slash":
 		var mitigation = slash_resistance / (slash_resistance + 100.0)
 		damage_to_take *= (1.0 - mitigation)
-		instigator.lifesteal(damage_to_take)
+		if instigator.has_method("lifesteal"):
+			instigator.lifesteal(damage_to_take)
+			
 	elif damage_type == "pierce":
 		var mitigation = pierce_resistance / (pierce_resistance + 100.0)
 		damage_to_take *= (1.0 - mitigation)
-		instigator.lifesteal(damage_to_take)
+		if instigator.has_method("lifesteal"):
+			instigator.lifesteal(damage_to_take)
+			
 	elif damage_type == "blunt":
 		var mitigation = blunt_resistance / (blunt_resistance + 100.0)
 		damage_to_take *= (1.0 - mitigation)
+		if instigator.has_method("lifesteal"):
+			instigator.lifesteal(damage_to_take)
+			
 	elif damage_type == "sonic":
 		var mitigation = sonic_resistance / (sonic_resistance + 100.0)
 		damage_to_take *= (1.0 - mitigation)
+		if instigator.has_method("lifesteal"):
+			instigator.lifesteal(damage_to_take)
+			
 	elif damage_type == "heat":
 		var mitigation = heat_resistance / (heat_resistance + 100.0)
 		damage_to_take *= (1.0 - mitigation)
-		instigator.lifesteal(damage_to_take)
+		if instigator.has_method("lifesteal"):
+			instigator.lifesteal(damage_to_take)
+			
 	elif damage_type == "cold":
 		var mitigation = cold_resistance / (cold_resistance + 100.0)
 		damage_to_take *= (1.0 - mitigation)
+		if instigator.has_method("lifesteal"):
+			instigator.lifesteal(damage_to_take)
+			
 	elif damage_type == "jolt":
 		var mitigation = jolt_resistance / (jolt_resistance + 100.0)
 		damage_to_take *= (1.0 - mitigation)
+		if instigator.has_method("lifesteal"):
+			instigator.lifesteal(damage_to_take)
+		
 	elif damage_type == "toxic":
 		var mitigation = toxic_resistance / (toxic_resistance + 100.0)
 		damage_to_take *= (1.0 - mitigation)
+		if instigator.has_method("lifesteal"):
+			instigator.lifesteal(damage_to_take)
+		
 	elif damage_type == "acid":
 		var mitigation = acid_resistance / (acid_resistance + 100.0)
 		damage_to_take *= (1.0 - mitigation)
+		if instigator.has_method("lifesteal"):
+			instigator.lifesteal(damage_to_take)
+		
 	elif damage_type == "bleed":
 		var mitigation = bleed_resistance / (bleed_resistance + 100.0)
 		damage_to_take *= (1.0 - mitigation)
+		if instigator.has_method("lifesteal"):
+			instigator.lifesteal(damage_to_take)
+		
 	elif damage_type == "neuro":
 		var mitigation = neuro_resistance / (neuro_resistance + 100.0)
 		damage_to_take *= (1.0 - mitigation)
+		if instigator.has_method("lifesteal"):
+			instigator.lifesteal(damage_to_take)
+		
 	elif damage_type == "radiant":
 		var mitigation = radiant_resistance / (radiant_resistance + 100.0)
 		damage_to_take *= (1.0 - mitigation)
+		if instigator.has_method("lifesteal"):
+			instigator.lifesteal(damage_to_take)
+			
 	if random < deflection_chance:
 		damage_to_take = damage_to_take / 2
 		text.status = "Deflected"
@@ -149,26 +120,26 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
 			staggered += 0.5
 			text.status = "Staggered"
 
-	health -= damage_to_take	
-	instigatorAggro.aggro += damage_to_take + aggro_power
+	health -= damage_to_take
 	text.amount =round(damage_to_take * 100)/ 100
 	text.state = damage_type
 	take_damage_view.add_child(text)
-	if health < 0:
-		health += 500
+	if health <= 0:
+		health = 1000
 
 var staggered = 0 #1 equals 0.1seconds
 func _on_Duration_timeout():
 	if staggered >=0:
 		staggered = max(0, staggered - 0.1)
 func getKilled(instigator):
-	var instigatorAggro = getOrCreatePlayerAggro(instigator)
+	var instigatorAggro = threat_system.createFindThreat(instigator)
 	instigator.receiveExperience(150)
-
+	
+	
+	
+	
 func roundToTwoDecimals(number):
 	return round(number * 100.0) / 100.0
-
-
 
 var blend = 0.3
 
@@ -215,9 +186,9 @@ var max_vifis = 100
 var vifis = 100 
 
 #health system 
-const base_max_health = 100
-var max_health = 100
-var health = 100
+const base_max_health = 1000
+var max_health = 1000
+var health = 1000
 #________________________
 
 
@@ -518,3 +489,7 @@ func showStatusIcon(icon1, icon2, icon3, icon4, icon5, icon6, icon7, icon8, icon
 					icon.texture = effect["texture"]
 					icon.modulate = effect["modulation_color"]
 					break  # Exit loop after applying status to the first available icon
+
+
+func _on_AggroTimer_timeout():#used only for testing the threat system
+	autoload.drawGlobalThreat(self)

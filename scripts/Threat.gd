@@ -195,9 +195,6 @@ func getBestFive():
 				pass
 	return threat_info
 
-
-
-	
 func getThreatInfo() -> Array:
 	var threat_info = []  # Array to store player threat information
 	for assailant in targets:

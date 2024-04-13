@@ -71,27 +71,27 @@ func _physics_process(delta: float) -> void:
 	convertStats()
 	ChopTree()
 	limitStatsToMaximum()
-	cameraRotation(delta)
+	cameraRotation()
 	crossHair()
 	crossHairResize()
 	minimapFollow()
 	miniMapVisibility()
-	stiffCamera(delta)
-	walk(delta)
+	stiffCamera()
+	walk()
 	climbing()
-	gravity(delta)
+	autoload.gravity(self)
 	jump()
 	dodgeIframe()
-	dodgeBack(delta)
-	dodgeFront(delta)
-	dodgeLeft(delta)
-	dodgeRight(delta)
+	dodgeBack()
+	dodgeFront()
+	dodgeLeft()
+	dodgeRight()
 	fullscreen()
 	showEnemyStats()
 	matchAnimationStates()
 	animations()
 	attack()
-	doubleAttack(delta)
+	doubleAttack()
 	fallDamage()
 	skillUserInterfaceInputs()
 	addItemToInventory()
@@ -110,7 +110,7 @@ var sprint_speed = 10
 const base_max_sprint_speed = 25
 var max_sprint_speed = 25
 var max_sprint_animation_speed = 2.5
-func walk(delta):
+func walk():
 	h_rot = $Camroot/h.global_transform.basis.get_euler().y
 	movement_speed = 0
 	angular_acceleration = 3.25
@@ -161,9 +161,10 @@ func walk(delta):
 		is_sprinting = false
 		is_running = false
 		is_crouching = false
-
-	physicsSauce()
-	horizontal_velocity = horizontal_velocity.linear_interpolate(direction.normalized() * movement_speed, acceleration * delta)
+		
+	autoload.movement(self)
+#	physicsSauce()
+#	horizontal_velocity = horizontal_velocity.linear_interpolate(direction.normalized() * movement_speed, acceleration * delta)
 #climbing section
 var is_swimming = false
 var wall_incline
@@ -236,14 +237,15 @@ func jump():
 	elif Input.is_action_pressed("jump") and is_on_floor() and is_walking and is_sprinting:
 		horizontal_velocity = direction * 25
 		jumpUp()
-var gravity_force = 9.8
-func gravity(delta):
-	# Gravity mechanics and prevent slope-sliding
-	if not is_climbing:
-		if not is_on_floor(): 
-			vertical_velocity += Vector3.DOWN * gravity_force * 2 * delta
-		else: 
-			vertical_velocity = -get_floor_normal() * gravity_force / 2.5 #This must be always set 2.5 for climbing system to work 
+#var gravity_force = 9.8
+#var velocity = Vector3()
+#func gravity(delta): PLAYER GRAVITY MOVED TO GLOBAL AUTOLOAD
+#	# Gravity mechanics and prevent slope-sliding
+#	if not is_climbing:
+#		if not is_on_floor(): 
+#			vertical_velocity += Vector3.DOWN * gravity_force * 2 * delta
+#		else: 
+#			vertical_velocity = -get_floor_normal() * gravity_force / 2.5 #This must be always set 2.5 for climbing system to work 
 var fall_damage = 0
 var fall_distance = 0
 var minimum_fall_distance = 0.5
@@ -271,12 +273,11 @@ var vertical_velocity = Vector3()
 var movement_speed = int()
 var angular_acceleration = int()
 var acceleration = int()
-func physicsSauce():
-	# The Physics Sauce. Movement, gravity and velocity in a perfect dance.
-	movement.z = horizontal_velocity.z + vertical_velocity.z
-	movement.x = horizontal_velocity.x + vertical_velocity.x
-	movement.y = vertical_velocity.y
-	move_and_slide(movement, Vector3.UP)
+#func physicsSauce():MOVED TO AUTOLOAD
+#	movement.z = horizontal_velocity.z + vertical_velocity.z
+#	movement.x = horizontal_velocity.x + vertical_velocity.x
+#	movement.y = vertical_velocity.y
+#	move_and_slide(movement, Vector3.UP)
 #__________________________________________More action based movement_______________________________
 # Dodge
 export var double_press_time: float = 0.25
@@ -298,9 +299,9 @@ var dash_count2 : int = 0
 var dash_timer2 : float = 0.0
 var dodge_animation_duration : float = 0
 var dodge_animation_max_duration : float = 3
-func dodgeBack(delta):#Doddge when in strafe mode
+func dodgeBack():#Doddge when in strafe mode
 		if dash_countback > 0:
-			dash_timerback += delta
+			dash_timerback += get_physics_process_delta_time()
 		if dash_timerback >= double_press_time:
 			dash_countback = 0
 			dash_timerback = 0.0
@@ -314,9 +315,9 @@ func dodgeBack(delta):#Doddge when in strafe mode
 				dodge_animation_duration -= 0.1
 			elif dodge_animation_duration < 0: 
 					dodge_animation_duration = 0
-func dodgeFront(delta):#Dodge when in strafe mode
+func dodgeFront():#Dodge when in strafe mode
 		if dash_countforward > 0:
-			dash_timerforward += delta
+			dash_timerforward += get_physics_process_delta_time()
 		if dash_timerforward >= double_press_time:
 			dash_countforward = 0
 			dash_timerforward = 0.0
@@ -331,9 +332,9 @@ func dodgeFront(delta):#Dodge when in strafe mode
 			elif dodge_animation_duration < 0: 
 					dodge_animation_duration = 0
 		#print(str("dodge_animation_duration"+ str(dodge_animation_duration)))
-func dodgeLeft(delta):#Dodge when in strafe mode
+func dodgeLeft():#Dodge when in strafe mode
 		if dash_countleft > 0:
-			dash_timerleft += delta
+			dash_timerleft += get_physics_process_delta_time()
 		if dash_timerleft >= double_press_time:
 			dash_countleft = 0
 			dash_timerleft = 0.0
@@ -347,9 +348,9 @@ func dodgeLeft(delta):#Dodge when in strafe mode
 				dodge_animation_duration -= 0.1
 			elif dodge_animation_duration < 0: 
 					dodge_animation_duration = 0
-func dodgeRight(delta):#Dodge when in strafe mode
+func dodgeRight():#Dodge when in strafe mode
 		if dash_countright > 0:
-			dash_timerright += delta
+			dash_timerright += get_physics_process_delta_time()
 		if dash_timerright >= double_press_time:
 			dash_countright = 0
 			dash_timerright = 0.0
@@ -398,12 +399,12 @@ func _on_Sensitivity_pressed():
 func _on_SensitivityMin_pressed():
 	h_sensitivity -= 0.025
 	$Minimap/sensitivity_label.text = "cam sens: " + str(h_sensitivity)
-func cameraRotation(delta):
+func cameraRotation():
 	if not cursor_visible:
 		camrot_v = clamp(camrot_v, cam_v_min, cam_v_max)
 		#MOUSE CAMERA
-		camera_h.rotation_degrees.y = lerp(camera_h.rotation_degrees.y, camrot_h, delta * h_acceleration)
-		camera_v.rotation_degrees.x = lerp(camera_v.rotation_degrees.x, camrot_v, delta * v_acceleration)
+		camera_h.rotation_degrees.y = lerp(camera_h.rotation_degrees.y, camrot_h, get_physics_process_delta_time() * h_acceleration)
+		camera_v.rotation_degrees.x = lerp(camera_v.rotation_degrees.x, camrot_v, get_physics_process_delta_time() * v_acceleration)
 func _input(event):
 	if event is InputEventMouseMotion:
 		camrot_h += -event.relative.x * h_sensitivity
@@ -418,14 +419,14 @@ func _input(event):
 		elif event is InputEventMouseButton and event.button_index == BUTTON_WHEEL_DOWN:
 			# Zoom out when scrolling down
 			Zoom(1)
-func stiffCamera(delta: float):
+func stiffCamera():
 	if is_aiming and !is_climbing:
-		player_mesh.rotation.y = lerp_angle(player_mesh.rotation.y, $Camroot/h.rotation.y, delta * angular_acceleration)
+		player_mesh.rotation.y = lerp_angle(player_mesh.rotation.y, $Camroot/h.rotation.y, get_physics_process_delta_time() * angular_acceleration)
 #	elif is_climbing:
 #		if direction != Vector3.ZERO and is_climbing:
 #			player_mesh.rotation.y = -(atan2($ClimbRay.get_collision_normal().z,$ClimbRay.get_collision_normal().x) - PI/2)
 	else: # Normal turn movement mechanics
-		player_mesh.rotation.y = lerp_angle(player_mesh.rotation.y, atan2(direction.x, direction.z) - rotation.y, delta * angular_acceleration)
+		player_mesh.rotation.y = lerp_angle(player_mesh.rotation.y, atan2(direction.x, direction.z) - rotation.y, get_physics_process_delta_time() * angular_acceleration)
 func minimapFollow():# Update the position of the minimap camera
 	minimap_camera.translation = Vector3(translation.x, translation.y + 30,translation.z)
 onready var crosshair = $Camroot/h/v/Camera/Aim/Cross
@@ -903,9 +904,9 @@ var double_atk_count: int = 0
 var double_atk_timer: float = 0.0
 var double_atk_animation_duration : float  = 0
 var double_atk_animation_max_duration : float  = 1.125
-func doubleAttack(delta):
+func doubleAttack():
 		if double_atk_count > 0:
-			double_atk_timer += delta
+			double_atk_timer += get_physics_process_delta_time()
 		if double_atk_timer >= double_press_time:
 			double_atk_count = 0
 			double_atk_timer = 0.0
