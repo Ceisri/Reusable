@@ -3,7 +3,6 @@ extends Node
 class ThreatManagement:
 	var player : Node
 	var threat : int
-onready var eyes = self 
 var targets : Array = []
 var speed = 4
 var velocity = Vector3()
@@ -26,7 +25,6 @@ func findLowestThreat() -> ThreatManagement:
 		if assailant.threat < lowest_threat:
 			target = assailant
 			lowest_threat = assailant.threat
-
 	return target	
 	
 	
@@ -179,11 +177,9 @@ func getBestFive():
 	var third = findThirdThreat()
 	var fourth = findFourthThreat()
 	var fifth = findFifthThreat()
-
 	var threat_info = []  # Array to store player threat information
 
-	# Append the threat information of the first, second, third, fourth, and fifth assailants
-	for assailant in [first, second, third, fourth, fifth]:
+	for assailant in [first, second, third, fourth, fifth]:# Append the threat information of the first, second, third, fourth, and fifth assailants
 		if assailant != null and assailant.player != null:
 			var player = assailant.player
 			# Check if player instance is valid by verifying its instance ID
@@ -205,5 +201,29 @@ func getThreatInfo() -> Array:
 			threat_info.append(player_name + " ID: " + str(player_id) + " threat: " + str(assailant.threat))
 	return threat_info
 	
+func loseThreat():
+	# Get the position of the parent node
+	var parent_position = get_parent().global_transform.origin
 
-	
+	# Define distance ranges and their corresponding aggro reduction values
+	var close_range = 10.0  # Adjust as needed
+	var middle_range = 20.0  # Adjust as needed
+
+	# Decrease the aggro of all targets based on distance to parent
+	for assailant in targets:
+		if assailant != null and assailant.player != null:
+			# Calculate distance between assailant and parent node
+			var distance = assailant.player.global_transform.origin.distance_to(parent_position)
+
+			# Calculate reduction based on distance range
+			var reduction = 0
+			if distance <= close_range:
+				reduction = 0
+			elif distance <= middle_range:
+				reduction = rand_range(0, 1)  # Random range from 0 to 1
+			else:
+				reduction = 3
+
+			# Ensure the reduction doesn't exceed the current threat
+			assailant.threat = max(0, assailant.threat - reduction)
+

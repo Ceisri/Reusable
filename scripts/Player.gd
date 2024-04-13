@@ -95,7 +95,7 @@ func _physics_process(delta: float) -> void:
 	fallDamage()
 	skillUserInterfaceInputs()
 	addItemToInventory()
-#	positionCoordinates()
+	positionCoordinates()
 	MainWeapon()
 	SecWeapon()	
 	
@@ -1865,7 +1865,6 @@ onready var fps_label: Label = $UI/GUI/Portrait/MinimapHolder/FPS
 func frameRate():
 	var current_fps = Engine.get_frames_per_second()
 	var new_fps: float
-	
 	if current_fps > 59:
 		new_fps = current_fps + 20
 	elif current_fps > 39:
@@ -1876,9 +1875,7 @@ func frameRate():
 		new_fps = current_fps + 5
 	else:
 		new_fps = current_fps
-	
 	fps_label.text = str(new_fps)
-
 
 func _on_FPS_pressed():
 	savePlayerData()
@@ -1909,15 +1906,15 @@ func _on_FPS_pressed():
 #	var datetime = OS.get_datetime()
 #	# Display hour and minute in the label
 #	time_label.text = "Time: %02d:%02d" % [datetime.hour, datetime.minute]	
-#onready var coordinates = $UI/GUI/Minimap/Coordinates
-#func positionCoordinates():
-#	var rounded_position = Vector3(
-#		round(global_transform.origin.x * 10) / 10,
-#		round(global_transform.origin.y * 10) / 10,
-#		round(global_transform.origin.z * 10) / 10
-#	)
-#	# Use %d to format integers without decimals
-#	coordinates.text = "%d, %d, %d" % [rounded_position.x, rounded_position.y, rounded_position.z]
+onready var coordinates = $UI/GUI/Portrait/MinimapHolder/Coordinates
+func positionCoordinates():
+	var rounded_position = Vector3(
+		round(global_transform.origin.x * 10) / 10,
+		round(global_transform.origin.y * 10) / 10,
+		round(global_transform.origin.z * 10) / 10
+	)
+	# Use %d to format integers without decimals
+	coordinates.text = "%d, %d, %d" % [rounded_position.x, rounded_position.y, rounded_position.z]
 
 
 #__________________________________Weapon Management____________________________
