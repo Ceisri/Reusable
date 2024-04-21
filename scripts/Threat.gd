@@ -220,7 +220,7 @@ func loseThreat():
 			if distance <= close_range:
 				reduction = 0
 			elif distance <= middle_range:
-				reduction = rand_range(0, 1)  # Random range from 0 to 1
+				reduction = 1
 			else:
 				reduction = 3
 

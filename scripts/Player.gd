@@ -29,6 +29,7 @@ func _ready():
 	closeAllUI()
 	SwitchEquipmentBasedOnEquipmentIcons()
 	direction = Vector3.BACK.rotated(Vector3.UP, $Camroot/h.global_transform.basis.get_euler().y)
+	aim_label.text = aiming_mode
 func _on_SlowTimer_timeout():
 	allResourcesBarsAndLabels()
 	potionEffects()
@@ -547,7 +548,10 @@ func showEnemyStats():
 					enemy_energy_bar.max_value = body.max_nefis
 					enemy_energy_label.text = "EP:" + str(round(body.nefis* 100) / 100) + "/" + str(body.max_nefis)
 					var threat_label = $UI/GUI/EnemyUI/Threat
-					body.displayThreatInfo(threat_label)
+					if body.has_method("displayThreatInfo"):
+						body.displayThreatInfo(threat_label)
+					else:
+						threat_label.text = ""
 				else:
 					# Start tween to fade out
 					enemy_ui_tween.interpolate_property(entity_graphic_interface, "modulate:a", entity_graphic_interface.modulate.a, 0.0, fade_duration, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
@@ -956,7 +960,6 @@ func pushEnemyAway(push_distance, enemy, push_speed):
 	var direction_to_enemy = enemy.global_transform.origin - global_transform.origin
 	direction_to_enemy.y = 0  # No vertical push
 	direction_to_enemy = direction_to_enemy.normalized()
-	
 	var motion = direction_to_enemy * push_speed
 	var acceleration_time = push_speed / 2.0
 	var deceleration_distance = motion.length() * acceleration_time * 0.5
@@ -980,7 +983,6 @@ func pushEnemyAway(push_distance, enemy, push_speed):
 		tween.start()
 
 
-
 func isFacingSelf(enemy: Node, threshold: float) -> bool:
 	# Get the global transform of the enemy
 	var enemy_global_transform = enemy.global_transform
@@ -996,16 +998,12 @@ func isFacingSelf(enemy: Node, threshold: float) -> bool:
 	var enemy_mesh = enemy.get_node("Mesh")
 	if enemy_mesh:
 		enemy_facing_direction = enemy_mesh.global_transform.basis.z.normalized()
-	else:
-		# If Mesh node is not found, use the default facing direction of the enemy
+	else:# If Mesh node is not found, use the default facing direction of the enemy
 		enemy_facing_direction = enemy_global_transform.basis.z.normalized()
 	# Calculate the dot product between the enemy's facing direction and the direction to the calling object (self)
 	var dot_product = -enemy_facing_direction.dot(direction_to_enemy)
 	# If the dot product is greater than a certain threshold, consider the enemy is facing the calling object (self)
 	return dot_product >= threshold
-
-
-
 
 
 func bouncheEnemy(push_distance, enemy, push_speed):
@@ -2619,13 +2617,10 @@ func hunger():
 		applyEffect(self, "hungry", true)
 	else:
 		applyEffect(self, "hungry", false)
-		
-		
 
 const base_water = 4000
 var max_water = 4000
 var water = 4000
-
 var last_update_time_water: float = 0
 var water_decrease_per_second: float = 0.045 #kilocalories consumed per second
 
@@ -4390,8 +4385,9 @@ func updateAllStats():
 
 #___________________________________________Save data system________________________________________
 var entity_name: String = "dai"
+var slot: String = "1"
 const SAVE_DIR: String = "user://saves/"
-var save_path: String = SAVE_DIR + entity_name + "save.dat"
+var save_path: String 
 func savePlayerData():
 	var data = {
 		"position": translation,
@@ -4457,7 +4453,6 @@ func savePlayerData():
 		"spent_attribute_points_mem": spent_attribute_points_mem,
 		"spent_attribute_points_ins": spent_attribute_points_ins,
 		"spent_attribute_points_for": spent_attribute_points_for,
-		
 #Brain attributes
 		"sanity": sanity,
 		"wisdom" : wisdom,
@@ -4728,3 +4723,13 @@ func _on_pressme2_pressed():
 	bleed_resistance= rng.randi_range(-125, 125)
 	neuro_resistance= rng.randi_range(-125, 125)
 	radiant_resistance= rng.randi_range(-125, 125)
+
+var aiming_mode: String = "directional"
+onready var aim_label: Label = $UI/GUI/Menu/AimingMode/AimLabel
+func _on_AimingMode_pressed():
+		if aiming_mode == "camera":
+			aiming_mode = "directional"
+			aim_label.text = aiming_mode
+		else:
+			aiming_mode = "camera"
+			aim_label.text = aiming_mode
