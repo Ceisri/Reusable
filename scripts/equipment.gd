@@ -10,7 +10,6 @@ var type : String = ""
 
 
 func get_drag_data(position: Vector2):
-
 	var slot = get_parent().get_name()
 	var data = {
 		"origin_node": self,
@@ -27,7 +26,6 @@ func get_drag_data(position: Vector2):
 	return data
 
 func can_drop_data(position, data):
-
 	var target_slot = get_parent().get_name()
 	data["target_texture"] = icon.texture
 	data["target_quantity"] = quantity

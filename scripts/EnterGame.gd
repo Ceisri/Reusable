@@ -22,73 +22,54 @@ func _ready():
 	delete4.connect("pressed", self, "delete4")
 func createOrPlay1():
 	var player_instance = player_scene.instance()
-	player_instance.save_path = SAVE_DIR + "1save.dat"
+	player_instance.save_directory = "user://player1"
+	player_instance.save_path = player_instance.save_directory + "/SavedVariables.dat"
 	get_parent().add_child(player_instance)
 	queue_free()
 func createOrPlay2():
 	var player_instance = player_scene.instance()
-	player_instance.save_path = SAVE_DIR + "2save.dat"
+	player_instance.save_directory = "user://player2"
+	player_instance.save_path = player_instance.save_directory + "/SavedVariables.dat"
 	get_parent().add_child(player_instance)
 	queue_free()
 func createOrPlay3():
 	var player_instance = player_scene.instance()
-	player_instance.save_path = SAVE_DIR + "3save.dat"
+	player_instance.save_directory = "user://player3"
+	player_instance.save_path = player_instance.save_directory + "/SavedVariables.dat"
 	get_parent().add_child(player_instance)
 	queue_free()
 func createOrPlay4():
 	var player_instance = player_scene.instance()
-	player_instance.save_path = player_instance.SAVE_DIR + "4save.dat"
+	player_instance.save_directory = "user://player4"
+	player_instance.save_path = player_instance.save_directory + "/SavedVariables.dat"
 	get_parent().add_child(player_instance)
 	queue_free()
 	
 	
-const SAVE_DIR: String = "user://saves/"
+
+
+
+
+func findDestroyFile(path):
+	var dir = Directory.new()
+	if dir.open(path) == OK:
+		dir.list_dir_begin()
+		var file_name = dir.get_next()
+		while file_name != "":
+			if dir.current_is_dir():
+				print("Found directory: " + file_name)
+			else:
+				print("Found file: " + file_name)
+				dir.remove(file_name) # Corrected line to remove the file 
+			file_name = dir.get_next()
+	else:
+		print("An error occurred when trying to access the path.")
 
 func delete1():
-	var player_instance = player_scene.instance()
-	var dir = Directory.new()
-	var save_path = SAVE_DIR + "1save.dat"
-	if dir.file_exists(save_path):
-		var error = dir.remove(save_path)
-		if error == OK:
-			print("Saved data reset")
-		else:
-			print("Error resetting saved data:", error)
-	else:
-		print("Saved data does not exist")
+	findDestroyFile("user://player1")
 func delete2():
-	var player_instance = player_scene.instance()
-	var dir = Directory.new()
-	var save_path = SAVE_DIR + "2save.dat"
-	if dir.file_exists(save_path):
-		var error = dir.remove(save_path)
-		if error == OK:
-			print("Saved data reset")
-		else:
-			print("Error resetting saved data:", error)
-	else:
-		print("Saved data does not exist")
+	findDestroyFile("user://player2")
 func delete3():
-	var player_instance = player_scene.instance()
-	var dir = Directory.new()
-	var save_path = SAVE_DIR + "3save.dat"
-	if dir.file_exists(save_path):
-		var error = dir.remove(save_path)
-		if error == OK:
-			print("Saved data reset")
-		else:
-			print("Error resetting saved data:", error)
-	else:
-		print("Saved data does not exist")
+	findDestroyFile("user://player3")
 func delete4():
-	var player_instance = player_scene.instance()
-	var dir = Directory.new()
-	var save_path = SAVE_DIR + "4save.dat"
-	if dir.file_exists(save_path):
-		var error = dir.remove(save_path)
-		if error == OK:
-			print("Saved data reset")
-		else:
-			print("Error resetting saved data:", error)
-	else:
-		print("Saved data does not exist")
+	findDestroyFile("user://player4")

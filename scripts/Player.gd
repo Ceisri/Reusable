@@ -15,6 +15,7 @@ var is_running = bool()
 
 
 func _ready():
+	setInventoryOwner()
 	add_to_group("Player")
 	add_to_group("Entity")
 	connectUIButtons()
@@ -27,6 +28,7 @@ func _ready():
 	convertStats()
 	loadPlayerData()
 	closeAllUI()
+	loadInventoryData()
 	SwitchEquipmentBasedOnEquipmentIcons()
 	direction = Vector3.BACK.rotated(Vector3.UP, $Camroot/h.global_transform.basis.get_euler().y)
 	aim_label.text = aiming_mode
@@ -492,9 +494,11 @@ func fullscreen():
 	if Input.is_action_just_pressed("fullscreen"):
 		is_fullscreen = !is_fullscreen
 		OS.set_window_fullscreen(is_fullscreen)
-		savePlayerData()
+		saveGame()
 
 
+
+	
 
 #__________________________________Entitygraphical interface________________________________________
 onready var entity_graphic_interface = $UI/GUI/EnemyUI
@@ -1337,18 +1341,14 @@ onready var menu: Control = $UI/GUI/Menu
 func skillUserInterfaceInputs():
 	if Input.is_action_just_pressed("skills"):
 		closeSwitchOpen(skill_trees)
-		saveSkillBarData()
-		savePlayerData()
+		saveGame()
 	elif Input.is_action_just_pressed("tab"):
 		is_in_combat = !is_in_combat
 		switchMainFromHipToHand()
 		switchSecondaryFromHipToHand()
-		saveSkillBarData()
-		savePlayerData()
+		saveGame()
 	elif Input.is_action_just_pressed("mousemode") or Input.is_action_just_pressed("ui_cancel"):	# Toggle mouse mode
-		saveInventoryData()
-		saveSkillBarData()
-		savePlayerData()
+		saveGame()
 		cursor_visible =!cursor_visible
 	if !cursor_visible:
 		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
@@ -1357,44 +1357,41 @@ func skillUserInterfaceInputs():
 	if Input.is_action_just_pressed("Inventory"):
 		closeSwitchOpen(inventory)
 		saveInventoryData()
-		saveSkillBarData()
-		savePlayerData()
+		saveGame()
 	elif Input.is_action_just_pressed("Crafting"):
 		closeSwitchOpen(crafting)
-		saveInventoryData()
-		saveSkillBarData()
-		savePlayerData()
+		saveGame()
 	elif Input.is_action_just_pressed("Character"):
 		closeSwitchOpen(character)
-		savePlayerData()
+		saveGame()
 	elif Input.is_action_just_pressed("UI"):
 		closeSwitchOpen(character)
 		closeSwitchOpen(crafting)
 		closeSwitchOpen(inventory)
 		closeSwitchOpen(skill_trees)
-		savePlayerData()
+		saveGame()
 	elif Input.is_action_just_pressed("Menu"):
 		closeSwitchOpen(menu)
-		savePlayerData()
+		saveGame()
 #skillbar buttons
 func _on_Inventory_pressed():
 	closeSwitchOpen(inventory)
-	savePlayerData()
+	saveGame()
 func _on_Character_pressed():
 	closeSwitchOpen(character)
-	savePlayerData()
+	saveGame()
 func _on_Skills_pressed():
 	closeSwitchOpen(skill_trees)
-	savePlayerData()
+	saveGame()
 func _on_Menu_pressed():
 	closeSwitchOpen(menu)
-	savePlayerData()
+	saveGame()
 func _on_OpenAllUI_pressed():
 	closeSwitchOpen(character)
 	closeSwitchOpen(crafting)
 	closeSwitchOpen(inventory)
 	closeSwitchOpen(skill_trees)
-	savePlayerData()
+	saveGame()
 	
 func connectUIButtons():
 	var close_dmg: TextureButton = $UI/GUI/Equipment/DmgDef/Close
@@ -1454,7 +1451,7 @@ func _on_CloseSkillsTrees_pressed():
 	skill_trees.visible = false
 func _on_CraftingCloseButton_pressed():
 	crafting.visible = false
-	savePlayerData()
+	saveGame()
 func _on_InventoryCloseButton_pressed():
 	inventory.visible = false
 	savePlayerData()
@@ -1476,25 +1473,30 @@ func _on_Keybinds_pressed():
 	savePlayerData()
 func _on_Quit_pressed():
 	saveInventoryData()
-	savePlayerData()
-	saveSkillBarData()
+	saveGame()
 	get_tree().quit()
 func _on_InventorySaveButton_pressed():
 	saveInventoryData()
-	savePlayerData()
-	saveSkillBarData()
+	saveGame()
 onready var skills_list1 = $UI/GUI/SkillTrees/Background/SylvanSkills #placeholder
 func _on_SkillTree1_pressed():
 	closeSwitchOpen(skills_list1)
 	saveSkillBarData()
-	
 func saveInventoryData():
-	var inventory_grid = $UI/GUI/Inventory/ScrollContainer/InventoryGrid
 	# Call savedata() function on each child of inventory_grid that belongs to the group "Inventory"
 	for child in inventory_grid.get_children():
 		if child.is_in_group("Inventory"):
 			if child.get_node("Icon").has_method("savedata"):
 				child.get_node("Icon").savedata()
+func loadInventoryData():
+	for child in inventory_grid.get_children():
+		if child.is_in_group("Inventory"):
+			if child.get_node("Icon").has_method("loaddata"):
+				child.get_node("Icon").loaddata()
+func deleteInventoryData():
+	for child in inventory_grid.get_children():
+		if child.is_in_group("Inventory"):
+			child.quantity = 0 
 func saveSkillBarData():
 	$UI/GUI/SkillBar/GridContainer/Slot1/Icon.savedata()
 	$UI/GUI/SkillBar/GridContainer/Slot2/Icon.savedata()
@@ -1525,8 +1527,13 @@ func saveSkillBarData():
 onready var inventory_grid = $UI/GUI/Inventory/ScrollContainer/InventoryGrid
 onready var gui = $UI/GUI
 
+func setInventoryOwner():
+	for child in inventory_grid.get_children():
+		if child.is_in_group("Inventory"):
+			child.get_node("Icon").player = self 
 
 func connectInventoryButtons():
+	$UI/GUI/Inventory/SplitFirstSlot.connect("pressed", self, "splitFirstSlot")
 	var combine_slots_button = $UI/GUI/Inventory/CombineSlots
 	combine_slots_button.connect("pressed", self, "combineSlots")
 	for child in inventory_grid.get_children():
@@ -1619,7 +1626,7 @@ func combineSlots():
 				child.quantity = combined_items[item_path]
 
 
-func _on_SplitFirstSlot_pressed():
+func splitFirstSlot():#Activated by button press
 	savePlayerData()
 	saveInventoryData()
 	var first_slot = $UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot1
@@ -1628,14 +1635,14 @@ func _on_SplitFirstSlot_pressed():
 		if first_icon.texture != null:
 			var original_quantity = first_slot.quantity
 			if original_quantity > 1:
-				var new_quantity = original_quantity / 2  # Calculate the new quantity
-				first_slot.quantity = original_quantity - new_quantity  # Update the quantity of the first slot
 				for child in inventory_grid.get_children():
 					if child.is_in_group("Inventory"):
 						var icon = child.get_node("Icon")
 						if icon.texture == null:
 							icon.texture = first_icon.texture
 							child.quantity += original_quantity / 2
+							var new_quantity = original_quantity / 2  # Calculate the new quantity
+							first_slot.quantity = original_quantity - new_quantity  # Update the quantity of the first slot
 							break
 
 #_____________________________________Skill_Bar_________________________________
@@ -1955,6 +1962,7 @@ func addItemToCharacterSheet(icon,slot,texture):
 	if icon.texture == null:
 		icon.texture = texture
 		slot.quantity = 1
+		icon.savedata()
 
 
 func fixInstance():
@@ -4384,9 +4392,14 @@ func updateAllStats():
 
 
 #___________________________________________Save data system________________________________________
+func saveGame():
+	savePlayerData()
+	saveInventoryData()
+	saveSkillBarData()
+
 var entity_name: String = "dai"
 var slot: String = "1"
-const SAVE_DIR: String = "user://saves/"
+var save_directory: String
 var save_path: String 
 func savePlayerData():
 	var data = {
@@ -4491,15 +4504,10 @@ func savePlayerData():
 		"authority": authority,
 		"courage": courage,
 		
-		
-		
-		"wraith":necromant.summoned_demons,
-		
-
 		}
 	var dir = Directory.new()
-	if !dir.dir_exists(SAVE_DIR):
-		dir.make_dir_recursive(SAVE_DIR)
+	if !dir.dir_exists(save_directory):
+		dir.make_dir_recursive(save_directory)
 	var file = File.new()
 	var error = file.open_encrypted_with_pass(save_path, File.WRITE, "P@paB3ar6969")
 	if error == OK:

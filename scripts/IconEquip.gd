@@ -1,19 +1,19 @@
 extends TextureRect
 
-onready var player:KinematicBody = $"../../../../../.."
+onready var player = $"../../../../../.."
 var savedTexture : Texture
 var savedQuantity : int
 
+
+
 func _ready():
 	loaddata()
-
-
 
 func savedata():
 	savedTexture = texture
 	savedQuantity = get_parent().quantity  # Save the quantity of the parent
 	var parentName = get_parent().get_name()  # Get the name of the parent node
-	var savePath = player.save_directory +"/"+ parentName + "saved_player_skill.txt"  # Construct the save path based on parent name
+	var savePath = player.save_directory +"/"+ parentName + "_saved_texture_data.txt"  # Construct the save path based on parent name
 	var file = File.new()
 	file.open(savePath, File.WRITE)
 	if savedTexture != null:
@@ -23,7 +23,7 @@ func savedata():
 
 func loaddata():
 	var parentName = get_parent().get_name()
-	var savePath = player.save_directory +"/"+ parentName + "saved_player_skill.txt"
+	var savePath = player.save_directory +"/"+ parentName + "_saved_texture_data.txt"
 	var file = File.new()
 	if file.file_exists(savePath):
 		file.open(savePath, File.READ)
@@ -50,5 +50,3 @@ func loaddata():
 		get_parent().quantity = savedQuantity
 	else:
 		pass
-
-

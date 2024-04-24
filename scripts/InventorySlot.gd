@@ -33,7 +33,6 @@ func displayQuantity():
 			quantity_label.text = ""
 
 func get_drag_data(position: Vector2):
-
 	var slot = get_parent().get_name()
 	var data = {
 		"origin_node": self,
@@ -51,7 +50,6 @@ func get_drag_data(position: Vector2):
 	return data
 
 func can_drop_data(position, data):
-
 	displayQuantity()
 	var target_slot = get_parent().get_name()
 	data["target_texture"] = icon.texture
@@ -64,7 +62,6 @@ func can_drop_data(position, data):
 
 
 func drop_data(position, data):
-	
 	var origin_texture = data["origin_texture"]
 	var target_texture = icon.texture
 	var origin_quantity = data["origin_quantity"]
@@ -87,6 +84,6 @@ func drop_data(position, data):
 		origin_node.quantity = temp_quantity
 	# Update the display
 	displayQuantity()
-	icon.savedata()
+	#icon.savedata()
 
 
