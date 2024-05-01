@@ -1,6 +1,6 @@
 extends KinematicBody
 onready var player_mesh: Node = $Mesh
-onready var animation: AnimationPlayer = $Mesh/Race/AnimationPlayer
+var animation : AnimationPlayer
 
 
 var rng = RandomNumberGenerator.new()
@@ -15,6 +15,8 @@ var is_running = bool()
 
 
 func _ready():
+	loadPlayerData()
+	switchSexRace()
 	setInventoryOwner()
 	add_to_group("Player")
 	add_to_group("Entity")
@@ -26,7 +28,7 @@ func _ready():
 	connectAttributeHovering()
 	connectHoveredResistanceLabels()
 	convertStats()
-	loadPlayerData()
+	
 	closeAllUI()
 	loadInventoryData()
 	SwitchEquipmentBasedOnEquipmentIcons()
@@ -35,14 +37,14 @@ func _ready():
 func _on_SlowTimer_timeout():
 	allResourcesBarsAndLabels()
 	potionEffects()
-	switchHead()
-	switchTorso()
-	switchBelt()
-	switchLegs()
-	switchHandL()
-	switchHandR()
-	switchFootL()
-	switchFootR()
+	#switchHead()
+	#switchTorso()
+	#switchBelt()
+	#switchLegs()
+	#switchHandL()
+	#switchHandR()
+	#switchFootL()
+	#switchFootR()
 	saveSkillBarData()
 	convertStats()
 	money()
@@ -52,6 +54,7 @@ func _on_SlowTimer_timeout():
 	showStatusIcon()	
 	displayLabels()
 	regenStats()
+	#RaceGenderChange()
 	
 
 	
@@ -99,8 +102,8 @@ func _physics_process(delta: float) -> void:
 	skillUserInterfaceInputs()
 	addItemToInventory()
 	positionCoordinates()
-	MainWeapon()
-	SecWeapon()	
+	#MainWeapon()
+	#SecWeapon()	
 	
 #_______________________________________________Basic Movement______________________________________
 var h_rot 
@@ -1964,7 +1967,6 @@ func addItemToCharacterSheet(icon,slot,texture):
 		slot.quantity = 1
 		icon.savedata()
 
-
 func fixInstance():
 	attachment_r.add_child(currentInstance)
 	currentInstance.get_node("CollisionShape").disabled = true
@@ -2028,10 +2030,8 @@ func pickItemsMainHand():
 					body.queue_free()  # Remove the picked-up item from the floor
 				elif body.is_in_group("sword1") and not got_weapon:
 
-
 					body.queue_free()  # Remove the picked-up item from the floor
 				elif body.is_in_group("sword3") and not got_weapon:
-
 
 					body.queue_free()  # Remove the picked-up item from the floor
 			elif currentInstance != null and sec_currentInstance == null:
@@ -4403,6 +4403,10 @@ var save_directory: String
 var save_path: String 
 func savePlayerData():
 	var data = {
+		"sex": sex,
+		"species":species,
+		
+		
 		"position": translation,
 		"camera.translation.y" : camera.translation.y,
 		"camera.translation.z" : camera.translation.z,
@@ -4520,6 +4524,11 @@ func loadPlayerData():
 		if error == OK:
 			var player_data = file.get_var()
 			file.close()
+			if "sex" in player_data:
+				sex = player_data["sex"]
+			if "species" in player_data:
+				species = player_data["species"]
+				
 			if "position" in player_data:
 				translation = player_data["position"]
 			if "camera.translation.y" in player_data:
@@ -4741,3 +4750,58 @@ func _on_AimingMode_pressed():
 		else:
 			aiming_mode = "camera"
 			aim_label.text = aiming_mode
+var species: String = "human"
+var sex: String = "xy"
+var current_race_gender: Node = null 
+
+func switchSexRace():
+	match sex:
+		"xy":
+			match species:
+				"human":
+					if current_race_gender != null:
+						current_race_gender.queue_free() # Delete previous gender scene
+					current_race_gender = autoload.human_male.instance()
+					current_race_gender.player = self 
+					InstanceRace()
+				"panthera":
+					if current_race_gender != null:
+						current_race_gender.queue_free() # Delete previous gender scene
+					current_race_gender = autoload.panthera_male.instance()
+					current_race_gender.player = self 
+					InstanceRace()
+		"xx":
+			match species:
+				"human":
+					if current_race_gender != null:
+						current_race_gender.queue_free() # Delete previous gender scene
+					current_race_gender = autoload.human_female.instance()
+					current_race_gender.player = self 
+					InstanceRace()
+				"panthera":
+					if current_race_gender != null:
+						current_race_gender.queue_free() # Delete previous gender scene
+					current_race_gender = autoload.panthera_female.instance()
+					current_race_gender.player = self 
+					InstanceRace()
+
+func InstanceRace():
+	player_mesh.add_child(current_race_gender)
+	
+	
+func _on_switchGender_pressed():
+	current_race_gender.player = self 
+	if sex == "xy":
+		sex = "xx"
+	else:
+		sex = "xy"
+	switchSexRace() # Call the function to change gender and update scene
+
+
+func _on_switchRace_pressed():
+	current_race_gender.player = self 
+	if species == "human":
+		species = "panthera"
+	else:
+		species = "human"
+	switchSexRace() # Call the function to change gender and update scene

@@ -44,11 +44,6 @@ func createOrPlay4():
 	player_instance.save_path = player_instance.save_directory + "/SavedVariables.dat"
 	get_parent().add_child(player_instance)
 	queue_free()
-	
-	
-
-
-
 
 func findDestroyFile(path):
 	var dir = Directory.new()
