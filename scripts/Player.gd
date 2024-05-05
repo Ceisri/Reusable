@@ -28,23 +28,16 @@ func _ready():
 	connectAttributeHovering()
 	connectHoveredResistanceLabels()
 	convertStats()
-	
 	closeAllUI()
 	loadInventoryData()
 	SwitchEquipmentBasedOnEquipmentIcons()
 	direction = Vector3.BACK.rotated(Vector3.UP, $Camroot/h.global_transform.basis.get_euler().y)
 	aim_label.text = aiming_mode
+	current_race_gender.EquipmentSwitch()
 func _on_SlowTimer_timeout():
 	allResourcesBarsAndLabels()
 	potionEffects()
-	#switchHead()
-	#switchTorso()
-	#switchBelt()
-	#switchLegs()
-	#switchHandL()
-	#switchHandR()
-	#switchFootL()
-	#switchFootR()
+	current_race_gender.EquipmentSwitch()
 	saveSkillBarData()
 	convertStats()
 	money()
@@ -54,10 +47,6 @@ func _on_SlowTimer_timeout():
 	showStatusIcon()	
 	displayLabels()
 	regenStats()
-	#RaceGenderChange()
-	
-
-	
 
 func _on_3FPS_timeout():
 	$UI/GUI/Equipment/Attributes/AttributePoints.text = "Attributes points left: " + str(attribute)
