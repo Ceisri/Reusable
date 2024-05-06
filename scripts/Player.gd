@@ -4736,3 +4736,7 @@ func _on_switchRace_pressed():
 func _on_ArmorColorSwitch_pressed():
 	current_race_gender.randomizeArmor()
 
+
+
+func _on_SkinColorSwitch_pressed():
+	current_race_gender._on_Button_pressed()
