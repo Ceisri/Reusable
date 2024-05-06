@@ -39,20 +39,16 @@ func can_drop_data(position, data):
 func drop_data(position, data):
 	var origin_texture = data["origin_texture"]
 	var target_texture = icon.texture
-	var origin_item = data["origin_item"]
-	var target_item = item
 	var origin_quantity = data["origin_quantity"]
 	var target_quantity = quantity
 	var origin_node = data["origin_node"]
 	var origin_icon = origin_node.get_node("Icon")
 	var dragPreview = origin_node.get_node("Sprite") #find the floating image of the sprite
 	dragPreview.queue_free()# delete that floating image 
-	
 	origin_icon.texture = target_texture
 	icon.texture = origin_texture
-	icon.savedata()
 
-	if origin_item == target_item:
+	if origin_texture == target_texture:
 		# Combine quantities if items are the same
 		quantity += data["origin_quantity"]
 		origin_node.quantity = 0  # Reset the origin quantity
@@ -61,7 +57,5 @@ func drop_data(position, data):
 		var temp_quantity = quantity
 		quantity = origin_quantity
 		origin_node.quantity = temp_quantity
-
-
-
+	icon.savedata()
 

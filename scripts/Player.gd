@@ -1833,7 +1833,10 @@ func _on_GiveMeItems_pressed():
 	autoload.addNotStackableItem(inventory_grid,autoload.garment1)
 	autoload.addNotStackableItem(inventory_grid,autoload.shoe1)
 	autoload.addNotStackableItem(inventory_grid,autoload.staff1)
-	
+	autoload.addNotStackableItem(inventory_grid,autoload.torso_armor4)
+	autoload.addNotStackableItem(inventory_grid,autoload.torso_armor2)
+	autoload.addNotStackableItem(inventory_grid,autoload.torso_armor3)
+
 	
 	
 #_____________________________________Currency______________________________________________________
@@ -2214,6 +2217,12 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 		if chest_icon.texture != null:
 			if chest_icon.texture.get_path() == autoload.garment1.get_path():
 				torso = "garment1"
+			elif chest_icon.texture.get_path() == autoload.torso_armor2.get_path():
+				torso = "torso2"
+			elif chest_icon.texture.get_path() == autoload.torso_armor3.get_path():
+				torso = "torso3"
+			elif chest_icon.texture.get_path() == autoload.torso_armor4.get_path():
+				torso = "torso4"
 		elif chest_icon.texture == null:
 			torso = "naked"
 #_______________________________belt___________________________________________
@@ -2285,95 +2294,14 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 	
 #_____________________________________Equipment 3D______________________________
 var head = "naked"
-func switchHead():
-	var head0 = null
-	var head1 = null
-	match head:
-		"naked":
-			applyEffect(self,"helm1", false)
-		"garment1":
-			applyEffect(self,"helm1", true)
 var torso = "naked"
-func switchTorso():
-	var torso0 = $Mesh/Race/Armature/Skeleton/Torso0
-	var torso1 = $Mesh/Race/Armature/Skeleton/Torso1
-	match torso:
-		"naked":
-			torso0.visible = true 
-			torso1.visible = false
-			applyEffect(self,"garment1", false)
-		"garment1":
-			torso0.visible = false
-			torso1.visible = true
-			applyEffect(self,"garment1", true)
 var belt = "naked"
-func switchBelt():
-	match belt:
-		"naked":
-			applyEffect(self,"belt1", false)
-		"belt1":
-			applyEffect(self,"belt1", true)
-
 var legs = "naked"
-func switchLegs():
-	var legs0 = $Mesh/Race/Armature/Skeleton/legs0
-	var legs1 = $Mesh/Race/Armature/Skeleton/legs1
-	match legs:
-		"naked":
-			legs0.visible = true 
-			legs1.visible = false
-			applyEffect(self,"pants1", false)
-			
-		"cloth1":
-			legs0.visible = false
-			legs1.visible = true	
-			applyEffect(self,"pants1", true)
-			
 var hand_l = "naked"
-func switchHandL():
-	var hand_l0 = null
-	var hand_l1 = null
-	match hand_l:
-		"naked":
-			applyEffect(self,"Lhand1", false)
-		"cloth1":
-			applyEffect(self,"Lhand1", true)
 var hand_r = "naked"
-func switchHandR():
-	var hand_r0 = null
-	var hand_r1 = null
-	match hand_r:
-		"naked":
-			applyEffect(self,"Rhand1", false)
-		"cloth1":
-			applyEffect(self,"Rhand1", true)
-			
 var foot_l = "naked"
-func switchFootL():
-	var feet0 = $Mesh/Race/Armature/Skeleton/feet0
-	var feet1 = $Mesh/Race/Armature/Skeleton/feet1
-	match foot_l:
-		"naked":
-			feet0.visible = true 
-			feet1.visible = false
-			applyEffect(self,"Lshoe1", false)
-		"cloth1":
-			feet0.visible = false
-			feet1.visible = true
-			applyEffect(self,"Lshoe1", true)
 var foot_r = "naked"
-func switchFootR():
-	var feet0 = null
-	var feet1 = null
-	match foot_r:
-		"naked":
-#			feet0.visible = true 
-#			feet1.visible = false
-			applyEffect(self,"Rshoe1", false)
-		"cloth1":
-#			feet0.visible = false
-#			feet1.visible = true
-			applyEffect(self,"Rshoe1", true)	
+
 #___________________________________Status effects______________________________
 # Define effects and their corresponding stat changes
 var effects = {
@@ -4752,12 +4680,16 @@ func switchSexRace():
 						current_race_gender.queue_free() # Delete previous gender scene
 					current_race_gender = autoload.human_male.instance()
 					current_race_gender.player = self 
+					current_race_gender.save_directory = save_directory
+					current_race_gender.save_path = save_path + "colors.dat"
 					InstanceRace()
 				"panthera":
 					if current_race_gender != null:
 						current_race_gender.queue_free() # Delete previous gender scene
 					current_race_gender = autoload.panthera_male.instance()
 					current_race_gender.player = self 
+					current_race_gender.save_directory = save_directory
+					current_race_gender.save_path = save_path + "colors.dat"
 					InstanceRace()
 		"xx":
 			match species:
@@ -4766,12 +4698,16 @@ func switchSexRace():
 						current_race_gender.queue_free() # Delete previous gender scene
 					current_race_gender = autoload.human_female.instance()
 					current_race_gender.player = self 
+					current_race_gender.save_directory = save_directory
+					current_race_gender.save_path = save_path + "colors.dat"
 					InstanceRace()
 				"panthera":
 					if current_race_gender != null:
 						current_race_gender.queue_free() # Delete previous gender scene
 					current_race_gender = autoload.panthera_female.instance()
 					current_race_gender.player = self 
+					current_race_gender.save_directory = save_directory
+					current_race_gender.save_path = save_path + "colors.dat"
 					InstanceRace()
 
 func InstanceRace():
@@ -4785,7 +4721,7 @@ func _on_switchGender_pressed():
 	else:
 		sex = "xy"
 	switchSexRace() # Call the function to change gender and update scene
-
+	current_race_gender.EquipmentSwitch()
 
 func _on_switchRace_pressed():
 	current_race_gender.player = self 
@@ -4794,3 +4730,9 @@ func _on_switchRace_pressed():
 	else:
 		species = "human"
 	switchSexRace() # Call the function to change gender and update scene
+	current_race_gender.EquipmentSwitch()
+
+
+func _on_ArmorColorSwitch_pressed():
+	current_race_gender.randomizeArmor()
+
