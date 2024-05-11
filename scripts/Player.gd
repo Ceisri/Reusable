@@ -2,7 +2,6 @@ extends KinematicBody
 onready var player_mesh: Node = $Mesh
 var animation : AnimationPlayer
 
-
 var rng = RandomNumberGenerator.new()
 var injured: bool = false
 var blend: float = 0.25
@@ -48,6 +47,7 @@ func _on_SlowTimer_timeout():
 	displayLabels()
 	regenStats()
 
+
 func _on_3FPS_timeout():
 	$UI/GUI/Equipment/Attributes/AttributePoints.text = "Attributes points left: " + str(attribute)
 # Calculate the sum of all spent attribute points
@@ -91,8 +91,8 @@ func _physics_process(delta: float) -> void:
 	skillUserInterfaceInputs()
 	addItemToInventory()
 	positionCoordinates()
-	#MainWeapon()
-	#SecWeapon()	
+	MainWeapon()
+	SecWeapon()	
 	
 #_______________________________________________Basic Movement______________________________________
 var h_rot 
@@ -1617,7 +1617,6 @@ func combineSlots():
 			if item_path in combined_items:
 				child.quantity = combined_items[item_path]
 
-
 func splitFirstSlot():#Activated by button press
 	savePlayerData()
 	saveInventoryData()
@@ -1681,8 +1680,6 @@ func skillMouseEntered(tree, index):
 	compareIconsShowToolTips(icon_texture,instance)
 func skillMouseExited(index):
 	deleteTooltip()
-	
-	
 	
 func compareIconsShowToolTips(icon_texture,instance):
 	if icon_texture != null:
@@ -1919,8 +1916,8 @@ func positionCoordinates():
 
 #__________________________________Weapon Management____________________________
 #Main Weapon____________________________________________________________________
-onready var attachment_r = $Mesh/Race/Armature/Skeleton/HoldL
-onready var attachment_hip = $Mesh/Race/Armature/Skeleton/Hip
+var right_hand: BoneAttachment = null 
+var right_hip : BoneAttachment = null 
 onready var detector = $Mesh/Detector
 onready var main_weap_slot = $UI/GUI/Equipment/EquipmentBG/MainWeap
 onready var main_weap_icon = $UI/GUI/Equipment/EquipmentBG/MainWeap/Icon
@@ -1929,7 +1926,7 @@ var sword1: PackedScene = preload("res://itemTest.tscn")
 var sword2: PackedScene = preload("res://itemTest.tscn")
 
 var staff1: PackedScene = preload("res://itemTest.tscn")
-var currentInstance: Node = null  
+var current_weapon_instance: Node = null  
 var main_weapon = "null"
 var got_weapon = false
 var sheet_weapon = false
@@ -1937,18 +1934,17 @@ var is_primary_weapon_on_hip = false
 var is_chopping_trees = false
 func switchMainFromHipToHand():
 	if is_in_combat or is_chopping_trees:
-		if attachment_r.get_child_count() == 0:
-			if currentInstance != null and currentInstance.get_parent() == attachment_hip:
+		if right_hand.get_child_count() == 0:
+			if current_weapon_instance != null and current_weapon_instance.get_parent() == right_hip:
 				# Rotate the weapon before adding it to the hand
-				attachment_hip.remove_child(currentInstance)
-				attachment_r.add_child(currentInstance)
+				right_hip.remove_child(current_weapon_instance)
+				right_hand.add_child(current_weapon_instance)
 				is_primary_weapon_on_hip = false
 	else:
-		if attachment_hip.get_child_count() == 0:
-			if currentInstance != null and currentInstance.get_parent() == attachment_r:
-				# Rotate the weapon before adding it to the hip
-				attachment_r.remove_child(currentInstance)
-				attachment_hip.add_child(currentInstance)
+		if right_hip.get_child_count() == 0:
+			if current_weapon_instance != null and current_weapon_instance.get_parent() == right_hand:
+				right_hand.remove_child(current_weapon_instance)
+				right_hip.add_child(current_weapon_instance)
 				#currentInstance.rotation_degrees = Vector3(-6.9,-2.105,-16)
 				#currentInstance.translate(Vector3(0.049,0.019,-0.005))
 				is_primary_weapon_on_hip = true
@@ -1960,52 +1956,49 @@ func addItemToCharacterSheet(icon,slot,texture):
 		icon.savedata()
 
 func fixInstance():
-	attachment_r.add_child(currentInstance)
-	currentInstance.get_node("CollisionShape").disabled = true
-	#currentInstance.scale = Vector3(100, 100, 100)
+	right_hand.add_child(current_weapon_instance)
+	current_weapon_instance.get_node("CollisionShape").disabled = true
+	current_weapon_instance.scale = Vector3(100, 100, 100)
 	got_weapon = true
 func switch():
 	match main_weapon:
 		"sword0":
-			if currentInstance == null:
-				currentInstance = sword0.instance()
+			if current_weapon_instance == null:
+				current_weapon_instance = sword0.instance()
 				fixInstance()
 				addItemToCharacterSheet(main_weap_icon,main_weap_slot,autoload.wood_sword)
 		"sword1":    
-			if currentInstance == null:
-				currentInstance = sword1.instance()
+			if current_weapon_instance == null:
+				current_weapon_instance = sword1.instance()
 				fixInstance()
 		"sword2":    
-			if currentInstance == null:
-				currentInstance = sword2.instance()
+			if current_weapon_instance == null:
+				current_weapon_instance = sword2.instance()
 				fixInstance()
 		"staff1":
 			addItemToCharacterSheet(main_weap_icon,main_weap_slot,autoload.staff1)
 		"null":
-			currentInstance = null
+			current_weapon_instance = null
 			
 			got_weapon = false
 func removeWeapon():
 	if got_weapon:
-		attachment_r.remove_child(currentInstance)
-		attachment_hip.remove_child(currentInstance)
+		right_hand.remove_child(current_weapon_instance)
+		right_hip.remove_child(current_weapon_instance)
 		got_weapon = false
 func drop():
-	if currentInstance != null and Input.is_action_just_pressed("drop") and got_weapon:
+	if current_weapon_instance != null and Input.is_action_just_pressed("drop") and got_weapon:
 		removeWeapon()
-		attachment_hip.remove_child(currentInstance)
-		# Set the drop position
-		var drop_position = global_transform.origin + direction.normalized() * 1.0
-		currentInstance.global_transform.origin = Vector3(drop_position.x - rand_range(0.3, 3), global_transform.origin.y + 0.2, drop_position.z + rand_range(1, 2))
-		# Set the scale of the dropped instance
-		currentInstance.scale = Vector3(1, 1, 1)
-		var collision_shape = currentInstance.get_node("CollisionShape")
+		right_hip.remove_child(current_weapon_instance)
+		var drop_position = global_transform.origin + direction.normalized() * 1.0# Set the drop position
+		current_weapon_instance.global_transform.origin = Vector3(drop_position.x - rand_range(0.3, 3), global_transform.origin.y + 0.2, drop_position.z + rand_range(1, 2))
+		current_weapon_instance.scale = Vector3(1, 1, 1)# Set the scale of the dropped instance
+		var collision_shape = current_weapon_instance.get_node("CollisionShape")
 		if collision_shape != null:
 			collision_shape.disabled = false
-		get_tree().root.add_child(currentInstance)
-		# Reset variables
-		main_weapon = "null"
-		currentInstance = null
+		get_tree().root.add_child(current_weapon_instance)
+		main_weapon = "null"# Reset variables
+		current_weapon_instance = null
 		got_weapon = false
 		main_weap_slot.item = "null"
 		main_weap_icon.texture = null
@@ -2014,23 +2007,19 @@ func pickItemsMainHand():
 	var bodies = $Mesh/Detector.get_overlapping_bodies()
 	for body in bodies:
 		if Input.is_action_pressed("collect"):
-			#print(currentInstance)
-			if currentInstance == null:
+			if current_weapon_instance == null:
 				if body.is_in_group("sword0") and not got_weapon:
 					main_weapon = "sword0"
 					got_weapon = true 
 					body.queue_free()  # Remove the picked-up item from the floor
 				elif body.is_in_group("sword1") and not got_weapon:
-
 					body.queue_free()  # Remove the picked-up item from the floor
 				elif body.is_in_group("sword3") and not got_weapon:
-
 					body.queue_free()  # Remove the picked-up item from the floor
-			elif currentInstance != null and sec_currentInstance == null:
+			elif current_weapon_instance != null and sec_current_weapon_instance == null:
 				if body.is_in_group("sword0") and not got_sec_weapon and got_weapon:
 					got_sec_weapon = true 
 					secondary_weapon = "sword0"
- 
 					body.queue_free()  # Remove the picked-up item from the floor
 				elif body.is_in_group("sword1") and not got_sec_weapon:
 					secondary_weapon = "sword1"
@@ -2048,50 +2037,50 @@ func MainWeapon():
 		drop()
 		main_weapon = "null"
 #Secondary__________________________________________________________________________________________
-onready var attachment_l = $Mesh/Race/Armature/Skeleton/HoldL2
-onready var attachment_hip_sec = $Mesh/Race/Armature/Skeleton/Hip2
-onready var sec_weap_slot = $UI/GUI/Character/Equipment/SecWeap
+var left_hand: BoneAttachment = null 
+var left_hip: BoneAttachment = null 
+onready var sec_weap_slot = $UI/GUI/Equipment/EquipmentBG/SecWeap
 onready var sec_weap_icon = $UI/GUI/Equipment/EquipmentBG/SecWeap/Icon
-var sec_currentInstance: Node = null  
+var sec_current_weapon_instance: Node = null  
 
 var secondary_weapon = "null"
 var got_sec_weapon = false
 var is_secondary_weapon_on_hip = false 
 func switchSecondaryFromHipToHand():
 	if is_in_combat:
-		if attachment_l.get_child_count() == 0:
-			if sec_currentInstance != null and sec_currentInstance.get_parent() == attachment_hip_sec:
-				attachment_hip_sec.remove_child(sec_currentInstance)
-				attachment_l.add_child(sec_currentInstance)
+		if left_hand.get_child_count() == 0:
+			if sec_current_weapon_instance != null and sec_current_weapon_instance.get_parent() == left_hip:
+				left_hip.remove_child(sec_current_weapon_instance)
+				left_hand.add_child(sec_current_weapon_instance)
 				is_secondary_weapon_on_hip = false 
 	else:
-		if attachment_hip_sec.get_child_count() == 0:
-			if sec_currentInstance != null and sec_currentInstance.get_parent() == attachment_l:
-				attachment_l.remove_child(sec_currentInstance)
-				attachment_hip_sec.add_child(sec_currentInstance)
+		if left_hip.get_child_count() == 0:
+			if sec_current_weapon_instance != null and sec_current_weapon_instance.get_parent() == left_hand:
+				left_hand.remove_child(sec_current_weapon_instance)
+				left_hip.add_child(sec_current_weapon_instance)
 				is_secondary_weapon_on_hip = true
 func fixSecInstance():
-	attachment_l.add_child(sec_currentInstance)
-	sec_currentInstance.get_node("CollisionShape").disabled = true
-	#sec_currentInstance.scale = Vector3(100, 100, 100)
+	left_hand.add_child(sec_current_weapon_instance)
+	sec_current_weapon_instance.get_node("CollisionShape").disabled = true
+	sec_current_weapon_instance.scale = Vector3(100, 100, 100)
 	got_sec_weapon = true
 func switchSec():
 	match secondary_weapon:
 		"sword0":
-			if sec_currentInstance == null:
-				sec_currentInstance = sword0.instance()
+			if sec_current_weapon_instance == null:
+				sec_current_weapon_instance = sword0.instance()
 				fixSecInstance()
 				addItemToCharacterSheet(sec_weap_icon,sec_weap_slot,autoload.wood_sword)
 		"sword1":    
-			if sec_currentInstance == null:
-				sec_currentInstance = sword1.instance()
+			if sec_current_weapon_instance == null:
+				sec_current_weapon_instance = sword1.instance()
 				fixSecInstance()
 		"sword2":    
-			if sec_currentInstance == null:
-				sec_currentInstance = sword2.instance()
+			if sec_current_weapon_instance == null:
+				sec_current_weapon_instance = sword2.instance()
 				fixSecInstance()
 		"null":
-			sec_currentInstance = null
+			sec_current_weapon_instance = null
 			got_sec_weapon = false
 func pickUpShield():
 	var bodies = detector.get_overlapping_bodies()
@@ -2103,22 +2092,22 @@ func pickUpShield():
 					got_shield = true
 					body.queue_free()
 func dropSec():
-	if sec_currentInstance != null and Input.is_action_just_pressed("drop") and got_sec_weapon:
-		attachment_l.remove_child(sec_currentInstance)
-		attachment_hip_sec.remove_child(sec_currentInstance)
+	if sec_current_weapon_instance != null and Input.is_action_just_pressed("drop") and got_sec_weapon:
+		left_hand.remove_child(sec_current_weapon_instance)
+		left_hip.remove_child(sec_current_weapon_instance)
 		# Set the drop position
 		var drop_position = global_transform.origin + direction.normalized() * 1.0
-		sec_currentInstance.global_transform.origin = Vector3(drop_position.x - rand_range(0, 3), global_transform.origin.y + 0.2, drop_position.z + rand_range(1, 3))
+		sec_current_weapon_instance.global_transform.origin = Vector3(drop_position.x - rand_range(0, 3), global_transform.origin.y + 0.2, drop_position.z + rand_range(1, 3))
 		# Set the scale of the dropped instance
-		sec_currentInstance.scale = Vector3(1, 1, 1)
-		var collision_shape = sec_currentInstance.get_node("CollisionShape")
+		sec_current_weapon_instance.scale = Vector3(1, 1, 1)
+		var collision_shape = sec_current_weapon_instance.get_node("CollisionShape")
 		if collision_shape != null:
 			collision_shape.disabled = false
-		get_tree().root.add_child(sec_currentInstance)
+		get_tree().root.add_child(sec_current_weapon_instance)
 		# Reset variables
 		secondary_weapon = "null"
 		got_sec_weapon = false
-		sec_currentInstance = null
+		sec_current_weapon_instance = null
 		sec_weap_icon.texture = null
 		sec_weap_slot.item = "null"
 func SecWeapon():
@@ -2128,12 +2117,12 @@ func SecWeapon():
 		dropSec()
 		secondary_weapon = "null"
 		got_sec_weapon = false
-		sec_currentInstance = null
+		sec_current_weapon_instance = null
 		
 func removeSecWeapon():
 	if got_sec_weapon:
-		attachment_l.remove_child(sec_currentInstance)
-		attachment_hip_sec.remove_child(sec_currentInstance)
+		left_hand.remove_child(sec_current_weapon_instance)
+		left_hip.remove_child(sec_current_weapon_instance)
 		got_sec_weapon = false
 #Shield_____________________________________________________________________________________________
 onready var attachment_s = $Mesh/Armature/Skeleton/HoldL2
@@ -4616,8 +4605,6 @@ func loadPlayerData():
 				authority = player_data["authority"]
 			if "courage" in player_data:
 				courage = player_data["courage"]
-			
-	
 
 			if "vitality" in player_data:
 				vitality = player_data["vitality"]
@@ -4709,7 +4696,12 @@ func switchSexRace():
 					current_race_gender.save_directory = save_directory
 					current_race_gender.save_path = save_path + "colors.dat"
 					InstanceRace()
-
+					
+	right_hand = current_race_gender.right_hand
+	left_hand = current_race_gender.left_hand
+	right_hip = current_race_gender.left_hip
+	left_hip = current_race_gender.right_hip
+	
 func InstanceRace():
 	player_mesh.add_child(current_race_gender)
 	
@@ -4735,8 +4727,6 @@ func _on_switchRace_pressed():
 
 func _on_ArmorColorSwitch_pressed():
 	current_race_gender.randomizeArmor()
-
-
 
 func _on_SkinColorSwitch_pressed():
 	current_race_gender._on_Button_pressed()

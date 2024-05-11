@@ -2,6 +2,11 @@ extends Spatial
 
 var player 
 onready var animation = $AnimationPlayer
+onready var left_hand = $Armature/Skeleton/LeftHand
+onready var right_hand = $Armature/Skeleton/RightHand
+onready var right_hip = $Armature/Skeleton/RightHip
+onready var left_hip = $Armature/Skeleton/LeftHip
+
 
 func _ready():
 	player.animation = animation
