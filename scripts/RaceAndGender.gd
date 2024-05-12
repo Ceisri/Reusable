@@ -6,14 +6,15 @@ onready var left_hand = $Armature/Skeleton/LeftHand
 onready var right_hand = $Armature/Skeleton/RightHand
 onready var right_hip = $Armature/Skeleton/RightHip
 onready var left_hip = $Armature/Skeleton/LeftHip
-
+onready var shoulder_r = $Armature/Skeleton/RightShoulder
+onready var shoulder_l = $Armature/Skeleton/LeftShoulder
 
 func _ready():
 	player.animation = animation
 	loadPlayerData()
 	switchSkin()
 	switchArmor()
-
+	
 #_____________________________________Equipment 3D______________________________
 
 func EquipmentSwitch():
@@ -24,7 +25,7 @@ func EquipmentSwitch():
 	switchHandL()
 	switchHandR()
 	switchFeet()
-	
+
 onready var legs0 = $Armature/Skeleton/legs0
 onready var legs1 = $Armature/Skeleton/legs1
 onready var legs2 = $Armature/Skeleton/legs2	

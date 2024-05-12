@@ -46,6 +46,7 @@ func _on_SlowTimer_timeout():
 	showStatusIcon()	
 	displayLabels()
 	regenStats()
+	
 
 
 func _on_3FPS_timeout():
@@ -54,7 +55,6 @@ func _on_3FPS_timeout():
 	var total_spent_attribute_points = spent_attribute_points_san + spent_attribute_points_wis + spent_attribute_points_mem + spent_attribute_points_int + spent_attribute_points_ins +spent_attribute_points_for + spent_attribute_points_str + spent_attribute_points_fur + spent_attribute_points_imp + spent_attribute_points_fer + spent_attribute_points_foc + spent_attribute_points_bal + spent_attribute_points_dex + spent_attribute_points_acc + spent_attribute_points_poi +spent_attribute_points_has + spent_attribute_points_agi + spent_attribute_points_cel + spent_attribute_points_fle + spent_attribute_points_def + spent_attribute_points_end + spent_attribute_points_sta + spent_attribute_points_vit + spent_attribute_points_res + spent_attribute_points_ten + spent_attribute_points_cha + spent_attribute_points_loy + spent_attribute_points_dip + spent_attribute_points_aut + spent_attribute_points_cou
 	# Update the text in the UI/GUI
 	$UI/GUI/Equipment/Attributes/AttributeSpent.text = "Attributes points Spent: " + str(total_spent_attribute_points)
-
 	crafting()
 	displayResources(hp_bar,hp_label,health,max_health,"HP")
 	curtainsDown()
@@ -92,8 +92,8 @@ func _physics_process(delta: float) -> void:
 	addItemToInventory()
 	positionCoordinates()
 	MainWeapon()
-	SecWeapon()	
-	
+	SecWeapon()
+	switchShoulder()
 #_______________________________________________Basic Movement______________________________________
 var h_rot 
 var blocking = false
@@ -395,9 +395,8 @@ func _on_SensitivityMin_pressed():
 	h_sensitivity -= 0.025
 	$Minimap/sensitivity_label.text = "cam sens: " + str(h_sensitivity)
 func cameraRotation():
-	if not cursor_visible:
+	if not cursor_visible:#MOUSE CAMERA
 		camrot_v = clamp(camrot_v, cam_v_min, cam_v_max)
-		#MOUSE CAMERA
 		camera_h.rotation_degrees.y = lerp(camera_h.rotation_degrees.y, camrot_h, get_physics_process_delta_time() * h_acceleration)
 		camera_v.rotation_degrees.x = lerp(camera_v.rotation_degrees.x, camrot_v, get_physics_process_delta_time() * v_acceleration)
 func _input(event):
@@ -1818,14 +1817,14 @@ func _on_GiveMeItems_pressed():
 
 	
 	autoload.addStackableItem(inventory_grid,autoload.raspberry,200)
-	autoload.addStackableItem(inventory_grid,autoload.pants1,200)
+	autoload.addStackableItem(inventory_grid,autoload.pants1,1)
 	autoload.addStackableItem(inventory_grid,autoload.hat1,200)
 	autoload.addStackableItem(inventory_grid,autoload.red_potion,200)
 	autoload.addStackableItem(inventory_grid,autoload.strawberry,200)
 	autoload.addStackableItem(inventory_grid,autoload.beetroot,200)
 	autoload.addStackableItem(inventory_grid,autoload.rosehip,200)
-	autoload.addStackableItem(inventory_grid,autoload.belt1,200)
-	autoload.addStackableItem(inventory_grid,autoload.glove1,200)
+	autoload.addStackableItem(inventory_grid,autoload.belt1,1)
+	autoload.addStackableItem(inventory_grid,autoload.glove1,1)
 	autoload.addNotStackableItem(inventory_grid,autoload.wood_sword)
 	autoload.addNotStackableItem(inventory_grid,autoload.garment1)
 	autoload.addNotStackableItem(inventory_grid,autoload.shoe1)
@@ -1833,8 +1832,8 @@ func _on_GiveMeItems_pressed():
 	autoload.addNotStackableItem(inventory_grid,autoload.torso_armor4)
 	autoload.addNotStackableItem(inventory_grid,autoload.torso_armor2)
 	autoload.addNotStackableItem(inventory_grid,autoload.torso_armor3)
-
-	
+	autoload.addNotStackableItem(inventory_grid,autoload.shoulder1)
+	autoload.addNotStackableItem(inventory_grid,autoload.shoulder1)
 	
 #_____________________________________Currency______________________________________________________
 onready var ethernium_label = $UI/GUI/Inventory/etherniumLabel
@@ -1914,7 +1913,59 @@ func positionCoordinates():
 	coordinates.text = "%d, %d, %d" % [rounded_position.x, rounded_position.y, rounded_position.z]
 
 
-#__________________________________Weapon Management____________________________
+#__________________________________Equipment Management____________________________
+#Shoulders__________________________________________________________________________________________
+var right_shoulder: BoneAttachment = null
+var left_shoulder: BoneAttachment = null
+
+onready var shoulder_r_icon = $UI/GUI/Equipment/EquipmentBG/PauldronR/Icon
+onready var shoulder_l_icon = $UI/GUI/Equipment/EquipmentBG/PauldronL/Icon
+var has_left_shoulder_pad = false 
+var has_right_shoulder_pad = false 
+func switchShoulder():
+	if is_instance_valid(right_shoulder):
+		if shoulder_r_icon.texture == null:
+			has_right_shoulder_pad = false 
+			if right_shoulder.get_child_count() > 0:
+				right_shoulder.remove_child(right_shoulder.get_child(0))
+		else:
+			if has_right_shoulder_pad == false:
+				if shoulder_r_icon.texture == autoload.shoulder1:
+					var shoulder_instance = autoload.shoulder_scene0.instance()
+					fixLeftShoulder(shoulder_instance)
+					right_shoulder.add_child(shoulder_instance)
+					has_right_shoulder_pad =  true
+				
+				
+
+#_______________________________________________________________________________
+	if is_instance_valid(left_shoulder):
+		if shoulder_l_icon.texture == null:
+			has_left_shoulder_pad = false 
+			if left_shoulder.get_child_count() > 0:
+				left_shoulder.remove_child(left_shoulder.get_child(0))
+		else:
+			if has_left_shoulder_pad == false:
+				if shoulder_l_icon.texture == autoload.shoulder1:
+					var shoulder_instance = autoload.shoulder_scene0.instance()
+					fixLeftShoulder(shoulder_instance)
+					left_shoulder.add_child(shoulder_instance)
+					has_left_shoulder_pad =  true
+var mixamo_scale = 100
+func fixRightShoulder(instance):
+	var shoulder_offset = Vector3(0.392, 9.236, -2.151)
+	instance.rotation_degrees = Vector3(0.592, -112.058, 108.676)
+	instance.scale = Vector3(100, 100, 100)
+	instance.global_transform.origin += shoulder_offset
+
+	
+func fixLeftShoulder(instance):
+	var shoulder_offset = Vector3(0.485,8.956,-3.366)
+	instance.rotation_degrees = Vector3(-4.942,-79.403,102.65)
+	instance.scale = Vector3(100, 100, 100)
+	instance.global_transform.origin += shoulder_offset
+
+
 #Main Weapon____________________________________________________________________
 var right_hand: BoneAttachment = null 
 var right_hip : BoneAttachment = null 
@@ -1933,21 +1984,24 @@ var sheet_weapon = false
 var is_primary_weapon_on_hip = false
 var is_chopping_trees = false
 func switchMainFromHipToHand():
-	if is_in_combat or is_chopping_trees:
-		if right_hand.get_child_count() == 0:
-			if current_weapon_instance != null and current_weapon_instance.get_parent() == right_hip:
-				# Rotate the weapon before adding it to the hand
-				right_hip.remove_child(current_weapon_instance)
-				right_hand.add_child(current_weapon_instance)
-				is_primary_weapon_on_hip = false
-	else:
-		if right_hip.get_child_count() == 0:
-			if current_weapon_instance != null and current_weapon_instance.get_parent() == right_hand:
-				right_hand.remove_child(current_weapon_instance)
-				right_hip.add_child(current_weapon_instance)
-				#currentInstance.rotation_degrees = Vector3(-6.9,-2.105,-16)
-				#currentInstance.translate(Vector3(0.049,0.019,-0.005))
-				is_primary_weapon_on_hip = true
+	if is_instance_valid(current_weapon_instance):
+		if right_hand != null:
+			if right_hip != null and current_weapon_instance != null:
+				if is_in_combat or is_chopping_trees:
+					if right_hand.get_child_count() == 0:
+						if current_weapon_instance != null:
+							if current_weapon_instance.get_parent() == right_hip:
+								right_hip.remove_child(current_weapon_instance)
+								right_hand.add_child(current_weapon_instance)
+								is_primary_weapon_on_hip = false
+				else:
+						if right_hip.get_child_count() == 0:
+							if current_weapon_instance != null:
+								if current_weapon_instance.get_parent() == right_hand:
+										right_hand.remove_child(current_weapon_instance)
+										right_hip.add_child(current_weapon_instance)
+
+
 
 func addItemToCharacterSheet(icon,slot,texture):
 	if icon.texture == null:
@@ -2047,18 +2101,19 @@ var secondary_weapon = "null"
 var got_sec_weapon = false
 var is_secondary_weapon_on_hip = false 
 func switchSecondaryFromHipToHand():
-	if is_in_combat:
-		if left_hand.get_child_count() == 0:
-			if sec_current_weapon_instance != null and sec_current_weapon_instance.get_parent() == left_hip:
-				left_hip.remove_child(sec_current_weapon_instance)
-				left_hand.add_child(sec_current_weapon_instance)
-				is_secondary_weapon_on_hip = false 
-	else:
-		if left_hip.get_child_count() == 0:
-			if sec_current_weapon_instance != null and sec_current_weapon_instance.get_parent() == left_hand:
-				left_hand.remove_child(sec_current_weapon_instance)
-				left_hip.add_child(sec_current_weapon_instance)
-				is_secondary_weapon_on_hip = true
+	if is_instance_valid(sec_current_weapon_instance):
+		if is_in_combat:
+			if left_hand.get_child_count() == 0:
+				if sec_current_weapon_instance != null and sec_current_weapon_instance.get_parent() == left_hip:
+					left_hip.remove_child(sec_current_weapon_instance)
+					left_hand.add_child(sec_current_weapon_instance)
+					is_secondary_weapon_on_hip = false 
+		else:
+			if left_hip.get_child_count() == 0:
+				if sec_current_weapon_instance != null and sec_current_weapon_instance.get_parent() == left_hand:
+					left_hand.remove_child(sec_current_weapon_instance)
+					left_hip.add_child(sec_current_weapon_instance)
+					is_secondary_weapon_on_hip = true
 func fixSecInstance():
 	left_hand.add_child(sec_current_weapon_instance)
 	sec_current_weapon_instance.get_node("CollisionShape").disabled = true
@@ -2190,7 +2245,6 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 		elif sec_weap_icon.texture == null:
 			removeSecWeapon()
 			secondary_weapon = "null"
-
 #_______________________________head____________________________________________
 	var helm_icon = $UI/GUI/Equipment/EquipmentBG/Helm/Icon
 	if helm_icon != null:
@@ -2266,8 +2320,6 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 
 	var glove_icon = $UI/GUI/Equipment/EquipmentBG/GloveR/Icon
 	var glove_l_icon = $UI/GUI/Equipment/EquipmentBG/GloveL/Icon
-	var shoulder_r_icon = $UI/GUI/Equipment/EquipmentBG/ShoeR/Icon
-	var shoulder_l_icon = $UI/GUI/Equipment/EquipmentBG/ShoeL/Icon
 	$UI/GUI/Equipment/EquipmentBG/SecWeap/Icon.savedata()
 	helm_icon.savedata()
 	shoulder_l_icon.savedata()
@@ -2911,45 +2963,43 @@ func convertStats():
 	total_authority = extra_authority + authority
 	total_courage = extra_courage + courage
 	
-	max_health = base_max_health * vitality
+	max_health = base_max_health * total_vitality
 	max_sprint_speed = base_max_sprint_speed * total_agility
 	run_speed = base_run_speed * total_agility
 	
-	stagger_chance = max(0, (impact - 1.00) * 0.45) +  max(0, (ferocity - 1.00) * 0.005) 
+	stagger_chance = max(0, (total_impact - 1.00) * 0.45) +  max(0, (total_ferocity - 1.00) * 0.005) 
 	
 func flankDamageMath():
-	flank_dmg = (base_flank_dmg * (ferocity + accuracy)) 
-
-
+	flank_dmg = (base_flank_dmg * (total_ferocity + total_accuracy)) 
 
 func attackSpeedMath():
-	var bonus_universal_speed = (celerity -1) * 0.15
-	var atk_speed_formula = (dexterity - scale_factor ) * 0.5 
+	var bonus_universal_speed = (total_celerity -1) * 0.15
+	var atk_speed_formula = (total_dexterity - scale_factor ) * 0.5 
 	melee_atk_speed = base_melee_atk_speed + atk_speed_formula + bonus_universal_speed + extra_melee_atk_speed
 	
-	var atk_speed_formula_ranged = (strength -1) * 0.5
+	var atk_speed_formula_ranged = (total_strength -1) * 0.5
 	ranged_atk_speed = base_ranged_atk_speed + atk_speed_formula_ranged + bonus_universal_speed
 	
-	var atk_speed_formula_casting = (instinct -1) * 0.35 + ((memory-1) * 0.05) + bonus_universal_speed
+	var atk_speed_formula_casting = (total_instinct -1) * 0.35 + ((total_memory-1) * 0.05) + bonus_universal_speed
 	casting_speed = base_casting_speed + atk_speed_formula_casting	
 	
 	
 func resistanceMath():
 	var additional_resistance: float  = 0
 	var res_multiplier : float  = 0.5
-	if resistance > 1:
-		additional_resistance = res_multiplier * (resistance - 1)
-	elif resistance < 1:
-		additional_resistance = -res_multiplier * (1 - resistance)
-	defense = base_defense + int(resistance * 10)
-	max_health = (base_max_health * (vitality + additional_resistance)) * scale_factor
-	max_breath = base_max_breath * (stamina  + additional_resistance)
-	max_resolve = base_max_resolve * (tenacity + additional_resistance)
+	if total_resistance > 1:
+		additional_resistance = res_multiplier * (total_resistance - 1)
+	elif total_resistance < 1:
+		additional_resistance = -res_multiplier * (1 - total_resistance)
+	defense = base_defense + int(total_resistance * 10)
+	max_health = (base_max_health * (total_vitality + additional_resistance)) * scale_factor
+	max_breath = base_max_breath * (total_stamina  + additional_resistance)
+	max_resolve = base_max_resolve * (total_tenacity + additional_resistance)
 
 
 func updateCritical():
-	var critical_chance = max(0, (accuracy - 1.00) * 0.5) +  max(0, (impact - 1.00) * 0.005) 
-	var critical_strength = max(1.0, ((ferocity - 1) * 2))  # Ensure critical_strength is at least 1.0
+	var critical_chance = max(0, (total_accuracy - 1.00) * 0.5) +  max(0, (total_impact - 1.00) * 0.005) 
+	var critical_strength = max(1.0, ((total_ferocity - 1) * 2))  # Ensure critical_strength is at least 1.0
 	critical_chance_val.text = str(round(critical_chance * 100 * 1000) / 1000) + "%"
 	critical_str_val.text = "x" + str(critical_strength)
 
@@ -2959,11 +3009,11 @@ func updateScaleRelatedAttributes():
 	charisma = scale_multiplication 
 
 func updateAefisNefis():
-	var intelligence_portion = intelligence * 0.5
-	var wisdom_portion = wisdom * 0.5
+	var intelligence_portion = total_intelligence * 0.5
+	var wisdom_portion = total_wisdom * 0.5
 
 	max_aefis = base_max_aefis * (wisdom_portion + intelligence_portion)
-	max_nefis = base_max_nefis * instinct
+	max_nefis = base_max_nefis * total_instinct
 
 onready var hp_bar = $UI/GUI/Portrait/LifeBar
 onready var hp_label = $UI/GUI/Portrait/LifeLabel
@@ -4701,9 +4751,13 @@ func switchSexRace():
 	left_hand = current_race_gender.left_hand
 	right_hip = current_race_gender.left_hip
 	left_hip = current_race_gender.right_hip
+	left_shoulder = current_race_gender.shoulder_l
+	right_shoulder = current_race_gender.shoulder_r
 	
 func InstanceRace():
 	player_mesh.add_child(current_race_gender)
+	switch()
+
 	
 	
 func _on_switchGender_pressed():
@@ -4723,7 +4777,6 @@ func _on_switchRace_pressed():
 		species = "human"
 	switchSexRace() # Call the function to change gender and update scene
 	current_race_gender.EquipmentSwitch()
-
 
 func _on_ArmorColorSwitch_pressed():
 	current_race_gender.randomizeArmor()

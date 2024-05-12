@@ -27,7 +27,6 @@ func findLowestThreat() -> ThreatManagement:
 			lowest_threat = assailant.threat
 	return target	
 	
-	
 func findHighestThreat() -> ThreatManagement:
 	var highest_threat = -1
 	var target : ThreatManagement = null
@@ -36,7 +35,6 @@ func findHighestThreat() -> ThreatManagement:
 			target = assailant
 			highest_threat = assailant.threat
 	return target
-
 
 func findSecondThreat() -> ThreatManagement:
 	var highest_threat = -1
