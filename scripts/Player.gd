@@ -568,153 +568,154 @@ func showEnemyStats():
 var weapon_type: String = "fist"
 var animation_state: String = "idle"
 func matchAnimationStates():
-	match animation_state:
-#_______________________________attacking states________________________________
-		"slide":
-			var slide_blend = 0.3
-			animation.play("slide",slide_blend)
-			var slide_mov_speed = 15 + slide_blend + rand_range(3, 6)
-			if !is_on_wall():
-				horizontal_velocity = direction * slide_mov_speed
-			movement_speed = int(slide_mov_speed)
-		"base attack":
-			var slot = $UI/GUI/SkillBar/GridContainer/LClickSlot/Icon
-			skills(slot)
-		"guard":
-			var slot = $UI/GUI/SkillBar/GridContainer/RClickSlot/Icon
-			skills(slot)
-		"double attack":
-			if weapon_type == "fist":
-				animation.play("high kick",0.3,melee_atk_speed)
-			if can_move and !is_on_wall():
-				horizontal_velocity = direction * 7
-				movement_speed = 7
-			else:
-				horizontal_velocity = direction * 0.3
-				movement_speed = 0
-		"guard attack":
-			animation.play("stomp cycle",0.55,melee_atk_speed + 0.05)
-			if can_move and !is_on_wall():
-				horizontal_velocity = direction * 2
-				movement_speed = 2
-			else:
-				horizontal_velocity = direction * 0.01
-				movement_speed = 0
-		"run attack":
-			animation.play("low kick",0.3, melee_atk_speed)#placeholder
-			if can_move and !is_on_wall():
-				horizontal_velocity = direction * 2
-				movement_speed = 2
-			else:
-				horizontal_velocity = direction * 0.01
-				movement_speed = 0
-		"sprint attack":
-			animation.play("stomp kick",0.3, melee_atk_speed)#placeholder
-			if can_move and !is_on_wall():
-				horizontal_velocity = direction * 2
-				movement_speed = 2
-			else:
-				horizontal_velocity = direction * 0.01
-				movement_speed = 0
-#_________________________________walking states________________________________
-		"walk":
-			if is_in_combat:
+	if animation != null:
+		match animation_state:
+	#_______________________________attacking states________________________________
+			"slide":
+				var slide_blend = 0.3
+				animation.play("slide",slide_blend)
+				var slide_mov_speed = 15 + slide_blend + rand_range(3, 6)
+				if !is_on_wall():
+					horizontal_velocity = direction * slide_mov_speed
+				movement_speed = int(slide_mov_speed)
+			"base attack":
+				var slot = $UI/GUI/SkillBar/GridContainer/LClickSlot/Icon
+				skills(slot)
+			"guard":
+				var slot = $UI/GUI/SkillBar/GridContainer/RClickSlot/Icon
+				skills(slot)
+			"double attack":
 				if weapon_type == "fist":
-					animation.play("walk fist cycle",0,1)
-			else:
-				animation.play("walk cycle")
-		"crouch walk":
-			animation.play("walk crouch cycle")
-		"crouch":
-			animation.play("idle crouch",0.4)
-#movement 
-		"sprint":
-			animation.play("run cycle", 0, sprint_animation_speed * agility)
-		"run":
-			animation.play("run cycle",0,agility)
-		"jump":
-			animation.play("jump",0.2, agility)
-		"fall":
-			animation.play("fall",0.3)
-		"climbing":
-			animation.play("climb cycle",blend, strength)
-		"vaulting":
-			animation.play("vaulting",0.7, strength)
-		"landing":
-			pass
-		"crawl":
-			animation.play("crawl cycle")
-		"crawl limit":
-			animation.play("crawl dying limit cycle")
-		"idle downed":
-			animation.play("idle downed", 0.35)
-		"idle":
-			if is_in_combat:
-				if weapon_type == "fist":
-					animation.play("barehanded idle",0.2,1)
-			else:
-				animation.play("idle cycle")
-		#skillbar stuff
-		"test1":
-			var slot = $UI/GUI/SkillBar/GridContainer/Slot1/Icon
-			skills(slot)
-		"test2":
-			var slot = $UI/GUI/SkillBar/GridContainer/Slot2/Icon
-			skills(slot)
-		"test3":
-			var slot = $UI/GUI/SkillBar/GridContainer/Slot3/Icon
-			skills(slot)
-		"test4":
-			var slot = $UI/GUI/SkillBar/GridContainer/Slot4/Icon
-			skills(slot)
-		"test5":
-			var slot = $UI/GUI/SkillBar/GridContainer/Slot5/Icon
-			skills(slot)
-		"test6":
-			var slot = $UI/GUI/SkillBar/GridContainer/Slot6/Icon
-			skills(slot)
-		"test7":
-			var slot = $UI/GUI/SkillBar/GridContainer/Slot7/Icon
-			skills(slot)
-		"test8":
-			var slot = $UI/GUI/SkillBar/GridContainer/Slot8/Icon
-			skills(slot)
-		"test9":
-			var slot = $UI/GUI/SkillBar/GridContainer/Slot9/Icon
-			skills(slot)
-		"test0":
-			var slot = $UI/GUI/SkillBar/GridContainer/Slot10/Icon
-			skills(slot)
-		"testQ":
-			var slot = $UI/GUI/SkillBar/GridContainer/Slot11/Icon
-			skills(slot)
-		"testE":
-			var slot = $UI/GUI/SkillBar/GridContainer/Slot12/Icon
-			skills(slot)
-		"testR":
-			var slot = $UI/GUI/SkillBar/GridContainer/Slot13/Icon
-			skills(slot)
-		"testT":
-			var slot = $UI/GUI/SkillBar/GridContainer/Slot14/Icon
-			skills(slot)
-		"testF":
-			var slot = $UI/GUI/SkillBar/GridContainer/Slot15/Icon
-			skills(slot)
-		"testG":
-			var slot = $UI/GUI/SkillBar/GridContainer/Slot16/Icon
-			skills(slot)
-		"testY":
-			var slot = $UI/GUI/SkillBar/GridContainer/Slot17/Icon
-			skills(slot)
-		"testH":
-			var slot = $UI/GUI/SkillBar/GridContainer/Slot18/Icon
-			skills(slot)
-		"testV":
-			var slot = $UI/GUI/SkillBar/GridContainer/Slot19/Icon
-			skills(slot)
-		"testB":
-			var slot = $UI/GUI/SkillBar/GridContainer/Slot20/Icon
-			skills(slot)
+					animation.play("high kick",0.3,melee_atk_speed)
+				if can_move and !is_on_wall():
+					horizontal_velocity = direction * 7
+					movement_speed = 7
+				else:
+					horizontal_velocity = direction * 0.3
+					movement_speed = 0
+			"guard attack":
+				animation.play("stomp cycle",0.55,melee_atk_speed + 0.05)
+				if can_move and !is_on_wall():
+					horizontal_velocity = direction * 2
+					movement_speed = 2
+				else:
+					horizontal_velocity = direction * 0.01
+					movement_speed = 0
+			"run attack":
+				animation.play("low kick",0.3, melee_atk_speed)#placeholder
+				if can_move and !is_on_wall():
+					horizontal_velocity = direction * 2
+					movement_speed = 2
+				else:
+					horizontal_velocity = direction * 0.01
+					movement_speed = 0
+			"sprint attack":
+				animation.play("stomp kick",0.3, melee_atk_speed)#placeholder
+				if can_move and !is_on_wall():
+					horizontal_velocity = direction * 2
+					movement_speed = 2
+				else:
+					horizontal_velocity = direction * 0.01
+					movement_speed = 0
+	#_________________________________walking states________________________________
+			"walk":
+				if is_in_combat:
+					if weapon_type == "fist":
+						animation.play("walk fist cycle",0,1)
+				else:
+					animation.play("walk cycle")
+			"crouch walk":
+				animation.play("walk crouch cycle")
+			"crouch":
+				animation.play("idle crouch",0.4)
+	#movement 
+			"sprint":
+				animation.play("run cycle", 0, sprint_animation_speed * agility)
+			"run":
+				animation.play("run cycle",0,agility)
+			"jump":
+				animation.play("jump",0.2, agility)
+			"fall":
+				animation.play("fall",0.3)
+			"climbing":
+				animation.play("climb cycle",blend, strength)
+			"vaulting":
+				animation.play("vaulting",0.7, strength)
+			"landing":
+				pass
+			"crawl":
+				animation.play("crawl cycle")
+			"crawl limit":
+				animation.play("crawl dying limit cycle")
+			"idle downed":
+				animation.play("idle downed", 0.35)
+			"idle":
+				if is_in_combat:
+					if weapon_type == "fist":
+						animation.play("barehanded idle",0.2,1)
+				else:
+					animation.play("idle cycle")
+			#skillbar stuff
+			"test1":
+				var slot = $UI/GUI/SkillBar/GridContainer/Slot1/Icon
+				skills(slot)
+			"test2":
+				var slot = $UI/GUI/SkillBar/GridContainer/Slot2/Icon
+				skills(slot)
+			"test3":
+				var slot = $UI/GUI/SkillBar/GridContainer/Slot3/Icon
+				skills(slot)
+			"test4":
+				var slot = $UI/GUI/SkillBar/GridContainer/Slot4/Icon
+				skills(slot)
+			"test5":
+				var slot = $UI/GUI/SkillBar/GridContainer/Slot5/Icon
+				skills(slot)
+			"test6":
+				var slot = $UI/GUI/SkillBar/GridContainer/Slot6/Icon
+				skills(slot)
+			"test7":
+				var slot = $UI/GUI/SkillBar/GridContainer/Slot7/Icon
+				skills(slot)
+			"test8":
+				var slot = $UI/GUI/SkillBar/GridContainer/Slot8/Icon
+				skills(slot)
+			"test9":
+				var slot = $UI/GUI/SkillBar/GridContainer/Slot9/Icon
+				skills(slot)
+			"test0":
+				var slot = $UI/GUI/SkillBar/GridContainer/Slot10/Icon
+				skills(slot)
+			"testQ":
+				var slot = $UI/GUI/SkillBar/GridContainer/Slot11/Icon
+				skills(slot)
+			"testE":
+				var slot = $UI/GUI/SkillBar/GridContainer/Slot12/Icon
+				skills(slot)
+			"testR":
+				var slot = $UI/GUI/SkillBar/GridContainer/Slot13/Icon
+				skills(slot)
+			"testT":
+				var slot = $UI/GUI/SkillBar/GridContainer/Slot14/Icon
+				skills(slot)
+			"testF":
+				var slot = $UI/GUI/SkillBar/GridContainer/Slot15/Icon
+				skills(slot)
+			"testG":
+				var slot = $UI/GUI/SkillBar/GridContainer/Slot16/Icon
+				skills(slot)
+			"testY":
+				var slot = $UI/GUI/SkillBar/GridContainer/Slot17/Icon
+				skills(slot)
+			"testH":
+				var slot = $UI/GUI/SkillBar/GridContainer/Slot18/Icon
+				skills(slot)
+			"testV":
+				var slot = $UI/GUI/SkillBar/GridContainer/Slot19/Icon
+				skills(slot)
+			"testB":
+				var slot = $UI/GUI/SkillBar/GridContainer/Slot20/Icon
+				skills(slot)
 onready var necromant = $UI/GUI/SkillTrees/Background/Necromant		
 func skills(slot):
 	var l_click_slot: TextureButton = $UI/GUI/SkillBar/GridContainer/LClickSlot
@@ -1915,8 +1916,8 @@ func positionCoordinates():
 
 #__________________________________Equipment Management____________________________
 #Shoulders__________________________________________________________________________________________
-var right_shoulder: BoneAttachment = null
-var left_shoulder: BoneAttachment = null
+var right_shoulder: Spatial = null
+var left_shoulder: Spatial = null
 
 onready var shoulder_r_icon = $UI/GUI/Equipment/EquipmentBG/PauldronR/Icon
 onready var shoulder_l_icon = $UI/GUI/Equipment/EquipmentBG/PauldronL/Icon
@@ -1953,17 +1954,10 @@ func switchShoulder():
 					has_left_shoulder_pad =  true
 var mixamo_scale = 100
 func fixRightShoulder(instance):
-	var shoulder_offset = Vector3(0.392, 9.236, -2.151)
-	instance.rotation_degrees = Vector3(0.592, -112.058, 108.676)
-	instance.scale = Vector3(100, 100, 100)
-	instance.global_transform.origin += shoulder_offset
-
+	pass
 	
 func fixLeftShoulder(instance):
-	var shoulder_offset = Vector3(0.485,8.956,-3.366)
-	instance.rotation_degrees = Vector3(-4.942,-79.403,102.65)
-	instance.scale = Vector3(100, 100, 100)
-	instance.global_transform.origin += shoulder_offset
+	pass
 
 
 #Main Weapon____________________________________________________________________
@@ -1972,9 +1966,7 @@ var right_hip : BoneAttachment = null
 onready var detector = $Mesh/Detector
 onready var main_weap_slot = $UI/GUI/Equipment/EquipmentBG/MainWeap
 onready var main_weap_icon = $UI/GUI/Equipment/EquipmentBG/MainWeap/Icon
-var sword0: PackedScene = preload("res://itemTest.tscn")
-var sword1: PackedScene = preload("res://itemTest.tscn")
-var sword2: PackedScene = preload("res://itemTest.tscn")
+
 
 var staff1: PackedScene = preload("res://itemTest.tscn")
 var current_weapon_instance: Node = null  
@@ -1984,6 +1976,7 @@ var sheet_weapon = false
 var is_primary_weapon_on_hip = false
 var is_chopping_trees = false
 func switchMainFromHipToHand():
+	
 	if is_instance_valid(current_weapon_instance):
 		if right_hand != null:
 			if right_hip != null and current_weapon_instance != null:
@@ -2018,16 +2011,16 @@ func switch():
 	match main_weapon:
 		"sword0":
 			if current_weapon_instance == null:
-				current_weapon_instance = sword0.instance()
+				current_weapon_instance = current_race_gender.sword0.instance()
 				fixInstance()
 				addItemToCharacterSheet(main_weap_icon,main_weap_slot,autoload.wood_sword)
 		"sword1":    
 			if current_weapon_instance == null:
-				current_weapon_instance = sword1.instance()
+				current_weapon_instance = current_race_gender.sword1.instance()
 				fixInstance()
 		"sword2":    
 			if current_weapon_instance == null:
-				current_weapon_instance = sword2.instance()
+				current_weapon_instance = current_race_gender.sword2.instance()
 				fixInstance()
 		"staff1":
 			addItemToCharacterSheet(main_weap_icon,main_weap_slot,autoload.staff1)
@@ -2123,16 +2116,16 @@ func switchSec():
 	match secondary_weapon:
 		"sword0":
 			if sec_current_weapon_instance == null:
-				sec_current_weapon_instance = sword0.instance()
+				sec_current_weapon_instance = current_race_gender.sword0.instance()
 				fixSecInstance()
 				addItemToCharacterSheet(sec_weap_icon,sec_weap_slot,autoload.wood_sword)
 		"sword1":    
 			if sec_current_weapon_instance == null:
-				sec_current_weapon_instance = sword1.instance()
+				sec_current_weapon_instance = current_race_gender.sword1.instance()
 				fixSecInstance()
 		"sword2":    
 			if sec_current_weapon_instance == null:
-				sec_current_weapon_instance = sword2.instance()
+				sec_current_weapon_instance = current_race_gender.sword2.instance()
 				fixSecInstance()
 		"null":
 			sec_current_weapon_instance = null
@@ -4358,6 +4351,7 @@ var slot: String = "1"
 var save_directory: String
 var save_path: String 
 func savePlayerData():
+	current_race_gender.savePlayerData()
 	var data = {
 		"sex": sex,
 		"species":species,
@@ -4464,6 +4458,7 @@ func savePlayerData():
 		"authority": authority,
 		"courage": courage,
 		
+		"hair_color": hair_color,
 		}
 	var dir = Directory.new()
 	if !dir.dir_exists(save_directory):
@@ -4587,7 +4582,6 @@ func loadPlayerData():
 			if "spent_attribute_points_def" in player_data:
 				spent_attribute_points_def = player_data["spent_attribute_points_def"]
 
-
 #Brute attributes
 			if "force" in player_data:
 				force = player_data["force"]
@@ -4674,6 +4668,11 @@ func loadPlayerData():
 #				effects = player_data["effects"]
 			if "wraith" in player_data:
 				necromant.summoned_demons = player_data["wraith"]
+				
+			if "hair_color" in player_data:
+				hair_color = player_data["hair_color"]
+				
+				
 func _on_pressme_pressed():
 	health = 5
 	breath = 5
@@ -4705,10 +4704,11 @@ func _on_AimingMode_pressed():
 			aiming_mode = "camera"
 			aim_label.text = aiming_mode
 var species: String = "human"
-var sex: String = "xy"
+var sex: String = "xx"
 var current_race_gender: Node = null 
 
 func switchSexRace():
+
 	match sex:
 		"xy":
 			match species:
@@ -4724,6 +4724,22 @@ func switchSexRace():
 					if current_race_gender != null:
 						current_race_gender.queue_free() # Delete previous gender scene
 					current_race_gender = autoload.panthera_male.instance()
+					current_race_gender.player = self 
+					current_race_gender.save_directory = save_directory
+					current_race_gender.save_path = save_path + "colors.dat"
+					InstanceRace()
+				"sepris":
+					if current_race_gender != null:
+						current_race_gender.queue_free()
+					current_race_gender = autoload.sepris.instance()
+					current_race_gender.player = self 
+					current_race_gender.save_directory = save_directory
+					current_race_gender.save_path = save_path + "colors.dat"
+					InstanceRace()
+				"bireas":
+					if current_race_gender != null:
+						current_race_gender.queue_free()
+					current_race_gender = autoload.bireas.instance()
 					current_race_gender.player = self 
 					current_race_gender.save_directory = save_directory
 					current_race_gender.save_path = save_path + "colors.dat"
@@ -4746,21 +4762,40 @@ func switchSexRace():
 					current_race_gender.save_directory = save_directory
 					current_race_gender.save_path = save_path + "colors.dat"
 					InstanceRace()
-					
-	right_hand = current_race_gender.right_hand
-	left_hand = current_race_gender.left_hand
-	right_hip = current_race_gender.left_hip
-	left_hip = current_race_gender.right_hip
-	left_shoulder = current_race_gender.shoulder_l
-	right_shoulder = current_race_gender.shoulder_r
+				"sepris":
+					if current_race_gender != null:
+						current_race_gender.queue_free()
+					current_race_gender = autoload.sepris.instance()
+					current_race_gender.player = self 
+					current_race_gender.save_directory = save_directory
+					current_race_gender.save_path = save_path + "colors.dat"
+					InstanceRace()
+				"bireas":
+					if current_race_gender != null:
+						current_race_gender.queue_free()
+					current_race_gender = autoload.bireas.instance()
+					current_race_gender.player = self 
+					current_race_gender.save_directory = save_directory
+					current_race_gender.save_path = save_path + "colors.dat"
+					InstanceRace()
+	if is_instance_valid(current_race_gender):
+		right_hand = current_race_gender.right_hand
+		left_hand = current_race_gender.left_hand
+		right_hip = current_race_gender.left_hip
+		left_hip = current_race_gender.right_hip
+		left_shoulder = current_race_gender.shoulder_l
+		right_shoulder = current_race_gender.shoulder_r
+		var current_face_set = current_race_gender.face_set
+
 	
 func InstanceRace():
 	player_mesh.add_child(current_race_gender)
 	switch()
 
 	
-	
+
 func _on_switchGender_pressed():
+	
 	current_race_gender.player = self 
 	if sex == "xy":
 		sex = "xx"
@@ -4769,17 +4804,77 @@ func _on_switchGender_pressed():
 	switchSexRace() # Call the function to change gender and update scene
 	current_race_gender.EquipmentSwitch()
 
+
+var species_list = ["sepris", "human", "panthera","bireas"]# Define the list of available species
+var current_species_index = 0# Initialize the index of the current species
 func _on_switchRace_pressed():
-	current_race_gender.player = self 
-	if species == "human":
-		species = "panthera"
-	else:
-		species = "human"
+	current_species_index += 1# Increment the index to move to the next species
+	if current_species_index >= species_list.size():# Wrap around to the beginning if reached the end of the list
+		current_species_index = 0
+	species = species_list[current_species_index]
 	switchSexRace() # Call the function to change gender and update scene
 	current_race_gender.EquipmentSwitch()
+	current_race_gender.hairstyle = hair_list[current_hair_index]
+	current_race_gender.face_set = face_list[current_face_index]
+
+var hair_list = ["1", "2", "3","4","5","6","7","8",]
+var current_hair_index = 0
+
+func _on_switchhair_pressed():
+	current_hair_index += 1  # Increment the index to move to the next hairstyle
+	if current_hair_index >= hair_list.size():  # Wrap around to the beginning if reached the end of the list
+		current_hair_index = 0  # Reset index to the beginning
+	current_race_gender.hairstyle = hair_list[current_hair_index]
+	current_race_gender.switchHair()
+	colorhair()
+
+var face_list = ["1", "2", "3", "4","5"]
+var current_face_index = 0
+func _on_switch_face_pressed():
+	current_face_index += 1  # Increment the index to move to the next face
+	if current_face_index >= face_list.size():  # Wrap around to the beginning if reached the end of the list
+		current_face_index = 0  # Reset index to the beginning
+	current_race_gender.face_set = face_list[current_face_index]
+	current_race_gender.switchFace()
+
+
 
 func _on_ArmorColorSwitch_pressed():
 	current_race_gender.randomizeArmor()
 
 func _on_SkinColorSwitch_pressed():
 	current_race_gender._on_Button_pressed()
+
+var hair_color_change = true 
+var hair_color: Color = Color(1, 1, 1)  # Default color
+func _on_ColorPicker_color_changed(color):
+	if hair_color_change:
+		if current_race_gender.current_hair_instance:
+			# Assuming your hair models have a material with a color property
+			var hair_material = current_race_gender.current_hair_instance.material_override
+			if hair_material:
+				# Set the color property of the material
+				hair_material.albedo_color = color
+				hair_material.flags_unshaded = true
+				hair_color = color
+				colorhair()
+
+func colorhair():
+	if current_race_gender.current_hair_instance:
+		# Get the original material of the hair instance
+		var original_material = current_race_gender.current_hair_instance.material_override
+		# Check if the original material is not null
+		if original_material:
+			# Duplicate the original material
+			var new_material = original_material.duplicate()
+			# Assign the new material to the hair instance
+			current_race_gender.current_hair_instance.material_override = new_material
+			# Set the color property of the new material
+			new_material.albedo_color = hair_color
+
+
+
+
+func _on_BlendshapeTest_pressed():
+	current_race_gender.smile = rand_range(-2,+2)
+	current_race_gender.current_face_instance.set("blend_shapes/Smile",current_race_gender.smile)
