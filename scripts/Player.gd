@@ -46,6 +46,7 @@ func _on_SlowTimer_timeout():
 	showStatusIcon()	
 	displayLabels()
 	regenStats()
+
 	
 
 
@@ -60,6 +61,7 @@ func _on_3FPS_timeout():
 	curtainsDown()
 	SwitchEquipmentBasedOnEquipmentIcons()
 	updateAllStats()
+	switchShoulder()
 func _physics_process(delta: float) -> void:
 	$Debug.text = animation_state
 #	displayClock()
@@ -93,7 +95,6 @@ func _physics_process(delta: float) -> void:
 	positionCoordinates()
 	MainWeapon()
 	SecWeapon()
-	switchShoulder()
 #_______________________________________________Basic Movement______________________________________
 var h_rot 
 var blocking = false
@@ -1923,43 +1924,57 @@ onready var shoulder_r_icon = $UI/GUI/Equipment/EquipmentBG/PauldronR/Icon
 onready var shoulder_l_icon = $UI/GUI/Equipment/EquipmentBG/PauldronL/Icon
 var has_left_shoulder_pad = false 
 var has_right_shoulder_pad = false 
+var right_shoulder_pad:String = "null"
+var left_shoulder_pad:String = "null"
+var got_left_shoulder_pad:bool = false
+var got_right_shoulder_pad:bool = false
 func switchShoulder():
-	if is_instance_valid(right_shoulder):
-		if shoulder_r_icon.texture == null:
-			has_right_shoulder_pad = false 
-			if right_shoulder.get_child_count() > 0:
-				right_shoulder.remove_child(right_shoulder.get_child(0))
-		else:
-			if has_right_shoulder_pad == false:
-				if shoulder_r_icon.texture == autoload.shoulder1:
-					var shoulder_instance = autoload.shoulder_scene0.instance()
-					fixLeftShoulder(shoulder_instance)
-					right_shoulder.add_child(shoulder_instance)
-					has_right_shoulder_pad =  true
-				
-				
+	match right_shoulder_pad:
+		"1":
+			instanceRightShoulder(autoload.shoulder_scene0)
+		"0":    
+			pass
+		"2":    
+			pass
+		"3":
+			pass
+		"null":
+			freeRightShoulderPad()
+	match left_shoulder_pad:
+		"1":
+			 instanceLeftShoulder(autoload.shoulder_scene0)
+		"0":    
+			pass
+		"2":    
+			pass
+		"3":
+			pass
+		"null":
+			freeLeftShoulderPad()
 
-#_______________________________________________________________________________
-	if is_instance_valid(left_shoulder):
-		if shoulder_l_icon.texture == null:
-			has_left_shoulder_pad = false 
-			if left_shoulder.get_child_count() > 0:
-				left_shoulder.remove_child(left_shoulder.get_child(0))
-		else:
-			if has_left_shoulder_pad == false:
-				if shoulder_l_icon.texture == autoload.shoulder1:
-					var shoulder_instance = autoload.shoulder_scene0.instance()
-					fixLeftShoulder(shoulder_instance)
-					left_shoulder.add_child(shoulder_instance)
-					has_left_shoulder_pad =  true
-var mixamo_scale = 100
-func fixRightShoulder(instance):
-	pass
+func instanceRightShoulder(scene):
+	if right_shoulder and scene:
+		if got_right_shoulder_pad == false:
+			var scene_instance = scene.instance()
+			right_shoulder.add_child(scene_instance)
+			got_right_shoulder_pad = true
+func instanceLeftShoulder(scene):
+	if left_shoulder and scene:
+		if got_left_shoulder_pad == false:
+			var scene_instance = scene.instance()
+			left_shoulder.add_child(scene_instance)
+			got_left_shoulder_pad = true
+func freeRightShoulderPad():
+	if right_shoulder and right_shoulder.get_child_count() > 0:
+		right_shoulder.get_child(0).queue_free()
+		got_right_shoulder_pad = false
+func freeLeftShoulderPad():
+	if left_shoulder and left_shoulder.get_child_count() > 0:
+		left_shoulder.get_child(0).queue_free()
+		got_left_shoulder_pad = false
+		
+		
 	
-func fixLeftShoulder(instance):
-	pass
-
-
 #Main Weapon____________________________________________________________________
 var right_hand: BoneAttachment = null 
 var right_hip : BoneAttachment = null 
@@ -2003,11 +2018,12 @@ func addItemToCharacterSheet(icon,slot,texture):
 		icon.savedata()
 
 func fixInstance():
-	right_hand.add_child(current_weapon_instance)
-	current_weapon_instance.get_node("CollisionShape").disabled = true
-	current_weapon_instance.scale = Vector3(100, 100, 100)
-	got_weapon = true
-func switch():
+	if right_hand:
+		right_hand.add_child(current_weapon_instance)
+		current_weapon_instance.get_node("CollisionShape").disabled = true
+		current_weapon_instance.scale = Vector3(100, 100, 100)
+		got_weapon = true
+func switchWeapon():
 	match main_weapon:
 		"sword0":
 			if current_weapon_instance == null:
@@ -2026,7 +2042,6 @@ func switch():
 			addItemToCharacterSheet(main_weap_icon,main_weap_slot,autoload.staff1)
 		"null":
 			current_weapon_instance = null
-			
 			got_weapon = false
 func removeWeapon():
 	if got_weapon:
@@ -2079,7 +2094,7 @@ func pickItemsMainHand():
 func MainWeapon():
 	switchMainFromHipToHand()
 	pickItemsMainHand()
-	switch()
+	switchWeapon()
 	if Input.is_action_just_pressed("drop"):
 		drop()
 		main_weapon = "null"
@@ -2093,25 +2108,42 @@ var sec_current_weapon_instance: Node = null
 var secondary_weapon = "null"
 var got_sec_weapon = false
 var is_secondary_weapon_on_hip = false 
+
 func switchSecondaryFromHipToHand():
 	if is_instance_valid(sec_current_weapon_instance):
 		if is_in_combat:
-			if left_hand.get_child_count() == 0:
+			if left_hand and left_hand.get_child_count() == 0:
 				if sec_current_weapon_instance != null and sec_current_weapon_instance.get_parent() == left_hip:
 					left_hip.remove_child(sec_current_weapon_instance)
 					left_hand.add_child(sec_current_weapon_instance)
 					is_secondary_weapon_on_hip = false 
 		else:
-			if left_hip.get_child_count() == 0:
+			if left_hip and left_hip.get_child_count() == 0:
 				if sec_current_weapon_instance != null and sec_current_weapon_instance.get_parent() == left_hand:
 					left_hand.remove_child(sec_current_weapon_instance)
 					left_hip.add_child(sec_current_weapon_instance)
 					is_secondary_weapon_on_hip = true
+#func switchSecondaryFromHipToHand():
+#	if is_instance_valid(sec_current_weapon_instance):
+#		if is_in_combat:
+#			if left_hand:
+#				if left_hand.get_child_count() == 0:
+#					if sec_current_weapon_instance != null and sec_current_weapon_instance.get_parent() == left_hip:
+#						left_hip.remove_child(sec_current_weapon_instance)
+#						left_hand.add_child(sec_current_weapon_instance)
+#						is_secondary_weapon_on_hip = false 
+#		else:
+#			if left_hip.get_child_count() == 0:
+#				if sec_current_weapon_instance != null and sec_current_weapon_instance.get_parent() == left_hand:
+#					left_hand.remove_child(sec_current_weapon_instance)
+#					left_hip.add_child(sec_current_weapon_instance)
+#					is_secondary_weapon_on_hip = true
 func fixSecInstance():
-	left_hand.add_child(sec_current_weapon_instance)
-	sec_current_weapon_instance.get_node("CollisionShape").disabled = true
-	sec_current_weapon_instance.scale = Vector3(100, 100, 100)
-	got_sec_weapon = true
+	if left_hand:
+		left_hand.add_child(sec_current_weapon_instance)
+		sec_current_weapon_instance.get_node("CollisionShape").disabled = true
+		sec_current_weapon_instance.scale = Vector3(100, 100, 100)
+		got_sec_weapon = true
 func switchSec():
 	match secondary_weapon:
 		"sword0":
@@ -2246,7 +2278,19 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 				head = "garment1"
 		elif helm_icon.texture == null:
 			head = "naked"
-
+#_____________________________shoulder__________________________________________
+	if shoulder_r_icon != null:
+		if shoulder_r_icon.texture != null:
+			if shoulder_r_icon.texture.get_path() == autoload.shoulder1.get_path():
+				right_shoulder_pad = "1"
+		elif shoulder_r_icon.texture == null:
+			right_shoulder_pad = "null"
+	if shoulder_l_icon != null:
+		if shoulder_l_icon.texture != null:
+			if shoulder_l_icon.texture.get_path() == autoload.shoulder1.get_path():
+				left_shoulder_pad = "1"
+		elif shoulder_l_icon.texture == null:
+			left_shoulder_pad = "null"
 #_______________________________chest___________________________________________
 	var chest_icon = $UI/GUI/Equipment/EquipmentBG/BreastPlate/Icon
 	if chest_icon != null:
@@ -4672,7 +4716,6 @@ func loadPlayerData():
 			if "hair_color" in player_data:
 				hair_color = player_data["hair_color"]
 				
-				
 func _on_pressme_pressed():
 	health = 5
 	breath = 5
@@ -4708,7 +4751,11 @@ var sex: String = "xx"
 var current_race_gender: Node = null 
 
 func switchSexRace():
-
+	main_weapon = "null"
+	secondary_weapon = "null"
+	right_shoulder_pad = "null"
+	left_shoulder_pad = "null"
+	
 	match sex:
 		"xy":
 			match species:
@@ -4787,10 +4834,11 @@ func switchSexRace():
 		right_shoulder = current_race_gender.shoulder_r
 		var current_face_set = current_race_gender.face_set
 
+
 	
 func InstanceRace():
 	player_mesh.add_child(current_race_gender)
-	switch()
+	#switchWeapon()
 
 	
 
