@@ -387,7 +387,6 @@ func colorhair():
 			current_hair_instance.material_override = new_material
 			# Set the color property of the new material
 			new_material.albedo_color = hair_color
-
 #face editing 
 onready var face_attachment = $Armature/Skeleton/head/Holder2
 onready var face0: PackedScene = preload("res://player/human/fem/Faces/0.tscn")
