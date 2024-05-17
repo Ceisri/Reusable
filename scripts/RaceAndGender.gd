@@ -349,25 +349,29 @@ var eyel_color_change = false
 func switchHair():
 	if current_hair_instance:
 		current_hair_instance.queue_free() # Remove the current hair instance
-	match hairstyle:
-		"1":
-			instanceHair(hair0)
-		"2":
-			instanceHair(hair1)
-		"3":
-			instanceHair(hair2)
-		"4":
-			instanceHair(hair3)
-		"5":
-			instanceHair(hair4)
-		"6":
-			instanceHair(hair5)
-		"7":
-			instanceHair(hair6)
-		"8":
-			instanceHair(hair7)
-		"9":
-			instanceHair(hair0)
+	match player.species:
+		"human":
+			match player.sex:
+				"xx":
+					match hairstyle:
+						"1":
+							instanceHair(hair0)
+						"2":
+							instanceHair(hair1)
+						"3":
+							instanceHair(hair2)
+						"4":
+							instanceHair(hair3)
+						"5":
+							instanceHair(hair4)
+						"6":
+							instanceHair(hair5)
+						"7":
+							instanceHair(hair6)
+						"8":
+							instanceHair(hair7)
+						"9":
+							instanceHair(hair0)
 
 func instanceHair(hair_scene):
 	if hair_attachment and hair_scene:
@@ -415,3 +419,42 @@ func instanceFace(face_scene):
 		var face_instance = face_scene.instance()
 		face_attachment.add_child(face_instance)
 		current_face_instance = face_instance
+
+
+
+var can_move: bool = false
+func stopMovement():
+	can_move = false
+func startMovement():
+	can_move = true 
+
+
+
+
+
+func punch():
+	var damage_type = "blunt"
+	var damage = 10 + player.blunt_dmg 
+	var damage_flank = damage + player.flank_dmg
+	var critical_damage : float  = damage * player.critical_strength
+	var critical_flank_damage : float  = damage_flank * player.critical_strength
+	var aggro_power = damage + 20
+	var enemies = player.detector.get_overlapping_bodies()
+	for enemy in enemies:
+		if enemy.is_in_group("enemy"):
+			if enemy.has_method("takeDamage"):
+				if enemy.has_method("applyEffect"):
+					enemy.applyEffect(enemy,"bleeding", true)	
+				player.pushEnemyAway(2, enemy,0.25)
+				if player.is_on_floor():
+					#insert sound effect here
+					if randf() <= player.critical_chance:
+						if player.isFacingSelf(enemy,0.30): #check if the enemy is looking at me 
+							enemy.takeDamage(critical_damage,aggro_power,player,player.stagger_chance,"acid")
+						else: #apparently the enemy is showing his back or flanks, extra damagec
+							enemy.takeDamage(critical_flank_damage,aggro_power,player,player.stagger_chance,"toxic")
+					else:
+						if player.isFacingSelf(enemy,0.30): #check if the enemy is looking at me 
+							enemy.takeDamage(damage,aggro_power,player,player.stagger_chance,"heat")
+						else: #apparently the enemy is showing his back or flanks, extra damagec
+							enemy.takeDamage(damage_flank,aggro_power,player,player.stagger_chance,"jolt")

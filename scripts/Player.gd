@@ -741,11 +741,11 @@ func skills(slot):
 				elif slot.texture.resource_path == autoload.arcane_blast.get_path():	
 					necromant.arcaneBlast()
 				elif slot.texture.resource_path == autoload.punch.get_path():
-					animation.play("full combo cycle",0.3,melee_atk_speed +0.15)
-					if can_move == true:
+					animation.play("base attack barehanded cycle",0.3,melee_atk_speed +0.15)
+					if current_race_gender.can_move == true:
 						horizontal_velocity = direction * 3
 						movement_speed = 3
-					elif can_move == false:
+					elif current_race_gender.can_move == false:
 						horizontal_velocity = direction * 0
 						movement_speed = 0
 				elif slot.texture.resource_path == autoload.guard.get_path():
@@ -926,7 +926,7 @@ func stopDoubleAttack():
 	double_atk_animation_duration = 0
 					
 					
-					
+
 func stompKickDealDamage():
 	var damage_type = "blunt"
 	var damage = 10 + blunt_dmg 
@@ -4764,40 +4764,40 @@ func switchSexRace():
 						current_race_gender.queue_free() # Delete previous gender scene
 					current_race_gender = autoload.saurus.instance()
 					current_race_gender.player = self 
-					current_race_gender.save_directory = save_directory
-					current_race_gender.save_path = save_path + "colors.dat"
+					raceInstacePreparations()
 					InstanceRace()
 				"human":
 					if current_race_gender != null:
 						current_race_gender.queue_free() # Delete previous gender scene
 					current_race_gender = autoload.human_male.instance()
 					current_race_gender.player = self 
-					current_race_gender.save_directory = save_directory
-					current_race_gender.save_path = save_path + "colors.dat"
+					raceInstacePreparations()
 					InstanceRace()
 				"panthera":
 					if current_race_gender != null:
 						current_race_gender.queue_free() # Delete previous gender scene
 					current_race_gender = autoload.panthera_male.instance()
 					current_race_gender.player = self 
-					current_race_gender.save_directory = save_directory
-					current_race_gender.save_path = save_path + "colors.dat"
+					raceInstacePreparations()
 					InstanceRace()
 				"sepris":
 					if current_race_gender != null:
 						current_race_gender.queue_free()
 					current_race_gender = autoload.sepris.instance()
 					current_race_gender.player = self 
-					current_race_gender.save_directory = save_directory
-					current_race_gender.save_path = save_path + "colors.dat"
+					raceInstacePreparations()
 					InstanceRace()
 				"bireas":
 					if current_race_gender != null:
 						current_race_gender.queue_free()
 					current_race_gender = autoload.bireas.instance()
-					current_race_gender.player = self 
-					current_race_gender.save_directory = save_directory
-					current_race_gender.save_path = save_path + "colors.dat"
+					raceInstacePreparations()
+					InstanceRace()
+				"skeleton":
+					if current_race_gender != null:
+						current_race_gender.queue_free()
+					current_race_gender = autoload.skeleton.instance()
+					raceInstacePreparations()
 					InstanceRace()
 		"xx":
 			match species:
@@ -4831,6 +4831,12 @@ func switchSexRace():
 					current_race_gender = autoload.bireas.instance()
 					raceInstacePreparations()
 					InstanceRace()
+				"skeleton":
+					if current_race_gender != null:
+						current_race_gender.queue_free()
+					current_race_gender = autoload.skeleton.instance()
+					raceInstacePreparations()
+					InstanceRace()
 	if is_instance_valid(current_race_gender):
 		right_hand = current_race_gender.right_hand
 		left_hand = current_race_gender.left_hand
@@ -4847,9 +4853,8 @@ func raceInstacePreparations():
 	current_race_gender.save_path = save_path + "colors.dat"
 func InstanceRace():
 	player_mesh.add_child(current_race_gender)
-	#switchWeapon()
 
-	
+
 
 func _on_switchGender_pressed():
 	
@@ -4862,7 +4867,7 @@ func _on_switchGender_pressed():
 	current_race_gender.EquipmentSwitch()
 
 
-var species_list = ["sepris", "human","panthera","bireas","saurus"]# Define the list of available species
+var species_list = ["sepris", "human","skeleton","panthera","bireas","saurus"]# Define the list of available species
 var current_species_index = 0# Initialize the index of the current species
 func _on_switchRace_pressed():
 	current_species_index += 1# Increment the index to move to the next species
