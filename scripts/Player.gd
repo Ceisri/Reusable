@@ -4799,6 +4799,12 @@ func switchSexRace():
 					current_race_gender = autoload.skeleton.instance()
 					raceInstacePreparations()
 					InstanceRace()
+				"kadosiel":
+					if current_race_gender != null:
+						current_race_gender.queue_free()
+					current_race_gender = autoload.kadosiel.instance()
+					raceInstacePreparations()
+					InstanceRace()
 		"xx":
 			match species:
 				"saurus":
@@ -4837,6 +4843,12 @@ func switchSexRace():
 					current_race_gender = autoload.skeleton.instance()
 					raceInstacePreparations()
 					InstanceRace()
+				"kadosiel":
+					if current_race_gender != null:
+						current_race_gender.queue_free()
+					current_race_gender = autoload.kadosiel.instance()
+					raceInstacePreparations()
+					InstanceRace()
 	if is_instance_valid(current_race_gender):
 		right_hand = current_race_gender.right_hand
 		left_hand = current_race_gender.left_hand
@@ -4867,7 +4879,7 @@ func _on_switchGender_pressed():
 	current_race_gender.EquipmentSwitch()
 
 
-var species_list = ["sepris", "human","skeleton","panthera","bireas","saurus"]# Define the list of available species
+var species_list = ["sepris", "human","skeleton","panthera","bireas","saurus","kadosiel"]# Define the list of available species
 var current_species_index = 0# Initialize the index of the current species
 func _on_switchRace_pressed():
 	current_species_index += 1# Increment the index to move to the next species

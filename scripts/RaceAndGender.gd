@@ -298,7 +298,6 @@ func loadPlayerData():
 			if "face_set" in player_data:
 				face_set = player_data["face_set"]
 
-			
 #Face blend shapes__________________________________________________________________________________
 onready var faceblend = $Armature/Skeleton/face
 
@@ -326,9 +325,6 @@ var NoseSize = 0 #doen
 var smile = 0 # done
 
 
-
-				
-				
 #Hairstyle editing 
 onready var hair_attachment = $Armature/Skeleton/head/Holder
 onready var hair0: PackedScene = preload("res://player/human/fem/hairstyles/0.tscn")
