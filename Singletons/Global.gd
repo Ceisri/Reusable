@@ -51,7 +51,20 @@ onready var glove1 = preload("res://Equipment icons/glove1.png")
 onready var belt1 = preload("res://Equipment icons/belt1.png")
 
 
+onready var torso_armor2 = preload("res://Equipment icons/torso2.png")
+onready var torso_armor3 = preload("res://Equipment icons/torso3.png")
+onready var torso_armor4 = preload("res://Equipment icons/torso4.png")
+
 onready var staff1 = preload("res://Equipment icons/staves/staff1.png")
+
+
+onready var shoulder1 = preload("res://Equipment icons/shouleder pads/shoulder plate metal.png")
+
+
+#_______________________________3D equipable items______________________________
+onready var shoulder_scene0: PackedScene = preload("res://Equipment/Shoulder pads/shoulder plate metal.glb")
+
+
 
 
 func addNotStackableItem(inventory_grid,item_texture):
@@ -144,11 +157,10 @@ func consumeRedPotion(player:KinematicBody, button: TextureButton,inventory_grid
 		
 		
 func drawGlobalThreat(user):
-	pass
-#	var entities = get_tree().get_nodes_in_group("Enemy")
-#	for enemy in entities:
-#		if enemy.has_method("takeThreat"):
-#			enemy.takeThreat(rand_range(-15,30),user)
+	var entities = get_tree().get_nodes_in_group("Enemy")
+	for enemy in entities:
+		if enemy.has_method("takeThreat"):
+			enemy.takeThreat(rand_range(-15,30),user)
 
 var gravity_force: float = 9.8
 func gravity(user):#for seamless climbing first check if is_climbing
@@ -158,7 +170,7 @@ func gravity(user):#for seamless climbing first check if is_climbing
 					user.vertical_velocity += Vector3.DOWN * gravity_force * 2 * get_physics_process_delta_time()
 			else: 
 				user.vertical_velocity = -user.get_floor_normal() * gravity_force / 2.5
-	else:#inside of combat situations, first jump as to avoid climbing on enemies by mistake, now you have to jump on the enemy first to start climbing
+	else:#inside of combat situations,to avoid climbing on enemies by mistake, now you have to jump on the enemy first to start climbing
 		if not user.is_on_floor():
 			user.vertical_velocity += Vector3.DOWN * gravity_force * 2 * get_physics_process_delta_time()
 		else: 
@@ -174,7 +186,6 @@ func entityGravity(entity):
 			
 			
 func physicsSauce(user):
-	# The Physics Sauce. Movement, gravity and velocity in a perfect dance.
 	user.movement.z = user.horizontal_velocity.z + user.vertical_velocity.z
 	user.movement.x = user.horizontal_velocity.x + user.vertical_velocity.x
 	user.movement.y = user.vertical_velocity.y
@@ -182,3 +193,42 @@ func physicsSauce(user):
 func movement(user):
 	physicsSauce(user)
 	user.horizontal_velocity = user.horizontal_velocity.linear_interpolate(user.direction.normalized() * user.movement_speed, user.acceleration * get_process_delta_time())
+
+
+
+
+
+
+
+#______________________________________skin colors _____________________________
+
+#Panthera
+onready var pant_xy_tigris_alb =  preload("res://player/panthera/Skins/Pantera tigris albino.png")
+onready var pant_xy_tigris_clear =  preload("res://player/panthera/Skins/Pantera tigris clear.png")
+onready var pant_xy_tigris =  preload("res://player/panthera/Skins/Pantera tigris.png")
+onready var pant_xy_leo_red =  preload("res://player/panthera/Skins/Panthera leo ruby.png")
+onready var pant_xy_leo =  preload("res://player/panthera/Skins/Panthera leo.png")
+onready var pant_xy_leopard =  preload("res://player/panthera/Skins/Panthera leopard.png")
+onready var pant_xy_leopard_alb =  preload("res://player/panthera/Skins/Panthera leopard snow.png")
+onready var pant_xy_nigris =  preload("res://player/panthera/Skins/Panthera nigris.png")
+
+
+#Human
+onready var hum_xy_white =  preload("res://player/human/mal/Skins/WhatsApp Image 2023-06-04 at 15.45.54.jpeg")
+onready var hum_xy_brown =  preload("res://player/human/mal/Skins/Human_xy_2.png")
+
+
+
+
+#_____________________________________Races and Genders_________________________
+onready var human_male:PackedScene =  preload("res://player/human/mal/Mesh/HMale.tscn")
+onready var human_female:PackedScene =  preload("res://player/human/fem/HumanFemale.tscn")
+
+onready var panthera_male:PackedScene =  preload("res://player/panthera/mal/Panthera.tscn")
+onready var panthera_female:PackedScene =  preload("res://player/panthera/fem/PantheraFem.tscn")
+
+onready var sepris:PackedScene =  preload("res://player/Sepris/Sepris.tscn")
+onready var bireas:PackedScene =  preload("res://player/Bireas/Bireas.tscn")
+onready var saurus:PackedScene =  preload("res://testing this shit/Saurus.tscn")
+onready var skeleton:PackedScene =  preload("res://player/skeleton/skeleton.tscn")
+onready var kadosiel:PackedScene =  preload("res://player/kadosiel test/Kadosiel.tscn")
