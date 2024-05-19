@@ -185,6 +185,8 @@ func changeHeadTorsoColor(materail_number, new_material, color):
 
 	new_material.albedo_texture = color
 	new_material.flags_unshaded = true
+	if current_face_instance != null:
+		current_face_instance.set_surface_material(materail_number, new_material)
 	if face != null:
 		face.set_surface_material(materail_number, new_material)
 	if torso0 !=null:
@@ -394,22 +396,39 @@ onready var face1: PackedScene = preload("res://player/human/fem/Faces/1.tscn")
 onready var face2: PackedScene = preload("res://player/human/fem/Faces/2.tscn")
 onready var face3: PackedScene = preload("res://player/human/fem/Faces/3.tscn")
 onready var face4: PackedScene = preload("res://player/human/fem/Faces/4.tscn")
+onready var HXYface1: PackedScene = preload("res://player/human/mal/Mesh/heads/h0.tscn")
 var face_set:String = "1"
 var current_face_instance: Node = null
 func switchFace():
 	if current_face_instance:
-		current_face_instance.queue_free() # Remove the current hair instance
-	match face_set:
-		"1":
-			instanceFace(face0)
-		"2":
-			instanceFace(face1)
-		"3":
-			instanceFace(face2)
-		"4":
-			instanceFace(face3)
-		"5":
-			instanceFace(face4)
+		current_face_instance.queue_free()
+	match player.species:
+		"human":
+			match player.sex:
+				"xx":
+					match face_set:
+						"1":
+							instanceFace(face0)
+						"2":
+							instanceFace(face1)
+						"3":
+							instanceFace(face2)
+						"4":
+							instanceFace(face3)
+						"5":
+							instanceFace(face4)
+				"xy":
+					match face_set:
+						"1":
+							instanceFace(HXYface1)
+						"2":
+							instanceFace(HXYface1)
+						"3":
+							instanceFace(HXYface1)
+						"4":
+							instanceFace(HXYface1)
+						"5":
+							instanceFace(HXYface1)
 func instanceFace(face_scene):
 	if face_attachment and face_scene:
 		var face_instance = face_scene.instance()
