@@ -3,12 +3,12 @@ extends Spatial
 var player 
 onready var animation = $AnimationPlayer
 onready var left_hand = $Armature/Skeleton/LeftHand
-onready var right_hand = $Armature/Skeleton/RightHand
+onready var right_hand = $Armature/Skeleton/RightHand/Holder
 onready var right_hip = $Armature/Skeleton/RightHip
 onready var left_hip = $Armature/Skeleton/LeftHip
 onready var shoulder_r = $Armature/Skeleton/RightShoulder/Holder
 onready var shoulder_l = $Armature/Skeleton/LeftShoulder/Holder
-onready var sword0: PackedScene = preload("res://itemTest.tscn")
+onready var sword0: PackedScene = preload("res://player/weapons/sword/sword.tscn")
 onready var sword1: PackedScene = preload("res://itemTest.tscn")
 onready var sword2: PackedScene = preload("res://itemTest.tscn")
 func _ready():
@@ -473,3 +473,30 @@ func punch():
 							enemy.takeDamage(damage,aggro_power,player,player.stagger_chance,"heat")
 						else: #apparently the enemy is showing his back or flanks, extra damagec
 							enemy.takeDamage(damage_flank,aggro_power,player,player.stagger_chance,"jolt")
+
+func slash():
+	var damage_type = "slash"
+	var damage = 22 + player.slash_dmg 
+	var damage_flank = damage + player.flank_dmg
+	var critical_damage : float  = damage * player.critical_strength
+	var critical_flank_damage : float  = damage_flank * player.critical_strength
+	var aggro_power = damage + 20
+	var enemies = player.current_weapon_instance.get_node("Area").get_overlapping_bodies()
+	for enemy in enemies:
+		if enemy.is_in_group("enemy"):
+			if enemy.has_method("takeDamage"):
+				if enemy.has_method("applyEffect"):
+					enemy.applyEffect(enemy,"bleeding", true)	
+				#player.pushEnemyAway(2, enemy,0.25)
+				if player.is_on_floor():
+					#insert sound effect here
+					if randf() <= player.critical_chance:
+						if player.isFacingSelf(enemy,0.30): #check if the enemy is looking at me 
+							enemy.takeDamage(critical_damage,aggro_power,player,player.stagger_chance,damage_type)
+						else: #apparently the enemy is showing his back or flanks, extra damagec
+							enemy.takeDamage(critical_flank_damage,aggro_power,player,player.stagger_chance,damage_type)
+					else:
+						if player.isFacingSelf(enemy,0.30): #check if the enemy is looking at me 
+							enemy.takeDamage(damage,aggro_power,player,player.stagger_chance,damage_type)
+						else: #apparently the enemy is showing his back or flanks, extra damagec
+							enemy.takeDamage(damage_flank,aggro_power,player,player.stagger_chance,damage_type)

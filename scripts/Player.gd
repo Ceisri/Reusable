@@ -12,6 +12,8 @@ var is_rolling = bool()
 var is_walking = bool()
 var is_running = bool()
 
+onready var l_click_slot = $UI/GUI/SkillBar/GridContainer/LClickSlot
+onready var r_click_slot = $UI/GUI/SkillBar/GridContainer/RClickSlot
 
 func _ready():
 	loadPlayerData()
@@ -33,6 +35,7 @@ func _ready():
 	direction = Vector3.BACK.rotated(Vector3.UP, $Camroot/h.global_transform.basis.get_euler().y)
 	aim_label.text = aiming_mode
 	current_race_gender.EquipmentSwitch()
+	l_click_slot.switchAttackIcon()
 func _on_SlowTimer_timeout():
 	allResourcesBarsAndLabels()
 	potionEffects()
@@ -46,6 +49,9 @@ func _on_SlowTimer_timeout():
 	showStatusIcon()	
 	displayLabels()
 	regenStats()
+	switchWeaponStances()
+	l_click_slot.switchAttackIcon()
+	r_click_slot.switchAttackIcon()
 
 	
 
@@ -566,7 +572,18 @@ func showEnemyStats():
 
 
 #______________________________________________Animations___________________________________________
-var weapon_type: String = "fist"
+var weapon_type: String = "fist" #fist, sword, dual_swords, sword_shield,two_handed, spear, staff
+func switchWeaponStances()-> void:
+	if right_hand.get_child_count() > 0:
+		if left_hand.get_child_count() > 0:
+			weapon_type = "dual_sword"
+		elif left_hand.get_child_count() == 0:
+			weapon_type = "sword"
+	else:
+		if left_hand.get_child_count() == 0:
+			weapon_type = "fist"
+		
+
 var animation_state: String = "idle"
 func matchAnimationStates():
 	if current_race_gender != null and animation != null:
@@ -654,7 +671,9 @@ func matchAnimationStates():
 				"idle":
 					if is_in_combat:
 						if weapon_type == "fist":
-							animation.play("barehanded idle",0.2,1)
+							animation.play("barehand idle",0.2,1)
+						else:
+							animation.play("barehand idle",0.2,1)
 					else:
 						animation.play("idle cycle")
 				#skillbar stuff
@@ -745,6 +764,15 @@ func skills(slot):
 					if current_race_gender.can_move == true:
 						horizontal_velocity = direction * 3
 						movement_speed = 3
+					elif current_race_gender.can_move == false:
+						horizontal_velocity = direction * 0
+						movement_speed = 0
+				elif slot.texture.resource_path == autoload.slash_sword.get_path():
+					is_in_combat = true
+					animation.play("1h still",0.3,melee_atk_speed)
+					if current_race_gender.can_move == true:
+						horizontal_velocity = direction * 2
+						movement_speed = 2
 					elif current_race_gender.can_move == false:
 						horizontal_velocity = direction * 0
 						movement_speed = 0
@@ -1977,7 +2005,7 @@ func freeLeftShoulderPad():
 		
 	
 #Main Weapon____________________________________________________________________
-var right_hand: BoneAttachment = null 
+var right_hand:Node = null 
 var right_hip : BoneAttachment = null 
 onready var detector = $Mesh/Detector
 onready var main_weap_slot = $UI/GUI/Equipment/EquipmentBG/MainWeap
@@ -2024,6 +2052,7 @@ func fixInstance():
 		current_weapon_instance.scale = Vector3(100, 100, 100)
 		got_weapon = true
 func switchWeapon():
+		
 	match main_weapon:
 		"sword0":
 			if current_weapon_instance == null:

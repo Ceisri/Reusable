@@ -211,17 +211,17 @@ func loseThreat():
 	for assailant in targets:
 		if assailant != null and assailant.player != null:
 			# Calculate distance between assailant and parent node
-			var distance = assailant.player.global_transform.origin.distance_to(parent_position)
-
-			# Calculate reduction based on distance range
-			var reduction = 0
-			if distance <= close_range:
-				reduction = 0
-			elif distance <= middle_range:
-				reduction = 1
-			else:
-				reduction = 3
-
-			# Ensure the reduction doesn't exceed the current threat
-			assailant.threat = max(0, assailant.threat - reduction)
+			if is_instance_valid(assailant):
+				if assailant != null:
+					var distance = assailant.player.global_transform.origin.distance_to(parent_position)
+					# Calculate reduction based on distance range
+					var reduction = 0
+					if distance <= close_range:
+						reduction = 0
+					elif distance <= middle_range:
+						reduction = 1
+					else:
+						reduction = 3
+					# Ensure the reduction doesn't exceed the current threat
+					assailant.threat = max(0, assailant.threat - reduction)
 
