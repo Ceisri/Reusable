@@ -52,8 +52,8 @@ func _on_SlowTimer_timeout():
 	switchWeaponStances()
 	l_click_slot.switchAttackIcon()
 	r_click_slot.switchAttackIcon()
-
-	
+#	takeDamage(100, 0, self, 0,"slash")
+#
 
 
 func _on_3FPS_timeout():
@@ -69,7 +69,7 @@ func _on_3FPS_timeout():
 	updateAllStats()
 	switchShoulder()
 func _physics_process(delta: float) -> void:
-	$Debug.text = animation_state
+	$Debug.text = state
 #	displayClock()
 	convertStats()
 	ChopTree()
@@ -182,10 +182,10 @@ func climbing():
 					is_climbing = true
 					is_swimming = false
 					if not head_ray.is_colliding() and not is_wall_in_range:#vaulting
-						animation_state = "vaulting"
+						state = "vaulting"
 						vertical_velocity = Vector3.UP * 3 
 					elif not is_wall_in_range:#normal climb
-						animation_state = "climbing"
+						state = "climbing"
 						vertical_velocity = Vector3.UP * 3 
 					else:
 						vertical_velocity = Vector3.UP * (strength * 1.25 + (agility * 0.15))
@@ -252,7 +252,7 @@ var fall_damage = 0
 var fall_distance = 0
 var minimum_fall_distance = 0.5
 func fallDamage():
-	if animation_state == "fall" and !is_climbing and !is_on_wall():
+	if state == "fall" and !is_climbing and !is_on_wall():
 		#print("fall damage " + str(fall_damage))
 		#print("fall distance " + str(fall_distance))
 		fall_distance += 0.015
@@ -584,11 +584,11 @@ func switchWeaponStances()-> void:
 			weapon_type = "fist"
 		
 
-var animation_state: String = "idle"
+var state: String = "idle"
 func matchAnimationStates():
 	if current_race_gender != null and animation != null:
 		if is_instance_valid(animation):
-			match animation_state:
+			match state:
 		#_______________________________attacking states________________________________
 				"slide":
 					var slide_blend = 0.3
@@ -604,9 +604,12 @@ func matchAnimationStates():
 					var slot = $UI/GUI/SkillBar/GridContainer/RClickSlot/Icon
 					skills(slot)
 				"double attack":
-					if weapon_type == "fist":
-						animation.play("high kick",0.3,melee_atk_speed)
-					if can_move and !is_on_wall():
+					match weapon_type:
+						"fist":
+							animation.play("high kick",0.3,melee_atk_speed)
+						"sword":
+							animation.play("stab lunge",0.3,melee_atk_speed)
+					if current_race_gender.can_move and !is_on_wall():
 						horizontal_velocity = direction * 7
 						movement_speed = 7
 					else:
@@ -769,13 +772,16 @@ func skills(slot):
 						movement_speed = 0
 				elif slot.texture.resource_path == autoload.slash_sword.get_path():
 					is_in_combat = true
-					animation.play("1h still",0.3,melee_atk_speed)
+					animation.play("base attack one handed sword cycle",0.3,melee_atk_speed)
 					if current_race_gender.can_move == true:
 						horizontal_velocity = direction * 2
 						movement_speed = 2
 					elif current_race_gender.can_move == false:
 						horizontal_velocity = direction * 0
 						movement_speed = 0
+				elif slot.texture.resource_path == autoload.guard_sword.get_path():
+					is_in_combat = true
+					animation.play("guard one handed sword",0.3)
 				elif slot.texture.resource_path == autoload.guard.get_path():
 					if !is_walking:
 						animation.play("guard",0.3)
@@ -812,112 +818,112 @@ func animations():
 #on water
 	if is_swimming:
 		if is_walking:
-			animation_state = "swim"
+			state = "swim"
 		else:
-			animation_state = "idle water"
+			state = "idle water"
 #on land
 	elif dodge_animation_duration > 0 and resolve >0:
 		resolve -= 0.2
-		animation_state = "slide"
+		state = "slide"
 		jump_animation_duration = 0 
 
 	elif not is_on_floor() and not is_climbing and not is_swimming:
-		animation_state = "fall"
+		state = "fall"
 		jump_animation_duration = 0 
 	elif double_atk_animation_duration > 0 and !cursor_visible: 
-		animation_state = "double attack"
+		state = "double attack"
 		jump_animation_duration = 0 
 	elif Input.is_action_pressed("rclick") and Input.is_action_pressed("attack") and !cursor_visible:
-		animation_state = "guard attack"
+		state = "guard attack"
 		jump_animation_duration = 0 
 	elif Input.is_action_pressed("rclick") and !cursor_visible:
 		if !is_walking:
-			animation_state = "guard"
+			state = "guard"
 			jump_animation_duration = 0 
 		else:
-			animation_state = "guard walk"
+			state = "guard walk"
 			jump_animation_duration = 0 
 #attacks________________________________________________________________________
 	elif Input.is_action_pressed("attack") and Input.is_action_pressed("run") and !cursor_visible: 
-		animation_state = "run attack"
+		state = "run attack"
 		jump_animation_duration = 0 
 	elif Input.is_action_pressed("attack") and Input.is_action_pressed("sprint") and !cursor_visible: 
-		animation_state = "sprint attack"
+		state = "sprint attack"
 		jump_animation_duration = 0 
 	elif Input.is_action_pressed("attack") and !cursor_visible:
-			animation_state = "base attack"
+			state = "base attack"
 			jump_animation_duration = 0 
 #_______________________________________________________________________________
 			
 #skills put these below the walk elif statment in case of keybinding bugs, as of now it works so no need
 	elif Input.is_action_pressed("1"):
-		animation_state = "test1"
+		state = "test1"
 	elif Input.is_action_pressed("2"):
-		animation_state = "test2"
+		state = "test2"
 	elif Input.is_action_pressed("3"):
-		animation_state = "test3"
+		state = "test3"
 	elif Input.is_action_pressed("4"):
-		animation_state = "test4"
+		state = "test4"
 	elif Input.is_action_pressed("5"):
-		animation_state = "test5"
+		state = "test5"
 	elif Input.is_action_pressed("6"):
-		animation_state = "test6"
+		state = "test6"
 	elif Input.is_action_pressed("7"):
-		animation_state = "test7"
+		state = "test7"
 	elif Input.is_action_pressed("8"):
-		animation_state = "test8"
+		state = "test8"
 	elif Input.is_action_pressed("9"):
-		animation_state = "test9"
+		state = "test9"
 	elif Input.is_action_pressed("0"):
-		animation_state = "test0"
+		state = "test0"
 	elif Input.is_action_pressed("Q"):
-		animation_state = "testQ"
+		state = "testQ"
 	elif Input.is_action_pressed("E"):
-		animation_state = "testE"
+		state = "testE"
 	elif Input.is_action_pressed("R"):
-		animation_state = "testR"
+		state = "testR"
 	elif Input.is_action_pressed("F"):
-		animation_state = "testF"
+		state = "testF"
 	elif Input.is_action_pressed("R"):
-		animation_state = "testR"
+		state = "testR"
 	elif Input.is_action_pressed("T"):
-		animation_state = "testT"
+		state = "testT"
 	elif Input.is_action_pressed("G"):
-		animation_state = "testG"
+		state = "testG"
 	elif Input.is_action_pressed("H"):
-		animation_state = "testH"
+		state = "testH"
 	elif Input.is_action_pressed("Y"):
-		animation_state = "testY"
+		state = "testY"
 	elif Input.is_action_pressed("V"):
-		animation_state = "testV"
+		state = "testV"
 	elif Input.is_action_pressed("B"):
-		animation_state = "testB" 
+		state = "testB" 
 #_______________________________________________________________________________
 		
 	elif is_sprinting == true:
-			animation_state = "sprint"
+			state = "sprint"
 			jump_animation_duration = 0 
 	elif is_running:
-			animation_state = "run"
+			state = "run"
 			jump_animation_duration = 0 
 	elif is_walking:
-			animation_state = "walk"
+			state = "walk"
 			jump_animation_duration = 0 
 
 	
 	elif Input.is_action_pressed("crouch"):
-		animation_state = "crouch" 
+		state = "crouch" 
 		jump_animation_duration = 0 
 	
 	elif jump_animation_duration != 0:
-		animation_state = "jump"
+		state = "jump"
 	else:
-		animation_state = "idle"
+		state = "idle"
 
 #_______________________________________________Combat______________________________________________
 
 func dodgeIframe():#apparently combat is too shitty without iframes, more realistic but as boring as watching olympic wrestling or judo, fucking utter ridiculous shit
-	if animation_state == "slide":
+	if state == "slide":
 		set_collision_layer(6)  # Set to the desired collision layer
 		set_collision_mask(6)   # Set to the desired collision mask
 	else:
@@ -933,7 +939,7 @@ func attack():
 var double_atk_count: int = 0
 var double_atk_timer: float = 0.0
 var double_atk_animation_duration : float  = 0
-var double_atk_animation_max_duration : float  = 1.125
+var double_atk_animation_max_duration : float  = 2.208
 func doubleAttack():
 		if double_atk_count > 0:
 			double_atk_timer += get_physics_process_delta_time()
@@ -1312,20 +1318,13 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
 		if random < stagger_chance - stagger_resistance:
 			staggered += 0.5
 			text.status = "Staggered"
-	if animation_state == "guard":
-		parryIcon()
-		health -= (damage_to_take / guard_dmg_absorbition)
-		text.amount = ((damage_to_take / guard_dmg_absorbition) * 100)/ 100
-		text.status = "Guarded"
-		text.state = damage_type
-	else:
-		health -= damage_to_take
-		text.amount =round(damage_to_take * 100)/ 100
-		text.state = damage_type
+
+	health -= damage_to_take
+	text.amount =round(damage_to_take * 100)/ 100
+	text.state = damage_type
 	take_damage_view.add_child(text)
 
 func takeHealing(healing,healer):
-
 	health += healing
 	var text = floatingtext_damage.instance()
 	text.amount =round(healing * 100)/ 100
@@ -2285,11 +2284,11 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 		if main_weap_icon.texture != null:
 			if main_weap_icon.texture.get_path() == autoload.wood_sword.get_path():
 				main_weapon = "sword0"
-				applyEffect(self, "effect2", true)
+				applyEffect(self, "sword0", true)
 		elif main_weap_icon.texture == null:
 			removeWeapon()
 			main_weapon = "null"
-			applyEffect(self, "effect2", false)
+			applyEffect(self, "sword0", false)
 #__________________________sec weapon___________________________________________
 	if sec_weap_icon != null:
 		if sec_weap_icon.texture != null:
@@ -2449,10 +2448,12 @@ var effects = {
 	"Rhand1": {"stats": {"slash_resistance": 1,"blunt_resistance": 1,"pierce_resistance": 1,"cold_resistance": 3,"jolt_resistance": 5,"acid_resistance": 3}, "applied": false},
 	"Lshoe1": {"stats": {"slash_resistance": 1,"blunt_resistance": 3,"pierce_resistance": 1,"heat_resistance": 1,"cold_resistance": 6,"jolt_resistance": 15}, "applied": false},
 	"Rshoe1": {"stats": {"slash_resistance": 1,"blunt_resistance": 3,"pierce_resistance": 1,"heat_resistance": 1,"cold_resistance": 6,"jolt_resistance": 15}, "applied": false},
+	"sword0": {"stats": { "extra_guard_dmg_absorbition": 0.3,"slash_dmg":12}, "applied": false}
 }
 
 # Function to apply or remove effects
 func applyEffect(player: Node, effect_name: String, active: bool):
+
 	if effects.has(effect_name):
 		var effect = effects[effect_name]
 		if active and not effect["applied"]:
@@ -2858,8 +2859,9 @@ var stagger_resistance: float = 0.5
 var deflection_chance : float = 0.33
 
 
-var guard_dmg_absorbition: float = 2 #total damage taken will be divided by this when guarding
-
+var guard_dmg_absorbition: float = 1.5 #total damage taken will be divided by this when guarding
+var extra_guard_dmg_absorbition:float
+var total_guard_dmg_absorbition:float
 
 
 var staggered = 0 
@@ -3032,6 +3034,7 @@ func convertStats():
 	max_health = base_max_health * total_vitality
 	max_sprint_speed = base_max_sprint_speed * total_agility
 	run_speed = base_run_speed * total_agility
+	total_guard_dmg_absorbition = extra_guard_dmg_absorbition + guard_dmg_absorbition
 	
 	stagger_chance = max(0, (total_impact - 1.00) * 0.45) +  max(0, (total_ferocity - 1.00) * 0.005) 
 	
@@ -4969,8 +4972,6 @@ func colorhair():
 			var new_material = original_material.duplicate()# Duplicate the original material
 			current_race_gender.current_hair_instance.material_override = new_material# Assign the new material to the hair instance
 			new_material.albedo_color = hair_color# Set the color property of the new material
-
-
 
 func _on_BlendshapeTest_pressed():
 	current_race_gender.smile = rand_range(-2,+2)

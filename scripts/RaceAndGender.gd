@@ -473,21 +473,47 @@ func punch():
 							enemy.takeDamage(damage,aggro_power,player,player.stagger_chance,"heat")
 						else: #apparently the enemy is showing his back or flanks, extra damagec
 							enemy.takeDamage(damage_flank,aggro_power,player,player.stagger_chance,"jolt")
-
-func slash():
+onready var sword_sword:Area = $Armature/Skeleton/RightHand/Area
+func slash()->void:
 	var damage_type = "slash"
 	var damage = 22 + player.slash_dmg 
 	var damage_flank = damage + player.flank_dmg
 	var critical_damage : float  = damage * player.critical_strength
 	var critical_flank_damage : float  = damage_flank * player.critical_strength
 	var aggro_power = damage + 20
-	var enemies = player.current_weapon_instance.get_node("Area").get_overlapping_bodies()
+	var enemies = sword_sword.get_overlapping_bodies()
 	for enemy in enemies:
 		if enemy.is_in_group("enemy"):
 			if enemy.has_method("takeDamage"):
 				if enemy.has_method("applyEffect"):
 					enemy.applyEffect(enemy,"bleeding", true)	
-				#player.pushEnemyAway(2, enemy,0.25)
+				player.pushEnemyAway(0.25, enemy,0.25)
+				if player.is_on_floor():
+					#insert sound effect here
+					if randf() <= player.critical_chance:
+						if player.isFacingSelf(enemy,0.30): #check if the enemy is looking at me 
+							enemy.takeDamage(critical_damage,aggro_power,player,player.stagger_chance,damage_type)
+						else: #apparently the enemy is showing his back or flanks, extra damagec
+							enemy.takeDamage(critical_flank_damage,aggro_power,player,player.stagger_chance,damage_type)
+					else:
+						if player.isFacingSelf(enemy,0.30): #check if the enemy is looking at me 
+							enemy.takeDamage(damage,aggro_power,player,player.stagger_chance,damage_type)
+						else: #apparently the enemy is showing his back or flanks, extra damagec
+							enemy.takeDamage(damage_flank,aggro_power,player,player.stagger_chance,damage_type)
+func stab()->void:
+	var damage_type = "pierce"
+	var damage = 22 + player.pierce_dmg 
+	var damage_flank = damage + player.flank_dmg 
+	var critical_damage : float  = damage * player.critical_strength
+	var critical_flank_damage : float  = damage_flank * player.critical_strength
+	var aggro_power = damage + 20
+	var enemies = player.detector.get_overlapping_bodies()
+	for enemy in enemies:
+		if enemy.is_in_group("enemy"):
+			if enemy.has_method("takeDamage"):
+				if enemy.has_method("applyEffect"):
+					enemy.applyEffect(enemy,"bleeding", true)	
+				player.pushEnemyAway(1.25, enemy,0.25)
 				if player.is_on_floor():
 					#insert sound effect here
 					if randf() <= player.critical_chance:
