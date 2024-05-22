@@ -52,8 +52,6 @@ func _on_SlowTimer_timeout():
 	switchWeaponStances()
 	l_click_slot.switchAttackIcon()
 	r_click_slot.switchAttackIcon()
-#	takeDamage(100, 0, self, 0,"slash")
-#
 
 
 func _on_3FPS_timeout():
@@ -68,6 +66,7 @@ func _on_3FPS_timeout():
 	SwitchEquipmentBasedOnEquipmentIcons()
 	updateAllStats()
 	switchShoulder()
+	necromant.updateCooldownLabel()
 func _physics_process(delta: float) -> void:
 	$Debug.text = state
 #	displayClock()
@@ -282,7 +281,7 @@ var acceleration = int()
 #	move_and_slide(movement, Vector3.UP)
 #__________________________________________More action based movement_______________________________
 # Dodge
-export var double_press_time: float = 0.25
+export var double_press_time: float = 0.18
 var dash_countback: int = 0
 var dash_timerback: float = 0.0
 # Dodge Left
@@ -574,14 +573,15 @@ func showEnemyStats():
 #______________________________________________Animations___________________________________________
 var weapon_type: String = "fist" #fist, sword, dual_swords, sword_shield,two_handed, spear, staff
 func switchWeaponStances()-> void:
-	if right_hand.get_child_count() > 0:
-		if left_hand.get_child_count() > 0:
-			weapon_type = "dual_sword"
-		elif left_hand.get_child_count() == 0:
-			weapon_type = "sword"
-	else:
-		if left_hand.get_child_count() == 0:
-			weapon_type = "fist"
+	if right_hand != null:
+		if right_hand.get_child_count() > 0:
+			if left_hand.get_child_count() > 0:
+				weapon_type = "dual_sword"
+			elif left_hand.get_child_count() == 0:
+				weapon_type = "sword"
+		else:
+			if left_hand.get_child_count() == 0:
+				weapon_type = "fist"
 		
 
 var state: String = "idle"
@@ -603,6 +603,12 @@ func matchAnimationStates():
 				"guard":
 					var slot = $UI/GUI/SkillBar/GridContainer/RClickSlot/Icon
 					skills(slot)
+				"guard walk":
+						match weapon_type:
+							"fist":
+								pass #replace with actual animation
+							"sword":
+								animation.play("guard walk one handed sword cycle",0,1)
 				"double attack":
 					match weapon_type:
 						"fist":
@@ -642,8 +648,11 @@ func matchAnimationStates():
 		#_________________________________walking states________________________________
 				"walk":
 					if is_in_combat:
-						if weapon_type == "fist":
-							animation.play("walk fist cycle",0,1)
+						match weapon_type:
+							"fist":
+								animation.play("walk fist cycle",0,1)
+							"sword":
+								animation.play("walk one handed sword cycle",0,1)
 					else:
 						animation.play("walk cycle")
 				"crouch walk":
@@ -752,7 +761,6 @@ func skills(slot):
 					animation.play("crawl cycle", 0.35)
 				elif slot.texture.resource_path == autoload.summon_shadow.get_path():
 					animation.play("idle crouch", 0.35)
-					#slot.get_parent().get_node("CD").text = str($UI/GUI/SkillTrees/Background/Necromant.lastSummonTime)
 					necromant.summonDemon()
 				elif slot.texture.resource_path == autoload.dominion.get_path():	
 					necromant.commandSwitch()
@@ -764,24 +772,31 @@ func skills(slot):
 					necromant.arcaneBlast()
 				elif slot.texture.resource_path == autoload.punch.get_path():
 					animation.play("base attack barehanded cycle",0.3,melee_atk_speed +0.15)
-					if current_race_gender.can_move == true:
-						horizontal_velocity = direction * 3
-						movement_speed = 3
-					elif current_race_gender.can_move == false:
-						horizontal_velocity = direction * 0
-						movement_speed = 0
+					moveDuringAnimation(3)
 				elif slot.texture.resource_path == autoload.slash_sword.get_path():
 					is_in_combat = true
 					animation.play("base attack one handed sword cycle",0.3,melee_atk_speed)
-					if current_race_gender.can_move == true:
-						horizontal_velocity = direction * 2
-						movement_speed = 2
-					elif current_race_gender.can_move == false:
-						horizontal_velocity = direction * 0
-						movement_speed = 0
+					moveDuringAnimation(2)
 				elif slot.texture.resource_path == autoload.guard_sword.get_path():
 					is_in_combat = true
 					animation.play("guard one handed sword",0.3)
+					moveDuringAnimation(3)
+					
+				elif slot.texture.resource_path == autoload.overhead_slash.get_path():
+					if necromant.can_overhead_slash == true:
+						if resolve > necromant.overhead_slash_cost:
+							match weapon_type:
+									"fist":
+										pass
+									"sword":
+										is_in_combat = true
+										animation.play("overhand strike",0.3)
+										moveDuringAnimation(1)
+						else:
+							animation.play("idle cycle",0.3)
+					else:
+						animation.play("idle cycle",0.3)
+					
 				elif slot.texture.resource_path == autoload.guard.get_path():
 					if !is_walking:
 						animation.play("guard",0.3)
@@ -813,6 +828,14 @@ func skills(slot):
 				
 				else:
 						pass
+						
+func moveDuringAnimation(speed):
+	if current_race_gender.can_move == true:
+		horizontal_velocity = direction * speed
+		movement_speed = speed
+	elif current_race_gender.can_move == false:
+		horizontal_velocity = direction * 0
+		movement_speed = 0
 var sprint_animation_speed : float = 1
 func animations():
 #on water

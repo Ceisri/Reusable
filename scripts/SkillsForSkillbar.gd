@@ -58,7 +58,7 @@ func drop_data(position, data):
 	var origin_icon = origin_node.get_node("Icon")
 	var dragPreview = origin_node.get_node("Sprite") #find the floating image of the sprite
 	dragPreview.queue_free()# delete that floating image 
-	icon.savedata()
+
 	
 	
 
