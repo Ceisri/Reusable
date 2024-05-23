@@ -576,7 +576,7 @@ func switchWeaponStances()-> void:
 	if right_hand != null and left_hand !=null:
 		if right_hand.get_child_count() > 0:
 			if left_hand.get_child_count() > 0:
-				weapon_type = "dual_sword"
+				weapon_type = "dual_swords"
 			elif left_hand.get_child_count() == 0:
 				weapon_type = "sword"
 		else:
@@ -637,6 +637,8 @@ func matchAnimationStates():
 							"fist":
 								animation.play("walk fist cycle",0,1)
 							"sword":
+								animation.play("walk one handed sword cycle",0,1)
+							"dual_swords":
 								animation.play("walk one handed sword cycle",0,1)
 					else:
 						animation.play("walk cycle")
@@ -760,8 +762,13 @@ func skills(slot):
 					moveDuringAnimation(3)
 				elif slot.texture.resource_path == autoload.slash_sword.get_path():
 					is_in_combat = true
-					animation.play("base attack one handed sword cycle",0.3,melee_atk_speed)
-					moveDuringAnimation(2)
+					match weapon_type:
+						"sword":
+							animation.play("combo 1h refined",0.3,melee_atk_speed)
+							moveDuringAnimation(2)
+						"dual_swords":
+							animation.play("combo 2x",0.3,melee_atk_speed)
+							moveDuringAnimation(1.5)
 				elif slot.texture.resource_path == autoload.guard_sword.get_path():
 					is_in_combat = true
 					animation.play("guard one handed sword",0.3)

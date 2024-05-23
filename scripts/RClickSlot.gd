@@ -14,4 +14,6 @@ func switchAttackIcon():
 				icon.texture = autoload.guard
 			"sword":
 				icon.texture = autoload.guard_sword
-			
+			"dual_swords":
+				icon.texture = autoload.guard_sword
+
