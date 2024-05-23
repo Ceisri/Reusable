@@ -573,7 +573,7 @@ func showEnemyStats():
 #______________________________________________Animations___________________________________________
 var weapon_type: String = "fist" #fist, sword, dual_swords, sword_shield,two_handed, spear, staff
 func switchWeaponStances()-> void:
-	if right_hand != null:
+	if right_hand != null and left_hand !=null:
 		if right_hand.get_child_count() > 0:
 			if left_hand.get_child_count() > 0:
 				weapon_type = "dual_sword"
@@ -615,36 +615,21 @@ func matchAnimationStates():
 							animation.play("high kick",0.3,melee_atk_speed)
 						"sword":
 							animation.play("stab lunge",0.3,melee_atk_speed)
-					if current_race_gender.can_move and !is_on_wall():
-						horizontal_velocity = direction * 7
-						movement_speed = 7
-					else:
-						horizontal_velocity = direction * 0.3
-						movement_speed = 0
+					moveDuringAnimation(3)
 				"guard attack":
-					animation.play("stomp cycle",0.55,melee_atk_speed + 0.05)
-					if can_move and !is_on_wall():
-						horizontal_velocity = direction * 2
-						movement_speed = 2
+					if resolve > 25:
+						match weapon_type:
+							"sword":
+								animation.play("pomel strike",0.1,melee_atk_speed)
+						moveDuringAnimation(3)
 					else:
-						horizontal_velocity = direction * 0.01
-						movement_speed = 0
+						animation.play("barehand idle",0.2,1)
 				"run attack":
 					animation.play("low kick",0.3, melee_atk_speed)#placeholder
-					if can_move and !is_on_wall():
-						horizontal_velocity = direction * 2
-						movement_speed = 2
-					else:
-						horizontal_velocity = direction * 0.01
-						movement_speed = 0
+					moveDuringAnimation(3)
 				"sprint attack":
 					animation.play("stomp kick",0.3, melee_atk_speed)#placeholder
-					if can_move and !is_on_wall():
-						horizontal_velocity = direction * 2
-						movement_speed = 2
-					else:
-						horizontal_velocity = direction * 0.01
-						movement_speed = 0
+					moveDuringAnimation(3)
 		#_________________________________walking states________________________________
 				"walk":
 					if is_in_combat:
@@ -790,7 +775,7 @@ func skills(slot):
 										pass
 									"sword":
 										is_in_combat = true
-										animation.play("overhand strike",0.3)
+										animation.play("overhand strike",0.3,melee_atk_speed)
 										moveDuringAnimation(1)
 						else:
 							animation.play("idle cycle",0.3)
@@ -830,12 +815,13 @@ func skills(slot):
 						pass
 						
 func moveDuringAnimation(speed):
-	if current_race_gender.can_move == true:
-		horizontal_velocity = direction * speed
-		movement_speed = speed
-	elif current_race_gender.can_move == false:
-		horizontal_velocity = direction * 0
-		movement_speed = 0
+	if !is_on_wall():
+		if current_race_gender.can_move == true:
+			horizontal_velocity = direction * speed
+			movement_speed = speed
+		elif current_race_gender.can_move == false:
+			horizontal_velocity = direction * 0
+			movement_speed = 0
 var sprint_animation_speed : float = 1
 func animations():
 #on water
@@ -859,6 +845,7 @@ func animations():
 	elif Input.is_action_pressed("rclick") and Input.is_action_pressed("attack") and !cursor_visible:
 		state = "guard attack"
 		jump_animation_duration = 0 
+		
 	elif Input.is_action_pressed("rclick") and !cursor_visible:
 		if !is_walking:
 			state = "guard"
@@ -1204,7 +1191,7 @@ func startMovement():
 
 
 
-var floatingtext_damage = preload("res://UI/floatingtext.tscn")
+onready var floatingtext_damage = preload("res://UI/floatingtext.tscn")
 onready var take_damage_view  = $Mesh/TakeDamageView/Viewport
 func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
 	if necromant.masochism >0:
@@ -2027,8 +2014,8 @@ func freeLeftShoulderPad():
 		
 	
 #Main Weapon____________________________________________________________________
-var right_hand:Node = null 
-var right_hip : BoneAttachment = null 
+var right_hand:Spatial = null 
+var right_hip :Spatial = null 
 onready var detector = $Mesh/Detector
 onready var main_weap_slot = $UI/GUI/Equipment/EquipmentBG/MainWeap
 onready var main_weap_icon = $UI/GUI/Equipment/EquipmentBG/MainWeap/Icon
@@ -2150,8 +2137,8 @@ func MainWeapon():
 		drop()
 		main_weapon = "null"
 #Secondary__________________________________________________________________________________________
-var left_hand: BoneAttachment = null 
-var left_hip: BoneAttachment = null 
+var left_hand:Node=  null 
+var left_hip: Node = null 
 onready var sec_weap_slot = $UI/GUI/Equipment/EquipmentBG/SecWeap
 onready var sec_weap_icon = $UI/GUI/Equipment/EquipmentBG/SecWeap/Icon
 var sec_current_weapon_instance: Node = null  
@@ -2174,21 +2161,7 @@ func switchSecondaryFromHipToHand():
 					left_hand.remove_child(sec_current_weapon_instance)
 					left_hip.add_child(sec_current_weapon_instance)
 					is_secondary_weapon_on_hip = true
-#func switchSecondaryFromHipToHand():
-#	if is_instance_valid(sec_current_weapon_instance):
-#		if is_in_combat:
-#			if left_hand:
-#				if left_hand.get_child_count() == 0:
-#					if sec_current_weapon_instance != null and sec_current_weapon_instance.get_parent() == left_hip:
-#						left_hip.remove_child(sec_current_weapon_instance)
-#						left_hand.add_child(sec_current_weapon_instance)
-#						is_secondary_weapon_on_hip = false 
-#		else:
-#			if left_hip.get_child_count() == 0:
-#				if sec_current_weapon_instance != null and sec_current_weapon_instance.get_parent() == left_hand:
-#					left_hand.remove_child(sec_current_weapon_instance)
-#					left_hip.add_child(sec_current_weapon_instance)
-#					is_secondary_weapon_on_hip = true
+
 func fixSecInstance():
 	if left_hand:
 		left_hand.add_child(sec_current_weapon_instance)
@@ -4921,8 +4894,6 @@ func raceInstacePreparations():
 func InstanceRace():
 	player_mesh.add_child(current_race_gender)
 
-
-
 func _on_switchGender_pressed():
 	
 	current_race_gender.player = self 
@@ -4965,8 +4936,6 @@ func _on_switch_face_pressed():
 		current_face_index = 0  # Reset index to the beginning
 	current_race_gender.face_set = face_list[current_face_index]
 	current_race_gender.switchFace()
-
-
 
 func _on_ArmorColorSwitch_pressed():
 	current_race_gender.randomizeArmor()

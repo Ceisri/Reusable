@@ -20,7 +20,7 @@ var speed = 4
 var max_distance = 30.1
 
 onready var threat_system = $Threat
-
+var state: String = "null"
 
 func displayThreatInfo(label):
 	threat_system.threat_info = threat_system.getBestFive()
@@ -32,7 +32,7 @@ func takeThreat(aggro_power,instigator):
 	var target = threat_system.createFindThreat(instigator)
 	target.threat += aggro_power
 
-var floatingtext_damage = preload("res://UI/floatingtext.tscn")
+onready var floatingtext_damage = preload("res://UI/floatingtext.tscn")
 onready var take_damage_audio = $TakeHit
 onready var take_damage_view  = $TakeDamageView/Viewport
 func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
