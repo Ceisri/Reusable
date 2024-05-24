@@ -598,6 +598,7 @@ func matchAnimationStates():
 						horizontal_velocity = direction * slide_mov_speed
 					movement_speed = int(slide_mov_speed)
 				"base attack":
+					current_race_gender.resetAllCombos()
 					var slot = $UI/GUI/SkillBar/GridContainer/LClickSlot/Icon
 					skills(slot)
 				"guard":
@@ -610,6 +611,7 @@ func matchAnimationStates():
 							"sword":
 								animation.play("guard walk one handed sword cycle",0,1)
 				"double attack":
+					current_race_gender.resetAllCombos()
 					match weapon_type:
 						"fist":
 							animation.play("high kick",0.3,melee_atk_speed)
@@ -648,12 +650,16 @@ func matchAnimationStates():
 					animation.play("idle crouch",0.4)
 		#movement 
 				"sprint":
+					current_race_gender.resetAllCombos()
 					animation.play("run cycle", 0, sprint_animation_speed * agility)
 				"run":
+					current_race_gender.resetAllCombos()
 					animation.play("run cycle",0,agility)
 				"jump":
+					current_race_gender.resetAllCombos()
 					animation.play("jump",0.2, agility)
 				"fall":
+					current_race_gender.resetAllCombos()
 					animation.play("fall",0.3)
 				"climbing":
 					animation.play("climb cycle",blend, strength)
@@ -668,6 +674,7 @@ func matchAnimationStates():
 				"idle downed":
 					animation.play("idle downed", 0.35)
 				"idle":
+					current_race_gender.resetAllCombos()
 					if is_in_combat:
 						if weapon_type == "fist":
 							animation.play("barehand idle",0.2,1)
@@ -757,11 +764,14 @@ func skills(slot):
 					necromant.areaSpell()
 				elif slot.texture.resource_path == autoload.arcane_blast.get_path():	
 					necromant.arcaneBlast()
+#melee
 				elif slot.texture.resource_path == autoload.punch.get_path():
 					animation.play("base attack barehanded cycle",0.3,melee_atk_speed +0.15)
 					moveDuringAnimation(3)
+					current_race_gender.fury_strike_combo =0
 				elif slot.texture.resource_path == autoload.slash_sword.get_path():
 					is_in_combat = true
+					current_race_gender.fury_strike_combo =0
 					match weapon_type:
 						"sword":
 							animation.play("combo 1h refined",0.3,melee_atk_speed)
@@ -769,11 +779,14 @@ func skills(slot):
 						"dual_swords":
 							animation.play("combo 2x",0.3,melee_atk_speed)
 							moveDuringAnimation(1.5)
-				elif slot.texture.resource_path == autoload.guard_sword.get_path():
-					is_in_combat = true
-					animation.play("guard one handed sword",0.3)
-					moveDuringAnimation(3)
-					
+				elif slot.texture.resource_path == autoload.guard.get_path():
+					if !is_walking:
+						animation.play("guard",0.3)
+						jump_animation_duration = 0 
+					else:
+						animation.play("guard",0.3)
+						jump_animation_duration = 0 
+#melee weapon skills
 				elif slot.texture.resource_path == autoload.overhead_slash.get_path():
 					if necromant.can_overhead_slash == true:
 						if resolve > necromant.overhead_slash_cost:
@@ -782,21 +795,46 @@ func skills(slot):
 										pass
 									"sword":
 										is_in_combat = true
-										animation.play("overhand strike",0.3,melee_atk_speed)
-										moveDuringAnimation(1)
+										if current_race_gender.fury_strike_combo ==2:
+											animation.play("overhand strike",0.3,melee_atk_speed*1.3)
+											moveDuringAnimation(2)
+										else:
+											animation.play("overhand strike",0.3,melee_atk_speed*0.9)
+											moveDuringAnimation(1)
+									"dual_swords":
+										is_in_combat = true
+										if current_race_gender.fury_strike_combo ==2:
+											animation.play("overhand strike 2x",0.3,melee_atk_speed* 1.3)
+											moveDuringAnimation(2)
+										else:
+											animation.play("overhand strike 2x",0.3,melee_atk_speed*0.95)
+											moveDuringAnimation(1)
 						else:
-							animation.play("idle cycle",0.3)
+							animation.play("barehand idle",0.3)
+							current_race_gender.fury_strike_combo =0
 					else:
-						animation.play("idle cycle",0.3)
-					
-				elif slot.texture.resource_path == autoload.guard.get_path():
-					if !is_walking:
-						animation.play("guard",0.3)
-						jump_animation_duration = 0 
-					else:
-						animation.play("guard",0.3)
-						jump_animation_duration = 0 
-						
+						animation.play("barehand idle",0.3)
+						current_race_gender.fury_strike_combo =0
+				elif slot.texture.resource_path == autoload.fury_strike.get_path():
+#					if necromant.can_fury_strike == true:
+						is_in_combat = true
+						animation.play("1h still",0.3,melee_atk_speed)
+						moveDuringAnimation(3)
+#					else:
+#						animation.play("barehand idle",0.3)
+				elif slot.texture.resource_path == autoload.cyclone.get_path():
+#					if necromant.can_fury_strike == true:
+						is_in_combat = true
+						animation.play("spin1",0.3,melee_atk_speed)
+						moveDuringAnimation(3)
+#					else:
+#						animation.play("barehand idle",0.3)
+				elif slot.texture.resource_path == autoload.guard_sword.get_path():
+					is_in_combat = true
+					animation.play("guard one handed sword",0.3)
+					current_race_gender.fury_strike_combo =0
+					moveDuringAnimation(3)
+
 				elif slot.texture.resource_path == autoload.base_attack_necromant.get_path():
 					necromant.baseAttack() # placeholder
 				elif slot.texture.resource_path == autoload.necro_guard.get_path():
@@ -2053,6 +2091,20 @@ func switchMainFromHipToHand():
 										right_hand.remove_child(current_weapon_instance)
 										right_hip.add_child(current_weapon_instance)
 
+func switchSecondaryFromHipToHand():
+	if is_instance_valid(sec_current_weapon_instance):
+		if is_in_combat:
+			if left_hand and left_hand.get_child_count() == 0:
+				if sec_current_weapon_instance != null and sec_current_weapon_instance.get_parent() == left_hip:
+					left_hip.remove_child(sec_current_weapon_instance)
+					left_hand.add_child(sec_current_weapon_instance)
+					is_secondary_weapon_on_hip = false 
+		else:
+			if left_hip and left_hip.get_child_count() == 0:
+				if sec_current_weapon_instance != null and sec_current_weapon_instance.get_parent() == left_hand:
+					left_hand.remove_child(sec_current_weapon_instance)
+					left_hip.add_child(sec_current_weapon_instance)
+					is_secondary_weapon_on_hip = true
 
 
 func addItemToCharacterSheet(icon,slot,texture):
@@ -2154,20 +2206,7 @@ var secondary_weapon = "null"
 var got_sec_weapon = false
 var is_secondary_weapon_on_hip = false 
 
-func switchSecondaryFromHipToHand():
-	if is_instance_valid(sec_current_weapon_instance):
-		if is_in_combat:
-			if left_hand and left_hand.get_child_count() == 0:
-				if sec_current_weapon_instance != null and sec_current_weapon_instance.get_parent() == left_hip:
-					left_hip.remove_child(sec_current_weapon_instance)
-					left_hand.add_child(sec_current_weapon_instance)
-					is_secondary_weapon_on_hip = false 
-		else:
-			if left_hip and left_hip.get_child_count() == 0:
-				if sec_current_weapon_instance != null and sec_current_weapon_instance.get_parent() == left_hand:
-					left_hand.remove_child(sec_current_weapon_instance)
-					left_hip.add_child(sec_current_weapon_instance)
-					is_secondary_weapon_on_hip = true
+
 
 func fixSecInstance():
 	if left_hand:

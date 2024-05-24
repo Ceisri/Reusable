@@ -4,9 +4,9 @@ var player
 onready var animation = $AnimationPlayer
 onready var left_hand = $Armature/Skeleton/LeftHand/Holder
 onready var right_hand = $Armature/Skeleton/RightHand/Holder
-onready var right_hip = $Armature/Skeleton/RightHip
+onready var right_hip = $Armature/Skeleton/RightHip/holder
 onready var left_hip = $Armature/Skeleton/LeftHip/holder
-onready var shoulder_r = $Armature/Skeleton/RightHip/holder
+onready var shoulder_r = $Armature/Skeleton/RightShoulder/Holder
 onready var shoulder_l = $Armature/Skeleton/LeftShoulder/Holder
 onready var sword0: PackedScene = preload("res://player/weapons/sword/sword.tscn")
 onready var sword1: PackedScene = preload("res://itemTest.tscn")
@@ -475,7 +475,8 @@ func punch():
 							enemy.takeDamage(damage,aggro_power,player,player.stagger_chance,"heat")
 						else: #apparently the enemy is showing his back or flanks, extra damagec
 							enemy.takeDamage(damage_flank,aggro_power,player,player.stagger_chance,"jolt")
-onready var sword_sword:Area = $Armature/Skeleton/RightHand/Area
+onready var sword_area:Area = $Armature/Skeleton/RightHand/Area
+onready var sword2_area:Area = $Armature/Skeleton/LeftHand/Area
 func slash()->void:
 	var damage_type = "slash"
 	var damage = 22 + player.slash_dmg 
@@ -483,7 +484,7 @@ func slash()->void:
 	var critical_damage : float  = damage * player.critical_strength
 	var critical_flank_damage : float  = damage_flank * player.critical_strength
 	var aggro_power = damage + 20
-	var enemies = sword_sword.get_overlapping_bodies()
+	var enemies = sword_area.get_overlapping_bodies()
 	for enemy in enemies:
 		if enemy.is_in_group("enemy"):
 			if enemy.has_method("takeDamage"):
@@ -507,6 +508,111 @@ func slash()->void:
 							
 func baseMeleeAtk()->void:
 	var damage_type:String = "slash"
+	var damage = 10 + player.slash_dmg
+	var damage_flank = damage + player.flank_dmg 
+	var critical_damage : float  = damage * player.critical_strength
+	var critical_flank_damage : float  = damage_flank * player.critical_strength
+	var punishment_damage : float = 7 #extra damage for when the victim is trying to block but is facing the wrong way 
+	var punishment_damage_type :String = "slash"
+	var aggro_power = damage + 20
+	var enemies = sword_area.get_overlapping_bodies()
+	var enemies2 = sword2_area.get_overlapping_bodies()
+	for victim in enemies:
+		if victim.is_in_group("enemy") and victim != self:
+			player.pushEnemyAway(0.3, victim,0.25)
+			if player.resolve < player.max_resolve:
+						player.resolve += player.ferocity
+			if victim.has_method("takeDamage"):
+#				if victim.has_method("applyEffect"):
+#					victim.applyEffect(victim,"bleeding", true)
+				if player.is_on_floor():
+					#insert sound effect here
+					if randf() <= player.critical_chance:#critical hit
+						if victim.state == "guard" or victim.state == "guard walk": #victim is guarding
+							if player.isFacingSelf(victim,0.30): #the victim is looking face to face at self 
+								victim.takeDamage(critical_damage/victim.guard_dmg_absorbition,aggro_power,player,player.stagger_chance,damage_type)
+							else: #apparently the victim is showing his back or flanks while guard, flank damage + punishment damage
+								victim.takeDamage(critical_flank_damage + punishment_damage,aggro_power,player,player.stagger_chance,punishment_damage_type)
+						else:#player is guarding
+							if player.isFacingSelf(victim,0.30): #check if the victim is looking at me 
+								victim.takeDamage(critical_damage/victim.guard_dmg_absorbition,aggro_power,player,player.stagger_chance,damage_type)
+							else: #apparently the victim is showing his back or flanks, extra damage
+								victim.takeDamage(critical_damage,aggro_power,player,player.stagger_chance,punishment_damage_type)
+					else: #normal hit
+						if victim.state == "guard" or victim.state == "guard walk": #victim is guarding
+							if player.isFacingSelf(victim,0.30): #the victim is looking face to face at self 
+								victim.takeDamage(damage/victim.guard_dmg_absorbition,aggro_power,player,player.stagger_chance,damage_type)
+							else: #apparently the victim is showing his back or flanks while guard, flank damage + punishment damage
+								victim.takeDamage(damage_flank + punishment_damage,aggro_power,player,player.stagger_chance,punishment_damage_type)
+						else:#victim is not guarding
+							if player.isFacingSelf(victim,0.30):#the victim is looking face to face at self 
+								victim.takeDamage(damage,aggro_power,player,player.stagger_chance,damage_type)
+							else: #apparently the victim is showing his back or flanks, extra damage
+								victim.takeDamage(damage_flank,aggro_power,player,player.stagger_chance,damage_type)
+	if player.weapon_type == "dual_swords":
+		for victim in enemies2:
+			if victim.is_in_group("enemy") and victim != self:
+				if victim.has_method("takeDamage"):
+					if player.is_on_floor():
+						#insert sound effect here
+						if randf() <= player.critical_chance:#critical hit
+							if victim.state == "guard" or victim.state == "guard walk": #victim is guarding
+								if player.isFacingSelf(victim,0.30): #the victim is looking face to face at self 
+									victim.takeDamage(critical_damage/victim.guard_dmg_absorbition,aggro_power,player,player.stagger_chance,damage_type)
+								else: #apparently the victim is showing his back or flanks while guard, flank damage + punishment damage
+									victim.takeDamage(critical_flank_damage + punishment_damage,aggro_power,player,player.stagger_chance,punishment_damage_type)
+							else:#player is guarding
+								if player.isFacingSelf(victim,0.30): #check if the victim is looking at me 
+									victim.takeDamage(critical_damage/victim.guard_dmg_absorbition,aggro_power,player,player.stagger_chance,damage_type)
+								else: #apparently the victim is showing his back or flanks, extra damage
+									victim.takeDamage(critical_damage,aggro_power,player,player.stagger_chance,punishment_damage_type)
+						else: #normal hit
+							if victim.state == "guard" or victim.state == "guard walk": #victim is guarding
+								if player.isFacingSelf(victim,0.30): #the victim is looking face to face at self 
+									victim.takeDamage(damage/victim.guard_dmg_absorbition,aggro_power,player,player.stagger_chance,damage_type)
+								else: #apparently the victim is showing his back or flanks while guard, flank damage + punishment damage
+									victim.takeDamage(damage_flank + punishment_damage,aggro_power,player,player.stagger_chance,punishment_damage_type)
+							else:#victim is not guarding
+								if player.isFacingSelf(victim,0.30):#the victim is looking face to face at self 
+									victim.takeDamage(damage,aggro_power,player,player.stagger_chance,damage_type)
+								else: #apparently the victim is showing his back or flanks, extra damage
+									victim.takeDamage(damage_flank,aggro_power,player,player.stagger_chance,damage_type)
+								
+							
+							
+							
+func stab()->void:
+	var damage_type = "pierce"
+	var damage = 22 + player.pierce_dmg 
+	var damage_flank = damage + player.flank_dmg 
+	var critical_damage : float  = damage * player.critical_strength
+	var critical_flank_damage : float  = damage_flank * player.critical_strength
+	var aggro_power = damage + 20
+	var enemies = player.detector.get_overlapping_bodies()
+	for enemy in enemies:
+		if enemy.is_in_group("enemy"):
+			if enemy.has_method("takeDamage"):
+				if enemy.has_method("applyEffect"):
+					enemy.applyEffect(enemy,"bleeding", true)	
+				player.pushEnemyAway(1.25, enemy,0.25)
+				if player.is_on_floor():
+					#insert sound effect here
+					if randf() <= player.critical_chance:
+						if player.isFacingSelf(enemy,0.30): #check if the enemy is looking at me 
+							enemy.takeDamage(critical_damage,aggro_power,player,player.stagger_chance,damage_type)
+						else: #apparently the enemy is showing his back or flanks, extra damagec
+							enemy.takeDamage(critical_flank_damage,aggro_power,player,player.stagger_chance,damage_type)
+					else:
+						if player.isFacingSelf(enemy,0.30): #check if the enemy is looking at me 
+							enemy.takeDamage(damage,aggro_power,player,player.stagger_chance,damage_type)
+						else: #apparently the enemy is showing his back or flanks, extra damagec
+							enemy.takeDamage(damage_flank,aggro_power,player,player.stagger_chance,damage_type)
+
+
+var base_damage_overhead_strike = 50
+func overheadStrike()->void:
+	fury_strike_combo = 0
+	var damage_type:String = "slash"
 	var damage = base_damage_overhead_strike + player.slash_dmg
 	var damage_flank = damage + player.flank_dmg 
 	var critical_damage : float  = damage * player.critical_strength
@@ -514,8 +620,9 @@ func baseMeleeAtk()->void:
 	var punishment_damage : float = 7 #extra damage for when the victim is trying to block but is facing the wrong way 
 	var punishment_damage_type :String = "slash"
 	var aggro_power = damage + 20
-	var enemies = sword_sword.get_overlapping_bodies()
-	var enemies2 = sword_sword.get_overlapping_bodies()
+	var enemies = sword_area.get_overlapping_bodies()
+	var enemies2 = sword2_area.get_overlapping_bodies()
+	player.necromant.overheadStrike()
 	for victim in enemies:
 		if victim.is_in_group("enemy") and victim != self:
 			if victim.has_method("takeDamage"):
@@ -577,56 +684,25 @@ func baseMeleeAtk()->void:
 									victim.takeDamage(damage,aggro_power,player,player.stagger_chance,damage_type)
 								else: #apparently the victim is showing his back or flanks, extra damage
 									victim.takeDamage(damage_flank,aggro_power,player,player.stagger_chance,damage_type)
-								
-							
-							
-							
-func stab()->void:
-	var damage_type = "pierce"
-	var damage = 22 + player.pierce_dmg 
-	var damage_flank = damage + player.flank_dmg 
-	var critical_damage : float  = damage * player.critical_strength
-	var critical_flank_damage : float  = damage_flank * player.critical_strength
-	var aggro_power = damage + 20
-	var enemies = player.detector.get_overlapping_bodies()
-	for enemy in enemies:
-		if enemy.is_in_group("enemy"):
-			if enemy.has_method("takeDamage"):
-				if enemy.has_method("applyEffect"):
-					enemy.applyEffect(enemy,"bleeding", true)	
-				player.pushEnemyAway(1.25, enemy,0.25)
-				if player.is_on_floor():
-					#insert sound effect here
-					if randf() <= player.critical_chance:
-						if player.isFacingSelf(enemy,0.30): #check if the enemy is looking at me 
-							enemy.takeDamage(critical_damage,aggro_power,player,player.stagger_chance,damage_type)
-						else: #apparently the enemy is showing his back or flanks, extra damagec
-							enemy.takeDamage(critical_flank_damage,aggro_power,player,player.stagger_chance,damage_type)
-					else:
-						if player.isFacingSelf(enemy,0.30): #check if the enemy is looking at me 
-							enemy.takeDamage(damage,aggro_power,player,player.stagger_chance,damage_type)
-						else: #apparently the enemy is showing his back or flanks, extra damagec
-							enemy.takeDamage(damage_flank,aggro_power,player,player.stagger_chance,damage_type)
 
-
-var base_damage_overhead_strike = 50
-func overheadStrike()->void:
+var fury_strike_combo: int = 0
+func furyStrike()->void:
+	fury_strike_combo += 1
 	var damage_type:String = "slash"
-	var damage = base_damage_overhead_strike + player.slash_dmg
+	var damage = autoload.base_fury_strike_damage + player.slash_dmg
 	var damage_flank = damage + player.flank_dmg 
 	var critical_damage : float  = damage * player.critical_strength
 	var critical_flank_damage : float  = damage_flank * player.critical_strength
 	var punishment_damage : float = 7 #extra damage for when the victim is trying to block but is facing the wrong way 
 	var punishment_damage_type :String = "slash"
 	var aggro_power = damage + 20
-	var enemies = sword_sword.get_overlapping_bodies()
-	player.necromant.overheadStrike()
+	var enemies = sword_area.get_overlapping_bodies()
+	var enemies2 = sword2_area.get_overlapping_bodies()
+	player.necromant.furyStrike()
 	for victim in enemies:
 		if victim.is_in_group("enemy") and victim != self:
+			player.pushEnemyAway(0.25, victim,0.25)
 			if victim.has_method("takeDamage"):
-				if victim.has_method("applyEffect"):
-					victim.applyEffect(victim,"bleeding", true)
-					player.pushEnemyAway(1.25, victim,0.25)
 				if player.is_on_floor():
 					#insert sound effect here
 					if randf() <= player.critical_chance:#critical hit
@@ -651,6 +727,40 @@ func overheadStrike()->void:
 								victim.takeDamage(damage,aggro_power,player,player.stagger_chance,damage_type)
 							else: #apparently the victim is showing his back or flanks, extra damage
 								victim.takeDamage(damage_flank,aggro_power,player,player.stagger_chance,damage_type)
+	if player.weapon_type == "dual_swords":
+		for victim in enemies2:
+			if victim.is_in_group("enemy") and victim != self:
+				if victim.has_method("takeDamage"):
+					if victim.has_method("applyEffect"):
+						victim.applyEffect(victim,"bleeding", true)
+						player.pushEnemyAway(1.25, victim,0.25)
+					if player.is_on_floor():
+						#insert sound effect here
+						if randf() <= player.critical_chance:#critical hit
+							if victim.state == "guard" or victim.state == "guard walk": #victim is guarding
+								if player.isFacingSelf(victim,0.30): #the victim is looking face to face at self 
+									victim.takeDamage(critical_damage/victim.guard_dmg_absorbition,aggro_power,player,player.stagger_chance,damage_type)
+								else: #apparently the victim is showing his back or flanks while guard, flank damage + punishment damage
+									victim.takeDamage(critical_flank_damage + punishment_damage,aggro_power,player,player.stagger_chance,punishment_damage_type)
+							else:#player is guarding
+								if player.isFacingSelf(victim,0.30): #check if the victim is looking at me 
+									victim.takeDamage(critical_damage/victim.guard_dmg_absorbition,aggro_power,player,player.stagger_chance,damage_type)
+								else: #apparently the victim is showing his back or flanks, extra damage
+									victim.takeDamage(critical_damage,aggro_power,player,player.stagger_chance,punishment_damage_type)
+						else: #normal hit
+							if victim.state == "guard" or victim.state == "guard walk": #victim is guarding
+								if player.isFacingSelf(victim,0.30): #the victim is looking face to face at self 
+									victim.takeDamage(damage/victim.guard_dmg_absorbition,aggro_power,player,player.stagger_chance,damage_type)
+								else: #apparently the victim is showing his back or flanks while guard, flank damage + punishment damage
+									victim.takeDamage(damage_flank + punishment_damage,aggro_power,player,player.stagger_chance,punishment_damage_type)
+							else:#victim is not guarding
+								if player.isFacingSelf(victim,0.30):#the victim is looking face to face at self 
+									victim.takeDamage(damage,aggro_power,player,player.stagger_chance,damage_type)
+								else: #apparently the victim is showing his back or flanks, extra damage
+									victim.takeDamage(damage_flank,aggro_power,player,player.stagger_chance,damage_type)
+
+
+
 
 func pomelStrike()->void:
 	var damage_type:String = "blunt"
@@ -661,7 +771,7 @@ func pomelStrike()->void:
 	var punishment_damage : float = 3 #extra damage for when the victim is trying to block but is facing the wrong way 
 	var punishment_damage_type :String = "blunt"
 	var aggro_power = damage + 55
-	var enemies = sword_sword.get_overlapping_bodies()
+	var enemies = sword_area.get_overlapping_bodies()
 	resolveCost(25)
 	for victim in enemies:
 		if victim.is_in_group("enemy") and victim != self:
@@ -697,3 +807,49 @@ func pomelStrike()->void:
 func resolveCost(cost):
 	if player.resolve > cost:
 		player.resolve -= cost
+
+
+func resetAllCombos():
+	fury_strike_combo = 0
+
+
+
+onready var melee_aoe: Area = $MeleeAOE
+func cyclone()->void:
+	var damage_type:String = "slash"
+	var damage = autoload.cyclone_damage + player.slash_dmg
+	var damage_flank = damage + player.flank_dmg 
+	var critical_damage : float  = damage * player.critical_strength
+	var critical_flank_damage : float  = damage_flank * player.critical_strength
+	var punishment_damage : float = 7 #extra damage for when the victim is trying to block but is facing the wrong way 
+	var punishment_damage_type :String = "slash"
+	var aggro_power = damage + 20
+	var enemies = melee_aoe.get_overlapping_bodies()
+	for victim in enemies:
+		if victim.is_in_group("enemy") and victim != self:
+			player.pushEnemyAway(0.05, victim,0.05)
+			if victim.has_method("takeDamage"):
+				if player.is_on_floor():
+					#insert sound effect here
+					if randf() <= player.critical_chance:#critical hit
+						if victim.state == "guard" or victim.state == "guard walk": #victim is guarding
+							if player.isFacingSelf(victim,0.30): #the victim is looking face to face at self 
+								victim.takeDamage(critical_damage/victim.guard_dmg_absorbition,aggro_power,player,player.stagger_chance,damage_type)
+							else: #apparently the victim is showing his back or flanks while guard, flank damage + punishment damage
+								victim.takeDamage(critical_flank_damage + punishment_damage,aggro_power,player,player.stagger_chance,punishment_damage_type)
+						else:#player is guarding
+							if player.isFacingSelf(victim,0.30): #check if the victim is looking at me 
+								victim.takeDamage(critical_damage/victim.guard_dmg_absorbition,aggro_power,player,player.stagger_chance,damage_type)
+							else: #apparently the victim is showing his back or flanks, extra damage
+								victim.takeDamage(critical_damage,aggro_power,player,player.stagger_chance,punishment_damage_type)
+					else: #normal hit
+						if victim.state == "guard" or victim.state == "guard walk": #victim is guarding
+							if player.isFacingSelf(victim,0.30): #the victim is looking face to face at self 
+								victim.takeDamage(damage/victim.guard_dmg_absorbition,aggro_power,player,player.stagger_chance,damage_type)
+							else: #apparently the victim is showing his back or flanks while guard, flank damage + punishment damage
+								victim.takeDamage(damage_flank + punishment_damage,aggro_power,player,player.stagger_chance,punishment_damage_type)
+						else:#victim is not guarding
+							if player.isFacingSelf(victim,0.30):#the victim is looking face to face at self 
+								victim.takeDamage(damage,aggro_power,player,player.stagger_chance,damage_type)
+							else: #apparently the victim is showing his back or flanks, extra damage
+								victim.takeDamage(damage_flank,aggro_power,player,player.stagger_chance,damage_type)
