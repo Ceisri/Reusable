@@ -9,9 +9,12 @@ var blend: float = 0.25
 
 # Condition States
 var is_attacking = bool()
-var is_rolling = bool()
 var is_walking = bool()
 var is_running = bool()
+
+var strafe_dir: Vector3 = Vector3.ZERO
+var strafe: Vector3 = Vector3.ZERO
+
 
 onready var l_click_slot = $UI/GUI/SkillBar/GridContainer/LClickSlot
 onready var r_click_slot = $UI/GUI/SkillBar/GridContainer/RClickSlot
@@ -101,6 +104,7 @@ func _physics_process(delta: float) -> void:
 	positionCoordinates()
 	MainWeapon()
 	SecWeapon()
+	strafing(delta)
 #_______________________________________________Basic Movement______________________________________
 var h_rot 
 var blocking = false
@@ -122,7 +126,9 @@ func walk():
 		direction = Vector3(Input.get_action_strength("left") - Input.get_action_strength("right"),
 					0,
 					Input.get_action_strength("forward") - Input.get_action_strength("backward"))
+		strafe_dir = direction
 		direction = direction.rotated(Vector3.UP, h_rot).normalized()
+		
 		is_walking = true
 	# Sprint input, state and speed
 		if (Input.is_action_pressed("sprint")) and (is_walking == true): 
@@ -163,10 +169,19 @@ func walk():
 		is_sprinting = false
 		is_running = false
 		is_crouching = false
+		strafe_dir = Vector3.ZERO
 		
 	autoload.movement(self)
 #	physicsSauce()
 #	horizontal_velocity = horizontal_velocity.linear_interpolate(direction.normalized() * movement_speed, acceleration * delta)
+func strafing(delta:float)->void:
+	strafe = lerp(strafe, strafe_dir, delta * acceleration)
+	anim_tree.set("parameters/strafe_idle/blend_position",Vector2(-strafe.x,strafe.z))
+	if Input.is_action_pressed("aim"):
+		is_aiming = true 
+	else:
+		is_aiming = false
+
 #climbing section
 var is_swimming = false
 var wall_incline
@@ -174,7 +189,7 @@ var is_wall_in_range = false
 var is_climbing = false
 onready var head_ray = $Mesh/HeadRay
 onready var climb_ray = $Mesh/ClimbRay
-func climbing():
+func climbing()->void:
 	if not is_swimming and strength > 0.99:
 		if climb_ray.is_colliding() and is_on_wall():
 			if Input.is_action_pressed("forward"):
@@ -200,7 +215,7 @@ func climbing():
 				is_climbing = false
 		else:
 			is_climbing = false
-func checkWallInclination():
+func checkWallInclination()->void:
 	if get_slide_count() > 0:
 		var collision_info = get_slide_collision(0)
 		var normal = collision_info.normal
@@ -221,7 +236,7 @@ export var  jump_animation_duration = 0
 var jump_animation_max_duration = 3
 var jump_mov_animation_duration = 0
 var jump_mov_animation_max_duration = 3
-func jump():
+func jump()->void:
 	#print("jump duration " + str(jump_animation_duration))
 #	Jump input and Mechanics
 	if Input.is_action_just_pressed("jump") and is_on_floor() and !is_walking:
@@ -251,7 +266,7 @@ func jump():
 var fall_damage = 0
 var fall_distance = 0
 var minimum_fall_distance = 0.5
-func fallDamage():
+func fallDamage()->void:
 	if state == "fall" and !is_climbing and !is_on_wall():
 		#print("fall damage " + str(fall_damage))
 		#print("fall distance " + str(fall_distance))
@@ -301,7 +316,7 @@ var dash_count2 : int = 0
 var dash_timer2 : float = 0.0
 var dodge_animation_duration : float = 0
 var dodge_animation_max_duration : float = 3
-func dodgeBack():#Doddge when in strafe mode
+func dodgeBack()->void:#Doddge when in strafe mode
 		if dash_countback > 0:
 			dash_timerback += get_physics_process_delta_time()
 		if dash_timerback >= double_press_time:
@@ -421,6 +436,7 @@ func _input(event):
 			# Zoom out when scrolling down
 			Zoom(1)
 func stiffCamera():
+	player_mesh
 	if is_aiming and !is_climbing:
 		player_mesh.rotation.y = lerp_angle(player_mesh.rotation.y, $Camroot/h.rotation.y, get_physics_process_delta_time() * angular_acceleration)
 #	elif is_climbing:

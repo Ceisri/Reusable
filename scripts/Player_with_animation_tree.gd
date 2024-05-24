@@ -6,6 +6,8 @@ var rng = RandomNumberGenerator.new()
 var injured: bool = false
 var blend: float = 0.25
 
+var strafe_dir: Vector3 = Vector3.ZERO
+var strafe: Vector3 = Vector3.ZERO
 # Condition States
 var is_attacking = bool()
 var is_rolling = bool()
@@ -100,6 +102,20 @@ func _physics_process(delta: float) -> void:
 	positionCoordinates()
 	MainWeapon()
 	SecWeapon()
+	strafing(delta)
+	
+func is_asd_animation_active() -> bool:
+	return anim_tree.get("parameters/asd/active")
+
+# Example usage
+func _process(delta):
+	if anim_tree.get("parameters/asd/active"):
+		moveDuringAnimation(3)
+		print("active.")
+	else:
+		print("stopped.")
+
+
 #_______________________________________________Basic Movement______________________________________
 var h_rot 
 var blocking = false
@@ -121,6 +137,7 @@ func walk():
 		direction = Vector3(Input.get_action_strength("left") - Input.get_action_strength("right"),
 					0,
 					Input.get_action_strength("forward") - Input.get_action_strength("backward"))
+		strafe_dir = direction
 		direction = direction.rotated(Vector3.UP, h_rot).normalized()
 		is_walking = true
 	# Sprint input, state and speed
@@ -162,10 +179,29 @@ func walk():
 		is_sprinting = false
 		is_running = false
 		is_crouching = false
-		
+		strafe_dir = Vector3.ZERO
+
+
+	# Debugging: print the current value of the parameter to see what it is returning
+		var current_value = anim_tree.get("parameters/strafe_idle/current")
+		print("Current Value:", current_value)
+	
+	# Check if the current value is 0
+		if current_value == 0.0:
+			var direction = $Camroot/h.global_transform.basis.z
+			print("Direction:", direction)
 	autoload.movement(self)
 #	physicsSauce()
 #	horizontal_velocity = horizontal_velocity.linear_interpolate(direction.normalized() * movement_speed, acceleration * delta)
+func strafing(delta:float)->void:
+	strafe = lerp(strafe, strafe_dir, delta * acceleration)
+	anim_tree.set("parameters/strafe_idle/blend_position",Vector2(-strafe.x,strafe.z))
+	if Input.is_action_pressed("aim"):
+		anim_tree.active = true 
+		is_aiming = true
+	else:
+		is_aiming = false
+
 #climbing section
 var is_swimming = false
 var wall_incline
@@ -603,13 +639,18 @@ func matchAnimationStates():
 						horizontal_velocity = direction * slide_mov_speed
 					movement_speed = int(slide_mov_speed)
 				"base attack":
+					
+					anim_tree.set("parameters/asd/active",false)
+					anim_tree.active = false
 					current_race_gender.resetAllCombos()
 					var slot = $UI/GUI/SkillBar/GridContainer/LClickSlot/Icon
 					skills(slot)
 				"guard":
+					anim_tree.set("parameters/asd/active",false)
 					var slot = $UI/GUI/SkillBar/GridContainer/RClickSlot/Icon
 					skills(slot)
 				"guard walk":
+						anim_tree.set("parameters/asd/active",false)
 						match weapon_type:
 							"fist":
 								pass #replace with actual animation
@@ -631,8 +672,6 @@ func matchAnimationStates():
 							anim_tree.set("parameters/first/blend_amount",1)
 							anim_tree.set("parameters/stab_speed/scale",melee_atk_speed)
 							anim_tree.set("parameters/asd/active",false)
-#
-#
 					moveDuringAnimation(3)
 				"guard attack":
 					if resolve > 25:
@@ -659,7 +698,13 @@ func matchAnimationStates():
 							"dual_swords":
 								animation.play("walk one handed sword cycle",0,1)
 					else:
-						animation.play("walk cycle")
+						if is_aiming:
+							anim_tree.set("parameters/asd/active",false)
+							anim_tree.set("parameters/strafe_idle/blend_position",Vector2(-strafe.x,strafe.z))
+						else:
+							anim_tree.set("parameters/asd/active",false)
+							anim_tree.active = false
+							animation.play("walk cycle")
 				"crouch walk":
 					animation.play("walk crouch cycle")
 				"crouch":
@@ -887,8 +932,9 @@ func moveDuringAnimation(speed):
 			horizontal_velocity = direction * speed
 			movement_speed = speed
 		elif current_race_gender.can_move == false:
-			horizontal_velocity = direction * 0
-			movement_speed = 0
+			if !is_walking:
+				horizontal_velocity = direction * 0
+				movement_speed = 0
 var sprint_animation_speed : float = 1
 func animations():
 #on water
@@ -912,7 +958,7 @@ func animations():
 		state = "guard attack"
 
 		
-	elif Input.is_action_pressed("rclick") and !cursor_visible:
+	elif Input.is_action_pressed("rclick") and !cursor_visible and is_in_combat:
 		if !is_walking:
 			state = "guard"
 
@@ -985,6 +1031,8 @@ func animations():
 			jump_animation_duration = 0 
 	elif is_walking:
 			state = "walk"
+			is_aiming = false
+			anim_tree.active = false
 			jump_animation_duration = 0 
 
 	
