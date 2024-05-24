@@ -13,6 +13,8 @@ onready var sword0: PackedScene = preload("res://player/weapons/sword/sword.tscn
 onready var sword1: PackedScene = preload("res://itemTest.tscn")
 onready var sword2: PackedScene = preload("res://itemTest.tscn")
 func _ready():
+	animation_tree.active = false
+
 	player.animation = animation
 	player.anim_tree = animation_tree
 	loadPlayerData()
@@ -436,21 +438,15 @@ func instanceFace(face_scene):
 		var face_instance = face_scene.instance()
 		face_attachment.add_child(face_instance)
 		current_face_instance = face_instance
-
-
-
 var can_move: bool = false
+func stopAnimationTree():
+	animation_tree.active = false
+
 func stopMovement():
 	can_move = false
-	
 func startMovement():
 	can_move = true 
 	print("moving")
-
-
-
-
-
 func punch():
 	var damage_type = "blunt"
 	var damage = 10 + player.blunt_dmg 
@@ -612,7 +608,11 @@ func stab()->void:
 
 
 var base_damage_overhead_strike = 50
+func forcedMovement(speed):
+	if !player.is_on_wall():
+		player.horizontal_velocity = player.direction * 10
 func overheadStrikeCD():
+	player.anim_tree.active = false
 	player.necromant.overheadStrike()
 func overheadStrike()->void:
 	fury_strike_combo = 0
@@ -626,7 +626,6 @@ func overheadStrike()->void:
 	var aggro_power = damage + 20
 	var enemies = sword_area.get_overlapping_bodies()
 	var enemies2 = sword2_area.get_overlapping_bodies()
-
 	for victim in enemies:
 		if victim.is_in_group("enemy") and victim != self:
 			if victim.has_method("takeDamage"):
@@ -693,7 +692,7 @@ var fury_strike_combo: int = 0
 func commitToFuryStrikeSkill():
 	player.fury_strike_duration = 100
 func resetFuryStrikeSkill():
-	player.fury_strike_duration =0
+	player.anim_tree.active = false
 	player.necromant.furyStrike()
 func furyStrike()->void:
 	fury_strike_combo += 1
@@ -707,7 +706,6 @@ func furyStrike()->void:
 	var aggro_power = damage + 20
 	var enemies = sword_area.get_overlapping_bodies()
 	var enemies2 = sword2_area.get_overlapping_bodies()
-	
 	for victim in enemies:
 		if victim.is_in_group("enemy") and victim != self:
 			player.pushEnemyAway(0.25, victim,0.25)
@@ -820,6 +818,7 @@ func resetAllCombos():
 
 onready var melee_aoe: Area = $MeleeAOE
 func cycloneCD():
+	player.anim_tree.active = false
 	player.necromant.cyclone()
 func cyclone()->void:
 	var damage_type:String = "slash"

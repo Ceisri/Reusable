@@ -1,7 +1,6 @@
 extends KinematicBody
 onready var player_mesh: Node = $Mesh
-var animation : AnimationPlayer
-var anim_tree : AnimationTree
+
 
 var rng = RandomNumberGenerator.new()
 var injured: bool = false
@@ -572,6 +571,9 @@ func showEnemyStats():
 
 
 #______________________________________________Animations___________________________________________
+var animation : AnimationPlayer
+var anim_tree : AnimationTree
+
 var weapon_type: String = "fist" #fist, sword, dual_swords, sword_shield,two_handed, spear, staff
 func switchWeaponStances()-> void:
 	if right_hand != null and left_hand !=null:
@@ -587,13 +589,15 @@ func switchWeaponStances()-> void:
 
 var state: String = "idle"
 func matchAnimationStates():
+	
 	if current_race_gender != null and animation != null:
-		if is_instance_valid(animation):
+		if is_instance_valid(anim_tree):
+			print(anim_tree.active)
 			match state:
-		#_______________________________attacking states________________________________
+#_______________________________attacking states____________________________________________________
 				"slide":
 					var slide_blend = 0.3
-					pass
+					animation.play("slide",slide_blend)
 					var slide_mov_speed = 15 + slide_blend + rand_range(3, 6)
 					if !is_on_wall():
 						horizontal_velocity = direction * slide_mov_speed
@@ -610,81 +614,91 @@ func matchAnimationStates():
 							"fist":
 								pass #replace with actual animation
 							"sword":
-								pass
+								animation.play("guard walk one handed sword cycle",0,1)
 				"double attack":
 					current_race_gender.resetAllCombos()
 					match weapon_type:
 						"fist":
 							pass
+							anim_tree.active = true 
+							anim_tree.set("parameters/first/blend_amount",1)
+							anim_tree.set("parameters/stab_speed/scale",melee_atk_speed)
+							anim_tree.set("parameters/asd/active",false)
+							
 						"sword":
 							pass
+							anim_tree.active = true 
+							anim_tree.set("parameters/first/blend_amount",1)
+							anim_tree.set("parameters/stab_speed/scale",melee_atk_speed)
+							anim_tree.set("parameters/asd/active",false)
+#
+#
 					moveDuringAnimation(3)
 				"guard attack":
 					if resolve > 25:
 						match weapon_type:
 							"sword":
-								pass
+								animation.play("pomel strike",0.1,melee_atk_speed)
 						moveDuringAnimation(3)
 					else:
-						pass
+						animation.play("barehand idle",0.2,1)
 				"run attack":
-					
+					animation.play("low kick",0.3, melee_atk_speed)#placeholder
 					moveDuringAnimation(3)
 				"sprint attack":
-					
+					animation.play("stomp kick",0.3, melee_atk_speed)#placeholder
 					moveDuringAnimation(3)
 		#_________________________________walking states________________________________
 				"walk":
 					if is_in_combat:
 						match weapon_type:
 							"fist":
-								pass
+								animation.play("walk fist cycle",0,1)
 							"sword":
-								pass
+								animation.play("walk one handed sword cycle",0,1)
 							"dual_swords":
-								pass
+								animation.play("walk one handed sword cycle",0,1)
 					else:
-						pass
+						animation.play("walk cycle")
 				"crouch walk":
-					pass
+					animation.play("walk crouch cycle")
 				"crouch":
-					pass
+					animation.play("idle crouch",0.4)
 		#movement 
 				"sprint":
 					current_race_gender.resetAllCombos()
-					
+					animation.play("run cycle", 0, sprint_animation_speed * agility)
 				"run":
 					current_race_gender.resetAllCombos()
-					
+					animation.play("run cycle",0,agility)
 				"jump":
 					current_race_gender.resetAllCombos()
-					
+					animation.play("jump",0.2, agility)
 				"fall":
 					current_race_gender.resetAllCombos()
-					pass
+					animation.play("fall",0.3)
 				"climbing":
-					pass
+					animation.play("climb cycle",blend, strength)
 				"vaulting":
-					pass
+					animation.play("vaulting",0.7, strength)
 				"landing":
 					pass
 				"crawl":
-					pass
+					animation.play("crawl cycle")
 				"crawl limit":
-					pass
+					animation.play("crawl dying limit cycle")
 				"idle downed":
-					pass
+					animation.play("idle downed", 0.35)
 				"idle":
-					
 					current_race_gender.resetAllCombos()
 					if is_in_combat:
 						if weapon_type == "fist":
-							pass
+							animation.play("barehand idle",0.2,1)
 						else:
-							pass
+							animation.play("barehand idle",0.2,1)
 					else:
-						pass
-				#skillbar stuff
+						animation.play("idle cycle")
+#skillbar stuff_____________________________________________________________________________________
 				"test1":
 					var slot = $UI/GUI/SkillBar/GridContainer/Slot1/Icon
 					skills(slot)
@@ -779,10 +793,10 @@ func skills(slot):
 					current_race_gender.fury_strike_combo =0
 					match weapon_type:
 						"sword":
-						
+							animation.play("combo 1h refined",0.3,melee_atk_speed)
 							moveDuringAnimation(2)
 						"dual_swords":
-					
+							animation.play("combo 2x",0.3,melee_atk_speed)
 							moveDuringAnimation(1.5)
 				elif slot.texture.resource_path == autoload.guard.get_path():
 					if !is_walking:
@@ -795,22 +809,22 @@ func skills(slot):
 				elif slot.texture.resource_path == autoload.overhead_slash.get_path():
 					if necromant.can_overhead_slash == true:
 						if resolve > necromant.overhead_slash_cost:
+							anim_tree.active = true
+							is_in_combat = true
 							match weapon_type:
 									"fist":
+										anim_tree.set("parameters/first/blend_amount",0)
 										anim_tree.set("parameters/asd/active",false)
 									"sword":
-										is_in_combat = true
+										anim_tree.set("parameters/first/blend_amount",0)
 										anim_tree.set("parameters/x/blend_amount",-1)
 										anim_tree.set("parameters/speed/scale",melee_atk_speed)
 										anim_tree.set("parameters/asd/active",true)
 										moveDuringAnimation(1)
 									"dual_swords":
-										is_in_combat = true
-
+										anim_tree.set("parameters/first/blend_amount",0)
 										anim_tree.set("parameters/asd/active",false)
-
 										moveDuringAnimation(2)
-
 						else:
 							anim_tree.set("parameters/asd/active",false)
 					else:
@@ -818,7 +832,9 @@ func skills(slot):
 						anim_tree.set("parameters/asd/active",false)
 				elif slot.texture.resource_path == autoload.fury_strike.get_path():
 					if necromant.can_fury_strike == true:
+						anim_tree.active = true
 						is_in_combat = true
+						anim_tree.set("parameters/first/blend_amount",0)
 						anim_tree.set("parameters/x/blend_amount",0)
 						anim_tree.set("parameters/speed/scale",melee_atk_speed)
 						anim_tree.set("parameters/asd/active",true)
@@ -827,7 +843,9 @@ func skills(slot):
 				elif slot.texture.resource_path == autoload.cyclone.get_path():
 					if necromant.can_cyclone == true:
 						if resolve > necromant.cyclone_cost:
+							anim_tree.active = true
 							is_in_combat = true
+							anim_tree.set("parameters/first/blend_amount",0)
 							anim_tree.set("parameters/x/blend_amount",1)
 							anim_tree.set("parameters/speed/scale",melee_atk_speed)
 							anim_tree.set("parameters/asd/active",true)
@@ -860,7 +878,9 @@ func skills(slot):
 							autoload.consumeRedPotion(self,button,inventory_grid,true,slot.get_parent())				
 				else:
 						pass
-						
+
+
+	
 func moveDuringAnimation(speed):
 	if !is_on_wall():
 		if current_race_gender.can_move == true:
@@ -881,24 +901,24 @@ func animations():
 	elif dodge_animation_duration > 0 and resolve >0:
 		resolve -= 0.2
 		state = "slide"
-		jump_animation_duration = 0 
+
 	elif not is_on_floor() and not is_climbing and not is_swimming:
 		state = "fall"
-		jump_animation_duration = 0 
-	elif double_atk_animation_duration > 0 and !cursor_visible: 
+
+	elif double_atk_count == 2 and !cursor_visible: 
 		state = "double attack"
-		jump_animation_duration = 0 
+
 	elif Input.is_action_pressed("rclick") and Input.is_action_pressed("attack") and !cursor_visible:
 		state = "guard attack"
-		jump_animation_duration = 0 
+
 		
 	elif Input.is_action_pressed("rclick") and !cursor_visible:
 		if !is_walking:
 			state = "guard"
-			jump_animation_duration = 0 
+
 		else:
 			state = "guard walk"
-			jump_animation_duration = 0 
+
 #attacks________________________________________________________________________
 	elif Input.is_action_pressed("attack") and Input.is_action_pressed("run") and !cursor_visible: 
 		state = "run attack"
@@ -1013,10 +1033,7 @@ func doubleAttack():
 				double_atk_animation_duration -= 0.1 
 			elif double_atk_animation_duration < 0: 
 					double_atk_animation_duration = 0
-func stopDoubleAttack():
-	double_atk_animation_duration = 0
-					
-					
+
 
 func stompKickDealDamage():
 	var damage_type = "blunt"
