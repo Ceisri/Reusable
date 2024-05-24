@@ -593,7 +593,7 @@ func matchAnimationStates():
 		#_______________________________attacking states________________________________
 				"slide":
 					var slide_blend = 0.3
-					animation.play("slide",slide_blend)
+					pass
 					var slide_mov_speed = 15 + slide_blend + rand_range(3, 6)
 					if !is_on_wall():
 						horizontal_velocity = direction * slide_mov_speed
@@ -610,79 +610,80 @@ func matchAnimationStates():
 							"fist":
 								pass #replace with actual animation
 							"sword":
-								animation.play("guard walk one handed sword cycle",0,1)
+								pass
 				"double attack":
 					current_race_gender.resetAllCombos()
 					match weapon_type:
 						"fist":
-							animation.play("high kick",0.3,melee_atk_speed)
+							pass
 						"sword":
-							animation.play("stab lunge",0.3,melee_atk_speed)
+							pass
 					moveDuringAnimation(3)
 				"guard attack":
 					if resolve > 25:
 						match weapon_type:
 							"sword":
-								animation.play("pomel strike",0.1,melee_atk_speed)
+								pass
 						moveDuringAnimation(3)
 					else:
-						animation.play("barehand idle",0.2,1)
+						pass
 				"run attack":
-					animation.play("low kick",0.3, melee_atk_speed)#placeholder
+					
 					moveDuringAnimation(3)
 				"sprint attack":
-					animation.play("stomp kick",0.3, melee_atk_speed)#placeholder
+					
 					moveDuringAnimation(3)
 		#_________________________________walking states________________________________
 				"walk":
 					if is_in_combat:
 						match weapon_type:
 							"fist":
-								animation.play("walk fist cycle",0,1)
+								pass
 							"sword":
-								animation.play("walk one handed sword cycle",0,1)
+								pass
 							"dual_swords":
-								animation.play("walk one handed sword cycle",0,1)
+								pass
 					else:
-						animation.play("walk cycle")
+						pass
 				"crouch walk":
-					animation.play("walk crouch cycle")
+					pass
 				"crouch":
-					animation.play("idle crouch",0.4)
+					pass
 		#movement 
 				"sprint":
 					current_race_gender.resetAllCombos()
-					animation.play("run cycle", 0, sprint_animation_speed * agility)
+					
 				"run":
 					current_race_gender.resetAllCombos()
-					animation.play("run cycle",0,agility)
+					
 				"jump":
 					current_race_gender.resetAllCombos()
-					animation.play("jump",0.2, agility)
+					
 				"fall":
 					current_race_gender.resetAllCombos()
-					animation.play("fall",0.3)
+					pass
 				"climbing":
-					animation.play("climb cycle",blend, strength)
+					pass
 				"vaulting":
-					animation.play("vaulting",0.7, strength)
+					pass
 				"landing":
 					pass
 				"crawl":
-					animation.play("crawl cycle")
+					pass
 				"crawl limit":
-					animation.play("crawl dying limit cycle")
+					pass
 				"idle downed":
-					animation.play("idle downed", 0.35)
+					pass
 				"idle":
+					
 					current_race_gender.resetAllCombos()
 					if is_in_combat:
 						if weapon_type == "fist":
-							animation.play("barehand idle",0.2,1)
+							pass
 						else:
-							animation.play("barehand idle",0.2,1)
+							pass
 					else:
-						animation.play("idle cycle")
+						pass
 				#skillbar stuff
 				"test1":
 					var slot = $UI/GUI/SkillBar/GridContainer/Slot1/Icon
@@ -752,11 +753,13 @@ func skills(slot):
 	if slot != null:
 			if slot.texture != null:
 				if slot.texture.resource_path == "res://UI/graphics/SkillIcons/rush.png":
-					animation.play("combo attack 2hander cycle", 0.35)
+					pass
+			
 				elif slot.texture.resource_path == "res://UI/graphics/SkillIcons/selfheal.png":
-					animation.play("crawl cycle", 0.35)
+					pass
+			
 				elif slot.texture.resource_path == autoload.summon_shadow.get_path():
-					animation.play("idle crouch", 0.35)
+			
 					necromant.summonDemon()
 				elif slot.texture.resource_path == autoload.dominion.get_path():	
 					necromant.commandSwitch()
@@ -768,7 +771,7 @@ func skills(slot):
 					necromant.arcaneBlast()
 #melee
 				elif slot.texture.resource_path == autoload.punch.get_path():
-					animation.play("base attack barehanded cycle",0.3,melee_atk_speed +0.15)
+				
 					moveDuringAnimation(3)
 					current_race_gender.fury_strike_combo =0
 				elif slot.texture.resource_path == autoload.slash_sword.get_path():
@@ -776,17 +779,17 @@ func skills(slot):
 					current_race_gender.fury_strike_combo =0
 					match weapon_type:
 						"sword":
-							animation.play("combo 1h refined",0.3,melee_atk_speed)
+						
 							moveDuringAnimation(2)
 						"dual_swords":
-							animation.play("combo 2x",0.3,melee_atk_speed)
+					
 							moveDuringAnimation(1.5)
 				elif slot.texture.resource_path == autoload.guard.get_path():
 					if !is_walking:
-						animation.play("guard",0.3)
+					
 						jump_animation_duration = 0 
 					else:
-						animation.play("guard",0.3)
+	
 						jump_animation_duration = 0 
 #melee weapon skills
 				elif slot.texture.resource_path == autoload.overhead_slash.get_path():
@@ -794,49 +797,46 @@ func skills(slot):
 						if resolve > necromant.overhead_slash_cost:
 							match weapon_type:
 									"fist":
-										pass
+										anim_tree.set("parameters/asd/active",false)
 									"sword":
 										is_in_combat = true
-										if current_race_gender.fury_strike_combo ==2:
-											animation.play("overhand strike",0.3,melee_atk_speed*1.3)
-											moveDuringAnimation(2)
-										else:
-											animation.play("overhand strike",0.3,melee_atk_speed*0.9)
-											moveDuringAnimation(1)
+										anim_tree.set("parameters/x/blend_amount",-1)
+										anim_tree.set("parameters/speed/scale",melee_atk_speed)
+										anim_tree.set("parameters/asd/active",true)
+										moveDuringAnimation(1)
 									"dual_swords":
 										is_in_combat = true
-										if current_race_gender.fury_strike_combo ==2:
-											animation.play("overhand strike 2x",0.3,melee_atk_speed* 1.3)
-											moveDuringAnimation(2)
-										else:
-											animation.play("overhand strike 2x",0.3,melee_atk_speed*0.95)
-											moveDuringAnimation(1)
+
+										anim_tree.set("parameters/asd/active",false)
+
+										moveDuringAnimation(2)
+
 						else:
-							animation.play("barehand idle",0.3)
-							current_race_gender.fury_strike_combo =0
+							anim_tree.set("parameters/asd/active",false)
 					else:
-						animation.play("barehand idle",0.3)
 						current_race_gender.fury_strike_combo =0
+						anim_tree.set("parameters/asd/active",false)
 				elif slot.texture.resource_path == autoload.fury_strike.get_path():
 					if necromant.can_fury_strike == true:
 						is_in_combat = true
-						if fury_strike_duration > 0:
-							animation.play("1h still",0.3,melee_atk_speed)
-							moveDuringAnimation(3)
-						else:
-							animation.play("barehand idle",0.3)
-					else:
-						animation.play("barehand idle",0.3)
-				elif slot.texture.resource_path == autoload.cyclone.get_path():
-#					if necromant.can_fury_strike == true:
-						is_in_combat = true
-						animation.play("spin1",0.3,melee_atk_speed)
+						anim_tree.set("parameters/x/blend_amount",0)
+						anim_tree.set("parameters/speed/scale",melee_atk_speed)
+						anim_tree.set("parameters/asd/active",true)
 						moveDuringAnimation(3)
-#					else:
-#						animation.play("barehand idle",0.3)
+
+				elif slot.texture.resource_path == autoload.cyclone.get_path():
+					if necromant.can_cyclone == true:
+						if resolve > necromant.cyclone_cost:
+							is_in_combat = true
+							anim_tree.set("parameters/x/blend_amount",1)
+							anim_tree.set("parameters/speed/scale",melee_atk_speed)
+							anim_tree.set("parameters/asd/active",true)
+							moveDuringAnimation(3)
+					else:
+						anim_tree.set("parameters/asd/active",false)
+
 				elif slot.texture.resource_path == autoload.guard_sword.get_path():
 					is_in_combat = true
-					animation.play("guard one handed sword",0.3)
 					current_race_gender.fury_strike_combo =0
 					moveDuringAnimation(3)
 
@@ -909,6 +909,7 @@ func animations():
 	elif Input.is_action_pressed("attack") and !cursor_visible:
 			state = "base attack"
 			jump_animation_duration = 0 
+
 #_______________________________________________________________________________
 			
 #skills put these below the walk elif statment in case of keybinding bugs, as of now it works so no need

@@ -2,6 +2,7 @@ extends Spatial
 
 var player 
 onready var animation = $AnimationPlayer
+onready var animation_tree = $AnimationTree
 onready var left_hand = $Armature/Skeleton/LeftHand/Holder
 onready var right_hand = $Armature/Skeleton/RightHand/Holder
 onready var right_hip = $Armature/Skeleton/RightHip/holder
@@ -13,6 +14,7 @@ onready var sword1: PackedScene = preload("res://itemTest.tscn")
 onready var sword2: PackedScene = preload("res://itemTest.tscn")
 func _ready():
 	player.animation = animation
+	player.anim_tree = animation_tree
 	loadPlayerData()
 	switchSkin()
 	switchArmor()
@@ -610,6 +612,8 @@ func stab()->void:
 
 
 var base_damage_overhead_strike = 50
+func overheadStrikeCD():
+	player.necromant.overheadStrike()
 func overheadStrike()->void:
 	fury_strike_combo = 0
 	var damage_type:String = "slash"
@@ -622,7 +626,7 @@ func overheadStrike()->void:
 	var aggro_power = damage + 20
 	var enemies = sword_area.get_overlapping_bodies()
 	var enemies2 = sword2_area.get_overlapping_bodies()
-	player.necromant.overheadStrike()
+
 	for victim in enemies:
 		if victim.is_in_group("enemy") and victim != self:
 			if victim.has_method("takeDamage"):
@@ -686,6 +690,11 @@ func overheadStrike()->void:
 									victim.takeDamage(damage_flank,aggro_power,player,player.stagger_chance,damage_type)
 
 var fury_strike_combo: int = 0
+func commitToFuryStrikeSkill():
+	player.fury_strike_duration = 100
+func resetFuryStrikeSkill():
+	player.fury_strike_duration =0
+	player.necromant.furyStrike()
 func furyStrike()->void:
 	fury_strike_combo += 1
 	var damage_type:String = "slash"
@@ -698,7 +707,7 @@ func furyStrike()->void:
 	var aggro_power = damage + 20
 	var enemies = sword_area.get_overlapping_bodies()
 	var enemies2 = sword2_area.get_overlapping_bodies()
-	player.necromant.furyStrike()
+	
 	for victim in enemies:
 		if victim.is_in_group("enemy") and victim != self:
 			player.pushEnemyAway(0.25, victim,0.25)
@@ -803,18 +812,15 @@ func pomelStrike()->void:
 							else: #apparently the victim is showing his back or flanks, extra damage
 								victim.takeDamage(damage_flank,aggro_power,player,player.stagger_chance,damage_type)
 
-
 func resolveCost(cost):
 	if player.resolve > cost:
 		player.resolve -= cost
-
-
 func resetAllCombos():
 	fury_strike_combo = 0
 
-
-
 onready var melee_aoe: Area = $MeleeAOE
+func cycloneCD():
+	player.necromant.cyclone()
 func cyclone()->void:
 	var damage_type:String = "slash"
 	var damage = autoload.cyclone_damage + player.slash_dmg
