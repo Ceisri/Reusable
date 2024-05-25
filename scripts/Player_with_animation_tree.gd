@@ -181,21 +181,12 @@ func walk():
 		is_crouching = false
 		strafe_dir = Vector3.ZERO
 
-
-	# Debugging: print the current value of the parameter to see what it is returning
-		var current_value = anim_tree.get("parameters/strafe_idle/current")
-		print("Current Value:", current_value)
-	
-	# Check if the current value is 0
-		if current_value == 0.0:
-			var direction = $Camroot/h.global_transform.basis.z
-			print("Direction:", direction)
 	autoload.movement(self)
 #	physicsSauce()
 #	horizontal_velocity = horizontal_velocity.linear_interpolate(direction.normalized() * movement_speed, acceleration * delta)
 func strafing(delta:float)->void:
 	strafe = lerp(strafe, strafe_dir, delta * acceleration)
-	anim_tree.set("parameters/strafe_idle/blend_position",Vector2(-strafe.x,strafe.z))
+	anim_tree.set("parameters/walk/blend_position",Vector2(-strafe.x,strafe.z))
 	if Input.is_action_pressed("aim"):
 		anim_tree.active = true 
 		is_aiming = true
@@ -462,6 +453,7 @@ func stiffCamera():
 #		if direction != Vector3.ZERO and is_climbing:
 #			player_mesh.rotation.y = -(atan2($ClimbRay.get_collision_normal().z,$ClimbRay.get_collision_normal().x) - PI/2)
 	else: # Normal turn movement mechanics
+		strafe = lerp(strafe, strafe_dir + Vector3.RIGHT * aim_turn, get_physics_process_delta_time() * acceleration)
 		player_mesh.rotation.y = lerp_angle(player_mesh.rotation.y, atan2(direction.x, direction.z) - rotation.y, get_physics_process_delta_time() * angular_acceleration)
 func minimapFollow():# Update the position of the minimap camera
 	minimap_camera.translation = Vector3(translation.x, translation.y + 30,translation.z)
@@ -628,7 +620,7 @@ func matchAnimationStates():
 	
 	if current_race_gender != null and animation != null:
 		if is_instance_valid(anim_tree):
-			print(anim_tree.active)
+		#	print(anim_tree.active)
 			match state:
 #_______________________________attacking states____________________________________________________
 				"slide":
@@ -639,18 +631,17 @@ func matchAnimationStates():
 						horizontal_velocity = direction * slide_mov_speed
 					movement_speed = int(slide_mov_speed)
 				"base attack":
-					
-					anim_tree.set("parameters/asd/active",false)
+					anim_tree.set("parameters/skill/active",false)
 					anim_tree.active = false
 					current_race_gender.resetAllCombos()
 					var slot = $UI/GUI/SkillBar/GridContainer/LClickSlot/Icon
 					skills(slot)
 				"guard":
-					anim_tree.set("parameters/asd/active",false)
+					anim_tree.set("parameters/skill/active",false)
 					var slot = $UI/GUI/SkillBar/GridContainer/RClickSlot/Icon
 					skills(slot)
 				"guard walk":
-						anim_tree.set("parameters/asd/active",false)
+						anim_tree.set("parameters/skill/active",false)
 						match weapon_type:
 							"fist":
 								pass #replace with actual animation
@@ -661,32 +652,24 @@ func matchAnimationStates():
 					match weapon_type:
 						"fist":
 							pass
-							anim_tree.active = true 
-							anim_tree.set("parameters/first/blend_amount",1)
-							anim_tree.set("parameters/stab_speed/scale",melee_atk_speed)
-							anim_tree.set("parameters/asd/active",false)
+							
 							
 						"sword":
 							pass
-							anim_tree.active = true 
-							anim_tree.set("parameters/first/blend_amount",1)
-							anim_tree.set("parameters/stab_speed/scale",melee_atk_speed)
-							anim_tree.set("parameters/asd/active",false)
+							
 					moveDuringAnimation(3)
 				"guard attack":
 					if resolve > 25:
 						match weapon_type:
 							"sword":
-								animation.play("pomel strike",0.1,melee_atk_speed)
-						moveDuringAnimation(3)
+								pass
+								
 					else:
 						animation.play("barehand idle",0.2,1)
 				"run attack":
-					animation.play("low kick",0.3, melee_atk_speed)#placeholder
-					moveDuringAnimation(3)
+					pass
 				"sprint attack":
-					animation.play("stomp kick",0.3, melee_atk_speed)#placeholder
-					moveDuringAnimation(3)
+					pass
 		#_________________________________walking states________________________________
 				"walk":
 					if is_in_combat:
@@ -699,10 +682,11 @@ func matchAnimationStates():
 								animation.play("walk one handed sword cycle",0,1)
 					else:
 						if is_aiming:
-							anim_tree.set("parameters/asd/active",false)
-							anim_tree.set("parameters/strafe_idle/blend_position",Vector2(-strafe.x,strafe.z))
+							anim_tree.set("parameters/combine_walk_shoot/blend_amount",0)
+							anim_tree.set("parameters/skill/active",false)
+							anim_tree.set("parameters/walk/blend_position",Vector2(-strafe.x,strafe.z))
 						else:
-							anim_tree.set("parameters/asd/active",false)
+							anim_tree.set("parameters/skill/active",false)
 							anim_tree.active = false
 							animation.play("walk cycle")
 				"crouch walk":
@@ -830,8 +814,8 @@ func skills(slot):
 					necromant.arcaneBlast()
 #melee
 				elif slot.texture.resource_path == autoload.punch.get_path():
-				
-					moveDuringAnimation(3)
+					pass
+					
 					current_race_gender.fury_strike_combo =0
 				elif slot.texture.resource_path == autoload.slash_sword.get_path():
 					is_in_combat = true
@@ -858,45 +842,48 @@ func skills(slot):
 							is_in_combat = true
 							match weapon_type:
 									"fist":
-										anim_tree.set("parameters/first/blend_amount",0)
-										anim_tree.set("parameters/asd/active",false)
+										pass
 									"sword":
-										anim_tree.set("parameters/first/blend_amount",0)
-										anim_tree.set("parameters/x/blend_amount",-1)
-										anim_tree.set("parameters/speed/scale",melee_atk_speed)
-										anim_tree.set("parameters/asd/active",true)
+										anim_tree.set("parameters/sword_skills/blend_amount",-1)
+										anim_tree.set("parameters/Overhead_strike_grip/blend_amount",0)
+										anim_tree.set("parameters/atk_speed/scale",melee_atk_speed)
+										anim_tree.set("parameters/skill/active",true)
 										moveDuringAnimation(1)
 									"dual_swords":
-										anim_tree.set("parameters/first/blend_amount",0)
-										anim_tree.set("parameters/asd/active",false)
+										anim_tree.set("parameters/sword_skills/blend_amount",-1)
+										anim_tree.set("parameters/Overhead_strike_grip/blend_amount",1)
+										anim_tree.set("parameters/atk_speed/scale",melee_atk_speed)
+										anim_tree.set("parameters/skill/active",true)
 										moveDuringAnimation(2)
 						else:
-							anim_tree.set("parameters/asd/active",false)
+							anim_tree.set("parameters/skill/active",false)
 					else:
 						current_race_gender.fury_strike_combo =0
-						anim_tree.set("parameters/asd/active",false)
+						anim_tree.set("parameters/skill/active",false)
 				elif slot.texture.resource_path == autoload.fury_strike.get_path():
 					if necromant.can_fury_strike == true:
 						anim_tree.active = true
 						is_in_combat = true
-						anim_tree.set("parameters/first/blend_amount",0)
-						anim_tree.set("parameters/x/blend_amount",0)
-						anim_tree.set("parameters/speed/scale",melee_atk_speed)
-						anim_tree.set("parameters/asd/active",true)
+						anim_tree.set("parameters/sword_skills/blend_amount",1)
+						anim_tree.set("parameters/atk_speed/scale",melee_atk_speed)
+						anim_tree.set("parameters/skill/active",true)
 						moveDuringAnimation(3)
+					else:
+						anim_tree.set("parameters/skill/active",false)
 
 				elif slot.texture.resource_path == autoload.cyclone.get_path():
 					if necromant.can_cyclone == true:
 						if resolve > necromant.cyclone_cost:
 							anim_tree.active = true
 							is_in_combat = true
-							anim_tree.set("parameters/first/blend_amount",0)
-							anim_tree.set("parameters/x/blend_amount",1)
-							anim_tree.set("parameters/speed/scale",melee_atk_speed)
-							anim_tree.set("parameters/asd/active",true)
+							anim_tree.set("parameters/sword_skills/blend_amount",0)
+							anim_tree.set("parameters/atk_speed/scale",melee_atk_speed)
+							anim_tree.set("parameters/skill/active",true)
 							moveDuringAnimation(3)
+						else:
+							anim_tree.set("parameters/skill/active",false)
 					else:
-						anim_tree.set("parameters/asd/active",false)
+						anim_tree.set("parameters/skill/active",false)
 
 				elif slot.texture.resource_path == autoload.guard_sword.get_path():
 					is_in_combat = true
@@ -956,12 +943,10 @@ func animations():
 
 	elif Input.is_action_pressed("rclick") and Input.is_action_pressed("attack") and !cursor_visible:
 		state = "guard attack"
-
 		
 	elif Input.is_action_pressed("rclick") and !cursor_visible and is_in_combat:
 		if !is_walking:
 			state = "guard"
-
 		else:
 			state = "guard walk"
 
