@@ -12,6 +12,7 @@ onready var shoulder_l = $Armature/Skeleton/LeftShoulder/Holder
 onready var sword0: PackedScene = preload("res://player/weapons/sword/sword.tscn")
 onready var sword1: PackedScene = preload("res://itemTest.tscn")
 onready var sword2: PackedScene = preload("res://itemTest.tscn")
+onready var bow: PackedScene = preload("res://itemTest.tscn")
 func _ready():
 	animation_tree.active = false
 
@@ -547,7 +548,7 @@ func baseMeleeAtk()->void:
 								victim.takeDamage(damage,aggro_power,player,player.stagger_chance,damage_type)
 							else: #apparently the victim is showing his back or flanks, extra damage
 								victim.takeDamage(damage_flank,aggro_power,player,player.stagger_chance,damage_type)
-	if player.weapon_type == "dual_swords":
+	if player.weapon_type == player.dual_swords:
 		for victim in enemies2:
 			if victim.is_in_group("enemy") and victim != self:
 				if victim.has_method("takeDamage"):
@@ -656,7 +657,7 @@ func overheadStrike()->void:
 								victim.takeDamage(damage,aggro_power,player,player.stagger_chance,damage_type)
 							else: #apparently the victim is showing his back or flanks, extra damage
 								victim.takeDamage(damage_flank,aggro_power,player,player.stagger_chance,damage_type)
-	if player.weapon_type == "dual_swords":
+	if player.weapon_type == player.dual_swords:
 		for victim in enemies2:
 			if victim.is_in_group("enemy") and victim != self:
 				if victim.has_method("takeDamage"):
@@ -734,7 +735,7 @@ func furyStrike()->void:
 								victim.takeDamage(damage,aggro_power,player,player.stagger_chance,damage_type)
 							else: #apparently the victim is showing his back or flanks, extra damage
 								victim.takeDamage(damage_flank,aggro_power,player,player.stagger_chance,damage_type)
-	if player.weapon_type == "dual_swords":
+	if player.weapon_type == player.dual_swords:
 		for victim in enemies2:
 			if victim.is_in_group("enemy") and victim != self:
 				if victim.has_method("takeDamage"):
@@ -858,3 +859,8 @@ func cyclone()->void:
 								victim.takeDamage(damage,aggro_power,player,player.stagger_chance,damage_type)
 							else: #apparently the victim is showing his back or flanks, extra damage
 								victim.takeDamage(damage_flank,aggro_power,player,player.stagger_chance,damage_type)
+
+func shootArrow():
+	player.necromant.shootArrow(12)
+func longDrawShootArrow():
+	player.necromant.shootArrow(24 * player.strength)

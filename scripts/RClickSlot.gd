@@ -10,10 +10,11 @@ func switchAttackIcon():
 		icon.texture = autoload.necro_guard
 	else:
 		match player.weapon_type:
-			"fist":
+			player.fist:
 				icon.texture = autoload.guard
-			"sword":
+			player.sword:
 				icon.texture = autoload.guard_sword
-			"dual_swords":
+			player.dual_swords:
 				icon.texture = autoload.guard_sword
-
+			player.bow:
+				icon.texture = autoload.full_draw
