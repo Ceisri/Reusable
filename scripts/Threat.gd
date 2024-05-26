@@ -178,15 +178,16 @@ func getBestFive():
 	var threat_info = []  # Array to store player threat information
 
 	for assailant in [first, second, third, fourth, fifth]:# Append the threat information of the first, second, third, fourth, and fifth assailants
-		if assailant != null and assailant.player != null:
-			var player = assailant.player
-			# Check if player instance is valid by verifying its instance ID
-			if player.get_instance_id() != 0:
-				var player_name = player.entity_name
-				var player_id = player.get_instance_id()
-				threat_info.append(player_name + " ID: " + str(player_id) + " threat: " + str(assailant.threat))
-			else:
-				pass
+		if is_instance_valid(assailant):
+			if assailant != null and assailant.player != null:
+				var player = assailant.player
+				# Check if player instance is valid by verifying its instance ID
+				if is_instance_valid(player):
+					if player.get_instance_id() != 0:
+						var player_name = player.entity_name
+						var player_id = player.get_instance_id()
+						threat_info.append(player_name + " ID: " + str(player_id) + " threat: " + str(assailant.threat))
+
 	return threat_info
 
 func getThreatInfo() -> Array:

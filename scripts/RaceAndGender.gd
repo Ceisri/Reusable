@@ -12,7 +12,7 @@ onready var shoulder_l = $Armature/Skeleton/LeftShoulder/Holder
 onready var sword0: PackedScene = preload("res://player/weapons/sword/sword.tscn")
 onready var sword1: PackedScene = preload("res://itemTest.tscn")
 onready var sword2: PackedScene = preload("res://itemTest.tscn")
-onready var bow: PackedScene = preload("res://itemTest.tscn")
+onready var bow: PackedScene = preload("res://Equipment/bows/iron/bow.tscn")
 func _ready():
 	player.animation = $AnimationPlayer
 	player.anim_tree = $AnimationTree

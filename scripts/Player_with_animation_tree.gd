@@ -2214,7 +2214,7 @@ func fixInstance():
 	if right_hand:
 		right_hand.add_child(current_weapon_instance)
 		current_weapon_instance.get_node("CollisionShape").disabled = true
-		current_weapon_instance.scale = Vector3(100, 100, 100)
+		#current_weapon_instance.scale = Vector3(100, 100, 100)
 		got_weapon = true
 func switchWeapon():
 	$UI/GUI/wp_type.text = str("weapon:") + str(weapon_type)
@@ -2299,7 +2299,7 @@ func fixSecInstance():
 	if left_hand:
 		left_hand.add_child(sec_current_weapon_instance)
 		sec_current_weapon_instance.get_node("CollisionShape").disabled = true
-		sec_current_weapon_instance.scale = Vector3(100, 100, 100)
+		#sec_current_weapon_instance.scale = Vector3(100, 100, 100)
 		got_sec_weapon = true
 func switchSec():
 	match secondary_weapon:
