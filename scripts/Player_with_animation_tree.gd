@@ -634,18 +634,25 @@ func switchWeaponStances()-> void:
 				weapon_type = fist
 		
 func forceMovement()->void:
-	if anim_tree.get("parameters/skill/active") and anim_tree.active == true:
-		if state != "guard" or state != "guard walk":
-			moveDuringAnimation(3)
-			print("active.")
+	if anim_tree != null:
+		if anim_tree.get("parameters/skill/active") and anim_tree.active == true:
+			if state != "guard" or state != "guard walk":
+				moveDuringAnimation(3)
+				print("active.")
+		else:
+			print("stopped.")
 	else:
-		print("stopped.")
+		print("anim_tree not found")
 var state: String = "idle"
 func matchAnimationStates():
 	forceMovement()
-	if current_race_gender != null and animation != null:
-		if is_instance_valid(anim_tree):
-			print(current_race_gender.can_move)
+	if current_race_gender == null or animation == null:
+		print("mesh not instanced or animationPlayer not found")
+	elif !is_instance_valid(anim_tree):
+		print("animationTree not found")
+		current_race_gender.animation_tree = anim_tree
+	else:
+		
 			match state:
 #_______________________________attacking states____________________________________________________
 				"slide":
@@ -679,7 +686,7 @@ func matchAnimationStates():
 							fist:
 								pass #replace with actual animation
 							sword:
-								animation.play("guard walk one handed sword cycle",0,1)
+								animation.play("guard sword walk",0,1)
 				"double attack":
 					current_race_gender.resetAllCombos()
 					match weapon_type:
@@ -707,15 +714,15 @@ func matchAnimationStates():
 					if is_in_combat:
 						match weapon_type:
 							fist:
-								animation.play("walk cycle",0,1)
+								animation.play("walk",0,1)
 							sword:
-								animation.play("walk one handed sword cycle",0,1)
+								animation.play("walk sword",0,1)
 							dual_swords:
-								animation.play("walk one handed sword cycle",0,1)
+								animation.play("walk sword",0,1)
 							bow: 
-								animation.play("walk one handed sword cycle",0,1)
+								animation.play("walk sword",0,1)
 					else:
-						animation.play("walk cycle",0,1)
+						animation.play("walk",0,1)
 				"crouch walk":
 					animation.play("walk crouch cycle")
 				"crouch":
@@ -750,11 +757,11 @@ func matchAnimationStates():
 					current_race_gender.resetAllCombos()
 					if is_in_combat:
 						if weapon_type == fist:
-							animation.play("barehand idle",0.2,1)
+							animation.play("idle fist",0.2,1)
 						else:
-							animation.play("barehand idle",0.2,1)
+							animation.play("idle fist",0.2,1)
 					else:
-						animation.play("idle cycle")
+						animation.play("idle")
 #skillbar stuff_____________________________________________________________________________________
 				"test1":
 					var slot = $UI/GUI/SkillBar/GridContainer/Slot1/Icon
@@ -842,7 +849,7 @@ func skills(slot):
 					necromant.arcaneBlast()
 #melee
 				elif slot.texture.resource_path == autoload.punch.get_path():
-					animation.play("base attack barehanded cycle",0.3,melee_atk_speed)
+					animation.play("combo fist",0.3,melee_atk_speed)
 					moveDuringAnimation(2)
 					
 					current_race_gender.fury_strike_combo =0
@@ -851,7 +858,7 @@ func skills(slot):
 					current_race_gender.fury_strike_combo =0
 					match weapon_type:
 						sword:
-							animation.play("combo 1h refined",0.3,melee_atk_speed)
+							animation.play("combo sword",0.3,melee_atk_speed)
 							moveDuringAnimation(2)
 						dual_swords:
 							animation.play("combo 2x",0.3,melee_atk_speed)
@@ -862,7 +869,7 @@ func skills(slot):
 						jump_animation_duration = 0 
 					else:
 						anim_tree.active = false
-						animation.play("guard walk one handed sword cycle",0.3,melee_atk_speed)
+						animation.play("guard sword walk",0.3,melee_atk_speed)
 						jump_animation_duration = 0 
 #melee weapon skills
 				elif slot.texture.resource_path == autoload.overhead_slash.get_path():

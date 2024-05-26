@@ -14,10 +14,9 @@ onready var sword1: PackedScene = preload("res://itemTest.tscn")
 onready var sword2: PackedScene = preload("res://itemTest.tscn")
 onready var bow: PackedScene = preload("res://itemTest.tscn")
 func _ready():
-	animation_tree.active = false
-
-	player.animation = animation
-	player.anim_tree = animation_tree
+	player.animation = $AnimationPlayer
+	player.anim_tree = $AnimationTree
+	$AnimationTree.active = false
 	loadPlayerData()
 	switchSkin()
 	switchArmor()
@@ -39,7 +38,7 @@ func EquipmentSwitch():
 
 onready var legs0 = $Armature/Skeleton/legs0
 onready var legs1 = $Armature/Skeleton/legs1
-onready var legs2 = $Armature/Skeleton/legs2	
+onready var legs2 = $Armature/Skeleton/legs2
 func switchHead():
 	var head0 = null
 	var head1 = null
