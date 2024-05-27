@@ -13,7 +13,9 @@ onready var sword0: PackedScene = preload("res://player/weapons/sword/sword.tscn
 onready var sword1: PackedScene = preload("res://itemTest.tscn")
 onready var sword2: PackedScene = preload("res://itemTest.tscn")
 onready var bow: PackedScene = preload("res://Equipment/bows/iron/bow.tscn")
-func _ready():
+
+
+func _ready():	
 	player.animation = $AnimationPlayer
 	player.anim_tree = $AnimationTree
 	$AnimationTree.active = false
@@ -47,49 +49,35 @@ func switchHead():
 			player.applyEffect(player,"helm1", false)
 		"garment1":
 			player.applyEffect(player,"helm1", true)
+
+
+func EquipArmor(clothing_to_equip,clothing_type_to_delete):
+	var clothing_to_equip_instance = clothing_to_equip.instance()
+	clothing_to_equip_instance.scale = Vector3(1,1,1) # just in case you can't see the clothing, it might have been resized due to how mixamo works change this between 0.01 to 1 or 100 to test 
+	for child in $Armature/Skeleton.get_children():
+		if child.is_in_group(clothing_type_to_delete):
+			child.queue_free() # this will delete all the armors that share the same group, use names like "Legs, Torso,Hands,Feet"
+	$Armature/Skeleton.add_child(clothing_to_equip_instance)
+onready var human_xy_naked_torso_0: PackedScene = preload("res://Equipment/Armors/Human_XY/Torso/Torso0.tscn")
+onready var human_xy_tunic_0: PackedScene = preload("res://Equipment/Armors/Human_XY/Torso/Tunic0.tscn")
+onready var human_xy_gambeson_0: PackedScene = preload("res://Equipment/Armors/Human_XY/Torso/Gambeson0.tscn")
+onready var human_xy_chainmail_0: PackedScene = preload("res://Equipment/Armors/Human_XY/Torso/Chainmail0.tscn")
+onready var human_xy_cuirass_0: PackedScene = preload("res://Equipment/Armors/Human_XY/Torso/Cuirass0.tscn")
 func switchTorso():
-	var torso0 = $Armature/Skeleton/torso0
-	var torso1 = $Armature/Skeleton/torso1
-	var torso2 = $Armature/Skeleton/torso2
-	var torso3 = $Armature/Skeleton/torso3
-	var torso4 = $Armature/Skeleton/torso4
-	if torso0 != null:
-		if torso1 != null:
-			if torso2 !=null:
-				match player.torso:
-					"naked":
-						torso0.show()
-						torso1.hide()
-						torso2.hide()
-						torso3.hide()
-						torso4.hide()
-						player.applyEffect(player,"garment1", false)
-					"garment1":
-						torso0.hide()
-						torso1.show()
-						torso2.hide()
-						torso3.hide()
-						torso4.hide()
-						player.applyEffect(player,"garment1", true)
-					"torso2":
-						torso0.hide()
-						torso1.hide()
-						torso2.show()
-						torso3.hide()
-						torso4.hide()
-					"torso3":
-						torso0.hide()
-						torso1.hide()
-						torso2.hide()
-						torso3.show()
-						torso4.hide()
-					"torso4":
-						torso0.hide()
-						torso1.hide()
-						torso2.hide()
-						torso3.hide()
-						torso4.show()
-						player.applyEffect(player,"garment1", true)
+	match player.torso:
+			"naked":
+				EquipArmor(human_xy_naked_torso_0,"Torso")
+				player.applyEffect(player,"garment1", false)
+			"tunic0":
+				EquipArmor(human_xy_tunic_0,"Torso")
+				player.applyEffect(player,"garment1", true)
+			"gambeson0":
+				EquipArmor(human_xy_gambeson_0,"Torso")
+			"chainmail0":
+				EquipArmor(human_xy_chainmail_0,"Torso")
+			"cuirass0":
+				EquipArmor(human_xy_cuirass_0,"Torso")
+
 func switchBelt():
 	match player.belt:
 		"naked":

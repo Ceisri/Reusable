@@ -2226,16 +2226,17 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 			left_shoulder_pad = "null"
 #_______________________________chest___________________________________________
 	var chest_icon = $UI/GUI/Equipment/EquipmentBG/BreastPlate/Icon
-	if chest_icon != null:
+	if chest_icon != null: #check if the icon and texture are null just to avoid crashes
 		if chest_icon.texture != null:
+			#the singleton Global.gd holds the preloads paths to various textures, match them to the specific armor icon
 			if chest_icon.texture.get_path() == autoload.garment1.get_path():
-				torso = "garment1"
+				torso = "tunic0" # if they match set the variable Torso, legs, hands or whatever to a string or enum 
 			elif chest_icon.texture.get_path() == autoload.torso_armor2.get_path():
-				torso = "torso2"
+				torso = "gambeson0"
 			elif chest_icon.texture.get_path() == autoload.torso_armor3.get_path():
-				torso = "torso3"
+				torso = "chainmail0"
 			elif chest_icon.texture.get_path() == autoload.torso_armor4.get_path():
-				torso = "torso4"
+				torso = "cuirass0"
 		elif chest_icon.texture == null:
 			torso = "naked"
 #_______________________________belt___________________________________________
