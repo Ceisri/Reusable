@@ -1,8 +1,8 @@
 extends Spatial
 
 var player 
-onready var animation = $AnimationPlayer
-onready var animation_tree = $AnimationTree
+onready var animation:AnimationPlayer = $AnimationPlayer
+onready var animation_tree:AnimationTree = $AnimationTree
 onready var left_hand = $Armature/Skeleton/LeftHand/Holder
 onready var right_hand = $Armature/Skeleton/RightHand/Holder
 onready var right_hip = $Armature/Skeleton/RightHip/holder
@@ -28,7 +28,7 @@ func _ready():
 	player.switchShoulder()
 #_____________________________________Equipment 3D______________________________
 
-func EquipmentSwitch():
+func EquipmentSwitch()->void:
 	switchHead()
 	switchTorso()
 	switchBelt()
@@ -41,7 +41,7 @@ func EquipmentSwitch():
 onready var legs0 = $Armature/Skeleton/legs0
 onready var legs1 = $Armature/Skeleton/legs1
 onready var legs2 = $Armature/Skeleton/legs2
-func switchHead():
+func switchHead()->void:
 	var head0 = null
 	var head1 = null
 	match player.head:
@@ -51,40 +51,40 @@ func switchHead():
 			player.applyEffect(player,"helm1", true)
 
 
-func EquipArmor(clothing_to_equip,clothing_type_to_delete):
+func equipArmor(clothing_to_equip,clothing_type_to_delete):
 	var clothing_to_equip_instance = clothing_to_equip.instance()
 	clothing_to_equip_instance.scale = Vector3(1,1,1) # just in case you can't see the clothing, it might have been resized due to how mixamo works change this between 0.01 to 1 or 100 to test 
 	for child in $Armature/Skeleton.get_children():
 		if child.is_in_group(clothing_type_to_delete):
 			child.queue_free() # this will delete all the armors that share the same group, use names like "Legs, Torso,Hands,Feet"
 	$Armature/Skeleton.add_child(clothing_to_equip_instance)
-onready var human_xy_naked_torso_0: PackedScene = preload("res://Equipment/Armors/Human_XY/Torso/Torso0.tscn")
+onready var human_xy_naked_torso_0: PackedScene = preload("res://Equipment/Armors/Human_XY/Torso/Torso0.tscn")#save the mesh as a scene and make sure the skin property share's the same bone names as the skeleton
 onready var human_xy_tunic_0: PackedScene = preload("res://Equipment/Armors/Human_XY/Torso/Tunic0.tscn")
 onready var human_xy_gambeson_0: PackedScene = preload("res://Equipment/Armors/Human_XY/Torso/Gambeson0.tscn")
 onready var human_xy_chainmail_0: PackedScene = preload("res://Equipment/Armors/Human_XY/Torso/Chainmail0.tscn")
 onready var human_xy_cuirass_0: PackedScene = preload("res://Equipment/Armors/Human_XY/Torso/Cuirass0.tscn")
-func switchTorso():
+func switchTorso()->void:
 	match player.torso:
 			"naked":
-				EquipArmor(human_xy_naked_torso_0,"Torso")
+				equipArmor(human_xy_naked_torso_0,"Torso")
 				player.applyEffect(player,"garment1", false)
 			"tunic0":
-				EquipArmor(human_xy_tunic_0,"Torso")
+				equipArmor(human_xy_tunic_0,"Torso")
 				player.applyEffect(player,"garment1", true)
 			"gambeson0":
-				EquipArmor(human_xy_gambeson_0,"Torso")
+				equipArmor(human_xy_gambeson_0,"Torso")
 			"chainmail0":
-				EquipArmor(human_xy_chainmail_0,"Torso")
+				equipArmor(human_xy_chainmail_0,"Torso")
 			"cuirass0":
-				EquipArmor(human_xy_cuirass_0,"Torso")
+				equipArmor(human_xy_cuirass_0,"Torso")
 
-func switchBelt():
+func switchBelt()->void:
 	match player.belt:
 		"naked":
 			player.applyEffect(player,"belt1", false)
 		"belt1":
 			player.applyEffect(player,"belt1", true)
-func switchLegs():
+func switchLegs()->void:
 	if legs0 != null:
 		if legs1 != null:
 			match player.legs:

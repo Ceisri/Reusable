@@ -17,7 +17,7 @@ var is_running = bool()
 onready var l_click_slot = $UI/GUI/SkillBar/GridContainer/LClickSlot
 onready var r_click_slot = $UI/GUI/SkillBar/GridContainer/RClickSlot
 
-func _ready():
+func _ready()->void:
 	loadPlayerData()
 	switchSexRace()
 	setInventoryOwner()
@@ -38,7 +38,7 @@ func _ready():
 	aim_label.text = aiming_mode
 	current_race_gender.EquipmentSwitch()
 	l_click_slot.switchAttackIcon()
-func _on_SlowTimer_timeout():
+func _on_SlowTimer_timeout()->void:
 	allResourcesBarsAndLabels()
 	potionEffects()
 	current_race_gender.EquipmentSwitch()
@@ -56,7 +56,7 @@ func _on_SlowTimer_timeout():
 	r_click_slot.switchAttackIcon()
 
 
-func _on_3FPS_timeout():
+func _on_3FPS_timeout()->void:
 	$UI/GUI/Equipment/Attributes/AttributePoints.text = "Attributes points left: " + str(attribute)
 # Calculate the sum of all spent attribute points
 	var total_spent_attribute_points = spent_attribute_points_san + spent_attribute_points_wis + spent_attribute_points_mem + spent_attribute_points_int + spent_attribute_points_ins +spent_attribute_points_for + spent_attribute_points_str + spent_attribute_points_fur + spent_attribute_points_imp + spent_attribute_points_fer + spent_attribute_points_foc + spent_attribute_points_bal + spent_attribute_points_dex + spent_attribute_points_acc + spent_attribute_points_poi +spent_attribute_points_has + spent_attribute_points_agi + spent_attribute_points_cel + spent_attribute_points_fle + spent_attribute_points_def + spent_attribute_points_end + spent_attribute_points_sta + spent_attribute_points_vit + spent_attribute_points_res + spent_attribute_points_ten + spent_attribute_points_cha + spent_attribute_points_loy + spent_attribute_points_dip + spent_attribute_points_aut + spent_attribute_points_cou
@@ -119,78 +119,79 @@ var sprint_speed = 10
 const base_max_sprint_speed = 25
 var max_sprint_speed = 25
 var max_sprint_animation_speed = 2.5
-func walk():
+
+var can_walk:bool = true 
+func walk()->void:
 	h_rot = $Camroot/h.global_transform.basis.get_euler().y
 	movement_speed = 0
 	angular_acceleration = 3.25
 	acceleration = 15
-	# Movement input, state and mechanics
-	if (Input.is_action_pressed("forward") ||  Input.is_action_pressed("backward") ||  Input.is_action_pressed("left") ||  Input.is_action_pressed("right")):
-		direction = Vector3(Input.get_action_strength("left") - Input.get_action_strength("right"),
-					0,
-					Input.get_action_strength("forward") - Input.get_action_strength("backward"))
-		strafe_dir = direction
-		direction = direction.rotated(Vector3.UP, h_rot).normalized()
-		is_walking = true
-#		if is_instance_valid(current_race_gender) and current_race_gender.can_move == true:
-	# Sprint input, state and speed
-		if (Input.is_action_pressed("sprint")) and (is_walking == true): 
-			if sprint_speed < max_sprint_speed:
-				sprint_speed += 0.005 * agility
-				if sprint_animation_speed < max_sprint_animation_speed:
-					sprint_animation_speed +=0.0005 * agility
-					#print("sprint_an_speed " + str(sprint_animation_speed))
-				elif sprint_animation_speed > max_sprint_animation_speed:
-					sprint_animation_speed = max_sprint_animation_speed 
-				#print(str(sprint_speed))
-			elif sprint_speed > max_sprint_speed:
-				sprint_speed = max_sprint_speed
-			movement_speed = sprint_speed
-			is_sprinting = true
-			is_running = false
-			is_aiming = false
-			is_crouching = false
-		elif Input.is_action_pressed("run"):
-			sprint_speed = 10
-			is_running = true 
-			is_sprinting = false
-			is_aiming = false
-			is_crouching = false
-			movement_speed = run_speed
+	if can_walk == true:
+		if (Input.is_action_pressed("forward") ||  Input.is_action_pressed("backward") ||  Input.is_action_pressed("left") ||  Input.is_action_pressed("right")):
+			direction = Vector3(Input.get_action_strength("left") - Input.get_action_strength("right"),
+						0,
+						Input.get_action_strength("forward") - Input.get_action_strength("backward"))
+			strafe_dir = direction
+			direction = direction.rotated(Vector3.UP, h_rot).normalized()
+			is_walking = true
+	#		if is_instance_valid(current_race_gender) and current_race_gender.can_move == true:
+		# Sprint input, state and speed
+			if (Input.is_action_pressed("sprint")) and (is_walking == true): 
+				if sprint_speed < max_sprint_speed:
+					sprint_speed += 0.005 * agility
+					if sprint_animation_speed < max_sprint_animation_speed:
+						sprint_animation_speed +=0.0005 * agility
+						#print("sprint_an_speed " + str(sprint_animation_speed))
+					elif sprint_animation_speed > max_sprint_animation_speed:
+						sprint_animation_speed = max_sprint_animation_speed 
+					#print(str(sprint_speed))
+				elif sprint_speed > max_sprint_speed:
+					sprint_speed = max_sprint_speed
+				movement_speed = sprint_speed
+				is_sprinting = true
+				is_running = false
+				is_aiming = false
+				is_crouching = false
+			elif Input.is_action_pressed("run"):
+				sprint_speed = 10
+				is_running = true 
+				is_sprinting = false
+				is_aiming = false
+				is_crouching = false
+				movement_speed = run_speed
 
-		else: # Walk State and speed
+			else: # Walk State and speed
+				sprint_speed = 10
+				sprint_animation_speed = 1
+				#print(str(sprint_speed))
+				movement_speed = walk_speed 
+				is_sprinting = false
+				is_running = false
+				is_crouching = false
+		else: 
 			sprint_speed = 10
-			sprint_animation_speed = 1
-			#print(str(sprint_speed))
-			movement_speed = walk_speed 
+			is_walking = false
 			is_sprinting = false
 			is_running = false
 			is_crouching = false
-	else: 
+	else:
 		sprint_speed = 10
 		is_walking = false
 		is_sprinting = false
 		is_running = false
 		is_crouching = false
-		strafe_dir = Vector3.ZERO
-		
-
 	autoload.movement(self)
-#	physicsSauce()
-#	horizontal_velocity = horizontal_velocity.linear_interpolate(direction.normalized() * movement_speed, acceleration * delta)
 func strafing()->void:
 	strafe = lerp(strafe, strafe_dir, get_physics_process_delta_time() * acceleration)
 	anim_tree.set("parameters/walk/blend_position",Vector2(-strafe.x,strafe.z))
-
-
 #climbing section
-var is_swimming = false
+var is_swimming:bool = false
 var wall_incline
-var is_wall_in_range = false
-var is_climbing = false
+var is_wall_in_range:bool = false
+var is_climbing:bool = false
 onready var head_ray = $Mesh/HeadRay
 onready var climb_ray = $Mesh/ClimbRay
-func climbing():
+func climbing()-> void:
 	if not is_swimming and strength > 0.99:
 		if climb_ray.is_colliding() and is_on_wall():
 			if Input.is_action_pressed("forward"):
@@ -216,7 +217,7 @@ func climbing():
 				is_climbing = false
 		else:
 			is_climbing = false
-func checkWallInclination():
+func checkWallInclination()-> void:
 	if get_slide_count() > 0:
 		var collision_info = get_slide_collision(0)
 		var normal = collision_info.normal
@@ -233,19 +234,19 @@ func checkWallInclination():
 	else:
 		wall_incline = 0  # Set to 0 if there is no collision
 		is_wall_in_range = false
-export var  jump_animation_duration = 0
-var jump_animation_max_duration = 3
-var jump_mov_animation_duration = 0
-var jump_mov_animation_max_duration = 3
+export var  jump_animation_duration:float = 0
+var jump_animation_max_duration:float = 3
+var jump_mov_animation_duration:float = 0
+var jump_mov_animation_max_duration:float = 3
 func jump():
 	if Input.is_action_just_pressed("jump") and is_on_floor():
 		if is_instance_valid(current_race_gender):
 			current_race_gender.jumpUp()
 
-var fall_damage = 0
-var fall_distance = 0
-var minimum_fall_distance = 0.5
-func fallDamage():
+var fall_damage:float = 0
+var fall_distance:float = 0
+var minimum_fall_distance:float = 0.5
+func fallDamage()-> void:
 	if state == "fall" and !is_climbing and !is_on_wall():
 		#print("fall damage " + str(fall_damage))
 		#print("fall distance " + str(fall_distance))
@@ -295,7 +296,7 @@ var dash_count2 : int = 0
 var dash_timer2 : float = 0.0
 var dodge_animation_duration : float = 0
 var dodge_animation_max_duration : float = 3
-func dodgeBack():#Doddge when in strafe mode
+func dodgeBack()-> void:#Doddge when in strafe mode
 		if dash_countback > 0:
 			dash_timerback += get_physics_process_delta_time()
 		if dash_timerback >= double_press_time:
@@ -311,7 +312,7 @@ func dodgeBack():#Doddge when in strafe mode
 				dodge_animation_duration -= 0.1
 			elif dodge_animation_duration < 0: 
 					dodge_animation_duration = 0
-func dodgeFront():#Dodge when in strafe mode
+func dodgeFront()-> void:#Dodge when in strafe mode
 		if dash_countforward > 0:
 			dash_timerforward += get_physics_process_delta_time()
 		if dash_timerforward >= double_press_time:
@@ -328,7 +329,7 @@ func dodgeFront():#Dodge when in strafe mode
 			elif dodge_animation_duration < 0: 
 					dodge_animation_duration = 0
 		#print(str("dodge_animation_duration"+ str(dodge_animation_duration)))
-func dodgeLeft():#Dodge when in strafe mode
+func dodgeLeft()-> void:#Dodge when in strafe mode
 		if dash_countleft > 0:
 			dash_timerleft += get_physics_process_delta_time()
 		if dash_timerleft >= double_press_time:
@@ -344,7 +345,7 @@ func dodgeLeft():#Dodge when in strafe mode
 				dodge_animation_duration -= 0.1
 			elif dodge_animation_duration < 0: 
 					dodge_animation_duration = 0
-func dodgeRight():#Dodge when in strafe mode
+func dodgeRight()-> void:#Dodge when in strafe mode
 		if dash_countright > 0:
 			dash_timerright += get_physics_process_delta_time()
 		if dash_timerright >= double_press_time:
@@ -381,10 +382,10 @@ var touch_start_position: Vector2 = Vector2.ZERO
 var zoom_speed: float = 0.1
 var mouse_sense: float = 0.1
 
-func shake_camera(duration: float, intensity: float, rand_x, rand_y):
+func shake_camera(duration: float, intensity: float, rand_x, rand_y)-> void:
 	pass
 
-func Zoom(zoom_direction : float):
+func Zoom(zoom_direction : float)-> void:
 	# Adjust the camera's position based on the zoom direction
 	camera.translation.y += zoom_direction * zoom_speed
 	camera.translation.z -= zoom_direction * (zoom_speed * 2)
@@ -395,12 +396,12 @@ func _on_Sensitivity_pressed():
 func _on_SensitivityMin_pressed():
 	h_sensitivity -= 0.025
 	$Minimap/sensitivity_label.text = "cam sens: " + str(h_sensitivity)
-func cameraRotation():
+func cameraRotation()-> void:
 	if not cursor_visible:#MOUSE CAMERA
 		camrot_v = clamp(camrot_v, cam_v_min, cam_v_max)
 		camera_h.rotation_degrees.y = lerp(camera_h.rotation_degrees.y, camrot_h, get_physics_process_delta_time() * h_acceleration)
 		camera_v.rotation_degrees.x = lerp(camera_v.rotation_degrees.x, camrot_v, get_physics_process_delta_time() * v_acceleration)
-func _input(event):
+func _input(event)-> void:
 	if event is InputEventMouseMotion:
 		camrot_h += -event.relative.x * h_sensitivity
 		camrot_v += event.relative.y * v_sensitivity
@@ -414,7 +415,7 @@ func _input(event):
 		elif event is InputEventMouseButton and event.button_index == BUTTON_WHEEL_DOWN:
 			# Zoom out when scrolling down
 			Zoom(1)
-func stiffCamera():
+func stiffCamera()-> void:
 	if is_aiming and !is_climbing:
 		player_mesh.rotation.y = lerp_angle(player_mesh.rotation.y, $Camroot/h.rotation.y, get_physics_process_delta_time() * angular_acceleration)
 #	elif is_climbing:
@@ -423,11 +424,11 @@ func stiffCamera():
 	else: # Normal turn movement mechanics
 		strafe = lerp(strafe, strafe_dir + Vector3.RIGHT * aim_turn, get_physics_process_delta_time() * acceleration)
 		player_mesh.rotation.y = lerp_angle(player_mesh.rotation.y, atan2(direction.x, direction.z) - rotation.y, get_physics_process_delta_time() * angular_acceleration)
-func minimapFollow():# Update the position of the minimap camera
+func minimapFollow()-> void:# Update the position of the minimap camera
 	minimap_camera.translation = Vector3(translation.x, translation.y + 30,translation.z)
 onready var crosshair = $Camroot/h/v/Camera/Aim/Cross
 onready var crosshair_tween = $Camroot/h/v/Camera/Aim/Cross/Tween
-func crossHair():
+func crossHair()-> void:
 	if crosshair:
 		if ray.is_colliding():
 			var body = ray.get_collider()
@@ -453,7 +454,7 @@ func crossHair():
 		else:
 			crosshair_tween.interpolate_property(crosshair, "modulate", crosshair.modulate, Color(1, 1, 1), 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
 			crosshair_tween.start()
-func crossHairResize():
+func crossHairResize()-> void:
 	# Define the target scale based on input action
 	var target_scale = 1.0
 	if Input.is_action_pressed("rclick"):
@@ -469,7 +470,7 @@ func miniMapVisibility():
 	
 	
 var lifesteal_pop = preload("res://UI/lifestealandhealing.tscn")	
-func lifesteal(damage_to_take):
+func lifesteal(damage_to_take)-> void:
 	if life_steal > 0:
 		var text = lifesteal_pop.instance()
 		var life_steal_ratio = damage_to_take * life_steal
@@ -483,7 +484,7 @@ func lifesteal(damage_to_take):
 
 
 var is_fullscreen :bool  = false
-func fullscreen():
+func fullscreen()-> void:
 	if Input.is_action_just_pressed("fullscreen"):
 		is_fullscreen = !is_fullscreen
 		OS.set_window_fullscreen(is_fullscreen)
@@ -503,7 +504,7 @@ onready var enemy_energy_bar = $UI/GUI/EnemyUI/EN
 onready var enemy_energy_label =$UI/GUI/EnemyUI/EN/ENlab
 onready var ray = $Camroot/h/v/Camera/Aim
 var fade_duration : float = 0.3
-func showEnemyStats():
+func showEnemyStats()-> void:
 	if ray.is_colliding():
 		var body = ray.get_collider()
 		if body != null:
@@ -619,7 +620,7 @@ func forceMovement()->void:
 	else:
 		print("anim_tree not found")
 var state: String = "idle"
-func matchAnimationStates():
+func matchAnimationStates()-> void:
 	forceMovement()
 	if current_race_gender == null or animation == null:
 		print("mesh not instanced or animationPlayer not found")
@@ -631,8 +632,12 @@ func matchAnimationStates():
 			match state:
 #_______________________________attacking states____________________________________________________
 				"slide":
-					pass
+					can_walk = true
 				"base attack":
+					if weapon_type == bow:
+						can_walk = false
+					else:
+						can_walk = true
 					var slot = $UI/GUI/SkillBar/GridContainer/LClickSlot/Icon
 					skills(slot)
 					anim_tree.set("parameters/skill/active",false)
@@ -650,6 +655,7 @@ func matchAnimationStates():
 							pass
 #_________________________________________walking states____________________________________________
 				"walk":
+					can_walk = true
 					is_aiming = false
 					if is_in_combat:
 						match weapon_type:
@@ -674,7 +680,6 @@ func matchAnimationStates():
 				"climbing":
 					anim_tree.set("parameters/skill/active",false)
 					animation.play("climb cycle",blend, strength)
-
 				"idle":
 					is_aiming = false
 					current_race_gender.resetAllCombos()
@@ -754,19 +759,16 @@ func matchAnimationStates():
 					skills(slot)
 onready var necromant = $UI/GUI/SkillTrees/Background/Necromant
 var fury_strike_duration: float = 0
-func skills(slot):
+func skills(slot)-> void:
 	var l_click_slot: TextureButton = $UI/GUI/SkillBar/GridContainer/LClickSlot
 	var r_click_slot: TextureButton = $UI/GUI/SkillBar/GridContainer/RClickSlot
 	if slot != null:
 			if slot.texture != null:
 				if slot.texture.resource_path == "res://UI/graphics/SkillIcons/rush.png":
 					pass
-			
 				elif slot.texture.resource_path == "res://UI/graphics/SkillIcons/selfheal.png":
 					pass
-			
 				elif slot.texture.resource_path == autoload.summon_shadow.get_path():
-			
 					necromant.summonDemon()
 				elif slot.texture.resource_path == autoload.dominion.get_path():	
 					necromant.commandSwitch()
@@ -831,7 +833,6 @@ func skills(slot):
 						anim_tree.set("parameters/skill/active",true)
 					else:
 						anim_tree.set("parameters/skill/active",false)
-
 				elif slot.texture.resource_path == autoload.cyclone.get_path():
 					if necromant.can_cyclone == true:
 						if resolve > necromant.cyclone_cost:
@@ -845,7 +846,6 @@ func skills(slot):
 							anim_tree.set("parameters/skill/active",false)
 					else:
 						anim_tree.set("parameters/skill/active",false)
-
 				elif slot.texture.resource_path == autoload.guard_sword.get_path():
 					if resolve > autoload.counter_strike_cost:
 						anim_tree.active = true
@@ -864,24 +864,32 @@ func skills(slot):
 							anim_tree.set("parameters/sword_defensive/blend_amount",-1)
 							anim_tree.set("parameters/atk_speed/scale",melee_atk_speed)
 							anim_tree.set("parameters/skill/active",true)
+				elif slot.texture.resource_path == autoload.rising_slash.get_path():
+					if necromant.can_counter == true:
+						if resolve > autoload.counter_strike_cost:
+							anim_tree.active = true
+							is_in_combat = true
+							anim_tree.set("parameters/sword_gate/blend_amount",1)
+							anim_tree.set("parameters/sword_skills2/blend_amount",-1)
+							anim_tree.set("parameters/atk_speed/scale",melee_atk_speed)
+							anim_tree.set("parameters/skill/active",true)
 #ranged bow skills
 				elif slot.texture.resource_path == autoload.quick_shot.get_path():
 					is_aiming = true
-					anim_tree.active = false
 					current_race_gender.can_move = false
-					anim_tree.set("parameters/skill/active",false)
-					animation.play("quick shot",0.3,ranged_atk_speed)
-					moveDuringAnimation(0)
+					if is_walking == false:
+						anim_tree.active = false
+						anim_tree.set("parameters/skill/active",false)
+						animation.play("quick shot",0.3,ranged_atk_speed)
+						moveDuringAnimation(0)
 				elif slot.texture.resource_path == autoload.full_draw.get_path():
 					is_aiming = true
+					can_walk = false
 					anim_tree.active = false
 					current_race_gender.can_move = false
 					anim_tree.set("parameters/skill/active",false)
 					animation.play("full draw",0.3,ranged_atk_speed)
 					moveDuringAnimation(0)
-						
-
-					
 				elif slot.texture.resource_path == autoload.base_attack_necromant.get_path():
 					necromant.baseAttack() # placeholder
 				elif slot.texture.resource_path == autoload.necro_guard.get_path():
@@ -900,10 +908,6 @@ func skills(slot):
 							var button = inventory_grid.get_node("InventorySlot" + str(index))
 							button = inventory_grid.get_node("InventorySlot" + str(index))
 							autoload.consumeRedPotion(self,button,inventory_grid,true,slot.get_parent())				
-				else:
-						pass
-
-
 	
 func moveDuringAnimation(speed):
 	if !is_on_wall():
@@ -934,22 +938,20 @@ func animations():
 		state = "double attack"
 	elif Input.is_action_pressed("rclick") and Input.is_action_pressed("attack") and !cursor_visible:
 		state = "guard attack"
-		
 	elif Input.is_action_pressed("rclick") and !cursor_visible and is_in_combat:
-		if !is_walking:
-			state = "guard"
+		if weapon_type != bow: 
+			if !is_walking:
+				state = "guard"
+			else:
+				state = "guard walk"
 		else:
-			state = "guard walk"
+			state = "guard"
 	elif Input.is_action_pressed("attack") and Input.is_action_pressed("run") and !cursor_visible: 
 		state = "run attack"
 	elif Input.is_action_pressed("attack") and Input.is_action_pressed("sprint") and !cursor_visible: 
 		state = "sprint attack"
 	elif Input.is_action_pressed("attack") and !cursor_visible:
 		state = "base attack"
-
-
-#_______________________________________________________________________________
-			
 #skills put these below the walk elif statment in case of keybinding bugs, as of now it works so no need
 	elif Input.is_action_pressed("1"):
 		state = "test1"
@@ -1005,7 +1007,18 @@ func animations():
 			state = "walk"
 			#anim_tree.active = false
 			jump_animation_duration = 0 
-
+	elif Input.is_action_pressed("forward") or Input.is_action_pressed("left") or  Input.is_action_pressed("right") or  Input.is_action_pressed("backward"):
+		if weapon_type == bow:
+			if Input.is_action_pressed("attack"):
+				can_walk = false
+			elif  Input.is_action_pressed("aim"):
+				can_walk = false
+			elif Input.is_action_pressed("rclick"):
+				can_walk = false
+			else:
+				can_walk = true
+		else:
+			can_walk = true
 	
 	elif Input.is_action_pressed("crouch"):
 		state = "crouch" 
