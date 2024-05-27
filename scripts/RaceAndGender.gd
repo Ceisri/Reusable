@@ -859,17 +859,75 @@ func cyclone()->void:
 							else: #apparently the victim is showing his back or flanks, extra damage
 								victim.takeDamage(damage_flank,aggro_power,player,player.stagger_chance,damage_type)
 
+
+
+
+
+
+
+func counterStrike()->void:
+	player.necromant.counterStrike()
+func counterStrikeDamage()->void:
+	var damage_type:String = "slash"
+	var damage = autoload.counter_strike_damge + player.slash_dmg
+	var damage_flank = damage + player.flank_dmg 
+	var critical_damage : float  = damage * player.critical_strength
+	var critical_flank_damage : float  = damage_flank * player.critical_strength
+	var punishment_damage : float = 7 #extra damage for when the victim is trying to block but is facing the wrong way 
+	var punishment_damage_type:String = "slash"
+	var aggro_power = damage + 25
+	var enemies = melee_aoe.get_overlapping_bodies()
+	for victim in enemies:
+		if victim.is_in_group("enemy") and victim != self:
+			player.pushEnemyAway(0.05, victim,0.05)
+			if victim.has_method("takeDamage"):
+				if player.is_on_floor():
+					#insert sound effect here
+					if randf() <= player.critical_chance:#critical hit
+						if victim.state == "guard" or victim.state == "guard walk": #victim is guarding
+							if player.isFacingSelf(victim,0.30): #the victim is looking face to face at self 
+								victim.takeDamage(critical_damage/victim.guard_dmg_absorbition,aggro_power,player,player.stagger_chance,damage_type)
+							else: #apparently the victim is showing his back or flanks while guard, flank damage + punishment damage
+								victim.takeDamage(critical_flank_damage + punishment_damage,aggro_power,player,player.stagger_chance,punishment_damage_type)
+						else:#player is guarding
+							if player.isFacingSelf(victim,0.30): #check if the victim is looking at me 
+								victim.takeDamage(critical_damage/victim.guard_dmg_absorbition,aggro_power,player,player.stagger_chance,damage_type)
+							else: #apparently the victim is showing his back or flanks, extra damage
+								victim.takeDamage(critical_damage,aggro_power,player,player.stagger_chance,punishment_damage_type)
+					else: #normal hit
+						if victim.state == "guard" or victim.state == "guard walk": #victim is guarding
+							if player.isFacingSelf(victim,0.30): #the victim is looking face to face at self 
+								victim.takeDamage(damage/victim.guard_dmg_absorbition,aggro_power,player,player.stagger_chance,damage_type)
+							else: #apparently the victim is showing his back or flanks while guard, flank damage + punishment damage
+								victim.takeDamage(damage_flank + punishment_damage,aggro_power,player,player.stagger_chance,punishment_damage_type)
+						else:#victim is not guarding
+							if player.isFacingSelf(victim,0.30):#the victim is looking face to face at self 
+								victim.takeDamage(damage,aggro_power,player,player.stagger_chance,damage_type)
+							else: #apparently the victim is showing his back or flanks, extra damage
+								victim.takeDamage(damage_flank,aggro_power,player,player.stagger_chance,damage_type)
+
+
+
+
+
 func shootArrow():
-	player.necromant.shootArrow(12)
-func longDrawShootArrow():
-	player.necromant.shootArrow(24 * player.strength)
+	player.necromant.shootArrow(autoload.quick_shot_damage)
+func fullDrawShootArrow():
+	player.necromant.shootArrow(autoload.full_draw_damage)
 
 
 var is_parrying: bool = false
 
 func parry():
-	player.resolve -= 15
+	player.resolve -= autoload.counter_strike_cost
 	is_parrying = true
 	print(str(is_parrying))
 func stopParry():
 	is_parrying = false
+
+
+var jump_force : float  = 10
+func jumpUp():#called on animation
+	player.vertical_velocity = Vector3.UP * jump_force 
+func jumpDown():#called on animation
+	player.vertical_velocity = Vector3.UP * -jump_force

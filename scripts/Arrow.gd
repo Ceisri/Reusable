@@ -57,7 +57,7 @@ func shot():
 	var damage_flank = damage + player.flank_dmg 
 	var critical_damage : float  = damage * player.critical_strength
 	var critical_flank_damage : float  = damage_flank * player.critical_strength
-	var punishment_damage : float = 14 #extra damage for when the victim is trying to block but is facing the wrong way 
+	var punishment_damage : float = 3 #extra damage for when the victim is trying to block but is facing the wrong way 
 	var punishment_damage_type :String = "pierce"
 	var aggro_power = damage * 0.95
 	var enemies = $Area.get_overlapping_bodies()

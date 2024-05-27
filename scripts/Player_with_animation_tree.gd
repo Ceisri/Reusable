@@ -132,6 +132,8 @@ func walk():
 		strafe_dir = direction
 		direction = direction.rotated(Vector3.UP, h_rot).normalized()
 		is_walking = true
+#		if is_instance_valid(current_race_gender) and current_race_gender.can_move == true:
+	# Sprint input, state and speed
 		if (Input.is_action_pressed("sprint")) and (is_walking == true): 
 			if sprint_speed < max_sprint_speed:
 				sprint_speed += 0.005 * agility
@@ -236,32 +238,10 @@ var jump_animation_max_duration = 3
 var jump_mov_animation_duration = 0
 var jump_mov_animation_max_duration = 3
 func jump():
-	#print("jump duration " + str(jump_animation_duration))
-#	Jump input and Mechanics
-	if Input.is_action_just_pressed("jump") and is_on_floor() and !is_walking:
-		if jump_animation_duration == 0 or jump_animation_duration < 0 :
-			jump_animation_duration += jump_animation_max_duration
-			if jump_animation_duration < 0: 
-				jump_animation_duration = 0
-	elif jump_animation_duration != 0:
-		if jump_animation_duration > 0: 
-			jump_animation_duration -= 0.1
-			if jump_animation_duration < 0: 
-				jump_animation_duration = 0
-	elif Input.is_action_pressed("jump") and is_on_floor() and is_walking and !is_sprinting:
-		jumpUp()
-	elif Input.is_action_pressed("jump") and is_on_floor() and is_walking and is_sprinting:
-		horizontal_velocity = direction * 25
-		jumpUp()
-#var gravity_force = 9.8
-#var velocity = Vector3()
-#func gravity(delta): PLAYER GRAVITY MOVED TO GLOBAL AUTOLOAD
-#	# Gravity mechanics and prevent slope-sliding
-#	if not is_climbing:
-#		if not is_on_floor(): 
-#			vertical_velocity += Vector3.DOWN * gravity_force * 2 * delta
-#		else: 
-#			vertical_velocity = -get_floor_normal() * gravity_force / 2.5 #This must be always set 2.5 for climbing system to work 
+	if Input.is_action_just_pressed("jump") and is_on_floor():
+		if is_instance_valid(current_race_gender):
+			current_race_gender.jumpUp()
+
 var fall_damage = 0
 var fall_distance = 0
 var minimum_fall_distance = 0.5
@@ -704,7 +684,9 @@ func matchAnimationStates():
 								animation.play("idle fist",0.2,1)
 							sword:
 								animation.play("idle sword",0.2,1)
-							dual_swords
+							dual_swords:
+								animation.play("idle sword",0.2,1)
+							bow:
 								animation.play("idle sword",0.2,1)
 					else:
 						anim_tree.set("parameters/skill/active",false)
@@ -865,8 +847,7 @@ func skills(slot):
 						anim_tree.set("parameters/skill/active",false)
 
 				elif slot.texture.resource_path == autoload.guard_sword.get_path():
-					if resolve > 12:
-						resolve -= 0 * get_physics_process_delta_time()
+					if resolve > autoload.counter_strike_cost:
 						anim_tree.active = true
 						is_in_combat = true
 						anim_tree.set("parameters/sword_gate/blend_amount",0)
@@ -874,19 +855,30 @@ func skills(slot):
 						anim_tree.set("parameters/atk_speed/scale",melee_atk_speed)
 						anim_tree.set("parameters/skill/active",true)
 						moveDuringAnimation(0)
+				elif slot.texture.resource_path == autoload.counter_strike.get_path():
+					if necromant.can_counter == true:
+						if resolve > autoload.counter_strike_cost:
+							anim_tree.active = true
+							is_in_combat = true
+							anim_tree.set("parameters/sword_gate/blend_amount",0)
+							anim_tree.set("parameters/sword_defensive/blend_amount",-1)
+							anim_tree.set("parameters/atk_speed/scale",melee_atk_speed)
+							anim_tree.set("parameters/skill/active",true)
 #ranged bow skills
 				elif slot.texture.resource_path == autoload.quick_shot.get_path():
 					is_aiming = true
 					anim_tree.active = false
 					current_race_gender.can_move = false
 					anim_tree.set("parameters/skill/active",false)
-					animation.play("shoot bow still",0.3,ranged_atk_speed)
+					animation.play("quick shot",0.3,ranged_atk_speed)
+					moveDuringAnimation(0)
 				elif slot.texture.resource_path == autoload.full_draw.get_path():
 					is_aiming = true
 					anim_tree.active = false
 					current_race_gender.can_move = false
 					anim_tree.set("parameters/skill/active",false)
-					animation.play("shoot still",0.3,ranged_atk_speed)
+					animation.play("full draw",0.3,ranged_atk_speed)
+					moveDuringAnimation(0)
 						
 
 					
@@ -1061,34 +1053,6 @@ func doubleAttack():
 			elif double_atk_animation_duration < 0: 
 					double_atk_animation_duration = 0
 
-
-func stompKickDealDamage():
-	var damage_type = "blunt"
-	var damage = 10 + blunt_dmg 
-	var damage_flank = damage + flank_dmg
-	var critical_damage : float  = damage * critical_strength
-	var critical_flank_damage : float  = damage_flank * critical_strength
-	var aggro_power = damage + 20
-	var enemies = $Mesh/Detector.get_overlapping_bodies()
-	for enemy in enemies:
-		if enemy.is_in_group("enemy"):
-			if enemy.has_method("takeDamage"):
-				if enemy.has_method("applyEffect"):
-					enemy.applyEffect(enemy,"bleeding", true)	
-				pushEnemyAway(2, enemy,0.25)
-				if is_on_floor():
-					#insert sound effect here
-					if randf() <= critical_chance:
-						if isFacingSelf(enemy,0.30): #check if the enemy is looking at me 
-							enemy.takeDamage(critical_damage,aggro_power,self,stagger_chance,"acid")
-						else: #apparently the enemy is showing his back or flanks, extra damagec
-							enemy.takeDamage(critical_flank_damage,aggro_power,self,stagger_chance,"toxic")
-					else:
-						if isFacingSelf(enemy,0.30): #check if the enemy is looking at me 
-							enemy.takeDamage(damage,aggro_power,self,stagger_chance,"heat")
-						else: #apparently the enemy is showing his back or flanks, extra damagec
-							enemy.takeDamage(damage_flank,aggro_power,self,stagger_chance,"jolt")
-
 func pushEnemyAway(push_distance, enemy, push_speed):
 	var direction_to_enemy = enemy.global_transform.origin - global_transform.origin
 	direction_to_enemy.y = 0  # No vertical push
@@ -1139,147 +1103,8 @@ func isFacingSelf(enemy: Node, threshold: float) -> bool:
 	return dot_product >= threshold
 
 
-func bouncheEnemy(push_distance, enemy, push_speed):
-	var direction_to_enemy = enemy.global_transform.origin - global_transform.origin
-	direction_to_enemy.y = 0  # No vertical push
-	direction_to_enemy = direction_to_enemy.normalized()
-	var acceleration_time = push_speed / 2.0  # Adjust as needed for faster or slower acceleration
-	# Calculate distance for deceleration
-	
-	var motion = direction_to_enemy * push_speed
-	var deceleration_distance = motion.length() * acceleration_time * 0.5
-	var collision = enemy.move_and_collide(motion)
-	if collision: 
-		# Extra collision handling if the enemy hits a wall after being pushed away
-		enemy.takeDamage(10, 100, self, 1, "bleed")
-	# Tween the movement over time with initial acceleration followed by instant stop
-	tween.interpolate_property(enemy, "translation", enemy.translation, enemy.translation + motion * push_distance, acceleration_time, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
-	tween.interpolate_property(enemy, "translation", enemy.translation + motion * push_distance, enemy.translation, acceleration_time, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT, acceleration_time)
-	tween.start()
-
-
-
-func slideDealDamage():
-	var damage_type: String = "blunt"
-	var damage: float = 2.5
-	var aggro_power : float = damage + 20
-	var enemies = $Mesh/Detector.get_overlapping_bodies()
-	for enemy in enemies:
-		if enemy.is_in_group("enemy"):
-			if enemy.has_method("takeDamage"):
-				if is_on_floor():
-					pushEnemyAway(1, enemy,0.25)
-					#insert sound effect here
-					if randf() <= critical_chance:
-						var critical_damage = damage * critical_strength
-						enemy.takeDamage(critical_damage,aggro_power,self,stagger_chance,"heat")
-					else:
-						if isFacingSelf(enemy,0.30): #check if the enemy is looking at me 
-							enemy.takeDamage(damage,aggro_power,self,stagger_chance,damage_type)
-						else: #apparently the enemy is showing his back or flanks, extra damagec
-							enemy.takeDamage(7,aggro_power,self,stagger_chance,"jolt")
-				else:#jump attack kick slide
-					pushEnemyAway(5, enemy,0.25)
-					#insert sound effect here
-					if randf() <= critical_chance:
-						var critical_damage = damage * critical_strength
-						enemy.takeDamage(critical_damage,aggro_power,self,stagger_chance,damage_type)
-					else:
-						enemy.takeDamage(30,aggro_power,self,stagger_chance,damage_type)
-func PunchDealDamage1():
-	var damage_type = "blunt"
-	var damage = 10
-	var aggro_power = damage + 20
-	var enemies = $Mesh/Detector.get_overlapping_bodies()
-	for enemy in enemies:
-		if enemy.is_in_group("enemy"):
-			if enemy.has_method("takeDamage"):
-				if is_on_floor():
-					pushEnemyAway(0.25, enemy,0.25)
-					#insert sound effect here
-					if randf() <= critical_chance:
-						var critical_damage = damage * critical_strength
-						enemy.takeDamage(critical_damage,aggro_power,self,stagger_chance,damage_type)
-					else:
-						if isFacingSelf(enemy,0.30): #check if the enemy is looking at me 
-							enemy.takeDamage(damage,aggro_power,self,stagger_chance,damage_type)
-						else: #apparently the enemy is showing his back or flanks, extra damagec
-							enemy.takeDamage(damage * 1.5,aggro_power,self,stagger_chance,"jolt")
-				else:#jump attack kick slide
-					#insert sound effect here
-					if randf() <= critical_chance:
-						var critical_damage = damage * critical_strength
-						enemy.takeDamage(critical_damage *2,aggro_power,self,stagger_chance,damage_type)
-					else:
-						enemy.takeDamage(30,aggro_power,self,stagger_chance,damage_type)
-func PunchDealDamage2():
-	var damage_type = "blunt"
-	var damage = 5
-	var aggro_power = damage + 20
-	var enemies = $Mesh/Detector.get_overlapping_bodies()
-	for enemy in enemies:
-		if enemy.is_in_group("enemy"):
-			if enemy.has_method("takeDamage"):
-				pushEnemyAway(0.25, enemy,0.25)
-				if is_on_floor():
-					#insert sound effect here
-					if randf() <= critical_chance:
-						var critical_damage = damage * critical_strength
-						enemy.takeDamage(critical_damage,aggro_power,self,stagger_chance,damage_type)
-					else:
-						if isFacingSelf(enemy,0.30): #check if the enemy is looking at me 
-							enemy.takeDamage(damage,aggro_power,self,stagger_chance,damage_type)
-						else: #apparently the enemy is showing his back or flanks, extra damagec
-							enemy.takeDamage(damage * 1.5,aggro_power,self,stagger_chance,"jolt")
-				else:#jump attack kick slide
-					#insert sound effect here
-					if randf() <= critical_chance:
-						var critical_damage = damage * critical_strength
-						enemy.takeDamage(critical_damage *2,aggro_power,self,stagger_chance,damage_type)
-					else:
-						enemy.takeDamage(30 ,aggro_power,self,stagger_chance,damage_type)
-func PunchDealDamage3():
-	var damage_type = "blunt"
-	var damage = 15
-	var aggro_power = damage + 20
-	var enemies = $Mesh/Detector.get_overlapping_bodies()
-	for enemy in enemies:
-		if enemy.is_in_group("enemy"):
-			if enemy.has_method("takeDamage"):
-				if is_on_floor():
-					pushEnemyAway(0.5, enemy,0.25)
-					#insert sound effect here
-					if randf() <= critical_chance:
-						var critical_damage = damage * critical_strength
-						enemy.takeDamage(critical_damage,aggro_power,self,stagger_chance,damage_type)
-					else:
-						if isFacingSelf(enemy,0.30): #check if the enemy is looking at me 
-							enemy.takeDamage(damage,aggro_power,self,stagger_chance,damage_type)
-						else: #apparently the enemy is showing his back or flanks, extra damagec
-							enemy.takeDamage(30,aggro_power,self,stagger_chance,"jolt")
-				else:#jump attack kick slide
-					#insert sound effect here
-					if randf() <= critical_chance:
-						var critical_damage = damage * critical_strength
-						enemy.takeDamage(critical_damage *2,aggro_power,self,stagger_chance,damage_type)
-					else:
-						enemy.takeDamage(damage *2 ,aggro_power,self,stagger_chance,damage_type)
-var jump_force : float  = 10
-func jumpUp():#called on animation
-	vertical_velocity = Vector3.UP * jump_force 
-func jumpDown():#called on animation
-	vertical_velocity = Vector3.UP * -jump_force
-
 func speedlabel():
 	$kmh.text = "km/h " + str(movement_speed)
-
-
-var can_move: bool = false
-func stopMovement():
-	can_move = false
-func startMovement():
-	can_move = true 
-
 
 
 onready var floatingtext_damage = preload("res://UI/floatingtext.tscn")
@@ -1290,7 +1115,6 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
 	var random = randf()
 	var damage_to_take = damage
 	var text = floatingtext_damage.instance()
-	
 	if damage_type == "slash":
 		var mitigation: float
 		if slash_resistance >= 0:
@@ -2210,6 +2034,10 @@ func pickItemsMainHand():
 				elif body.is_in_group("sword1") and not got_weapon:
 					body.queue_free()  # Remove the picked-up item from the floor
 				elif body.is_in_group("sword3") and not got_weapon:
+					body.queue_free()  # Remove the picked-up item from the floor
+				elif body.is_in_group("bow") and not got_sec_weapon:
+					secondary_weapon = "bow"
+					got_sec_weapon = true  # Set the flag to prevent picking up multiple items simultaneously
 					body.queue_free()  # Remove the picked-up item from the floor
 			elif current_weapon_instance != null and sec_current_weapon_instance == null:
 				if body.is_in_group("sword0") and not got_sec_weapon and got_weapon:
