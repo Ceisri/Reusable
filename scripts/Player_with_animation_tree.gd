@@ -132,51 +132,46 @@ func walk():
 		strafe_dir = direction
 		direction = direction.rotated(Vector3.UP, h_rot).normalized()
 		is_walking = true
-	else:
-		is_walking = false
-#		current_race_gender.can_move == true
-	# Sprint input, state and speed
-	if is_instance_valid(current_race_gender):
-		if current_race_gender.can_move == true:
-			if (Input.is_action_pressed("sprint")) and (is_walking == true): 
-					if sprint_speed < max_sprint_speed:
-						sprint_speed += 0.005 * agility
-						if sprint_animation_speed < max_sprint_animation_speed:
-							sprint_animation_speed +=0.0005 * agility
-							#print("sprint_an_speed " + str(sprint_animation_speed))
-						elif sprint_animation_speed > max_sprint_animation_speed:
-							sprint_animation_speed = max_sprint_animation_speed 
-						#print(str(sprint_speed))
-					elif sprint_speed > max_sprint_speed:
-						sprint_speed = max_sprint_speed
-					movement_speed = sprint_speed
-					is_sprinting = true
-					is_running = false
-					is_aiming = false
-					is_crouching = false
-			elif Input.is_action_pressed("run"):
-					sprint_speed = 10
-					is_running = true 
-					is_sprinting = false
-					is_aiming = false
-					is_crouching = false
-					movement_speed = run_speed
+		if (Input.is_action_pressed("sprint")) and (is_walking == true): 
+			if sprint_speed < max_sprint_speed:
+				sprint_speed += 0.005 * agility
+				if sprint_animation_speed < max_sprint_animation_speed:
+					sprint_animation_speed +=0.0005 * agility
+					#print("sprint_an_speed " + str(sprint_animation_speed))
+				elif sprint_animation_speed > max_sprint_animation_speed:
+					sprint_animation_speed = max_sprint_animation_speed 
+				#print(str(sprint_speed))
+			elif sprint_speed > max_sprint_speed:
+				sprint_speed = max_sprint_speed
+			movement_speed = sprint_speed
+			is_sprinting = true
+			is_running = false
+			is_aiming = false
+			is_crouching = false
+		elif Input.is_action_pressed("run"):
+			sprint_speed = 10
+			is_running = true 
+			is_sprinting = false
+			is_aiming = false
+			is_crouching = false
+			movement_speed = run_speed
 
-			else: # Walk State and speed
-					sprint_speed = 10
-					sprint_animation_speed = 1
-					#print(str(sprint_speed))
-					movement_speed = walk_speed 
-					is_sprinting = false
-					is_running = false
-					is_crouching = false
+		else: # Walk State and speed
+			sprint_speed = 10
+			sprint_animation_speed = 1
+			#print(str(sprint_speed))
+			movement_speed = walk_speed 
+			is_sprinting = false
+			is_running = false
+			is_crouching = false
 	else: 
-				sprint_speed = 10
-				is_walking = false
-				is_sprinting = false
-				is_running = false
-				is_crouching = false
-				strafe_dir = Vector3.ZERO
+		sprint_speed = 10
+		is_walking = false
+		is_sprinting = false
+		is_running = false
+		is_crouching = false
+		strafe_dir = Vector3.ZERO
+		
 
 	autoload.movement(self)
 #	physicsSauce()
@@ -656,37 +651,16 @@ func matchAnimationStates():
 			match state:
 #_______________________________attacking states____________________________________________________
 				"slide":
-					is_aiming = false
-					var slide_blend = 0.3
-					animation.play("slide",slide_blend)
-					var slide_mov_speed = 15 + slide_blend + rand_range(3, 6)
-					if !is_on_wall():
-						horizontal_velocity = direction * slide_mov_speed
-					movement_speed = int(slide_mov_speed)
+					pass
 				"base attack":
 					var slot = $UI/GUI/SkillBar/GridContainer/LClickSlot/Icon
 					skills(slot)
 					anim_tree.set("parameters/skill/active",false)
 					anim_tree.active = false
 					current_race_gender.resetAllCombos()
-
-				"moving shooting":
-					var slot = $UI/GUI/SkillBar/GridContainer/LClickSlot/Icon
-					skills(slot)
-					anim_tree.active = true
-					anim_tree.set("parameters/skill/active",false)
-					anim_tree.set("parameters/walk/blend_position",Vector2(-strafe.x,strafe.z))
 				"guard":
-					anim_tree.set("parameters/skill/active",false)
 					var slot = $UI/GUI/SkillBar/GridContainer/RClickSlot/Icon
 					skills(slot)
-				"guard walk":
-						anim_tree.set("parameters/skill/active",false)
-						match weapon_type:
-							fist:
-								pass #replace with actual animation
-							sword:
-								animation.play("guard sword walk",0,1)
 				"double attack":
 					current_race_gender.resetAllCombos()
 					match weapon_type:
@@ -694,21 +668,7 @@ func matchAnimationStates():
 							pass
 						sword:
 							pass
-							
-					moveDuringAnimation(3)
-				"guard attack":
-					if resolve > 25:
-						match weapon_type:
-							sword:
-								animation.play("pomel strike",0.2,1)
-								
-					else:
-						animation.play("barehand idle",0.2,1)
-				"run attack":
-					pass
-				"sprint attack":
-					pass
-		#_________________________________walking states________________________________
+#_________________________________________walking states____________________________________________
 				"walk":
 					is_aiming = false
 					if is_in_combat:
@@ -720,48 +680,35 @@ func matchAnimationStates():
 							dual_swords:
 								animation.play("walk sword",0,1)
 							bow: 
-								animation.play("walk sword",0,1)
+								animation.play("walk bow",0,1)
 					else:
 						animation.play("walk",0,1)
-				"crouch walk":
-					animation.play("walk crouch cycle")
-				"crouch":
-					animation.play("idle crouch",0.4)
-		#movement 
 				"sprint":
+					anim_tree.set("parameters/skill/active",false)
 					current_race_gender.resetAllCombos()
 					animation.play("run cycle", 0, sprint_animation_speed * agility)
 				"run":
+					anim_tree.set("parameters/skill/active",false)
 					current_race_gender.resetAllCombos()
 					animation.play("run cycle",0,agility)
-				"jump":
-					current_race_gender.resetAllCombos()
-					animation.play("jump",0.2, agility)
-				"fall":
-					current_race_gender.resetAllCombos()
-					animation.play("fall",0.3)
 				"climbing":
+					anim_tree.set("parameters/skill/active",false)
 					animation.play("climb cycle",blend, strength)
-				"vaulting":
-					animation.play("vaulting",0.7, strength)
-				"landing":
-					pass
-				"crawl":
-					animation.play("crawl cycle")
-				"crawl limit":
-					animation.play("crawl dying limit cycle")
-				"idle downed":
-					animation.play("idle downed", 0.35)
+
 				"idle":
 					is_aiming = false
 					current_race_gender.resetAllCombos()
 					if is_in_combat:
-						if weapon_type == fist:
-							animation.play("idle fist",0.2,1)
-						else:
-							animation.play("idle fist",0.2,1)
+						match weapon_type:
+							fist:
+								animation.play("idle fist",0.2,1)
+							sword:
+								animation.play("idle sword",0.2,1)
+							dual_swords
+								animation.play("idle sword",0.2,1)
 					else:
-						animation.play("idle")
+						anim_tree.set("parameters/skill/active",false)
+						animation.play("idle",0.2,1)
 #skillbar stuff_____________________________________________________________________________________
 				"test1":
 					var slot = $UI/GUI/SkillBar/GridContainer/Slot1/Icon
@@ -864,13 +811,7 @@ func skills(slot):
 							animation.play("combo 2x",0.3,melee_atk_speed)
 							moveDuringAnimation(1.5)
 				elif slot.texture.resource_path == autoload.guard.get_path():
-					if !is_walking:
-						anim_tree.active = false
-						jump_animation_duration = 0 
-					else:
-						anim_tree.active = false
-						animation.play("guard sword walk",0.3,melee_atk_speed)
-						jump_animation_duration = 0 
+					pass
 #melee weapon skills
 				elif slot.texture.resource_path == autoload.overhead_slash.get_path():
 					if necromant.can_overhead_slash == true:
@@ -882,17 +823,17 @@ func skills(slot):
 										anim_tree.active = false
 										anim_tree.set("parameters/skill/active",true)
 									sword:
+										anim_tree.set("parameters/sword_gate/blend_amount",-1)
 										anim_tree.set("parameters/sword_skills/blend_amount",-1)
 										anim_tree.set("parameters/Overhead_strike_grip/blend_amount",0)
 										anim_tree.set("parameters/atk_speed/scale",melee_atk_speed)
 										anim_tree.set("parameters/skill/active",true)
-										moveDuringAnimation(1)
 									dual_swords:
+										anim_tree.set("parameters/sword_gate/blend_amount",-1)
 										anim_tree.set("parameters/sword_skills/blend_amount",-1)
 										anim_tree.set("parameters/Overhead_strike_grip/blend_amount",1)
 										anim_tree.set("parameters/atk_speed/scale",melee_atk_speed)
 										anim_tree.set("parameters/skill/active",true)
-										moveDuringAnimation(2)
 						else:
 							anim_tree.set("parameters/skill/active",false)
 					else:
@@ -902,10 +843,10 @@ func skills(slot):
 					if necromant.can_fury_strike == true:
 						anim_tree.active = true
 						is_in_combat = true
+						anim_tree.set("parameters/sword_gate/blend_amount",-1)
 						anim_tree.set("parameters/sword_skills/blend_amount",1)
 						anim_tree.set("parameters/atk_speed/scale",melee_atk_speed)
 						anim_tree.set("parameters/skill/active",true)
-						moveDuringAnimation(3)
 					else:
 						anim_tree.set("parameters/skill/active",false)
 
@@ -914,19 +855,25 @@ func skills(slot):
 						if resolve > necromant.cyclone_cost:
 							anim_tree.active = true
 							is_in_combat = true
+							anim_tree.set("parameters/sword_gate/blend_amount",-1)
 							anim_tree.set("parameters/sword_skills/blend_amount",0)
 							anim_tree.set("parameters/atk_speed/scale",melee_atk_speed)
 							anim_tree.set("parameters/skill/active",true)
-							moveDuringAnimation(3)
 						else:
 							anim_tree.set("parameters/skill/active",false)
 					else:
 						anim_tree.set("parameters/skill/active",false)
 
 				elif slot.texture.resource_path == autoload.guard_sword.get_path():
-					is_in_combat = true
-					current_race_gender.fury_strike_combo =0
-					moveDuringAnimation(3)
+					if resolve > 12:
+						resolve -= 0 * get_physics_process_delta_time()
+						anim_tree.active = true
+						is_in_combat = true
+						anim_tree.set("parameters/sword_gate/blend_amount",0)
+						anim_tree.set("parameters/sword_defensive/blend_amount",1)
+						anim_tree.set("parameters/atk_speed/scale",melee_atk_speed)
+						anim_tree.set("parameters/skill/active",true)
+						moveDuringAnimation(0)
 #ranged bow skills
 				elif slot.texture.resource_path == autoload.quick_shot.get_path():
 					is_aiming = true
@@ -1465,13 +1412,11 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
 		if instigator.has_method("lifesteal"):
 			instigator.lifesteal(damage_to_take)
 		
-	if random < deflection_chance:
-		damage_to_take = damage_to_take / 2
-		text.status = "Deflected"
-	else:
-		if random < stagger_chance - stagger_resistance:
-			staggered += 0.5
-			text.status = "Staggered"
+	if current_race_gender.is_parrying:
+		damage_to_take = damage_to_take / 3
+		text.status = "parried"
+		if resolve < max_resolve:
+			resolve += 15
 
 	health -= damage_to_take
 	text.amount =round(damage_to_take * 100)/ 100
@@ -2204,6 +2149,10 @@ func switchSecondaryFromHipToHand():
 					left_hand.remove_child(sec_current_weapon_instance)
 					left_hip.add_child(sec_current_weapon_instance)
 					is_secondary_weapon_on_hip = true
+					if weapon_type == bow:
+						left_hip.hide()
+					else:
+						left_hip.show()
 func addItemToCharacterSheet(icon,slot,texture):
 	if icon.texture == null:
 		icon.texture = texture

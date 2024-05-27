@@ -62,37 +62,40 @@ func shot():
 	var aggro_power = damage * 0.95
 	var enemies = $Area.get_overlapping_bodies()
 	for victim in enemies:
-		if victim.is_in_group("enemy") and victim != self:
-			player.pushEnemyAway(0.3, victim,0.25)
-			if player.resolve < player.max_resolve:
-				player.resolve += player.ferocity + 1.25
-			if victim.has_method("takeDamage"):
-				if player.is_on_floor():
-					#insert sound effect here
-					if randf() <= player.critical_chance:#critical hit
-						if victim.state == "guard" or victim.state == "guard walk": #victim is guarding
-							if player.isFacingSelf(victim,0.30): #the victim is looking face to face at self 
-								victim.takeDamage(critical_damage/victim.guard_dmg_absorbition,aggro_power,player,player.stagger_chance,damage_type)
-							else: #apparently the victim is showing his back or flanks while guard, flank damage + punishment damage
-								victim.takeDamage(critical_flank_damage + punishment_damage,aggro_power,player,player.stagger_chance,punishment_damage_type)
-						else:#player is guarding
-							if player.isFacingSelf(victim,0.30): #check if the victim is looking at me 
-								victim.takeDamage(critical_damage/victim.guard_dmg_absorbition,aggro_power,player,player.stagger_chance,damage_type)
-							else: #apparently the victim is showing his back or flanks, extra damage
-								victim.takeDamage(critical_damage,aggro_power,player,player.stagger_chance,punishment_damage_type)
-					else: #normal hit
-						if victim.state == "guard" or victim.state == "guard walk": #victim is guarding
-							if player.isFacingSelf(victim,0.30): #the victim is looking face to face at self 
-								victim.takeDamage(damage/victim.guard_dmg_absorbition,aggro_power,player,player.stagger_chance,damage_type)
-							else: #apparently the victim is showing his back or flanks while guard, flank damage + punishment damage
-								victim.takeDamage(damage_flank + punishment_damage,aggro_power,player,player.stagger_chance,punishment_damage_type)
-						else:#victim is not guarding
-							if player.isFacingSelf(victim,0.30):#the victim is looking face to face at self 
-								victim.takeDamage(damage,aggro_power,player,player.stagger_chance,damage_type)
-							else: #apparently the victim is showing his back or flanks, extra damage
-								victim.takeDamage(damage_flank,aggro_power,player,player.stagger_chance,damage_type)
+		if victim.is_in_group("enemy"):
+			if victim != self:
+				player.pushEnemyAway(0.3, victim,0.25)
+				if player.resolve < player.max_resolve:
+					player.resolve += player.ferocity + 1.25
+				if victim.has_method("takeDamage"):
+					if player.is_on_floor():
+						#insert sound effect here
+						if randf() <= player.critical_chance:#critical hit
+							if victim.state == "guard" or victim.state == "guard walk": #victim is guarding
+								if player.isFacingSelf(victim,0.30): #the victim is looking face to face at self 
+									victim.takeDamage(critical_damage/victim.guard_dmg_absorbition,aggro_power,player,player.stagger_chance,damage_type)
+								else: #apparently the victim is showing his back or flanks while guard, flank damage + punishment damage
+									victim.takeDamage(critical_flank_damage + punishment_damage,aggro_power,player,player.stagger_chance,punishment_damage_type)
+							else:#player is guarding
+								if player.isFacingSelf(victim,0.30): #check if the victim is looking at me 
+									victim.takeDamage(critical_damage/victim.guard_dmg_absorbition,aggro_power,player,player.stagger_chance,damage_type)
+								else: #apparently the victim is showing his back or flanks, extra damage
+									victim.takeDamage(critical_damage,aggro_power,player,player.stagger_chance,punishment_damage_type)
+						else: #normal hit
+							if victim.state == "guard" or victim.state == "guard walk": #victim is guarding
+								if player.isFacingSelf(victim,0.30): #the victim is looking face to face at self 
+									victim.takeDamage(damage/victim.guard_dmg_absorbition,aggro_power,player,player.stagger_chance,damage_type)
+								else: #apparently the victim is showing his back or flanks while guard, flank damage + punishment damage
+									victim.takeDamage(damage_flank + punishment_damage,aggro_power,player,player.stagger_chance,punishment_damage_type)
+							else:#victim is not guarding
+								if player.isFacingSelf(victim,0.30):#the victim is looking face to face at self 
+									victim.takeDamage(damage,aggro_power,player,player.stagger_chance,damage_type)
+								else: #apparently the victim is showing his back or flanks, extra damage
+									victim.takeDamage(damage_flank,aggro_power,player,player.stagger_chance,damage_type)
 				queue_free()
-
+		else:
+			if victim != self:
+				queue_free()
 
 
 

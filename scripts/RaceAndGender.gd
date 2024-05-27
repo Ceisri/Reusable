@@ -863,3 +863,13 @@ func shootArrow():
 	player.necromant.shootArrow(12)
 func longDrawShootArrow():
 	player.necromant.shootArrow(24 * player.strength)
+
+
+var is_parrying: bool = false
+
+func parry():
+	player.resolve -= 15
+	is_parrying = true
+	print(str(is_parrying))
+func stopParry():
+	is_parrying = false
