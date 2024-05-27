@@ -3,7 +3,6 @@
 [resource]
 resource_name = "pomel strike"
 length = 1.04167
-loop = true
 tracks/0/type = "transform"
 tracks/0/path = NodePath("Armature/Skeleton:mixamorig_head")
 tracks/0/interp = 1

@@ -389,36 +389,9 @@ tracks/54/loop_wrap = true
 tracks/54/imported = false
 tracks/54/enabled = true
 tracks/54/keys = {
-"times": PoolRealArray( 0, 0.1, 0.25, 0.49, 0.61, 0.75, 0.84, 0.94, 1.04, 1.125 ),
-"transitions": PoolRealArray( 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ),
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
 "values": [ {
-"args": [  ],
-"method": "startMovement"
-}, {
-"args": [  ],
-"method": "startMovement"
-}, {
-"args": [  ],
-"method": "startMovement"
-}, {
-"args": [  ],
-"method": "startMovement"
-}, {
-"args": [  ],
-"method": "startMovement"
-}, {
-"args": [  ],
-"method": "startMovement"
-}, {
-"args": [  ],
-"method": "startMovement"
-}, {
-"args": [  ],
-"method": "startMovement"
-}, {
-"args": [  ],
-"method": "startMovement"
-}, {
 "args": [  ],
 "method": "startMovement"
 } ]

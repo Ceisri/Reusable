@@ -1,9 +1,8 @@
 [gd_resource type="Animation" format=2]
 
 [resource]
-resource_name = "base attack one handed sword cycle"
+resource_name = "chop sword"
 length = 2.20833
-loop = true
 tracks/0/type = "transform"
 tracks/0/path = NodePath("Armature/Skeleton:mixamorig_head")
 tracks/0/interp = 1
