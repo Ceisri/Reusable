@@ -30,8 +30,9 @@ onready var bread = preload("res://Food Icons/Cooked Meals/Bread/bread.png")
 
 
 
-
+#weapons
 onready var wood_sword =  preload("res://0.png")
+onready var bow =  preload("res://Equipment icons/bows/bow.png")
 
 
 onready var rosehip = preload("res://Alchemy ingredients/2.png")
@@ -112,7 +113,7 @@ onready var necro_guard =  preload("res://Classes/Ability Icons/Magic Icons1/14.
 
 
 onready var dominion =  preload("res://Classes/Necromant/Class Icons/Dominion.png")
-onready var summon_shadow =  preload("res://Classes/Ability Icons/Magic Icons1/49.png")
+onready var summon_shadow =  preload("res://Classes/Necromant/Class Icons/SummonShadow.png")
 onready var tribute =  preload("res://Classes/Necromant/Class Icons/Tribute.png")
 onready var servitude =  preload("res://Classes/Necromant/Class Icons/Servitude in Death.png")
 onready var sacrifice =  preload("res://Classes/Necromant/Class Icons/Sacrifice.png")
@@ -125,12 +126,41 @@ onready var arcane_blast =  preload("res://Classes/Ability Icons/Magic Icons1/5.
 
 #base skills
 onready var punch =  preload("res://UI/graphics/SkillIcons/fist.png")
-onready var guard =  preload("res://UI/graphics/SkillIcons/flee.png")
+onready var guard =  preload("res://Classes/handcombat/guard.png")
+
+#sword_skills
+onready var slash_sword =  preload("res://Classes/Swordsmen/slash.png")
+onready var guard_sword =  preload("res://Classes/Swordsmen/cross parry.png")
+onready var overhead_slash =  preload("res://Classes/Swordsmen/overhead slash.png")
+onready var rising_slash =  preload("res://Classes/Swordsmen/flury of blows.png")
+
+onready var rising_fury =  preload("res://Classes/Swordsmen/scream.png")
+
+onready var counter_strike =  preload("res://Classes/Swordsmen/counter strike.png")
+var counter_strike_damge:float  = 7.5
+var counter_strike_cost:float  = 5
+
+
+
+onready var fury_strike =  preload("res://Classes/Swordsmen/fury strike.png")
+var base_fury_strike_damage: float = 5
+
+onready var cyclone =  preload("res://Classes/Swordsmen/cyclone.png")
+var cyclone_damage: float = 7
+
+
+
+#bow_skills
+onready var quick_shot =  preload("res://Classes/archery icons/quick_shot.png")
+var quick_shot_damage: float = 2.5
+onready var full_draw =  preload("res://Classes/archery icons/full_draw.png")
+var full_draw_damage: float = 5
 
 
 
 
 func consumeRedPotion(player:KinematicBody, button: TextureButton,inventory_grid: GridContainer, skill_bar: bool, skill_slot: TextureButton):
+	player.resolve += 100#remove this
 	var icon_texture_rect = button.get_node("Icon")
 	var icon_texture = icon_texture_rect.texture
 	if player.kilocalories != null:
@@ -214,21 +244,25 @@ onready var pant_xy_nigris =  preload("res://player/panthera/Skins/Panthera nigr
 
 
 #Human
-onready var hum_xy_white =  preload("res://player/human/mal/Skins/WhatsApp Image 2023-06-04 at 15.45.54.jpeg")
+onready var hum_xy_white =  preload("res://player/human/mal/Skins/Untitled34_20240519155227.png")
 onready var hum_xy_brown =  preload("res://player/human/mal/Skins/Human_xy_2.png")
 
 
 
 
 #_____________________________________Races and Genders_________________________
-onready var human_male:PackedScene =  preload("res://player/human/mal/Mesh/HMale.tscn")
+onready var human_male:PackedScene =  preload("res://player/human/mal/Mesh/body/human.tscn")
 onready var human_female:PackedScene =  preload("res://player/human/fem/HumanFemale.tscn")
 
-onready var panthera_male:PackedScene =  preload("res://player/panthera/mal/Panthera.tscn")
-onready var panthera_female:PackedScene =  preload("res://player/panthera/fem/PantheraFem.tscn")
+onready var panthera_male:PackedScene =  preload("res://player/human/fem/HumanFemale.tscn")
+onready var panthera_female:PackedScene =  preload("res://player/human/fem/HumanFemale.tscn")
 
 onready var sepris:PackedScene =  preload("res://player/Sepris/Sepris.tscn")
 onready var bireas:PackedScene =  preload("res://player/Bireas/Bireas.tscn")
-onready var saurus:PackedScene =  preload("res://testing this shit/Saurus.tscn")
+onready var saurus:PackedScene =  preload("res://player/human/fem/HumanFemale.tscn")
 onready var skeleton:PackedScene =  preload("res://player/skeleton/skeleton.tscn")
-onready var kadosiel:PackedScene =  preload("res://player/kadosiel test/Kadosiel.tscn")
+onready var kadosiel:PackedScene =  preload("res://player/human/fem/HumanFemale.tscn")
+
+
+
+
