@@ -180,6 +180,11 @@ func walk()->void:
 		is_sprinting = false
 		is_running = false
 		is_crouching = false
+		if (Input.is_action_pressed("forward") ||  Input.is_action_pressed("backward") ||  Input.is_action_pressed("left") ||  Input.is_action_pressed("right")):
+			direction = Vector3(Input.get_action_strength("left") - Input.get_action_strength("right"),
+						0,
+						Input.get_action_strength("forward") - Input.get_action_strength("backward"))
+			direction = direction.rotated(Vector3.UP, h_rot).normalized()
 	autoload.movement(self)
 func strafing()->void:
 	strafe = lerp(strafe, strafe_dir, get_physics_process_delta_time() * acceleration)
@@ -831,6 +836,7 @@ func skills(slot)-> void:
 						anim_tree.set("parameters/sword_skills/blend_amount",1)
 						anim_tree.set("parameters/atk_speed/scale",melee_atk_speed)
 						anim_tree.set("parameters/skill/active",true)
+						anim_tree.set("parameters/atk_range_cast/blend_amount",-1)#-1 for melee,0 for ranged,1 for magic casters
 					else:
 						anim_tree.set("parameters/skill/active",false)
 				elif slot.texture.resource_path == autoload.cyclone.get_path():
@@ -838,41 +844,70 @@ func skills(slot)-> void:
 						if resolve > necromant.cyclone_cost:
 							anim_tree.active = true
 							is_in_combat = true
-							anim_tree.set("parameters/sword_gate/blend_amount",-1)
 							anim_tree.set("parameters/sword_skills/blend_amount",0)
-							anim_tree.set("parameters/atk_speed/scale",melee_atk_speed)
+							anim_tree.set("parameters/sword_gate/blend_amount",-1)
 							anim_tree.set("parameters/skill/active",true)
+							anim_tree.set("parameters/static move/blend_amount",0)#0 is for skills with movement 1 for static ones
+							anim_tree.set("parameters/atk_speed/scale",melee_atk_speed)
+							anim_tree.set("parameters/skill static/active",false)
+							anim_tree.set("parameters/atk_range_cast/blend_amount",-1)#-1 for melee,0 for ranged,1 for magic casters
 						else:
+							anim_tree.active = false
 							anim_tree.set("parameters/skill/active",false)
 					else:
+						anim_tree.active = false
 						anim_tree.set("parameters/skill/active",false)
+#guarding icon
 				elif slot.texture.resource_path == autoload.guard_sword.get_path():
 					if resolve > autoload.counter_strike_cost:
 						anim_tree.active = true
 						is_in_combat = true
-						anim_tree.set("parameters/sword_gate/blend_amount",0)
-						anim_tree.set("parameters/sword_defensive/blend_amount",1)
+						anim_tree.set("parameters/sword_skills3/blend_amount",-1)#0 is a battly cry like animation,-1 for parry
+						anim_tree.set("parameters/static move/blend_amount",1)#0 is for skills with movement 1 for static ones
 						anim_tree.set("parameters/atk_speed/scale",melee_atk_speed)
-						anim_tree.set("parameters/skill/active",true)
+						anim_tree.set("parameters/skill static/active",true)
+						anim_tree.set("parameters/skill/active",false)
+						anim_tree.set("parameters/atk_range_cast/blend_amount",-1)#-1 for melee,0 for ranged,1 for magic casters
 						moveDuringAnimation(0)
 				elif slot.texture.resource_path == autoload.counter_strike.get_path():
 					if necromant.can_counter == true:
 						if resolve > autoload.counter_strike_cost:
 							anim_tree.active = true
 							is_in_combat = true
-							anim_tree.set("parameters/sword_gate/blend_amount",0)
 							anim_tree.set("parameters/sword_defensive/blend_amount",-1)
+							anim_tree.set("parameters/sword_gate/blend_amount",0)
+							anim_tree.set("parameters/static move/blend_amount",0)#0 is for skills with movement 1 for static ones
+							anim_tree.set("parameters/sword_gate/blend_amount",0)#0 is sword_defensive
 							anim_tree.set("parameters/atk_speed/scale",melee_atk_speed)
+							anim_tree.set("parameters/skill static/active",false)
 							anim_tree.set("parameters/skill/active",true)
+							anim_tree.set("parameters/atk_range_cast/blend_amount",-1)#-1 for melee,0 for ranged,1 for magic casters
 				elif slot.texture.resource_path == autoload.rising_slash.get_path():
 					if necromant.can_counter == true:
 						if resolve > autoload.counter_strike_cost:
 							anim_tree.active = true
 							is_in_combat = true
-							anim_tree.set("parameters/sword_gate/blend_amount",1)
 							anim_tree.set("parameters/sword_skills2/blend_amount",-1)
+							anim_tree.set("parameters/skcheck2-3/blend_amount",1)
+							anim_tree.set("parameters/static move/blend_amount",0)#0 is for skills with movement 1 for static ones
+							anim_tree.set("parameters/sword_gate/blend_amount",1)
 							anim_tree.set("parameters/atk_speed/scale",melee_atk_speed)
+							anim_tree.set("parameters/skill static/active",false)
 							anim_tree.set("parameters/skill/active",true)
+							anim_tree.set("parameters/atk_range_cast/blend_amount",-1)#-1 for melee,0 for ranged,1 for magic casters
+				elif slot.texture.resource_path == autoload.rising_fury.get_path():
+					if necromant.can_counter == true:
+						if resolve > autoload.counter_strike_cost:
+							can_walk = false
+							current_race_gender.can_move = false
+							anim_tree.active = true
+							is_in_combat = true
+							anim_tree.set("parameters/sword_skills3/blend_amount",0)#0 is a battly cry like animation,-1 for parry
+							anim_tree.set("parameters/static move/blend_amount",1)#0 is for skills with movement 1 for static ones
+							anim_tree.set("parameters/atk_speed/scale",melee_atk_speed)
+							anim_tree.set("parameters/skill static/active",true)
+							anim_tree.set("parameters/skill/active",false)
+							anim_tree.set("parameters/atk_range_cast/blend_amount",-1)#-1 for melee,0 for ranged,1 for magic casters
 #ranged bow skills
 				elif slot.texture.resource_path == autoload.quick_shot.get_path():
 					is_aiming = true
@@ -952,6 +987,7 @@ func animations():
 		state = "sprint attack"
 	elif Input.is_action_pressed("attack") and !cursor_visible:
 		state = "base attack"
+		can_walk = false
 #skills put these below the walk elif statment in case of keybinding bugs, as of now it works so no need
 	elif Input.is_action_pressed("1"):
 		state = "test1"
@@ -1008,7 +1044,6 @@ func animations():
 			#anim_tree.active = false
 			jump_animation_duration = 0 
 	elif Input.is_action_pressed("forward") or Input.is_action_pressed("left") or  Input.is_action_pressed("right") or  Input.is_action_pressed("backward"):
-		if weapon_type == bow:
 			if Input.is_action_pressed("attack"):
 				can_walk = false
 			elif  Input.is_action_pressed("aim"):
@@ -1017,8 +1052,7 @@ func animations():
 				can_walk = false
 			else:
 				can_walk = true
-		else:
-			can_walk = true
+
 	
 	elif Input.is_action_pressed("crouch"):
 		state = "crouch" 
@@ -1829,13 +1863,13 @@ func frameRate():
 	var current_fps = Engine.get_frames_per_second()
 	var new_fps: float
 	if current_fps > 59:
-		new_fps = current_fps + 20
+		new_fps = current_fps 
 	elif current_fps > 39:
-		new_fps = current_fps + 15
+		new_fps = current_fps
 	elif current_fps > 34:
-		new_fps = current_fps + 10
+		new_fps = current_fps 
 	elif current_fps > 29:
-		new_fps = current_fps + 5
+		new_fps = current_fps 
 	else:
 		new_fps = current_fps
 	fps_label.text = str(new_fps)

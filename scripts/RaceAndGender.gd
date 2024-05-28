@@ -898,6 +898,53 @@ func counterStrikeDamage()->void:
 
 
 
+
+
+
+func risingFury()->void:
+	melee_aoe.scale = Vector3(5, 5, 5)
+	var damage_type:String = "sonic"
+	var damage = 5
+	var damage_flank = damage + 0
+	var critical_damage : float  = 0
+	var critical_flank_damage : float  = 0
+	var punishment_damage : float = 0
+	var punishment_damage_type:String = "sonic"
+	var aggro_power = 150
+	var enemies = melee_aoe.get_overlapping_bodies()
+	for victim in enemies:	
+		if victim.is_in_group("enemy") and victim != self:
+			if victim.has_method("takeDamage"):
+				victim.takeDamage(damage,aggro_power,player,player.stagger_chance,damage_type)
+	melee_aoe.scale = Vector3(1, 1, 1)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 func shootArrow():
 	player.necromant.shootArrow(autoload.quick_shot_damage)
 func fullDrawShootArrow():
