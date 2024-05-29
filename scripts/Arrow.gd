@@ -71,7 +71,7 @@ func shot():
 					if player.is_on_floor():
 						#insert sound effect here
 						if randf() <= player.critical_chance:#critical hit
-							if victim.state == "guard" or victim.state == "guard walk": #victim is guarding
+							if victim.state == autoload.state_list.guard or victim.state == autoload.state_list.guard_walk: #victim is guarding
 								if player.isFacingSelf(victim,0.30): #the victim is looking face to face at self 
 									victim.takeDamage(critical_damage/victim.guard_dmg_absorbition,aggro_power,player,player.stagger_chance,damage_type)
 								else: #apparently the victim is showing his back or flanks while guard, flank damage + punishment damage
@@ -82,7 +82,7 @@ func shot():
 								else: #apparently the victim is showing his back or flanks, extra damage
 									victim.takeDamage(critical_damage,aggro_power,player,player.stagger_chance,punishment_damage_type)
 						else: #normal hit
-							if victim.state == "guard" or victim.state == "guard walk": #victim is guarding
+							if victim.state == autoload.state_list.guard or victim.state == autoload.state_list.guard_walk: #victim is guarding
 								if player.isFacingSelf(victim,0.30): #the victim is looking face to face at self 
 									victim.takeDamage(damage/victim.guard_dmg_absorbition,aggro_power,player,player.stagger_chance,damage_type)
 								else: #apparently the victim is showing his back or flanks while guard, flank damage + punishment damage

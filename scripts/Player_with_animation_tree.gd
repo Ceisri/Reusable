@@ -41,7 +41,8 @@ func _ready()->void:
 func _on_SlowTimer_timeout()->void:
 	allResourcesBarsAndLabels()
 	potionEffects()
-	current_race_gender.EquipmentSwitch()
+	if $UI/GUI/Equipment.visible == true :
+		current_race_gender.EquipmentSwitch()
 	saveSkillBarData()
 	convertStats()
 	money()
@@ -81,7 +82,6 @@ func _physics_process(delta: float) -> void:
 	minimapFollow()
 	miniMapVisibility()
 	stiffCamera()
-	
 	walk()
 	climbing()
 	autoload.gravity(self)
@@ -608,8 +608,6 @@ func switchWeaponStances()-> void:
 						else: #item instance doesn't exist 
 							if current_weapon_instance.item_type == "sword":
 								weapon_type = sword
-
-						
 		else:
 			if left_hand.get_child_count() == 0:
 				weapon_type = fist
@@ -729,7 +727,7 @@ func matchAnimationStates()-> void:
 				"test9":
 					var slot = $UI/GUI/SkillBar/GridContainer/Slot9/Icon
 					skills(slot)
-				"test0":
+				"test0":#Bug found, for some reason skills at this slot don't work when pressing the key 0, rebinding it again even to 0 or any other key fixes the issue
 					var slot = $UI/GUI/SkillBar/GridContainer/Slot10/Icon
 					skills(slot)
 				"testQ":
@@ -943,7 +941,10 @@ func skills(slot)-> void:
 							var button = inventory_grid.get_node("InventorySlot" + str(index))
 							button = inventory_grid.get_node("InventorySlot" + str(index))
 							autoload.consumeRedPotion(self,button,inventory_grid,true,slot.get_parent())				
-	
+
+				else:
+					anim_tree.active = false
+					anim_tree.set("parameters/skill/active",false)
 func moveDuringAnimation(speed):
 	if !is_on_wall():
 		if current_race_gender.can_move == true:
@@ -1383,6 +1384,7 @@ func _on_OpenAllUI_pressed():
 	closeSwitchOpen(inventory)
 	closeSwitchOpen(skill_trees)
 	saveGame()
+	$UI/GUI/CharacterEditor.visible = !$UI/GUI/CharacterEditor.visible
 	
 func connectUIButtons():
 	var close_dmg: TextureButton = $UI/GUI/Equipment/DmgDef/Close
@@ -2299,7 +2301,7 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 	if legs_icon != null:
 		if legs_icon.texture != null:
 			if legs_icon.texture.get_path() == autoload.pants1.get_path():
-				legs = "cloth1"
+				legs = "pants0"
 		elif legs_icon.texture == null:
 			legs = "naked"
 #_______________________________hands___________________________________________
@@ -4874,7 +4876,7 @@ func _on_switchRace_pressed():
 	current_race_gender.hairstyle = hair_list[current_hair_index]
 	current_race_gender.face_set = face_list[current_face_index]
 
-var hair_list = ["1", "2", "3","4","5","6","7","8",]
+var hair_list = ["1", "2", "3","4","5","6","7","8","9"]
 var current_hair_index = 0
 
 func _on_switchhair_pressed():

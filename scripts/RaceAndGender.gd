@@ -21,16 +21,24 @@ func _ready():
 	$AnimationTree.active = false
 	loadPlayerData()
 	switchSkin()
-	switchArmor()
+	switchArmorTexture()
 	switchHair()
 	player.colorhair()
 	switchFace()
 	player.switchShoulder()
-#_____________________________________Equipment 3D______________________________
+	loadAnimations()
 
+
+func loadAnimations()->void:
+	animation.add_animation("combo sword", load("res://player/universal animations/sword animations/combo sword.tres"))
+	animation.add_animation("run cycle", load("res://player/universal animations/movement/run cycle.anim"))
+	animation.add_animation("climb cycle", load("res://testing this shit/climb cycle.anim"))
+
+#_____________________________________Equipment 3D______________________________
 func EquipmentSwitch()->void:
 	switchHead()
 	switchTorso()
+	switchArmorTexture()
 	switchBelt()
 	switchLegs()
 	switchHandL()
@@ -51,33 +59,60 @@ func switchHead()->void:
 			player.applyEffect(player,"helm1", true)
 
 
-func equipArmor(clothing_to_equip,clothing_type_to_delete):
+func equipArmor(clothing_to_equip,clothing_type_to_delete:String)->void:
 	var clothing_to_equip_instance = clothing_to_equip.instance()
 	clothing_to_equip_instance.scale = Vector3(1,1,1) # just in case you can't see the clothing, it might have been resized due to how mixamo works change this between 0.01 to 1 or 100 to test 
 	for child in $Armature/Skeleton.get_children():
 		if child.is_in_group(clothing_type_to_delete):
 			child.queue_free() # this will delete all the armors that share the same group, use names like "Legs, Torso,Hands,Feet"
 	$Armature/Skeleton.add_child(clothing_to_equip_instance)
-onready var human_xy_naked_torso_0: PackedScene = preload("res://Equipment/Armors/Human_XY/Torso/Torso0.tscn")#save the mesh as a scene and make sure the skin property share's the same bone names as the skeleton
-onready var human_xy_tunic_0: PackedScene = preload("res://Equipment/Armors/Human_XY/Torso/Tunic0.tscn")
-onready var human_xy_gambeson_0: PackedScene = preload("res://Equipment/Armors/Human_XY/Torso/Gambeson0.tscn")
-onready var human_xy_chainmail_0: PackedScene = preload("res://Equipment/Armors/Human_XY/Torso/Chainmail0.tscn")
-onready var human_xy_cuirass_0: PackedScene = preload("res://Equipment/Armors/Human_XY/Torso/Cuirass0.tscn")
-func switchTorso()->void:
-	match player.torso:
-			"naked":
-				equipArmor(human_xy_naked_torso_0,"Torso")
-				player.applyEffect(player,"garment1", false)
-			"tunic0":
-				equipArmor(human_xy_tunic_0,"Torso")
-				player.applyEffect(player,"garment1", true)
-			"gambeson0":
-				equipArmor(human_xy_gambeson_0,"Torso")
-			"chainmail0":
-				equipArmor(human_xy_chainmail_0,"Torso")
-			"cuirass0":
-				equipArmor(human_xy_cuirass_0,"Torso")
 
+func switchTorso()->void:
+	match player.species:
+		"human":
+			match player.sex:
+				"xy":
+					match player.torso:
+							"naked":
+								equipArmor(autoload.human_xy_naked_torso_0,"Torso")
+								player.applyEffect(player,"garment1", false)
+							"tunic0":
+								equipArmor(autoload.human_xy_tunic_0,"Torso")
+								player.applyEffect(player,"garment1", true)
+							"gambeson0":
+								equipArmor(autoload.human_xy_gambeson_0,"Torso")
+							"chainmail0":
+								equipArmor(autoload.human_xy_chainmail_0,"Torso")
+							"cuirass0":
+								equipArmor(autoload.human_xy_cuirass_0,"Torso")
+					match player.legs:
+						"naked":
+							pass
+				"xx":
+					match player.torso:
+							"naked":
+								equipArmor(autoload.human_xx_naked_torso_0,"Torso")
+								player.applyEffect(player,"garment1", false)
+							"tunic0":
+								equipArmor(autoload.human_xx_tunic_0,"Torso")
+								player.applyEffect(player,"garment1", true)
+							"tunic1":
+								equipArmor(autoload.human_xx_tunic_1,"Torso")
+							"gambeson0":
+								equipArmor(autoload.human_xx_gambeson_0,"Torso")
+							"chainmail0":
+								equipArmor(autoload.human_xx_chainmail_0,"Torso")
+							"cuirass0":
+								equipArmor(autoload.human_xx_cuirass_0,"Torso")
+					match player.legs:
+						"naked":
+							equipArmor(autoload.human_xx_legs_0,"Legs")
+						"pants0":
+							equipArmor(autoload.human_xx_pants_0,"Legs")
+						"pants1":
+							equipArmor(autoload.human_xx_pants_1,"Legs")
+						"gambeson":
+							equipArmor(autoload.human_xx_legs_gambeson_0,"Legs")
 func switchBelt()->void:
 	match player.belt:
 		"naked":
@@ -143,11 +178,7 @@ func switchFeet():
 #______________________________Switch Colors____________________________________
 
 
-onready var torso0 = $Armature/Skeleton/torso0
-onready var torso1 = $Armature/Skeleton/torso1
-onready var torso2 = $Armature/Skeleton/torso2
-onready var torso3 = $Armature/Skeleton/torso3
-onready var torso4 = $Armature/Skeleton/torso4
+
 
 
 var skin_color = "1"
@@ -160,42 +191,44 @@ onready var set0_color_white =  preload("res://player/Armor colors/beginner armo
 func changeColor(materail_number, new_material, color):
 	new_material.albedo_texture = color
 	new_material.flags_unshaded = true
-	if torso1 != null:
-		torso1.set_surface_material(materail_number, new_material)
-	if torso2 != null:
-		torso2.set_surface_material(materail_number, new_material)
-	if torso3 != null:
-		torso3.set_surface_material(materail_number, new_material)
-	if torso4 != null:
-		torso4.set_surface_material(materail_number, new_material)
-#hands
-	if hand_l1 !=null:
-		hand_l1.set_surface_material(materail_number, new_material)
-onready var face = $Armature/Skeleton/face
-onready var feet0 = $Armature/Skeleton/feet0
-func changeHeadTorsoColor(materail_number, new_material, color):
-
-	new_material.albedo_texture = color
-	new_material.flags_unshaded = true
-	if current_face_instance != null:
-		current_face_instance.set_surface_material(materail_number, new_material)
-	if face != null:
-		face.set_surface_material(materail_number, new_material)
-	if torso0 !=null:
-		torso0.set_surface_material(materail_number, new_material)
-	if hand_l0 !=null:
-		hand_l0.set_surface_material(materail_number, new_material)
-	if legs0 !=null:
-		legs0.set_surface_material(materail_number, new_material)
-	if feet0 !=null:
-		feet0.set_surface_material(materail_number, new_material)
-func switchArmor():
+	for child in $Armature/Skeleton.get_children():
+		if child.is_in_group("Torso"):
+			child.set_surface_material(materail_number, new_material)
+func switchArmorTexture():
 	var new_material = SpatialMaterial.new()
 	match armor_color:
 		"blue":
 			changeColor(0, new_material,set0_color_blue)
 		"white":
 			changeColor(0, new_material,set0_color_white)
+func _on_Button_pressed():
+	var current_index = skin_types.find(skin_color)
+	var next_index = (current_index + 1) % skin_types.size()# Calculate the index of the next skin type
+	skin_color = skin_types[next_index]# Update the skin type
+	switchSkin()# Apply the new skin
+	savePlayerData()# Save the player data			
+			
+			
+			
+			
+onready var face = $Armature/Skeleton/face
+onready var feet0 = $Armature/Skeleton/feet0
+func changeHeadTorsoColor(materail_number, new_material, color):
+	new_material.albedo_texture = color
+	new_material.flags_unshaded = true
+	if current_face_instance != null:
+		current_face_instance.set_surface_material(materail_number, new_material)
+	if face != null:
+		face.set_surface_material(materail_number, new_material)
+#	if torso0 !=null:
+#		torso0.set_surface_material(materail_number, new_material)
+#	if hand_l0 !=null:
+#		hand_l0.set_surface_material(materail_number, new_material)
+#	if legs0 !=null:
+#		legs0.set_surface_material(materail_number, new_material)
+#	if feet0 !=null:
+#		feet0.set_surface_material(materail_number, new_material)
+
 
 func switchSkin():
 	var new_material = SpatialMaterial.new()
@@ -235,12 +268,7 @@ func switchSkin():
 							changeHeadTorsoColor(0, new_material,autoload.hum_xy_brown)
 					
 var skin_types = ["1","2","3","4","5","6","7"]	
-func _on_Button_pressed():
-	var current_index = skin_types.find(skin_color)
-	var next_index = (current_index + 1) % skin_types.size()# Calculate the index of the next skin type
-	skin_color = skin_types[next_index]# Update the skin type
-	switchSkin()# Apply the new skin
-	savePlayerData()# Save the player data
+
 	
 
 func randomizeArmor():
@@ -252,7 +280,7 @@ func randomizeArmor():
 	# Update the skin type
 	armor_color = jacket_types[next_index]
 	# Apply the new skin
-	switchArmor()
+	switchArmorTexture()
 	# Save the player data
 	savePlayerData()
 
