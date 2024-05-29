@@ -1,6 +1,60 @@
 extends Node
 
 
+
+
+enum state_list{
+	idle,
+	curious,
+	engage,
+	orbit,
+	decimate,
+	guard,
+	guard_walk}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #food_____________________________________
 #fruits
 onready var strawberry = preload("res://Food Icons/Fruits/strawberry.png")
@@ -252,7 +306,7 @@ onready var hum_xy_brown =  preload("res://player/human/mal/Skins/Human_xy_2.png
 
 #_____________________________________Races and Genders_________________________
 onready var human_male:PackedScene =  preload("res://player/human/mal/Mesh/body/human.tscn")
-onready var human_female:PackedScene =  preload("res://player/human/fem/HumanFemale.tscn")
+onready var human_female:PackedScene =  preload("res://player/human/fem/mesh/body/FemaleHuman.tscn")
 
 onready var panthera_male:PackedScene =  preload("res://player/human/fem/HumanFemale.tscn")
 onready var panthera_female:PackedScene =  preload("res://player/human/fem/HumanFemale.tscn")
@@ -265,4 +319,26 @@ onready var kadosiel:PackedScene =  preload("res://player/human/fem/HumanFemale.
 
 
 
+
+
+
+#________________Armor and clothing 3Dscenes to instance as children of skeletons___________________
+#stored male armors
+onready var human_xy_naked_torso_0: PackedScene = preload("res://Equipment/Armors/Human_XY/Torso/Torso0.tscn")#save the mesh as a scene and make sure the skin property share's the same bone names as the skeleton
+onready var human_xy_tunic_0: PackedScene = preload("res://Equipment/Armors/Human_XY/Torso/Tunic0.tscn")
+onready var human_xy_gambeson_0: PackedScene = preload("res://Equipment/Armors/Human_XY/Torso/Gambeson0.tscn")
+onready var human_xy_chainmail_0: PackedScene = preload("res://Equipment/Armors/Human_XY/Torso/Chainmail0.tscn")
+onready var human_xy_cuirass_0: PackedScene = preload("res://Equipment/Armors/Human_XY/Torso/Cuirass0.tscn")
+#stored female armors
+onready var human_xx_naked_torso_0: PackedScene = preload("res://Equipment/Armors/Human_XX/Torso/Torso0.tscn")
+onready var human_xx_tunic_0: PackedScene = preload("res://Equipment/Armors/Human_XX/Torso/Tunic0.tscn")
+onready var human_xx_tunic_1: PackedScene = preload("res://Equipment/Armors/Human_XX/Torso/Tunic1.tscn")
+onready var human_xx_gambeson_0: PackedScene = preload("res://Equipment/Armors/Human_XX/Torso/Gambeson0.tscn")
+onready var human_xx_chainmail_0: PackedScene = preload("res://Equipment/Armors/Human_XX/Torso/Chainmail0.tscn")
+onready var human_xx_cuirass_0: PackedScene = preload("res://Equipment/Armors/Human_XX/Torso/Cuirass0.tscn")
+#legs 
+onready var human_xx_legs_0: PackedScene = preload("res://Equipment/Armors/Human_XX/Legs/legs0.tscn")
+onready var human_xx_pants_0: PackedScene = preload("res://Equipment/Armors/Human_XX/Legs/Pants0.tscn")
+onready var human_xx_pants_1: PackedScene = preload("res://Equipment/Armors/Human_XX/Legs/Pants1.tscn")
+onready var human_xx_legs_gambeson_0: PackedScene = preload("res://Equipment/Armors/Human_XX/Legs/Gambeson0.tscn")
 
