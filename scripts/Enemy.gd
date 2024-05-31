@@ -1,7 +1,7 @@
 extends KinematicBody
 
 onready var threat_system: Node = $Threat
-onready var animation = $AnimationPlayer
+onready var animation =  $Mesh/human/AnimationPlayer
 onready var anim_tree = $AnimationTree
 
 var vertical_velocity : Vector3 = Vector3()
@@ -51,18 +51,21 @@ func matchState()->void:
 				if distance_to_target > 2:
 					followTarget(false)
 					animation.play("walk combat",0.3)
-				elif distance_to_target <2:
-					if random_atk < 0.5:# 50% chance
-						animation.play("triple slash",0.3)
-					elif random_atk < 0.75:# 25% chance
-						animation.play("counter strike",0.3)
-					else:# 25% chance
-						animation.play("overhand strike",0.3)
+				else:
+					if random_atk < 0.25:  # 25% chance
+						animation.play("triple slash", 0.25)
+					elif random_atk < 0.50:  # 25% chance
+						animation.play("chop sword", 0.3)
+					elif random_atk < 0.75:  # 25% chance
+						animation.play("heavy swing", 0.3)
+					else:  # 25% chance
+						animation.play("spin", 0.3)
 		autoload.state_list.orbit:
 			if orbit_time > 0:
 				orbit_time -= 0.5
 				orbitTarget()
 				lookTarget()
+				animation.play("strafe",0.3)
 			else:
 				state = autoload.state_list.engage
 		autoload.state_list.decimate:
@@ -488,5 +491,5 @@ func isFacingSelf(enemy: Node, threshold: float) -> bool:
 
 
 
-func startRandomTimer():
+func changeAttackType()->void:
 	random_atk = rand_range(0,1)

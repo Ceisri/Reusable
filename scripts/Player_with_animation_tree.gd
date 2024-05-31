@@ -248,23 +248,23 @@ func jump():
 		if is_instance_valid(current_race_gender):
 			current_race_gender.jumpUp()
 
-var fall_damage:float = 0
+var fall_damage:float = 10
 var fall_distance:float = 0
 var minimum_fall_distance:float = 0.5
-func fallDamage()-> void:
+var old_vel : float = 0.0
+func fallDamage() -> void:
 	if state == "fall" and !is_climbing and !is_on_wall():
-		#print("fall damage " + str(fall_damage))
-		#print("fall distance " + str(fall_distance))
-		fall_distance += 0.015
+		fall_distance += 0.02
 		if fall_distance > minimum_fall_distance: 
 			fall_damage += (2.5 +(0.01 * max_health)) / agility
 	else:
 		if fall_distance > minimum_fall_distance: 
 			takeDamage(fall_damage, 100, self, 0, "blunt")
-			shake_camera(0.4,0.035,0.5,0.3)
-		#print("hp " + str(health))
 		fall_damage = 0
 		fall_distance = 0 
+
+
+
 
 # Physics value
 var direction : Vector3 = Vector3()
@@ -386,9 +386,6 @@ var v_acceleration: float = 10
 var touch_start_position: Vector2 = Vector2.ZERO
 var zoom_speed: float = 0.1
 var mouse_sense: float = 0.1
-
-func shake_camera(duration: float, intensity: float, rand_x, rand_y)-> void:
-	pass
 
 func Zoom(zoom_direction : float)-> void:
 	# Adjust the camera's position based on the zoom direction
@@ -618,10 +615,10 @@ func forceMovement()->void:
 			if state != "guard" or state != "guard walk":
 				moveDuringAnimation(3)
 				print("active.")
-		else:
-			print("stopped.")
-	else:
-		print("anim_tree not found")
+#		else:
+#			print("stopped.")
+#	else:
+#		print("anim_tree not found")
 var state: String = "idle"
 func matchAnimationStates()-> void:
 	forceMovement()
