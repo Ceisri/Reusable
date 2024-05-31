@@ -20,7 +20,7 @@ var speed = 4
 var max_distance = 30.1
 
 onready var threat_system = $Threat
-var state: String = "null"
+var state 
 
 func displayThreatInfo(label):
 	threat_system.threat_info = threat_system.getBestFive()
@@ -491,5 +491,5 @@ func showStatusIcon(icon1, icon2, icon3, icon4, icon5, icon6, icon7, icon8, icon
 					break  # Exit loop after applying status to the first available icon
 
 
-func _on_AggroTimer_timeout():#used only for testing the threat system
-	autoload.drawGlobalThreat(self)
+#func _on_AggroTimer_timeout():#used only for testing the threat system
+#	autoload.drawGlobalThreat(self)

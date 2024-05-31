@@ -635,6 +635,12 @@ func matchAnimationStates()-> void:
 			match state:
 #_______________________________attacking states____________________________________________________
 				"slide":
+					var slide_blend = 0.3
+					animation.play("slide",slide_blend)
+					var slide_mov_speed = 15 + slide_blend + rand_range(3, 6)
+					if !is_on_wall():
+						horizontal_velocity = direction * slide_mov_speed
+					movement_speed = int(slide_mov_speed)
 					can_walk = true
 				"base attack":
 					if weapon_type == bow:
@@ -2820,8 +2826,8 @@ var total_guard_dmg_absorbition:float
 
 
 var staggered = 0 
-var base_flank_dmg : float = 10.0
-var flank_dmg: float = 10.0 #extra damage to add to backstabs 
+var base_flank_dmg : float = 5.0
+var flank_dmg: float =5.0 #extra damage to add to backstabs 
 
 var extra_melee_atk_speed : float = 0
 
@@ -4742,7 +4748,6 @@ func switchSexRace():
 	secondary_weapon = "null"
 	right_shoulder_pad = "null"
 	left_shoulder_pad = "null"
-	
 	match sex:
 		"xy":
 			match species:
@@ -4901,7 +4906,6 @@ func _on_ArmorColorSwitch_pressed():
 
 func _on_SkinColorSwitch_pressed():
 	current_race_gender._on_Button_pressed()
-
 var hair_color_change = true 
 var hair_color: Color = Color(1, 1, 1)  # Default color
 func _on_ColorPicker_color_changed(color):
@@ -4915,7 +4919,6 @@ func _on_ColorPicker_color_changed(color):
 				hair_material.flags_unshaded = true
 				hair_color = color
 				colorhair()
-
 func colorhair():
 	if current_race_gender.current_hair_instance:
 		var original_material = current_race_gender.current_hair_instance.material_override	# Get the original material of the hair instance
@@ -4923,7 +4926,6 @@ func colorhair():
 			var new_material = original_material.duplicate()# Duplicate the original material
 			current_race_gender.current_hair_instance.material_override = new_material# Assign the new material to the hair instance
 			new_material.albedo_color = hair_color# Set the color property of the new material
-
 func _on_BlendshapeTest_pressed():
 	current_race_gender.smile = rand_range(-2,+2)
 	current_race_gender.current_face_instance.set("blend_shapes/Smile",current_race_gender.smile)

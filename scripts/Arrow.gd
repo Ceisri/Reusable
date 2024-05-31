@@ -90,7 +90,7 @@ func shot():
 							else:#victim is not guarding
 								if player.isFacingSelf(victim,0.30):#the victim is looking face to face at self 
 									victim.takeDamage(damage,aggro_power,player,player.stagger_chance,damage_type)
-								else: #apparently the victim is showing his back or flanks, extra damage
+								else: #appareantly the victim is showing his back or flanks, extra damage
 									victim.takeDamage(damage_flank,aggro_power,player,player.stagger_chance,damage_type)
 				queue_free()
 		else:

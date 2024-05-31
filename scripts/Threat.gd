@@ -203,11 +203,9 @@ func getThreatInfo() -> Array:
 func loseThreat():
 	# Get the position of the parent node
 	var parent_position = get_parent().global_transform.origin
-
 	# Define distance ranges and their corresponding aggro reduction values
 	var close_range = 10.0  # Adjust as needed
 	var middle_range = 20.0  # Adjust as needed
-
 	# Decrease the aggro of all targets based on distance to parent
 	for assailant in targets:
 		if assailant != null and assailant.player != null:
