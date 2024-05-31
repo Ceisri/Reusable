@@ -33,13 +33,15 @@ func displayThreatInfo(label):
 
 
 	
+	
 var state = autoload.state_list.wander
 func matchState()->void:
 	match state:
 		autoload.state_list.idle:
 			animation.play("idle",0.3)
 		autoload.state_list.wander:
-			$Wandering.wander()
+			$Wandering.wander()# animations are inside 
+			forceDirectionChange()
 		autoload.state_list.curious:
 			lookTarget()
 		autoload.state_list.engage:
@@ -65,6 +67,19 @@ func matchState()->void:
 				state = autoload.state_list.engage
 		autoload.state_list.decimate:
 			followTarget(true)
+onready var wall_check_ray:RayCast = $RayStraightLonger
+onready var check_floor_ray: RayCast = $RayCheckFloor
+onready var tween = $Tween
+func forceDirectionChange() -> void:
+	var collider = wall_check_ray.get_collider()
+	var collider_floor = check_floor_ray.get_collider()
+
+	if collider and not collider.is_in_group("Player"):
+		tween.interpolate_property(self, "rotation_degrees:y", self.rotation_degrees.y, self.rotation_degrees.y - 90, 0.5, Tween.TRANS_LINEAR, Tween.EASE_OUT)
+		tween.start()
+	if not collider_floor:
+		tween.interpolate_property(self, "rotation_degrees:y", self.rotation_degrees.y, self.rotation_degrees.y + 90, 0.5, Tween.TRANS_LINEAR, Tween.EASE_OUT)
+		tween.start()
 			
 var orbit_time:float = 5
 onready var ray_straight: RayCast = $RayStraight
