@@ -10,7 +10,10 @@ enum state_list{
 	orbit,
 	decimate,
 	guard,
-	guard_walk}
+	guard_walk,
+	wander,
+	staggered,
+	dead}
 
 
 
@@ -54,7 +57,7 @@ enum state_list{
 
 
 
-
+onready var drag_preview = preload("res://scripts/Components/Sprite.tscn")
 #food_____________________________________
 #fruits
 onready var strawberry = preload("res://Food Icons/Fruits/strawberry.png")
@@ -186,21 +189,30 @@ onready var guard =  preload("res://Classes/handcombat/guard.png")
 onready var slash_sword =  preload("res://Classes/Swordsmen/slash.png")
 onready var guard_sword =  preload("res://Classes/Swordsmen/cross parry.png")
 onready var overhead_slash =  preload("res://Classes/Swordsmen/overhead slash.png")
+#___________________________________________________________________________________________________
 onready var rising_slash =  preload("res://Classes/Swordsmen/flury of blows.png")
-
-onready var rising_fury =  preload("res://Classes/Swordsmen/scream.png")
-
+var rising_slash_damage: float = 3
+#___________________________________________________________________________________________________
 onready var counter_strike =  preload("res://Classes/Swordsmen/counter strike.png")
 var counter_strike_damge:float  = 7.5
 var counter_strike_cost:float  = 5
-
-
-
-onready var fury_strike =  preload("res://Classes/Swordsmen/fury strike.png")
-var base_fury_strike_damage: float = 5
-
+#___________________________________________________________________________________________________
 onready var cyclone =  preload("res://Classes/Swordsmen/cyclone.png")
 var cyclone_damage: float = 7
+#___________________________________________________________________________________________________
+onready var fury_strike =  preload("res://Classes/Swordsmen/fury strike.png")
+var base_fury_strike_damage: float = 5
+#___________________________________________________________________________________________________
+onready var rising_fury =  preload("res://Classes/Swordsmen/scream.png")
+var rising_fury_threat: float = 25
+
+
+
+
+
+
+
+
 
 
 
@@ -308,14 +320,14 @@ onready var hum_xy_brown =  preload("res://player/human/mal/Skins/Human_xy_2.png
 onready var human_male:PackedScene =  preload("res://player/human/mal/Mesh/body/human.tscn")
 onready var human_female:PackedScene =  preload("res://player/human/fem/mesh/body/FemaleHuman.tscn")
 
-onready var panthera_male:PackedScene =  preload("res://player/human/fem/HumanFemale.tscn")
-onready var panthera_female:PackedScene =  preload("res://player/human/fem/HumanFemale.tscn")
+onready var panthera_male:PackedScene =  preload("res://player/panthera/mal/Panthera.tscn")
+onready var panthera_female:PackedScene =  preload("res://player/panthera/fem/PantheraFemale.glb")
 
 onready var sepris:PackedScene =  preload("res://player/Sepris/Sepris.tscn")
 onready var bireas:PackedScene =  preload("res://player/Bireas/Bireas.tscn")
-onready var saurus:PackedScene =  preload("res://player/human/fem/HumanFemale.tscn")
+onready var saurus:PackedScene =  preload("res://player/Saurus test/saurus.tscn")
 onready var skeleton:PackedScene =  preload("res://player/skeleton/skeleton.tscn")
-onready var kadosiel:PackedScene =  preload("res://player/human/fem/HumanFemale.tscn")
+onready var kadosiel:PackedScene =  preload("res://player/kadosiel test/Kadosiel.tscn")
 
 
 
