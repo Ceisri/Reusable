@@ -679,9 +679,14 @@ onready var melee_aoe: Area = $MeleeAOE
 func cycloneCD():
 	player.anim_tree.active = false
 	player.necromant.cyclone()
-func cyclone()->void:
-	var damage_type:String = "slash"
-	var damage = autoload.cyclone_damage + player.slash_dmg * player.cyclone_icon.points
+func cyclone() -> void:
+	var damage_type: String = "slash"
+	var base_damage: float = autoload.cyclone_damage + player.slash_dmg
+	var points: int = player.cyclone_icon.points
+	var damage_multiplier: float = 1.0
+	if points > 1:
+		damage_multiplier += (points - 1) * 0.05
+	var damage: float = base_damage * damage_multiplier
 	var damage_flank = damage + player.flank_dmg 
 	var critical_damage : float  = damage * player.critical_strength
 	var critical_flank_damage : float  = damage_flank * player.critical_strength
@@ -689,6 +694,7 @@ func cyclone()->void:
 	var punishment_damage_type :String = "slash"
 	var aggro_power = damage + 20
 	var enemies = melee_aoe.get_overlapping_bodies()
+	player.resolve -= autoload.cyclone_cost
 	dealDMG(enemies,null,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank)
 
 

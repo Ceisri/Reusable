@@ -15,7 +15,7 @@ var random_atk:float
 
 func _ready()->void:
 	var process = $Process
-	process.connect("timeout", self, "process")
+	process.connect("timeout", self, "process") #remember to set this timer to process mode = Physics
 	process.start(autoload.entity_tick_rate)
 
 func process()->void:
