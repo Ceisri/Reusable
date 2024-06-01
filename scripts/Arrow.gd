@@ -11,7 +11,7 @@ var aggro: float = 15.0
 var stagger_chance: float = 0.5
 var life_time: int = 200
 var velocity: Vector3 = Vector3.ZERO # Initial velocity
-var speed:float = 20
+var speed:float = 30
 var time_to_rotate:float = 5
 
 
@@ -41,7 +41,7 @@ func moveArrow():
 func _physics_process(delta: float) -> void:
 	shot()
 	moveArrow()
-	speed += 1 * delta
+	speed += 5 * delta
 	# Decrease lifetime
 	life_time -= 1 * delta
 	if life_time <= 0:

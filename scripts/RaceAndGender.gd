@@ -177,10 +177,6 @@ func switchFeet():
 				feet2.hide()
 #______________________________Switch Colors____________________________________
 
-
-
-
-
 var skin_color = "1"
 var armor_color = "white"
 # cloth texture 
@@ -198,9 +194,11 @@ func switchArmorTexture():
 	var new_material = SpatialMaterial.new()
 	match armor_color:
 		"blue":
-			changeColor(0, new_material,set0_color_blue)
+			if player.torso != "naked":
+				changeColor(0, new_material,set0_color_blue)
 		"white":
-			changeColor(0, new_material,set0_color_white)
+			if player.torso != "naked":
+				changeColor(0, new_material,set0_color_white)
 func _on_Button_pressed():
 	var current_index = skin_types.find(skin_color)
 	var next_index = (current_index + 1) % skin_types.size()# Calculate the index of the next skin type

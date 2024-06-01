@@ -933,7 +933,7 @@ func skills(slot)-> void:
 						if is_walking == false:
 							anim_tree.active = false
 							anim_tree.set("parameters/skill/active",false)
-							animation.play("quick shot",0.3,ranged_atk_speed)
+							animation.play("quick shot",0.3,ranged_atk_speed + 0.4)
 							moveDuringAnimation(0)
 				elif slot.texture.resource_path == autoload.full_draw.get_path():
 					if weapon_type == bow:

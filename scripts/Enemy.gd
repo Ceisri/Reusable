@@ -68,13 +68,12 @@ func matchState()->void:
 						else:  # 25% chance
 							animation.play("spin", 0.3)
 		autoload.state_list.orbit:
-#			if orbit_time > 0:
-#				orbit_time -= 0.5
+			if orbit_time > 0:
+				orbit_time -= 3 * get_physics_process_delta_time()
 				orbitTarget()
 				lookTarget()
-				animation.play("strafe",0.3)
-#			else:
-#				state = autoload.state_list.engage
+			else:
+				state = autoload.state_list.engage
 		autoload.state_list.staggered:
 			animation.play("staggered",0.2)
 		autoload.state_list.dead:
@@ -103,15 +102,19 @@ func forceDirectionChange() -> void:
 var orbit_time:float = 5
 onready var ray_straight: RayCast = $RayStraight
 func moveAside()->void: #move to the side to leave space for other enemies
-	if ray_straight.is_colliding():
-		var body = ray_straight.get_collider()
-		if body != self:
-			if body.is_in_group("Enemy"):
-				state = autoload.state_list.orbit
-			else:
-				state = autoload.state_list.engage
+	if health > 0:
+		if state != autoload.state_list.wander:
+			if ray_straight.is_colliding():
+				var body = ray_straight.get_collider()
+				if body != self:
+					if body.is_in_group("Enemy"):
+						state = autoload.state_list.orbit
+						orbit_time = 1.5
+					elif body.is_in_group("Player"):
+							state = autoload.state_list.engage
+					
 onready var eyes = $Eyes
-var turn_speed = 5
+var turn_speed = 9
 func lookTarget()->void:
 	var target = threat_system.findHighestThreat()
 	if target: 
@@ -134,25 +137,26 @@ func followTarget(angry:bool)->void:
 			move_and_slide(direction * walk_speed)
 var orbit_angle = 0.0  # Declare orbit_angle as a member variable
 func orbitTarget()->void:
-	var  distance_to_target = findDistanceTarget()
-	if distance_to_target:
-		var target = threat_system.findHighestThreat()
-		if target != null:
-			var center = target.player.global_transform.origin
-			var radius = 4  # Set your desired radius here
-			var min_distance_to_start_orbit = 6  # Adjust the minimum distance to start orbiting
-			var max_orbit_speed = walk_speed * 0.9  # Adjust the maximum orbit speed (30% of walk_speed)
-			var min_orbit_speed = walk_speed * 0.09  # Adjust the minimum orbit speed (10% of walk_speed)
-			var orbit_speed = clamp((max_orbit_speed - min_orbit_speed) * (1 - distance_to_target / min_distance_to_start_orbit) + min_orbit_speed, min_orbit_speed, max_orbit_speed)
-			if distance_to_target > min_distance_to_start_orbit:
-				var direction_to_target = (center - global_transform.origin).normalized()# Move towards the target until the minimum distance is reached
-				global_transform.origin += direction_to_target * walk_speed * get_process_delta_time()
-			else:
-				var relative_position = global_transform.origin - center# Calculate the relative position of the object from the target
-				#relative_position.y = 0  # Make sure the rotation is in the XZ plane
-				var rotation_angle = orbit_speed * get_process_delta_time()# Calculate the rotation angle
-				var rotated_position = relative_position.rotated(Vector3.UP, rotation_angle)# Calculate the new position by rotating around the target
-				global_transform.origin = center + rotated_position# Set the new position relative to the target
+	if health > 0: 
+		var  distance_to_target = findDistanceTarget()
+		if distance_to_target:
+			var target = threat_system.findHighestThreat()
+			if target != null:
+				var center = target.player.global_transform.origin
+				var radius = 4  # Set your desired radius here
+				var min_distance_to_start_orbit = 5  # Adjust the minimum distance to start orbiting
+				var max_orbit_speed = walk_speed * 0.7  # Adjust the maximum orbit speed (30% of walk_speed)
+				var min_orbit_speed = walk_speed * 0.08  # Adjust the minimum orbit speed (10% of walk_speed)
+				var orbit_speed = clamp((max_orbit_speed - min_orbit_speed) * (1 - distance_to_target / min_distance_to_start_orbit) + min_orbit_speed, min_orbit_speed, max_orbit_speed)
+				if distance_to_target > min_distance_to_start_orbit:
+					var direction_to_target = (center - global_transform.origin).normalized()# Move towards the target until the minimum distance is reached
+					global_transform.origin += direction_to_target * walk_speed * get_process_delta_time()
+				else:
+					var relative_position = global_transform.origin - center# Calculate the relative position of the object from the target
+					#relative_position.y = 0  # Make sure the rotation is in the XZ plane
+					var rotation_angle = orbit_speed * get_process_delta_time()# Calculate the rotation angle
+					var rotated_position = relative_position.rotated(Vector3.UP, rotation_angle)# Calculate the new position by rotating around the target
+					global_transform.origin = center + rotated_position# Set the new position relative to the target
 func findDistanceTarget():
 	var target = threat_system.findHighestThreat()
 	if target != null:
@@ -543,31 +547,28 @@ func dealDMG(enemy_detector1,critical_damage,aggro_power,damage_type,critical_fl
 			if victim != self:
 #				if victim.state != autoload.state_list.dead:
 ##					pushEnemyAway(0.3, victim,0.25)
-				if victim.has_method("takeDamage"):
-					victim.takeDamage(critical_damage/victim.guard_dmg_absorbition,aggro_power,self,stagger_chance,damage_type)
-#					if is_on_floor():
-#						#insert sound effect here
-#						if randf() <= critical_chance:#critical hit
-#							if victim.state == autoload.state_list.guard or victim.state == autoload.state_list.guard_walk: #victim is guarding
-#								if isFacingSelf(victim,0.30): #the victim is looking face to face at self 
-#									victim.takeDamage(critical_damage/victim.guard_dmg_absorbition,aggro_power,self,stagger_chance,damage_type)
-#								else: #apparently the victim is showing his back or flanks while guarding, flank damage + punishment damage
-#									victim.takeDamage(critical_flank_damage + punishment_damage,aggro_power,self,stagger_chance,punishment_damage_type)
-#							else:#player is guarding
-#								if isFacingSelf(victim,0.30): #check if the victim is looking at me 
-#									victim.takeDamage(critical_damage/victim.guard_dmg_absorbition,aggro_power,self,stagger_chance,damage_type)
-#								else: #apparently the victim is showing his back or flanks, extra damage
-#									victim.takeDamage(critical_flank_damage + punishment_damage,aggro_power,self,stagger_chance,punishment_damage_type)
+
+						if randf() <= critical_chance:#critical hit
+							if victim.state == autoload.state_list.guard or victim.state == autoload.state_list.guard_walk: #victim is guarding
+								if isFacingSelf(victim,0.30): #the victim is looking face to face at self 
+									victim.takeDamage(critical_damage/victim.guard_dmg_absorbition,aggro_power,self,stagger_chance,damage_type)
+								else: #apparently the victim is showing his back or flanks while guarding, flank damage + punishment damage
+									victim.takeDamage(critical_flank_damage + punishment_damage,aggro_power,self,stagger_chance,punishment_damage_type)
+							else:#player is guarding
+								if isFacingSelf(victim,0.30): #check if the victim is looking at me 
+									victim.takeDamage(critical_damage/victim.guard_dmg_absorbition,aggro_power,self,stagger_chance,damage_type)
+								else: #apparently the victim is showing his back or flanks, extra damage
+									victim.takeDamage(critical_flank_damage + punishment_damage,aggro_power,self,stagger_chance,punishment_damage_type)
 ##______________________________________________________________normal hit_______________________________________________________________________________________________
-#						else: 
-#							if victim.state == autoload.state_list.guard or victim.state == autoload.state_list.guard_walk: #victim is guarding
-#								if isFacingSelf(victim,0.30): #the victim is looking face to face at self 
-#									victim.takeDamage(damage/victim.guard_dmg_absorbition,aggro_power,self,stagger_chance,damage_type)
-#								else: #apparently the victim is showing his back or flanks while guard, flank damage + punishment damage
-#									victim.takeDamage(damage_flank + punishment_damage,aggro_power,self,stagger_chance,punishment_damage_type)
-#							#victim is not guarding
-#							else:
-#								if isFacingSelf(victim,0.30):#the victim is looking face to face at self 
-#									victim.takeDamage(damage,aggro_power,self,stagger_chance,damage_type)
-#								else: #appareantly the victim is showing his back or flanks, extra damage
-#									victim.takeDamage(damage_flank,aggro_power,self,stagger_chance,damage_type)
+						else: 
+							if victim.state == autoload.state_list.guard or victim.state == autoload.state_list.guard_walk: #victim is guarding
+								if isFacingSelf(victim,0.30): #the victim is looking face to face at self 
+									victim.takeDamage(damage/victim.guard_dmg_absorbition,aggro_power,self,stagger_chance,damage_type)
+								else: #apparently the victim is showing his back or flanks while guard, flank damage + punishment damage
+									victim.takeDamage(damage_flank + punishment_damage,aggro_power,self,stagger_chance,punishment_damage_type)
+							#victim is not guarding
+							else:
+								if isFacingSelf(victim,0.30):#the victim is looking face to face at self 
+									victim.takeDamage(damage,aggro_power,self,stagger_chance,damage_type)
+								else: #appareantly the victim is showing his back or flanks, extra damage
+									victim.takeDamage(damage_flank,aggro_power,self,stagger_chance,damage_type)
