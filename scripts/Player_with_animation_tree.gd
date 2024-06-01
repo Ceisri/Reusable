@@ -613,12 +613,14 @@ func forceMovement()->void:
 	if anim_tree != null:
 		if anim_tree.get("parameters/skill/active") and anim_tree.active == true:
 			if state != "guard" or state != "guard walk":
-				moveDuringAnimation(3)
+				moveDuringAnimation(1.5)
 				print("active.")
-#		else:
-#			print("stopped.")
-#	else:
-#		print("anim_tree not found")
+
+		else:
+			print("stopped.")
+
+	else:
+		print("anim_tree not found")
 var state: String = "idle"
 func matchAnimationStates()-> void:
 	forceMovement()
@@ -661,7 +663,7 @@ func matchAnimationStates()-> void:
 							pass
 #_________________________________________walking states____________________________________________
 				"walk":
-					can_walk = true
+#					can_walk = true
 					is_aiming = false
 					if is_in_combat:
 						match weapon_type:
@@ -944,7 +946,6 @@ func skills(slot)-> void:
 							var button = inventory_grid.get_node("InventorySlot" + str(index))
 							button = inventory_grid.get_node("InventorySlot" + str(index))
 							autoload.consumeRedPotion(self,button,inventory_grid,true,slot.get_parent())				
-
 				else:
 					anim_tree.active = false
 					anim_tree.set("parameters/skill/active",false)
@@ -954,9 +955,9 @@ func moveDuringAnimation(speed):
 			horizontal_velocity = direction * speed
 			movement_speed = speed
 		elif current_race_gender.can_move == false:
-			if !is_walking:
-				horizontal_velocity = direction * 0
-				movement_speed = 0
+			horizontal_velocity = direction * 0
+			movement_speed = 0
+				
 var sprint_animation_speed : float = 1
 func animations():
 #on water
@@ -1112,15 +1113,13 @@ func pushEnemyAway(push_distance, enemy, push_speed):
 	var acceleration_time = push_speed / 2.0
 	var deceleration_distance = motion.length() * acceleration_time * 0.5
 	var collision = enemy.move_and_collide(motion)
-	if collision: #this checks the dipshit hits a wall after you punch him 
-		#the dipshit takes damage from being pushed into something
-		#afterwards he is pushed back...like ball bouncing back but made of meat
-		enemy.takeDamage(10, 100, self, 1, "bleed")
+	if collision: #this checks the enemy hits a wall after you punch him 
+		enemy.takeDamage(10, 100, self, 1, "bleed")#the enemy takes damage from being pushed into something
 		# Calculate bounce-back direction
 		var normal = collision.normal
 		var bounce_motion = -4 * normal * normal.dot(motion) + motion
 		# Move the enemy slightly away from the wall to avoid sticking
-		enemy.translation += normal * 0.1 * collision.travel
+		enemy.translation += normal * 0.1 * collision.travel#afterwards he is pushed back
 		# Tween the bounce-back motion
 		tween.interpolate_property(enemy, "translation", enemy.translation, enemy.translation + bounce_motion * push_distance, acceleration_time, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
 		tween.start()
@@ -2954,7 +2953,7 @@ func convertStats():
 	total_instinct = extra_instinct + instinct
 
 	total_force = extra_force + force
-	total_strength = extra_strength + strength
+	total_strength = extra_strength + strength 
 	total_impact = extra_impact + impact
 	total_ferocity = extra_ferocity + ferocity
 	total_fury = extra_fury + fury
@@ -2994,7 +2993,7 @@ func convertStats():
 	run_speed = base_run_speed * total_agility
 	total_guard_dmg_absorbition = extra_guard_dmg_absorbition + guard_dmg_absorbition
 	
-	stagger_chance = max(0, (total_impact - 1.00) * 0.45) +  max(0, (total_ferocity - 1.00) * 0.005) 
+	stagger_chance = max(0, (total_impact - 1.00) * 0.45) +  max(0, (total_ferocity - 1.00) * 0.005)# + 200 #remove the 100 after testing
 	
 func flankDamageMath():
 	flank_dmg = (base_flank_dmg * (total_ferocity + total_accuracy)) 

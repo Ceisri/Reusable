@@ -3,7 +3,6 @@ extends KinematicBody
 onready var threat_system: Node = $Threat
 onready var animation =  $Mesh/human/AnimationPlayer
 onready var anim_tree = $AnimationTree
-
 var vertical_velocity : Vector3 = Vector3()
 var movement: Vector3 = Vector3()
 var horizontal_velocity : Vector3 = Vector3()
@@ -20,6 +19,9 @@ func _ready()->void:
 	process.start(0.08)
 
 func process()->void:
+	if health <=0:
+		if has_died == false:
+			death_time = 3.958
 	moveAside()
 	matchState()
 	autoload.entityGravity(self)
@@ -35,31 +37,36 @@ func displayThreatInfo(label):
 	
 	
 var state = autoload.state_list.wander
+var stagger_time:float  = 0
+var death_time:float  = 0
+var has_died:bool = false
 func matchState()->void:
 	match state:
 		autoload.state_list.idle:
 			animation.play("idle",0.3)
 		autoload.state_list.wander:
-			$Wandering.wander()# animations are inside 
-			forceDirectionChange()
+			if health >0:
+				$Wandering.wander()# animations are inside 
+				forceDirectionChange()
 		autoload.state_list.curious:
 			lookTarget()
 		autoload.state_list.engage:
-			lookTarget()
-			var  distance_to_target = findDistanceTarget()
-			if distance_to_target != null:
-				if distance_to_target > 2:
-					followTarget(false)
-					animation.play("walk combat",0.3)
-				else:
-					if random_atk < 0.25:  # 25% chance
-						animation.play("triple slash", 0.25)
-					elif random_atk < 0.50:  # 25% chance
-						animation.play("chop sword", 0.3)
-					elif random_atk < 0.75:  # 25% chance
-						animation.play("heavy swing", 0.3)
-					else:  # 25% chance
-						animation.play("spin", 0.3)
+			if health >0:
+				lookTarget()
+				var  distance_to_target:float  = findDistanceTarget()
+				if distance_to_target != null:
+					if distance_to_target > 1.4:
+						followTarget(false)
+						animation.play("walk combat",0.3)
+					else:
+						if random_atk < 0.25:  # 25% chance
+							animation.play("triple slash", 0.25)
+						elif random_atk < 0.50:  # 25% chance
+							animation.play("chop sword", 0.3)
+						elif random_atk < 0.75:  # 25% chance
+							animation.play("heavy swing", 0.3)
+						else:  # 25% chance
+							animation.play("spin", 0.3)
 		autoload.state_list.orbit:
 			if orbit_time > 0:
 				orbit_time -= 0.5
@@ -68,8 +75,17 @@ func matchState()->void:
 				animation.play("strafe",0.3)
 			else:
 				state = autoload.state_list.engage
-		autoload.state_list.decimate:
-			followTarget(true)
+		autoload.state_list.staggered:
+			animation.play("staggered",0.2)
+		autoload.state_list.dead:
+			if death_time >0:
+				death_time -= 1 * get_physics_process_delta_time()
+				animation.play("death",0.2)
+				if death_time <= 0:
+					has_died = true
+			else:	
+				animation.play("dead",0.2)
+
 onready var wall_check_ray:RayCast = $RayStraightLonger
 onready var check_floor_ray: RayCast = $RayCheckFloor
 onready var tween = $Tween
@@ -165,7 +181,6 @@ func takeThreat(aggro_power,instigator)->void:
 	state = autoload.state_list.engage
 	target.threat += aggro_power
 func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type)->void:
-	state = autoload.state_list.engage
 	take_damage_audio.play()
 	var random = randf()
 	var damage_to_take = damage
@@ -236,7 +251,7 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type)->v
 		text.status = "Deflected"
 	else:
 		if random < stagger_chance - stagger_resistance:
-			staggered += 0.5
+			state = autoload.state_list.staggered
 			text.status = "Staggered"
 
 	health -= damage_to_take	
@@ -244,6 +259,10 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type)->v
 	text.amount =round(damage_to_take * 100)/ 100
 	text.state = damage_type
 	take_damage_view.add_child(text)
+	if health <= 0:
+		state =autoload.state_list.dead
+
+		
 #stats______________________________________________________________________________________________
 var entity_name = "Demon"
 var level: int = 100
@@ -493,3 +512,9 @@ func isFacingSelf(enemy: Node, threshold: float) -> bool:
 
 func changeAttackType()->void:
 	random_atk = rand_range(0,1)
+func die():
+	death_time = 0
+	has_died = true 
+	state = autoload.state_list.dead
+func staggeredOver():
+	state = autoload.state_list.wander

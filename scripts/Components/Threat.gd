@@ -128,7 +128,6 @@ func findFifthThreat() -> ThreatManagement:
 	var third_target : ThreatManagement = null
 	var fourth_target : ThreatManagement = null
 	var fifth_target : ThreatManagement = null
-	
 	for assailant in targets:
 		if assailant.threat > highest_threat:
 			fifth_target = fourth_target
@@ -176,7 +175,6 @@ func getBestFive():
 	var fourth = findFourthThreat()
 	var fifth = findFifthThreat()
 	var threat_info = []  # Array to store player threat information
-
 	for assailant in [first, second, third, fourth, fifth]:# Append the threat information of the first, second, third, fourth, and fifth assailants
 		if is_instance_valid(assailant):
 			if assailant != null and assailant.player != null:
@@ -187,10 +185,9 @@ func getBestFive():
 						var player_name = player.entity_name
 						var player_id = player.get_instance_id()
 						threat_info.append(player_name + " ID: " + str(player_id) + " threat: " + str(assailant.threat))
-
 	return threat_info
 
-func getThreatInfo() -> Array:
+func getThreatInfo() -> Array:#use this for displaying data in labels
 	var threat_info = []  # Array to store player threat information
 	for assailant in targets:
 		if assailant != null and assailant.player != null:
@@ -200,13 +197,11 @@ func getThreatInfo() -> Array:
 			threat_info.append(player_name + " ID: " + str(player_id) + " threat: " + str(assailant.threat))
 	return threat_info
 	
-func loseThreat():
+func loseThreat()->void: #call this function every few ticks to lose threat from entities that are too far away
 	# Get the position of the parent node
 	var parent_position = get_parent().global_transform.origin
-	# Define distance ranges and their corresponding aggro reduction values
-	var close_range = 10.0  # Adjust as needed
-	var middle_range = 20.0  # Adjust as needed
-	# Decrease the aggro of all targets based on distance to parent
+	var close_range:float = 10.0 
+	var middle_range:float = 35.0  
 	for assailant in targets:
 		if assailant != null and assailant.player != null:
 			# Calculate distance between assailant and parent node
@@ -215,13 +210,23 @@ func loseThreat():
 					if assailant.player != null:
 						var distance = assailant.player.global_transform.origin.distance_to(parent_position)
 						# Calculate reduction based on distance range
-						var reduction = 0
+						var reduction:int = 0#Decrease the aggro of all targets based on distance to parent
 						if distance <= close_range:
 							reduction = 0
-						elif distance <= middle_range:
+						elif distance >= middle_range:
 							reduction = 1
-						else:
-							reduction = 3
+						elif distance > middle_range * 1.5:
+							reduction = 25
 						# Ensure the reduction doesn't exceed the current threat
 						assailant.threat = max(0, assailant.threat - reduction)
-
+	var all_zero_threat = true
+	for assailant in targets:
+		if assailant.threat > 0:#Check if all targets have zero threat
+			all_zero_threat = false
+			break
+	if get_parent().health > 0:
+		if get_parent().state != autoload.state_list.staggered:
+			if all_zero_threat: #if no player or entity  has any threat towards the parent of this node, return to a harmless state
+				get_parent().state = autoload.state_list.wander
+			else: #else engage the threatening player or entity 
+				get_parent().state = autoload.state_list.engage

@@ -64,7 +64,8 @@ func shot():
 	for victim in enemies:
 		if victim.is_in_group("enemy"):
 			if victim != self:
-				player.pushEnemyAway(0.3, victim,0.25)
+				if victim.state != autoload.state_list.dead:
+					player.pushEnemyAway(0.3, victim,0.25)
 				if player.resolve < player.max_resolve:
 					player.resolve += player.ferocity + 1.25
 				if victim.has_method("takeDamage"):
