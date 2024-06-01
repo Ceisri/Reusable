@@ -1,19 +1,59 @@
 extends Node
 
-
-
-
+#____________________________________________Perforance_____________________________________________
+var entity_tick_rate: float = 0.06
+#____________________________________________Enumerators____________________________________________
 enum state_list{
 	idle,
-	curious,
-	engage,
-	orbit,
-	decimate,
+	walk,
+	run,
+	sprint,
+	climb,
+	vault,
+	swim,
+	slide,
+	fall,
+	
+	base_attack,
+	guard_attack,
+	double_attack,
+	sprint_attack,
+	run_attack,
 	guard,
+	
+	healing,
+	
+	
+
+	curious,# for AI
+	engage, # for AI
+	orbit,# for AI
+	decimate,# for AI
+	
 	guard_walk,
-	wander,
+	wander,# for AI
 	staggered,
-	dead}
+	dead,
+	skill1,
+	skill2,
+	skill3,
+	skill4,
+	skill5,
+	skill6,
+	skill7,
+	skill8,
+	skill9,
+	skill0,
+	skillQ,
+	skillE,
+	skillR,
+	skillT,
+	skillF,
+	skillG,
+	skillY,
+	skillH,
+	skillV,
+	skillB}
 
 
 
