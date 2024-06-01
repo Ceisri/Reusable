@@ -10,12 +10,10 @@ var strafe_dir: Vector3 = Vector3.ZERO
 var strafe: Vector3 = Vector3.ZERO
 # Condition States
 var is_attacking = bool()
-var is_rolling = bool()
 var is_walking = bool()
 var is_running = bool()
 
-onready var l_click_slot = $UI/GUI/SkillBar/GridContainer/LClickSlot
-onready var r_click_slot = $UI/GUI/SkillBar/GridContainer/RClickSlot
+
 
 func _ready()->void:
 	loadPlayerData()
@@ -74,7 +72,7 @@ func _on_3FPS_timeout()->void:
 	switchShoulder()
 	necromant.updateCooldownLabel()
 func _physics_process(delta: float) -> void:
-	$Debug.text = state
+	$Debug.text = str(state)
 #	displayClock()
 	convertStats()
 	ChopTree()
@@ -207,10 +205,10 @@ func climbing()-> void:
 					is_climbing = true
 					is_swimming = false
 					if not head_ray.is_colliding() and not is_wall_in_range:#vaulting
-						state = "vaulting"
+						state = autoload.state_list.vault
 						vertical_velocity = Vector3.UP * 3 
 					elif not is_wall_in_range:#normal climb
-						state = "climbing"
+						state = autoload.state_list.climb
 						vertical_velocity = Vector3.UP * 3 
 					else:
 						vertical_velocity = Vector3.UP * (strength * 1.25 + (agility * 0.15))
@@ -256,7 +254,7 @@ var fall_distance:float = 0
 var minimum_fall_distance:float = 0.5
 var old_vel : float = 0.0
 func fallDamage() -> void:
-	if state == "fall" and !is_climbing and !is_on_wall():
+	if state ==  autoload.state_list.fall and !is_climbing and !is_on_wall():
 		fall_distance += 0.02
 		if fall_distance > minimum_fall_distance: 
 			fall_damage += (2.5 +(0.01 * max_health)) / agility
@@ -616,7 +614,7 @@ var fake_root_motion_movement: float = 1.5
 func forceMovement()->void:
 	if anim_tree != null:
 		if anim_tree.get("parameters/skill/active") and anim_tree.active == true:
-			if state != "guard" or state != "guard walk":
+			if state != autoload.state_list.guard or state != autoload.state_list.guard_walk:
 				moveDuringAnimation(fake_root_motion_movement)
 #				print("active.")
 #
@@ -625,7 +623,7 @@ func forceMovement()->void:
 #
 #	else:
 #		print("anim_tree not found")
-var state: String = "idle"
+var state = autoload.state_list.idle
 func matchAnimationStates()-> void:
 	forceMovement()
 	if current_race_gender == null or animation == null:
@@ -637,15 +635,15 @@ func matchAnimationStates()-> void:
 		
 			match state:
 #_______________________________attacking states____________________________________________________
-				"slide":
+				autoload.state_list.slide:
 					var slide_blend = 0.3
-					animation.play("slide",slide_blend)
+					animation.play("guard magic",slide_blend)
 					var slide_mov_speed = 15 + slide_blend + rand_range(3, 6)
 					if !is_on_wall():
 						horizontal_velocity = direction * slide_mov_speed
 					movement_speed = int(slide_mov_speed)
 					can_walk = true
-				"base attack":
+				autoload.state_list.base_attack:
 					if weapon_type == bow:
 						can_walk = false
 					else:
@@ -655,19 +653,17 @@ func matchAnimationStates()-> void:
 					anim_tree.set("parameters/skill/active",false)
 					anim_tree.active = false
 					current_race_gender.resetAllCombos()
-				"guard":
+				autoload.state_list.guard:
 					var slot = $UI/GUI/SkillBar/GridContainer/RClickSlot/Icon
 					skills(slot)
-				"double attack":
-					current_race_gender.resetAllCombos()
+				autoload.state_list.double_attack:
 					match weapon_type:
 						fist:
 							pass
 						sword:
 							pass
-#_________________________________________walking states____________________________________________
-				"walk":
-#					can_walk = true
+#________________________________________movement states____________________________________________
+				autoload.state_list.walk:
 					is_aiming = false
 					if is_in_combat:
 						match weapon_type:
@@ -681,18 +677,18 @@ func matchAnimationStates()-> void:
 								animation.play("walk bow",0,1)
 					else:
 						animation.play("walk",0,1)
-				"sprint":
+				autoload.state_list.sprint:
 					anim_tree.set("parameters/skill/active",false)
 					current_race_gender.resetAllCombos()
 					animation.play("run cycle", 0, sprint_animation_speed * agility)
-				"run":
+				autoload.state_list.run:
 					anim_tree.set("parameters/skill/active",false)
 					current_race_gender.resetAllCombos()
 					animation.play("run cycle",0,agility)
-				"climbing":
+				autoload.state_list.climb:
 					anim_tree.set("parameters/skill/active",false)
 					animation.play("climb cycle",blend, strength)
-				"idle":
+				autoload.state_list.idle:
 					is_aiming = false
 					current_race_gender.resetAllCombos()
 					if is_in_combat:
@@ -709,73 +705,74 @@ func matchAnimationStates()-> void:
 						anim_tree.set("parameters/skill/active",false)
 						animation.play("idle",0.2,1)
 #skillbar stuff_____________________________________________________________________________________
-				"test1":
+				autoload.state_list.skill1:
 					var slot = $UI/GUI/SkillBar/GridContainer/Slot1/Icon
 					skills(slot)
-				"test2":
+				autoload.state_list.skill2:
 					var slot = $UI/GUI/SkillBar/GridContainer/Slot2/Icon
 					skills(slot)
-				"test3":
+				autoload.state_list.skill3:
 					var slot = $UI/GUI/SkillBar/GridContainer/Slot3/Icon
 					skills(slot)
-				"test4":
+				autoload.state_list.skill4:
 					var slot = $UI/GUI/SkillBar/GridContainer/Slot4/Icon
 					skills(slot)
-				"test5":
+				autoload.state_list.skill5:
 					var slot = $UI/GUI/SkillBar/GridContainer/Slot5/Icon
 					skills(slot)
-				"test6":
+				autoload.state_list.skill6:
 					var slot = $UI/GUI/SkillBar/GridContainer/Slot6/Icon
 					skills(slot)
-				"test7":
+				autoload.state_list.skill7:
 					var slot = $UI/GUI/SkillBar/GridContainer/Slot7/Icon
 					skills(slot)
-				"test8":
+				autoload.state_list.skill8:
 					var slot = $UI/GUI/SkillBar/GridContainer/Slot8/Icon
 					skills(slot)
-				"test9":
+				autoload.state_list.skill9:
 					var slot = $UI/GUI/SkillBar/GridContainer/Slot9/Icon
 					skills(slot)
-				"test0":#Bug found, for some reason skills at this slot don't work when pressing the key 0, rebinding it again even to 0 or any other key fixes the issue
+				autoload.state_list.skill0:
 					var slot = $UI/GUI/SkillBar/GridContainer/Slot10/Icon
 					skills(slot)
-				"testQ":
+				autoload.state_list.skillQ:
 					var slot = $UI/GUI/SkillBar/GridContainer/Slot11/Icon
 					skills(slot)
-				"testE":
+				autoload.state_list.skillE:
 					var slot = $UI/GUI/SkillBar/GridContainer/Slot12/Icon
 					skills(slot)
-				"testR":
+				autoload.state_list.skillR:
 					var slot = $UI/GUI/SkillBar/GridContainer/Slot13/Icon
 					skills(slot)
-				"testT":
+				autoload.state_list.skillT:
 					var slot = $UI/GUI/SkillBar/GridContainer/Slot14/Icon
 					skills(slot)
-				"testF":
+				autoload.state_list.skillF:
 					var slot = $UI/GUI/SkillBar/GridContainer/Slot15/Icon
 					skills(slot)
-				"testG":
+				autoload.state_list.skillG:
 					var slot = $UI/GUI/SkillBar/GridContainer/Slot16/Icon
 					skills(slot)
-				"testY":
+				autoload.state_list.skillY:
 					var slot = $UI/GUI/SkillBar/GridContainer/Slot17/Icon
 					skills(slot)
-				"testH":
+				autoload.state_list.skillH:
 					var slot = $UI/GUI/SkillBar/GridContainer/Slot18/Icon
 					skills(slot)
-				"testV":
+				autoload.state_list.skillV:
 					var slot = $UI/GUI/SkillBar/GridContainer/Slot19/Icon
 					skills(slot)
-				"testB":
+				autoload.state_list.skillB:
 					var slot = $UI/GUI/SkillBar/GridContainer/Slot20/Icon
 					skills(slot)
 onready var necromant = $UI/GUI/SkillTrees/Background/Necromant
 
 onready var cyclone_icon = $UI/GUI/SkillTrees/Background/Test/skill15/Icon
 onready var overhead_icon = $UI/GUI/SkillTrees/Background/Test/skill8/Icon
+
+onready var l_click_slot = $UI/GUI/SkillBar/GridContainer/LClickSlot
+onready var r_click_slot = $UI/GUI/SkillBar/GridContainer/RClickSlot
 func skills(slot)-> void:
-	var l_click_slot: TextureButton = $UI/GUI/SkillBar/GridContainer/LClickSlot
-	var r_click_slot: TextureButton = $UI/GUI/SkillBar/GridContainer/RClickSlot
 	if slot != null:
 			if slot.texture != null:
 				if slot.texture.resource_path == "res://UI/graphics/SkillIcons/rush.png":
@@ -794,7 +791,7 @@ func skills(slot)-> void:
 					necromant.arcaneBlast()
 #melee
 				elif slot.texture.resource_path == autoload.punch.get_path():
-					animation.play("combo fist",0.3,melee_atk_speed)
+					animation.play("combo fist",0.3,melee_atk_speed + 0.15)
 					moveDuringAnimation(2)
 					
 					current_race_gender.fury_strike_combo =0
@@ -803,10 +800,10 @@ func skills(slot)-> void:
 					current_race_gender.fury_strike_combo =0
 					match weapon_type:
 						sword:
-							animation.play("combo sword",0.3,melee_atk_speed)
+							animation.play("combo sword",0.3,melee_atk_speed+ 0.15)
 							moveDuringAnimation(1)
 						dual_swords:
-							animation.play("combo 2x",0.3,melee_atk_speed)
+							animation.play("combo 2x",0.3,melee_atk_speed+ 0.2)
 							moveDuringAnimation(1.5)
 				elif slot.texture.resource_path == autoload.guard.get_path():
 					pass
@@ -825,13 +822,13 @@ func skills(slot)-> void:
 											anim_tree.set("parameters/sword_gate/blend_amount",-1)
 											anim_tree.set("parameters/sword_skills/blend_amount",-1)
 											anim_tree.set("parameters/Overhead_strike_grip/blend_amount",0)
-											anim_tree.set("parameters/atk_speed/scale",melee_atk_speed)
+											anim_tree.set("parameters/atk_speed/scale",melee_atk_speed+ 0.15)
 											anim_tree.set("parameters/skill/active",true)
 										dual_swords:
 											anim_tree.set("parameters/sword_gate/blend_amount",-1)
 											anim_tree.set("parameters/sword_skills/blend_amount",-1)
 											anim_tree.set("parameters/Overhead_strike_grip/blend_amount",1)
-											anim_tree.set("parameters/atk_speed/scale",melee_atk_speed)
+											anim_tree.set("parameters/atk_speed/scale",melee_atk_speed+ 0.15)
 											anim_tree.set("parameters/skill/active",true)
 											fake_root_motion_movement = 0.8
 							else:
@@ -847,7 +844,7 @@ func skills(slot)-> void:
 						is_in_combat = true
 						anim_tree.set("parameters/sword_gate/blend_amount",-1)
 						anim_tree.set("parameters/sword_skills/blend_amount",1)
-						anim_tree.set("parameters/atk_speed/scale",melee_atk_speed)
+						anim_tree.set("parameters/atk_speed/scale",melee_atk_speed+ 0.15)
 						anim_tree.set("parameters/skill/active",true)
 						anim_tree.set("parameters/atk_range_cast/blend_amount",-1)#-1 for melee,0 for ranged,1 for magic casters
 					else:
@@ -862,7 +859,7 @@ func skills(slot)-> void:
 								anim_tree.set("parameters/sword_gate/blend_amount",-1)
 								anim_tree.set("parameters/skill/active",true)
 								anim_tree.set("parameters/static move/blend_amount",0)#0 is for skills with movement 1 for static ones
-								anim_tree.set("parameters/atk_speed/scale",melee_atk_speed)
+								anim_tree.set("parameters/atk_speed/scale",melee_atk_speed+ 0.15)
 								anim_tree.set("parameters/skill static/active",false)
 								anim_tree.set("parameters/atk_range_cast/blend_amount",-1)#-1 for melee,0 for ranged,1 for magic casters
 								fake_root_motion_movement = 3
@@ -881,7 +878,7 @@ func skills(slot)-> void:
 						is_in_combat = true
 						anim_tree.set("parameters/sword_skills3/blend_amount",-1)#0 is a battly cry like animation,-1 for parry
 						anim_tree.set("parameters/static move/blend_amount",1)#0 is for skills with movement 1 for static ones
-						anim_tree.set("parameters/atk_speed/scale",melee_atk_speed)
+						anim_tree.set("parameters/atk_speed/scale",melee_atk_speed+ 0.15)
 						anim_tree.set("parameters/skill static/active",true)
 						anim_tree.set("parameters/skill/active",false)
 						anim_tree.set("parameters/atk_range_cast/blend_amount",-1)#-1 for melee,0 for ranged,1 for magic casters
@@ -895,7 +892,7 @@ func skills(slot)-> void:
 							anim_tree.set("parameters/sword_gate/blend_amount",0)
 							anim_tree.set("parameters/static move/blend_amount",0)#0 is for skills with movement 1 for static ones
 							anim_tree.set("parameters/sword_gate/blend_amount",0)#0 is sword_defensive
-							anim_tree.set("parameters/atk_speed/scale",melee_atk_speed)
+							anim_tree.set("parameters/atk_speed/scale",melee_atk_speed+ 0.15)
 							anim_tree.set("parameters/skill static/active",false)
 							anim_tree.set("parameters/skill/active",true)
 							anim_tree.set("parameters/atk_range_cast/blend_amount",-1)#-1 for melee,0 for ranged,1 for magic casters
@@ -909,7 +906,7 @@ func skills(slot)-> void:
 							anim_tree.set("parameters/skcheck2-3/blend_amount",1)
 							anim_tree.set("parameters/static move/blend_amount",0)#0 is for skills with movement 1 for static ones
 							anim_tree.set("parameters/sword_gate/blend_amount",1)
-							anim_tree.set("parameters/atk_speed/scale",melee_atk_speed)
+							anim_tree.set("parameters/atk_speed/scale",melee_atk_speed+ 0.15)
 							anim_tree.set("parameters/skill static/active",false)
 							anim_tree.set("parameters/skill/active",true)
 							anim_tree.set("parameters/atk_range_cast/blend_amount",-1)#-1 for melee,0 for ranged,1 for magic casters
@@ -923,27 +920,30 @@ func skills(slot)-> void:
 							is_in_combat = true
 							anim_tree.set("parameters/sword_skills3/blend_amount",0)#0 is a battly cry like animation,-1 for parry
 							anim_tree.set("parameters/static move/blend_amount",1)#0 is for skills with movement 1 for static ones
-							anim_tree.set("parameters/atk_speed/scale",melee_atk_speed)
+							anim_tree.set("parameters/atk_speed/scale",melee_atk_speed+ 0.15)
 							anim_tree.set("parameters/skill static/active",true)
 							anim_tree.set("parameters/skill/active",false)
 							anim_tree.set("parameters/atk_range_cast/blend_amount",-1)#-1 for melee,0 for ranged,1 for magic casters
 #ranged bow skills
 				elif slot.texture.resource_path == autoload.quick_shot.get_path():
-					is_aiming = true
-					current_race_gender.can_move = false
-					if is_walking == false:
-						anim_tree.active = false
-						anim_tree.set("parameters/skill/active",false)
-						animation.play("quick shot",0.3,ranged_atk_speed)
-						moveDuringAnimation(0)
+					if weapon_type == bow:
+						is_aiming = true
+						can_walk = false
+						current_race_gender.can_move = false
+						if is_walking == false:
+							anim_tree.active = false
+							anim_tree.set("parameters/skill/active",false)
+							animation.play("quick shot",0.3,ranged_atk_speed)
+							moveDuringAnimation(0)
 				elif slot.texture.resource_path == autoload.full_draw.get_path():
-					is_aiming = true
-					can_walk = false
-					anim_tree.active = false
-					current_race_gender.can_move = false
-					anim_tree.set("parameters/skill/active",false)
-					animation.play("full draw",0.3,ranged_atk_speed)
-					moveDuringAnimation(0)
+					if weapon_type == bow:
+						is_aiming = true
+						can_walk = false
+						anim_tree.active = false
+						current_race_gender.can_move = false
+						anim_tree.set("parameters/skill/active",false)
+						animation.play("full draw",0.3,ranged_atk_speed)
+						moveDuringAnimation(0)
 				elif slot.texture.resource_path == autoload.base_attack_necromant.get_path():
 					necromant.baseAttack() # placeholder
 				elif slot.texture.resource_path == autoload.necro_guard.get_path():
@@ -978,90 +978,82 @@ var sprint_animation_speed : float = 1
 func animations():
 #on water
 	if is_swimming:
-		if is_walking:
-			state = "swim"
-		else:
-			state = "idle water"
+		state = autoload.state_list.swim
+
 #on land
 	elif dodge_animation_duration > 0 and resolve >0:
 		resolve -= 0.2
-		state = "slide"
+		state = autoload.state_list.slide
 
 	elif not is_on_floor() and not is_climbing and not is_swimming:
-		state = "fall"
+		state = autoload.state_list.fall
 #attacks________________________________________________________________________
 	elif double_atk_count == 2 and !cursor_visible: 
-		state = "double attack"
+		state = autoload.state_list.double_attack
 	elif Input.is_action_pressed("rclick") and Input.is_action_pressed("attack") and !cursor_visible:
-		state = "guard attack"
+		state = autoload.state_list.guard_attack
 	elif Input.is_action_pressed("rclick") and !cursor_visible and is_in_combat:
-		if weapon_type != bow: 
-			if !is_walking:
-				state = "guard"
-			else:
-				state = "guard walk"
-		else:
-			state = "guard"
+		state = autoload.state_list.guard
 	elif Input.is_action_pressed("attack") and Input.is_action_pressed("run") and !cursor_visible: 
-		state = "run attack"
+		state = autoload.state_list.run_attack
 	elif Input.is_action_pressed("attack") and Input.is_action_pressed("sprint") and !cursor_visible: 
-		state = "sprint attack"
+		state = autoload.state_list.sprint_attack
 	elif Input.is_action_pressed("attack") and !cursor_visible:
-		state = "base attack"
+		state = autoload.state_list.base_attack
 		can_walk = false
 #skills put these below the walk elif statment in case of keybinding bugs, as of now it works so no need
 	elif Input.is_action_pressed("1"):
-		state = "test1"
+		state = autoload.state_list.skill1
 	elif Input.is_action_pressed("2"):
-		state = "test2"
+		state = autoload.state_list.skill2
 	elif Input.is_action_pressed("3"):
-		state = "test3"
+		state = autoload.state_list.skill3
 	elif Input.is_action_pressed("4"):
-		state = "test4"
+		state = autoload.state_list.skill4
 	elif Input.is_action_pressed("5"):
-		state = "test5"
+		state = autoload.state_list.skill5
 	elif Input.is_action_pressed("6"):
-		state = "test6"
+		state = autoload.state_list.skill6
 	elif Input.is_action_pressed("7"):
-		state = "test7"
+		state = autoload.state_list.skill7
 	elif Input.is_action_pressed("8"):
-		state = "test8"
+		state = autoload.state_list.skill8
 	elif Input.is_action_pressed("9"):
-		state = "test9"
+		state = autoload.state_list.skill9
 	elif Input.is_action_pressed("0"):
-		state = "test0"
+		state = autoload.state_list.skill0
 	elif Input.is_action_pressed("Q"):
-		state = "testQ"
+		state = autoload.state_list.skillQ
 	elif Input.is_action_pressed("E"):
-		state = "testE"
+		state = autoload.state_list.skillE
 	elif Input.is_action_pressed("R"):
-		state = "testR"
+		state = autoload.state_list.skillR
 	elif Input.is_action_pressed("F"):
-		state = "testF"
+		state = autoload.state_list.skillF
 	elif Input.is_action_pressed("R"):
-		state = "testR"
+		state = autoload.state_list.skillR
 	elif Input.is_action_pressed("T"):
-		state = "testT"
+		state = autoload.state_list.skillT
 	elif Input.is_action_pressed("G"):
-		state = "testG"
+		state = autoload.state_list.skillG
 	elif Input.is_action_pressed("H"):
-		state = "testH"
+		state = autoload.state_list.skillH
 	elif Input.is_action_pressed("Y"):
-		state = "testY"
+		state = autoload.state_list.skillY
 	elif Input.is_action_pressed("V"):
-		state = "testV"
+		state = autoload.state_list.skillV
 	elif Input.is_action_pressed("B"):
-		state = "testB" 
+		state = autoload.state_list.skillB
 #_______________________________________________________________________________
 		
 	elif is_sprinting == true:
-			state = "sprint"
+			state =  autoload.state_list.sprint
 			jump_animation_duration = 0 
 	elif is_running:
-			state = "run"
+			state = autoload.state_list.run
 			jump_animation_duration = 0 
 	elif is_walking:
-			state = "walk"
+			state =  autoload.state_list.walk
 			#anim_tree.active = false
 			jump_animation_duration = 0 
 	elif Input.is_action_pressed("forward") or Input.is_action_pressed("left") or  Input.is_action_pressed("right") or  Input.is_action_pressed("backward"):
@@ -1076,18 +1068,18 @@ func animations():
 
 	
 	elif Input.is_action_pressed("crouch"):
-		state = "crouch" 
+		state =  autoload.state_list.crouch
 		jump_animation_duration = 0 
 	
 	elif jump_animation_duration != 0:
-		state = "jump"
+		state =  autoload.state_list.jump
 	else:
-		state = "idle"
+		state =  autoload.state_list.idle
 
 #_______________________________________________Combat______________________________________________
 
 func dodgeIframe():#apparently combat is too shitty without iframes, more realistic but as boring as watching olympic wrestling or judo, fucking utter ridiculous shit
-	if state == "slide":
+	if state == autoload.state_list.slide:
 		set_collision_layer(6)  # Set to the desired collision layer
 		set_collision_mask(6)   # Set to the desired collision mask
 	else:
@@ -1317,7 +1309,7 @@ func takeHealing(healing,healer):
 	health += healing
 	var text = floatingtext_damage.instance()
 	text.amount =round(healing * 100)/ 100
-	text.state = "healing"
+	text.state = autoload.state_list.healing
 	take_damage_view.add_child(text)
 #__________________________________Combat UI____________________________________
 
@@ -1955,6 +1947,7 @@ func _on_FPS_pressed():
 	# Set target FPS
 	if fps_mapping.has(current_fps):
 		Engine.set_target_fps(fps_mapping[current_fps])
+
 
 #_____________________________________Display Time/Location______________________________
 #onready var time_label = $UI/GUI/Minimap/Time

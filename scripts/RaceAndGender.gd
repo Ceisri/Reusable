@@ -637,7 +637,7 @@ func overheadStrike()->void:
 
 var fury_strike_combo: int = 0
 func commitToFuryStrikeSkill():
-	player.fury_strike_duration = 100
+	pass
 func resetFuryStrikeSkill():
 	player.anim_tree.active = false
 	player.necromant.furyStrike()
