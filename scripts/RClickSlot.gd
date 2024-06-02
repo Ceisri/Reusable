@@ -3,10 +3,10 @@ extends TextureButton
 
 onready var player: KinematicBody = $"../../../../.."
 onready var icon: TextureRect = $Icon
-onready var necromant: Node = $"../../../SkillTrees/Background/Necromant"
+onready var all_skills: Node = $"../../../SkillTrees"
 
 func switchAttackIcon():
-	if necromant.necro_switch == true:
+	if all_skills.necro_switch == true:
 		icon.texture = autoload.necro_guard
 	else:
 		match player.weapon_type:

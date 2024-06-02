@@ -17,7 +17,7 @@ onready var bow: PackedScene = preload("res://Equipment/bows/iron/bow.tscn")
 
 func _ready():	
 	player.animation = $AnimationPlayer
-	#player.anim_tree = $AnimationTree
+	player.anim_tree = $AnimationTree
 	$AnimationTree.active = false
 	loadPlayerData()
 	switchSkin()
@@ -616,9 +616,9 @@ func forcedMovement(speed):
 	if !player.is_on_wall():
 		player.horizontal_velocity = player.direction * 10
 func overheadStrikeCD():
-#	player.anim_tree.active = false
-	player.overhead_slash_duration = false
-	player.necromant.overheadStrike()
+	player.resolve -= autoload.overhead_slash_cost
+	#player.overhead_slash_duration = false
+	player.all_skills.overheadStrike()
 	stopSkill()
 func overheadStrike()->void:
 	fury_strike_combo = 0
@@ -643,7 +643,7 @@ var fury_strike_combo: int = 0
 
 func FuryStrikeCD():
 #	player.anim_tree.active = false
-	player.necromant.furyStrike()
+	player.all_skills.furyStrike()
 	stopSkill()
 func furyStrike()->void:
 	fury_strike_combo += 1
@@ -671,21 +671,14 @@ func pomelStrike()->void:
 	var punishment_damage_type :String = "blunt"
 	var aggro_power = damage + 55
 	var enemies = sword_area.get_overlapping_bodies()
-	resolveCost(25)
 	dealDMG(enemies,null,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank)
 
-
-func resolveCost(cost):
-	if player.resolve > cost:
-		player.resolve -= cost
-func resetAllCombos():
-	fury_strike_combo = 0
 
 onready var melee_aoe: Area = $MeleeAOE
 func cycloneCD():
 	player.resolve -= autoload.cyclone_cost
-	player.necromant.cyclone()
-	player.cyclone_duration = false
+	player.all_skills.cyclone()
+	#player.cyclone_duration = false
 func cyclone() -> void:
 	var damage_type: String = "slash"
 	var base_damage: float = autoload.cyclone_damage + player.slash_dmg
@@ -707,7 +700,8 @@ func cyclone() -> void:
 
 
 func counterStrikeCD()->void:
-	player.necromant.counterStrike()
+	#player.counter_strike_duration = false
+	player.all_skills.counterStrike()
 	stopSkill()
 	stopAnimationTree()
 func counterStrikeDamage()->void:
@@ -736,15 +730,15 @@ func risingFury()->void:
 	var enemies = melee_aoe.get_overlapping_bodies()
 	for victim in enemies:	
 		if victim.is_in_group("enemy") and victim != self:
-			if victim.has_method("takeDamage"):
-				victim.takeDamage(damage,aggro_power,player,player.stagger_chance,damage_type)
+			if victim.has_method("takeThreat"):
+				victim.takeThreat(aggro_power,self)
 	melee_aoe.scale = Vector3(1, 1, 1)
 
 
 func shootArrow():
-	player.necromant.shootArrow(autoload.quick_shot_damage)
+	player.all_skills.shootArrow(autoload.quick_shot_damage)
 func fullDrawShootArrow():
-	player.necromant.shootArrow(autoload.full_draw_damage)
+	player.all_skills.shootArrow(autoload.full_draw_damage)
 
 
 var is_parrying: bool = false

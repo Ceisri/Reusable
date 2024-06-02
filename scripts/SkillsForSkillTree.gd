@@ -1,5 +1,5 @@
 extends TextureButton
-onready var player = get_parent().player
+onready var player = $"../../..".player
 onready var icon = $Icon
 onready var label = $Label
 var quantity = 99999999999

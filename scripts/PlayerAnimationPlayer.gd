@@ -57,7 +57,7 @@ func _on_SlowTimer_timeout()->void:
 	r_click_slot.switchAttackIcon()
 	$UI/GUI/SkillTrees/Label.text = str("skill points: ")+ str(skill_points)
 	$UI/GUI/SkillTrees/Label2.text =  str("points spent: ")+ str(skill_points_spent)
-
+	all_skills.updateCooldownLabel()
 func _on_3FPS_timeout()->void:
 	$UI/GUI/Equipment/Attributes/AttributePoints.text = "Attributes points left: " + str(attribute)
 # Calculate the sum of all spent attribute points
@@ -70,7 +70,7 @@ func _on_3FPS_timeout()->void:
 	SwitchEquipmentBasedOnEquipmentIcons()
 	updateAllStats()
 	switchShoulder()
-	necromant.updateCooldownLabel()
+	
 func _physics_process(delta: float) -> void:
 	$Debug.text = str(state)
 #	displayClock()
@@ -614,25 +614,28 @@ func switchWeaponStances()-> void:
 
 var overhead_slash_duration:bool = false
 var cyclone_duration:bool = false
+var counter_strike_duration:bool = false
 var state = autoload.state_list.idle
 func matchAnimationStates()-> void:
 
 	if current_race_gender == null or animation == null:
 		print("mesh not instanced or animationPlayer not found")
 		
-#	if state == autoload.state_list.skill1:
-#		var slot = $UI/GUI/SkillBar/GridContainer/Slot1/Icon
-#		skills(slot)
-#	elif state == autoload.state_list.skill2:
-#		var slot = $UI/GUI/SkillBar/GridContainer/Slot2/Icon
-#		skills(slot)
-#	elif state == autoload.state_list.skill3:
-#		var slot = $UI/GUI/SkillBar/GridContainer/Slot3/Icon
-#		skills(slot)
-	if overhead_slash_duration == true:
+	if state == autoload.state_list.skill1:
+		var slot = $UI/GUI/SkillBar/GridContainer/Slot1/Icon
+		skills(slot)
+	elif state == autoload.state_list.skill2:
+		var slot = $UI/GUI/SkillBar/GridContainer/Slot2/Icon
+		skills(slot)
+	elif state == autoload.state_list.skill3:
+		var slot = $UI/GUI/SkillBar/GridContainer/Slot3/Icon
+		skills(slot)
+	elif overhead_slash_duration == true:
+		cyclone_duration = false
+		counter_strike_duration = false
 		if overhead_icon.points >0:
-			if necromant.can_overhead_slash == true:
-				if resolve > necromant.overhead_slash_cost:
+			if all_skills.can_overhead_slash == true:
+				if resolve > all_skills.overhead_slash_cost:
 					is_in_combat = true
 					match weapon_type:
 						fist:
@@ -651,8 +654,10 @@ func matchAnimationStates()-> void:
 		else:
 					animation.play("idle sword",0.3)
 	elif cyclone_duration == true :
+		overhead_slash_duration = false
+		counter_strike_duration = false
 		if cyclone_icon.points >0 :
-			if necromant.can_cyclone == true:
+			if all_skills.can_cyclone == true:
 				if resolve > autoload.cyclone_cost:
 					match weapon_type:
 						sword:
@@ -664,143 +669,145 @@ func matchAnimationStates()-> void:
 				animation.play("idle sword",0.3)
 		else:
 			animation.play("idle sword",0.3)
+	elif counter_strike_duration == true: 
+		cyclone_duration = false
+		overhead_slash_duration = false
+		if all_skills.can_counter == true:
+			if resolve > autoload.counter_strike_cost:
+				is_in_combat = true
+				animation.play("counter strike",blend,melee_atk_speed)
+				moveDuringAnimation(-1)
+			else:
+				animation.play("idle sword",0.3)
 
 	else:
-		
-			match state:
-#_______________________________attacking states____________________________________________________
-				autoload.state_list.slide:
-					var slide_blend = 0.3
-					animation.play("guard magic",slide_blend)
-					var slide_mov_speed = 15 + slide_blend + rand_range(3, 6)
-					if !is_on_wall():
-						horizontal_velocity = direction * slide_mov_speed
-					movement_speed = int(slide_mov_speed)
-					can_walk = true
-				autoload.state_list.base_attack:
-					current_race_gender.is_stuck_in_skill = false
-					if weapon_type == bow:
-						can_walk = false
-					else:
-						can_walk = true
-					var slot = $UI/GUI/SkillBar/GridContainer/LClickSlot/Icon
-					skills(slot)
+			animation.play("idle sword",0.3)
+##_______________________________attacking states____________________________________________________
+#				autoload.state_list.slide:
+#					var slide_blend = 0.3
+#					animation.play("guard magic",slide_blend)
+#					var slide_mov_speed = 15 + slide_blend + rand_range(3, 6)
+#					if !is_on_wall():
+#						horizontal_velocity = direction * slide_mov_speed
+#					movement_speed = int(slide_mov_speed)
+#					can_walk = true
+#				autoload.state_list.base_attack:
+#					current_race_gender.is_stuck_in_skill = false
+#					if weapon_type == bow:
+#						can_walk = false
+#					else:
+#						can_walk = true
+#					var slot = $UI/GUI/SkillBar/GridContainer/LClickSlot/Icon
+#					skills(slot)
+#				autoload.state_list.guard:
+#					var slot = $UI/GUI/SkillBar/GridContainer/RClickSlot/Icon
+#					skills(slot)
+#				autoload.state_list.double_attack:
+#					match weapon_type:
+#						fist:
+#							pass
+#						sword:
+#							pass
+##________________________________________movement states____________________________________________
+#				autoload.state_list.walk:
+#					is_aiming = false
+#					if is_in_combat:
+#						match weapon_type:
+#							fist:
+#								animation.play("walk",0,1)
+#							sword:
+#								animation.play("walk sword",0,1)
+#							dual_swords:
+#								animation.play("walk sword",0,1)
+#							bow: 
+#								animation.play("walk bow",0,1)
+#					else:
+#						animation.play("walk",0,1)
+#				autoload.state_list.sprint:
+#					animation.play("run cycle", 0, sprint_animation_speed * agility)
+#				autoload.state_list.run:
+#					animation.play("run cycle",0,agility)
+#				autoload.state_list.climb:
+#
+#					animation.play("climb cycle",blend, strength)
+#				autoload.state_list.idle:
+#					is_aiming = false
+#					if is_in_combat:
+#						match weapon_type:
+#							fist:
+#								animation.play("idle fist",0.2,1)
+#							sword:
+#								animation.play("idle sword",0.2,1)
+#							dual_swords:
+#								animation.play("idle sword",0.2,1)
+#							bow:
+#								animation.play("idle sword",0.2,1)
+#					else:
+#
+#						animation.play("idle",0.2,1)
+##skillbar stuff_____________________________________________________________________________________
+#				autoload.state_list.skill1:
+#					var slot = $UI/GUI/SkillBar/GridContainer/Slot1/Icon
+#					skills(slot)
+#				autoload.state_list.skill2:
+#					var slot = $UI/GUI/SkillBar/GridContainer/Slot2/Icon
+#					skills(slot)
+#				autoload.state_list.skill3:
+#					var slot = $UI/GUI/SkillBar/GridContainer/Slot3/Icon
+#					skills(slot)
+#				autoload.state_list.skill4:
+#					var slot = $UI/GUI/SkillBar/GridContainer/Slot4/Icon
+#					skills(slot)
+#				autoload.state_list.skill5:
+#					var slot = $UI/GUI/SkillBar/GridContainer/Slot5/Icon
+#					skills(slot)
+#				autoload.state_list.skill6:
+#					var slot = $UI/GUI/SkillBar/GridContainer/Slot6/Icon
+#					skills(slot)
+#				autoload.state_list.skill7:
+#					var slot = $UI/GUI/SkillBar/GridContainer/Slot7/Icon
+#					skills(slot)
+#				autoload.state_list.skill8:
+#					var slot = $UI/GUI/SkillBar/GridContainer/Slot8/Icon
+#					skills(slot)
+#				autoload.state_list.skill9:
+#					var slot = $UI/GUI/SkillBar/GridContainer/Slot9/Icon
+#					skills(slot)
+#				autoload.state_list.skill0:
+#					var slot = $UI/GUI/SkillBar/GridContainer/Slot10/Icon
+#					skills(slot)
+#				autoload.state_list.skillQ:
+#					var slot = $UI/GUI/SkillBar/GridContainer/Slot11/Icon
+#					skills(slot)
+#				autoload.state_list.skillE:
+#					var slot = $UI/GUI/SkillBar/GridContainer/Slot12/Icon
+#					skills(slot)
+#				autoload.state_list.skillR:
+#					var slot = $UI/GUI/SkillBar/GridContainer/Slot13/Icon
+#					skills(slot)
+#				autoload.state_list.skillT:
+#					var slot = $UI/GUI/SkillBar/GridContainer/Slot14/Icon
+#					skills(slot)
+#				autoload.state_list.skillF:
+#					var slot = $UI/GUI/SkillBar/GridContainer/Slot15/Icon
+#					skills(slot)
+#				autoload.state_list.skillG:
+#					var slot = $UI/GUI/SkillBar/GridContainer/Slot16/Icon
+#					skills(slot)
+#				autoload.state_list.skillY:
+#					var slot = $UI/GUI/SkillBar/GridContainer/Slot17/Icon
+#					skills(slot)
+#				autoload.state_list.skillH:
+#					var slot = $UI/GUI/SkillBar/GridContainer/Slot18/Icon
+#					skills(slot)
+#				autoload.state_list.skillV:
+#					var slot = $UI/GUI/SkillBar/GridContainer/Slot19/Icon
+#					skills(slot)
+#				autoload.state_list.skillB:
+#					var slot = $UI/GUI/SkillBar/GridContainer/Slot20/Icon
+#					skills(slot)
 
-					current_race_gender.resetAllCombos()
-				autoload.state_list.guard:
-					var slot = $UI/GUI/SkillBar/GridContainer/RClickSlot/Icon
-					skills(slot)
-				autoload.state_list.double_attack:
-					match weapon_type:
-						fist:
-							pass
-						sword:
-							pass
-#________________________________________movement states____________________________________________
-				autoload.state_list.walk:
-					is_aiming = false
-					if is_in_combat:
-						match weapon_type:
-							fist:
-								animation.play("walk",0,1)
-							sword:
-								animation.play("walk sword",0,1)
-							dual_swords:
-								animation.play("walk sword",0,1)
-							bow: 
-								animation.play("walk bow",0,1)
-					else:
-						animation.play("walk",0,1)
-				autoload.state_list.sprint:
-
-					current_race_gender.resetAllCombos()
-					animation.play("run cycle", 0, sprint_animation_speed * agility)
-				autoload.state_list.run:
-
-					current_race_gender.resetAllCombos()
-					animation.play("run cycle",0,agility)
-				autoload.state_list.climb:
-
-					animation.play("climb cycle",blend, strength)
-				autoload.state_list.idle:
-					is_aiming = false
-					current_race_gender.resetAllCombos()
-					if is_in_combat:
-						match weapon_type:
-							fist:
-								animation.play("idle fist",0.2,1)
-							sword:
-								animation.play("idle sword",0.2,1)
-							dual_swords:
-								animation.play("idle sword",0.2,1)
-							bow:
-								animation.play("idle sword",0.2,1)
-					else:
-
-						animation.play("idle",0.2,1)
-#skillbar stuff_____________________________________________________________________________________
-				autoload.state_list.skill1:
-					var slot = $UI/GUI/SkillBar/GridContainer/Slot1/Icon
-					skills(slot)
-				autoload.state_list.skill2:
-					var slot = $UI/GUI/SkillBar/GridContainer/Slot2/Icon
-					skills(slot)
-				autoload.state_list.skill3:
-					var slot = $UI/GUI/SkillBar/GridContainer/Slot3/Icon
-					skills(slot)
-				autoload.state_list.skill4:
-					var slot = $UI/GUI/SkillBar/GridContainer/Slot4/Icon
-					skills(slot)
-				autoload.state_list.skill5:
-					var slot = $UI/GUI/SkillBar/GridContainer/Slot5/Icon
-					skills(slot)
-				autoload.state_list.skill6:
-					var slot = $UI/GUI/SkillBar/GridContainer/Slot6/Icon
-					skills(slot)
-				autoload.state_list.skill7:
-					var slot = $UI/GUI/SkillBar/GridContainer/Slot7/Icon
-					skills(slot)
-				autoload.state_list.skill8:
-					var slot = $UI/GUI/SkillBar/GridContainer/Slot8/Icon
-					skills(slot)
-				autoload.state_list.skill9:
-					var slot = $UI/GUI/SkillBar/GridContainer/Slot9/Icon
-					skills(slot)
-				autoload.state_list.skill0:
-					var slot = $UI/GUI/SkillBar/GridContainer/Slot10/Icon
-					skills(slot)
-				autoload.state_list.skillQ:
-					var slot = $UI/GUI/SkillBar/GridContainer/Slot11/Icon
-					skills(slot)
-				autoload.state_list.skillE:
-					var slot = $UI/GUI/SkillBar/GridContainer/Slot12/Icon
-					skills(slot)
-				autoload.state_list.skillR:
-					var slot = $UI/GUI/SkillBar/GridContainer/Slot13/Icon
-					skills(slot)
-				autoload.state_list.skillT:
-					var slot = $UI/GUI/SkillBar/GridContainer/Slot14/Icon
-					skills(slot)
-				autoload.state_list.skillF:
-					var slot = $UI/GUI/SkillBar/GridContainer/Slot15/Icon
-					skills(slot)
-				autoload.state_list.skillG:
-					var slot = $UI/GUI/SkillBar/GridContainer/Slot16/Icon
-					skills(slot)
-				autoload.state_list.skillY:
-					var slot = $UI/GUI/SkillBar/GridContainer/Slot17/Icon
-					skills(slot)
-				autoload.state_list.skillH:
-					var slot = $UI/GUI/SkillBar/GridContainer/Slot18/Icon
-					skills(slot)
-				autoload.state_list.skillV:
-					var slot = $UI/GUI/SkillBar/GridContainer/Slot19/Icon
-					skills(slot)
-				autoload.state_list.skillB:
-					var slot = $UI/GUI/SkillBar/GridContainer/Slot20/Icon
-					skills(slot)
-onready var necromant = $UI/GUI/SkillTrees/Background/Necromant
-
+onready var all_skills = $UI/GUI/SkillTrees
 onready var cyclone_icon = $UI/GUI/SkillTrees/Background/Test/skill15/Icon
 onready var overhead_icon = $UI/GUI/SkillTrees/Background/Test/skill8/Icon
 onready var counter_strike_icon = $UI/GUI/SkillTrees/Background/Test/skill20/Icon
@@ -815,15 +822,15 @@ func skills(slot)-> void:
 				elif slot.texture.resource_path == "res://UI/graphics/SkillIcons/selfheal.png":
 					pass
 				elif slot.texture.resource_path == autoload.summon_shadow.get_path():
-					necromant.summonDemon()
+					all_skills.summonDemon()
 				elif slot.texture.resource_path == autoload.dominion.get_path():	
-					necromant.commandSwitch()
+					all_skills.commandSwitch()
 				elif slot.texture.resource_path == autoload.tribute.get_path():	
-					necromant.tribute()
+					all_skills.tribute()
 				elif slot.texture.resource_path == autoload.servitude.get_path():	
-					necromant.areaSpell()
+					all_skills.areaSpell()
 				elif slot.texture.resource_path == autoload.arcane_blast.get_path():	
-					necromant.arcaneBlast()
+					all_skills.arcaneBlast()
 #melee
 				elif slot.texture.resource_path == autoload.punch.get_path():
 					animation.play("combo fist",0.3,melee_atk_speed + 0.15)
@@ -843,20 +850,20 @@ func skills(slot)-> void:
 #____________________________________________	overhead slash    __________________________________
 				elif slot.texture.resource_path == autoload.overhead_slash.get_path():
 						if overhead_icon.points >0:
-							if necromant.can_overhead_slash == true:
-								if resolve > necromant.overhead_slash_cost:
+							if all_skills.can_overhead_slash == true:
+								if resolve > all_skills.overhead_slash_cost:
 									is_in_combat = true
 									match weapon_type:
 											fist:
-												animation.play("combo fist",0.3)
+#												animation.play("combo fist",0.3)
 												moveDuringAnimation(1.5)
 											sword:
 												overhead_slash_duration = true
-												animation.play("overhand strike",0.3)
+#												animation.play("overhand strike",0.3)
 												moveDuringAnimation(1.5)
 											dual_swords:
 												overhead_slash_duration = true
-												animation.play("overhand strike 2x",0.3)
+#												animation.play("overhand strike 2x",0.3)
 												moveDuringAnimation(1.5)
 								else:
 									animation.play("idle sword",0.3)
@@ -867,12 +874,12 @@ func skills(slot)-> void:
 #____________________________________________	cyclone    _________________________________________
 				elif slot.texture.resource_path == autoload.cyclone.get_path():
 						if cyclone_icon.points >0 :
-							if necromant.can_cyclone == true:
+							if all_skills.can_cyclone == true:
 								if resolve > autoload.cyclone_cost:
 									match weapon_type:
 										sword:
 											is_in_combat = true
-											animation.play("spin1",blend,melee_atk_speed)
+#											animation.play("spin1",blend,melee_atk_speed)
 											moveDuringAnimation(autoload.cyclone_motion)
 											cyclone_duration = true
 								else:
@@ -881,43 +888,30 @@ func skills(slot)-> void:
 								animation.play("idle sword",0.3)
 						else:
 							animation.play("idle sword",0.3)
+
+
+				elif slot.texture.resource_path == autoload.counter_strike.get_path():
+						if all_skills.can_counter == true:
+							if resolve > autoload.counter_strike_cost:
+								counter_strike_duration = true
+								is_in_combat = true
+#								animation.play("counter strike",blend,melee_atk_speed)
+								moveDuringAnimation(-1)
+							else:
+								animation.play("idle sword",0.3)
+						else:
+							animation.play("idle sword",0.3)
+							
+							
+							
 				elif slot.texture.resource_path == autoload.fury_strike.get_path():
 					if current_race_gender.is_stuck_in_skill == false:
-						if necromant.can_fury_strike == true:
+						if all_skills.can_fury_strike == true:
 
 							is_in_combat = true
 							animation.play("fury strike",blend)
 						else:
 							animation.play("idle sword",0.3)
-#guarding icon
-				elif slot.texture.resource_path == autoload.guard_sword.get_path():
-					if current_race_gender.is_stuck_in_skill == false:
-						if resolve > autoload.counter_strike_cost:
-
-							is_in_combat = true
-							animation.play("parry",blend,melee_atk_speed)
-				elif slot.texture.resource_path == autoload.counter_strike.get_path():
-					if current_race_gender.is_stuck_in_skill == false:
-						if necromant.can_counter == true:
-							if resolve > autoload.counter_strike_cost:
-
-								is_in_combat = true
-								animation.play("counter strike",blend,melee_atk_speed)
-				elif slot.texture.resource_path == autoload.rising_slash.get_path():
-					if current_race_gender.is_stuck_in_skill == false:
-						if necromant.can_counter == true:
-							if resolve > autoload.counter_strike_cost:
-
-								is_in_combat = true
-								animation.play("chop sword",blend,melee_atk_speed)
-				elif slot.texture.resource_path == autoload.rising_fury.get_path():
-					if necromant.can_counter == true:
-						if resolve > autoload.counter_strike_cost:
-							can_walk = false
-							current_race_gender.can_move = false
-
-							is_in_combat = true
-							animation.play("scream",blend,melee_atk_speed)
 #ranged bow skills
 				elif slot.texture.resource_path == autoload.quick_shot.get_path():
 					if weapon_type == bow:
@@ -933,13 +927,20 @@ func skills(slot)-> void:
 						current_race_gender.can_move = false
 						animation.play("full draw",0.3,ranged_atk_speed)
 				elif slot.texture.resource_path == autoload.base_attack_necromant.get_path():
-					necromant.baseAttack() # placeholder
+					all_skills.baseAttack() # placeholder
 				elif slot.texture.resource_path == autoload.necro_guard.get_path():
 					pass #necromance guard placeholder
 				elif slot.texture.resource_path == autoload.necromant_switch.get_path():
-					necromant.switchStance()# different stances or weapons switches base attacks
+					all_skills.switchStance()# different stances or weapons switches base attacks
 					l_click_slot.switchAttackIcon()
 					r_click_slot.switchAttackIcon()
+#guarding icon
+				elif slot.texture.resource_path == autoload.guard_sword.get_path():
+					if current_race_gender.is_stuck_in_skill == false:
+						if resolve > autoload.counter_strike_cost:
+							is_in_combat = true
+							animation.play("parry",blend,melee_atk_speed)
+
 #consumables________________________________________________________________________________________
 				elif slot.texture.resource_path == autoload.red_potion.get_path():
 					slot.get_parent().displayQuantity()
@@ -1151,7 +1152,7 @@ func speedlabel():
 onready var floatingtext_damage = preload("res://UI/floatingtext.tscn")
 onready var take_damage_view  = $Mesh/TakeDamageView/Viewport
 func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
-	if necromant.masochism >0:
+	if all_skills.masochism >0:
 		nefis += damage * 0.5
 	var random = randf()
 	var damage_to_take = damage
@@ -1518,7 +1519,7 @@ func connectGenericSkillTee(tree):# this is called by connectSkillTree() to give
 	 # Correcting the connection for ResetSkills button
 	$UI/GUI/SkillTrees/ResetSkills.connect("pressed", self, "resetSkills", [tree])
 func connectSkillTree():# connects all skill trees
-	connectGenericSkillTee(necromant)
+	connectGenericSkillTee($UI/GUI/SkillTrees/Background/Necromant)
 	connectGenericSkillTee($UI/GUI/SkillTrees/Background/Test)
 var skill_points_spent:int = 0 
 func skillPressed(tree,index)->void:
@@ -1621,7 +1622,7 @@ func UniversalToolTip(icon_texture,instance):
 			if points > 1:
 				damage_multiplier += (points - 1) * 0.04
 			total_damage = base_damage * damage_multiplier
-			callToolTipSkills(instance,"Overhead Slash",str("Total Damage: ") + str(total_damage),str("Base Damage: ") + str(autoload.overhead_slash_damage),str("Resolve cost: ")+ str(autoload.overhead_slash_cost),str("Cooldown: ") + str(necromant.overhead_strike_cooldown),autoload.overhead_slash_description)
+			callToolTipSkills(instance,"Overhead Slash",str("Total Damage: ") + str(total_damage),str("Base Damage: ") + str(autoload.overhead_slash_damage),str("Resolve cost: ")+ str(autoload.overhead_slash_cost),str("Cooldown: ") + str(all_skills.overhead_strike_cooldown),autoload.overhead_slash_description)
 
 #_______________________________________Inventory system____________________________________________
 #for this to work either preload all the item icons here or add the "Global.gd"
@@ -4759,8 +4760,7 @@ func loadPlayerData():
 				max_water = player_data["max_water"]
 #			if "effects" in player_data:
 #				effects = player_data["effects"]
-			if "wraith" in player_data:
-				necromant.summoned_demons = player_data["wraith"]
+
 				
 			if "hair_color" in player_data:
 				hair_color = player_data["hair_color"]
