@@ -1,9 +1,13 @@
 extends Node2D
 
 
-func showTooltip(title,text):
-	$Label.text = title
-	$Label2.text = text 
+func showTooltip(title,total_value,base_value,cost,cooldown,description):
+	$Title.text = str(title)
+	$Total.text = str(total_value)
+	$Base.text = str(base_value)
+	$Cost.text = str(cost)
+	$Cooldown.text = str(cooldown)
+	$Description.text = str(description)
 var offset_from_mouse = Vector2(10, -10) # Adjust this offset according to your preference
 
 func _process(delta):

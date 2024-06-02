@@ -622,7 +622,12 @@ func overheadStrikeCD():
 func overheadStrike()->void:
 	fury_strike_combo = 0
 	var damage_type:String = "slash"
-	var damage = base_damage_overhead_strike + player.slash_dmg
+	var base_damage: float = autoload.overhead_slash_damage + player.slash_dmg  + player.blunt_dmg
+	var points: int = player.overhead_icon.points
+	var damage_multiplier: float = 1.0
+	if points > 1:
+		damage_multiplier += (points - 1) * 0.04
+	var damage: float = base_damage * damage_multiplier
 	var damage_flank = damage + player.flank_dmg 
 	var critical_damage : float  = damage * player.critical_strength
 	var critical_flank_damage : float  = damage_flank * player.critical_strength

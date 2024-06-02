@@ -1532,65 +1532,38 @@ func connectGenericSkillTee(tree):# this is called by connectSkillTree() to give
 			child.connect("pressed", self, "skillPressed", [tree, index])
 			child.connect("mouse_entered", self, "skillMouseEntered", [tree, index]) # Pass 'tree' here
 			child.connect("mouse_exited", self, "skillMouseExited", [index])
+	 # Correcting the connection for ResetSkills button
+	$UI/GUI/SkillTrees/ResetSkills.connect("pressed", self, "resetSkills", [tree])
 func connectSkillTree():# connects all skill trees
 	connectGenericSkillTee(necromant)
 	connectGenericSkillTee($UI/GUI/SkillTrees/Background/Test)
+var skill_points_spent:int = 0 
 func skillPressed(tree,index)->void:
 	var button = tree.get_node("skill" + str(index))
 	var icon_texture_rect = button.get_node("Icon")
 	var icon_texture = icon_texture_rect.texture	
-	var current_time = OS.get_ticks_msec() / 1000.0
-	if last_pressed_index == index and current_time - last_press_time <= double_press_time_inv:
-			print("skill slot", index, "pressed twice")
-			if icon_texture.get_path() == autoload.cyclone.get_path():#check if skill icons match
-				if skill_points >0:
-					icon_texture_rect.points += 1 
-					button.skillPoints()
-					skill_points -= 1
+	if icon_texture.get_path() == autoload.cyclone.get_path():#check if skill icons match
+		spendSkillPoints(icon_texture_rect,button)
 #___________________________________________________________________________________________________
-			elif icon_texture.get_path() == autoload.overhead_slash.get_path():
-				if skill_points >0:
-					icon_texture_rect.points += 1 
-					button.skillPoints()
-					skill_points -= 1
-			elif icon_texture.get_path() == autoload.rising_slash.get_path():
-				if skill_points >0:
-					icon_texture_rect.points += 1 
-					button.skillPoints()
-					skill_points -= 1
-			elif icon_texture.get_path() == autoload.counter_strike.get_path():
-				if skill_points >0:
-					icon_texture_rect.points += 1 
-					button.skillPoints()
-					skill_points -= 1
-			elif icon_texture.get_path() == autoload.fury_strike.get_path():
-				if skill_points >0:
-					icon_texture_rect.points += 1 
-					button.skillPoints()
-					skill_points -= 1
-			elif icon_texture.get_path() == autoload.rising_fury.get_path():
-				if skill_points >0:
-					icon_texture_rect.points += 1 
-					button.skillPoints()
-					skill_points -= 1
-#___________________________________________________________________________________________________
-	else:
-#___________________________________________________________________________________________________
-			if icon_texture.get_path() == autoload.cyclone.get_path():#check if skill icons match
-				if icon_texture_rect.points >0:
-					icon_texture_rect.points -= 1
-					skill_points += 1
-				button.skillPoints()
-#___________________________________________________________________________________________________
-			elif icon_texture.get_path() == autoload.overhead_slash.get_path():
-				if icon_texture_rect.points >0:
-					icon_texture_rect.points -= 1
-					skill_points += 1
-				button.skillPoints()
-	last_pressed_index = index
-	last_press_time = current_time
-	savePlayerData()
-	
+	elif icon_texture.get_path() == autoload.overhead_slash.get_path():
+		spendSkillPoints(icon_texture_rect,button)
+	elif icon_texture.get_path() == autoload.rising_slash.get_path():
+		spendSkillPoints(icon_texture_rect,button)
+	elif icon_texture.get_path() == autoload.counter_strike.get_path():
+		spendSkillPoints(icon_texture_rect,button)
+	elif icon_texture.get_path() == autoload.fury_strike.get_path():
+		spendSkillPoints(icon_texture_rect,button)
+	elif icon_texture.get_path() == autoload.rising_fury.get_path():
+		spendSkillPoints(icon_texture_rect,button)
+	saveGame()
+
+func spendSkillPoints(icon_texture_rect,button):
+	if skill_points >0:
+		icon_texture_rect.points += 1 
+		button.skillPoints()
+		skill_points -= 1
+		skill_points_spent +=  1
+
 func saveSkillTreeData():
 	for child in $UI/GUI/SkillTrees/Background/Test.get_children():
 		if child.is_in_group("Skill"):
@@ -1613,39 +1586,59 @@ func skillMouseEntered(tree, index):
 	UniversalToolTip(icon_texture,instance)
 func skillMouseExited(index):
 	deleteTooltip()
+	
+func resetSkills(tree):
+	for child in $UI/GUI/SkillTrees/Background/Test.get_children():
+		if child.is_in_group("Skill"):
+			child.get_node("Icon").points = 0 
+			skill_points += skill_points_spent
+			child.skillPoints()
+			skill_points_spent = 0 
+	
 func UniversalToolTip(icon_texture,instance):
 	if icon_texture != null:
-		#skills
-		if icon_texture.get_path() == autoload.arcane_blast.get_path():
-			callToolTip(instance, "Arcane Blast", "base damage: 15        nefis cost: " + str(necromant.arcane_blast_cost) + "\nbonus damage: +10% maximum nefis\ndeals acid damage from the flanks and toxic damage from the front","")
-		elif icon_texture.get_path() == autoload.base_attack_necromant.get_path():
-			callToolTip(instance, "base_attack_necromant", "placeholder","")
 		#consumablaes
-		elif icon_texture.get_path() == autoload.red_potion.get_path():
-			callToolTip(instance, "Red Potion", "+100 kcals +250 grams of water.\nHeals by 100 health instantly then by 10 every second, drinking more potions stacks the duration","")
+		if icon_texture.get_path() == autoload.red_potion.get_path():
+			callToolTip(instance, "Red Potion", autoload.red_potion_description)
 		#food
 		elif icon_texture.get_path() == autoload.strawberry.get_path():
-			callToolTip(instance,"Strawberry","+5 health points +9 kcals +24 grams of water","")
+			callToolTip(instance,"Strawberry","+5 health points +9 kcals +24 grams of water")
 		elif icon_texture.get_path() == autoload.raspberry.get_path():
-			callToolTip(instance,"Raspberry","+3 health points +1 kcals +2 grams of water","")
+			callToolTip(instance,"Raspberry","+3 health points +1 kcals +2 grams of water")
 		elif icon_texture.get_path() == autoload.beetroot.get_path():
-			callToolTip(instance,"beetroot","+15 health points +32 kcals +71.8 grams of water","")
+			callToolTip(instance,"beetroot","+15 health points +32 kcals +71.8 grams of water")
 			#equipment icons
 		elif icon_texture.get_path() == autoload.hat1.get_path():
-			callToolTip(instance,"Farmer Hat","+3 blunt resistance.\n +6 heat resistance.\n +3 cold resistance.\n +6 radiant resistance.","")
+			callToolTip(instance,"Farmer Hat","+3 blunt resistance.\n +6 heat resistance.\n +3 cold resistance.\n +6 radiant resistance.")
 		elif icon_texture.get_path() == autoload.garment1.get_path():
-			callToolTip(instance,"Farmer Jacket","+3 slash resistance.\n +1 pierce resistance.\n +12 heat resistance.\n +12 cold resistance.","")
+			callToolTip(instance,"Farmer Jacket","+3 slash resistance.\n +1 pierce resistance.\n +12 heat resistance.\n +12 cold resistance.")
 		elif icon_texture.get_path() == autoload.belt1.get_path():
-			callToolTip(instance,"Farmer Belt","+3% balance.\n +1.1% charisma.","")
+			callToolTip(instance,"Farmer Belt","+3% balance.\n +1.1% charisma.")
 		elif icon_texture.get_path() == autoload.glove1.get_path():
-			callToolTip(instance,"Farmer Glove","+1 slash resistance.\n +1 blunt resistance.\n  +1 pierce resistance.\n +3 cold resistance.\n +5 jolt resistance.\n +3 acid resistance.","")
+			callToolTip(instance,"Farmer Glove","+1 slash resistance.\n +1 blunt resistance.\n  +1 pierce resistance.\n +3 cold resistance.\n +5 jolt resistance.\n +3 acid resistance.")
 		elif icon_texture.get_path() == autoload.pants1.get_path():
-			callToolTip(instance,"Farmer Pants","+3 slash resistance.\n +1 pierce resistance.\n +12 heat resistance.\n +12 cold resistance.","")
+			callToolTip(instance,"Farmer Pants","+3 slash resistance.\n +1 pierce resistance.\n +12 heat resistance.\n +12 cold resistance.")
 		elif icon_texture.get_path() == autoload.shoe1.get_path():
-			callToolTip(instance,"Farmer Shoe","+1 slash resistance.\n +1 blunt resistance.\n +3 pierce resistance.\n +1 heat resistance.\n +6 cold resistance.\n +15 jolt resistance.\n","")
+			callToolTip(instance,"Farmer Shoe","+1 slash resistance.\n +1 blunt resistance.\n +3 pierce resistance.\n +1 heat resistance.\n +6 cold resistance.\n +15 jolt resistance.\n")
 #_____________________________________sword skill and abilities_____________________________________
 		elif icon_texture.get_path() == autoload.cyclone.get_path():
-			callToolTip(instance,"Cyclone",autoload.cyclone_description,autoload.cyclone_description2)
+			var base_damage: float = autoload.cyclone_damage + slash_dmg
+			var points: int = cyclone_icon.points
+			var damage_multiplier: float = 1.0
+			var total_damage: float
+			if points > 1:
+				damage_multiplier += (points - 1) * 0.05
+			total_damage = base_damage * damage_multiplier
+			callToolTipSkills(instance,"Cyclone",str("Total Damage: ") + str(total_damage) + " per hit ",str("Base Damage:  3 hits of ") + str(autoload.cyclone_damage) + " damage",str("Resolve cost: ") + str(autoload.cyclone_cost) + " per hit",str("Cooldown: ") + str(autoload.cyclone_cooldown),autoload.cyclone_description)
+		elif icon_texture.get_path() == autoload.overhead_slash.get_path():
+			var base_damage: float = autoload.overhead_slash_damage + slash_dmg + blunt_dmg
+			var points: int = overhead_icon.points
+			var damage_multiplier: float = 1.0
+			var total_damage: float
+			if points > 1:
+				damage_multiplier += (points - 1) * 0.04
+			total_damage = base_damage * damage_multiplier
+			callToolTipSkills(instance,"Overhead Slash",str("Total Damage: ") + str(total_damage),str("Base Damage: ") + str(autoload.overhead_slash_damage),str("Resolve cost: ")+ str(autoload.overhead_slash_cost),str("Cooldown: ") + str(necromant.overhead_strike_cooldown),autoload.overhead_slash_description)
 
 #_______________________________________Inventory system____________________________________________
 #for this to work either preload all the item icons here or add the "Global.gd"
@@ -1717,9 +1710,12 @@ func inventoryMouseEntered(index):
 func inventoryMouseExited(index):
 	deleteTooltip()
 
-func callToolTip(instance,title, text,text2):
+func callToolTipSkills(instance,title,total_value,base_value,cost,cooldown,description):
 		gui.add_child(instance)
-		instance.showTooltip(title,text,text2)
+		instance.showTooltip(title,total_value,base_value,cost,cooldown,description)
+func callToolTip(instance,title,text):
+		gui.add_child(instance)
+		instance.showTooltip(title,text)
 # Function to combine slots when pressed
 func combineSlots():
 	savePlayerData()
@@ -3501,158 +3497,158 @@ func connectAttributeHovering():
 # Functions to handle mouse entering and exiting each label
 func intHovered():
 	var instance = preload("res://tooltip.tscn").instance()
-	callToolTip(instance,"placeholder","holder placer","")
+	callToolTip(instance,"placeholder","holder placer")
 func intExited():
 	deleteTooltip()
 func insHovered():
 	var instance = preload("res://tooltip.tscn").instance()
-	callToolTip(instance,"placeholder","holder placer","")
+	callToolTip(instance,"placeholder","holder placer")
 func insExited():
 	deleteTooltip()
 func wisHovered():
 	var instance = preload("res://tooltip.tscn").instance()
-	callToolTip(instance,"placeholder","holder placer","")
+	callToolTip(instance,"placeholder","holder placer")
 func wisExited():
 	deleteTooltip()
 func memHovered():
 	var instance = preload("res://tooltip.tscn").instance()
-	callToolTip(instance,"placeholder","holder placer","")
+	callToolTip(instance,"placeholder","holder placer")
 func memExited():
 	deleteTooltip()
 func sanHovered():
 	var instance = preload("res://tooltip.tscn").instance()
-	callToolTip(instance,"placeholder","holder placer","")
+	callToolTip(instance,"placeholder","holder placer")
 func sanExited():
 	deleteTooltip()
 
 func strHovered():
 	var instance = preload("res://tooltip.tscn").instance()
-	callToolTip(instance,"placeholder","holder placer","")
+	callToolTip(instance,"placeholder","holder placer")
 func strExited():
 	deleteTooltip()
 func forceHovered():
 	var instance = preload("res://tooltip.tscn").instance()
-	callToolTip(instance,"placeholder","holder placer","")
+	callToolTip(instance,"placeholder","holder placer")
 func forceExited():
 	deleteTooltip()
 func impHovered():
 	var instance = preload("res://tooltip.tscn").instance()
-	callToolTip(instance,"placeholder","holder placer","")
+	callToolTip(instance,"placeholder","holder placer")
 func impExited():
 	deleteTooltip()
 func ferHovered():
 	var instance = preload("res://tooltip.tscn").instance()
-	callToolTip(instance,"placeholder","holder placer","")
+	callToolTip(instance,"placeholder","holder placer")
 func ferExited():
 	deleteTooltip()
 func furHovered():
 	var instance = preload("res://tooltip.tscn").instance()
-	callToolTip(instance,"placeholder","holder placer","")
+	callToolTip(instance,"placeholder","holder placer")
 func furExited():
 	deleteTooltip()
 
 
 func vitHovered():
 	var instance = preload("res://tooltip.tscn").instance()
-	callToolTip(instance,"placeholder","holder placer","")
+	callToolTip(instance,"placeholder","holder placer")
 func vitExited():
 	deleteTooltip()
 func staHovered():
 	var instance = preload("res://tooltip.tscn").instance()
-	callToolTip(instance,"placeholder","holder placer","")
+	callToolTip(instance,"placeholder","holder placer")
 func staExited():
 	deleteTooltip()
 func endHovered():
 	var instance = preload("res://tooltip.tscn").instance()
-	callToolTip(instance,"placeholder","holder placer","")
+	callToolTip(instance,"placeholder","holder placer")
 func endExited():
 	deleteTooltip()
 func resHovered():
 	var instance = preload("res://tooltip.tscn").instance()
-	callToolTip(instance,"placeholder","holder placer","")
+	callToolTip(instance,"placeholder","holder placer")
 func resExited():
 	deleteTooltip()
 func tenHovered():
 	var instance = preload("res://tooltip.tscn").instance()
-	callToolTip(instance,"placeholder","holder placer","")
+	callToolTip(instance,"placeholder","holder placer")
 func tenExited():
 	deleteTooltip()
 
 func agiHovered():
 	var instance = preload("res://tooltip.tscn").instance()
-	callToolTip(instance,"placeholder","holder placer","")
+	callToolTip(instance,"placeholder","holder placer")
 func agiExited():
 	deleteTooltip()
 func hasHovered():
 	var instance = preload("res://tooltip.tscn").instance()
-	callToolTip(instance,"placeholder","holder placer","")
+	callToolTip(instance,"placeholder","holder placer")
 func hasExited():
 	deleteTooltip()
 func celHovered():
 	var instance = preload("res://tooltip.tscn").instance()
-	callToolTip(instance,"placeholder","holder placer","")
+	callToolTip(instance,"placeholder","holder placer")
 func celExited():
 	deleteTooltip()
 func fleHovered():
 	var instance = preload("res://tooltip.tscn").instance()
-	callToolTip(instance,"placeholder","holder placer","")
+	callToolTip(instance,"placeholder","holder placer")
 func fleExited():
 	deleteTooltip()
 
 func defHovered():
 	var instance = preload("res://tooltip.tscn").instance()
-	callToolTip(instance,"placeholder","holder placer","")
+	callToolTip(instance,"placeholder","holder placer")
 func defExited():
 	deleteTooltip()
 func dexHovered():
 	var instance = preload("res://tooltip.tscn").instance()
-	callToolTip(instance,"placeholder","holder placer","")
+	callToolTip(instance,"placeholder","holder placer")
 func dexExited():
 	deleteTooltip()
 func accHovered():
 	var instance = preload("res://tooltip.tscn").instance()
-	callToolTip(instance,"placeholder","holder placer","")
+	callToolTip(instance,"placeholder","holder placer")
 func accExited():
 	deleteTooltip()
 func focHovered():
 	var instance = preload("res://tooltip.tscn").instance()
-	callToolTip(instance,"placeholder","holder placer","")
+	callToolTip(instance,"placeholder","holder placer")
 func focExited():
 	deleteTooltip()
 func poiHovered():
 	var instance = preload("res://tooltip.tscn").instance()
-	callToolTip(instance,"placeholder","holder placer","")
+	callToolTip(instance,"placeholder","holder placer")
 func poiExited():
 	deleteTooltip()
 func balHovered():
 	var instance = preload("res://tooltip.tscn").instance()
-	callToolTip(instance,"placeholder","holder placer","")
+	callToolTip(instance,"placeholder","holder placer")
 func balExited():
 	deleteTooltip()
 	
 func chaHovered():
 	var instance = preload("res://tooltip.tscn").instance()
-	callToolTip(instance,"placeholder","holder placer","")
+	callToolTip(instance,"placeholder","holder placer")
 func chaExited():
 	deleteTooltip()
 func dipHovered():
 	var instance = preload("res://tooltip.tscn").instance()
-	callToolTip(instance,"placeholder","holder placer","")
+	callToolTip(instance,"placeholder","holder placer")
 func dipExited():
 	deleteTooltip()
 func autHovered():
 	var instance = preload("res://tooltip.tscn").instance()
-	callToolTip(instance,"placeholder","holder placer","")
+	callToolTip(instance,"placeholder","holder placer")
 func autExited():
 	deleteTooltip()
 func couHovered():
 	var instance = preload("res://tooltip.tscn").instance()
-	callToolTip(instance,"placeholder","holder placer","")
+	callToolTip(instance,"placeholder","holder placer")
 func couExited():
 	deleteTooltip()
 func loyHovered():
 	var instance = preload("res://tooltip.tscn").instance()
-	callToolTip(instance,"placeholder","holder placer","")
+	callToolTip(instance,"placeholder","holder placer")
 func loyExited():
 	deleteTooltip()
 
@@ -3725,7 +3721,7 @@ func slashResHovered():
 	else:
 		tooltip_text = "extra damage: " + str(-slash_resistance) + " extra damage"
 	# Call a function to display the tooltip
-	callToolTip(instance, "Slash Resistance", tooltip_text,"")
+	callToolTip(instance, "Slash Resistance", tooltip_text)
 func slashResExited():
 	deleteTooltip()
 	
@@ -3742,7 +3738,7 @@ func bluntResHovered():
 		tooltip_text = "protection:  " + str(mitigation * 100) + "%"
 	else:
 		tooltip_text = "extra damage: " + str(-blunt_resistance) + " extra damage"
-	callToolTip(instance, "Blunt Resistance", tooltip_text,"")
+	callToolTip(instance, "Blunt Resistance", tooltip_text)
 func bluntResExited():
 	deleteTooltip()
 
@@ -3759,7 +3755,7 @@ func pierceResHovered():
 		tooltip_text = "protection:  " + str(mitigation * 100) + "%"
 	else:
 		tooltip_text = "extra damage: " + str(-pierce_resistance) + " extra damage"
-	callToolTip(instance, "Pierce Resistance", tooltip_text,"")
+	callToolTip(instance, "Pierce Resistance", tooltip_text)
 func pierceResExited():
 	deleteTooltip()
 
@@ -3776,7 +3772,7 @@ func sonicResHovered():
 		tooltip_text = "protection:  " + str(mitigation * 100) + "%"
 	else:
 		tooltip_text = "extra damage: " + str(-sonic_resistance) + " extra damage"
-	callToolTip(instance, "Sonic Resistance", tooltip_text,"")
+	callToolTip(instance, "Sonic Resistance", tooltip_text)
 func sonicResExited():
 	deleteTooltip()
 
@@ -3793,7 +3789,7 @@ func heatResHovered():
 		tooltip_text = "protection:  " + str(mitigation * 100) + "%"
 	else:
 		tooltip_text = "extra damage: " + str(-heat_resistance) + " extra damage"
-	callToolTip(instance, "Heat Resistance", tooltip_text,"")
+	callToolTip(instance, "Heat Resistance", tooltip_text)
 func heatResExited():
 	deleteTooltip()
 
@@ -3810,7 +3806,7 @@ func coldResHovered():
 		tooltip_text = "protection:  " + str(mitigation * 100) + "%"
 	else:
 		tooltip_text = "extra damage: " + str(-cold_resistance) + " extra damage"
-	callToolTip(instance, "Cold Resistance", tooltip_text,"")
+	callToolTip(instance, "Cold Resistance", tooltip_text)
 func coldResExited():
 	deleteTooltip()
 
@@ -3827,7 +3823,7 @@ func joltResHovered():
 		tooltip_text = "protection:  " + str(mitigation * 100) + "%"
 	else:
 		tooltip_text = "extra damage: " + str(-jolt_resistance) + " extra damage"
-	callToolTip(instance, "Colt Resistance", tooltip_text,"")	
+	callToolTip(instance, "Colt Resistance", tooltip_text)	
 func joltResExited():
 	deleteTooltip()
 	
@@ -3844,7 +3840,7 @@ func toxicResHovered():
 		tooltip_text = "protection:  " + str(mitigation * 100) + "%"
 	else:
 		tooltip_text = "extra damage: " + str(-toxic_resistance) + " extra damage"
-	callToolTip(instance, "Toxic Resistance", tooltip_text,"")
+	callToolTip(instance, "Toxic Resistance", tooltip_text)
 func toxicResExited():
 	deleteTooltip()
 	
@@ -3861,7 +3857,7 @@ func acidResHovered():
 		tooltip_text = "protection:  " + str(mitigation * 100) + "%"
 	else:
 		tooltip_text = "extra damage: " + str(-acid_resistance) + " extra damage"
-	callToolTip(instance, "Acid Resistance", tooltip_text,"")
+	callToolTip(instance, "Acid Resistance", tooltip_text)
 func acidResExited():
 	deleteTooltip()
 
@@ -3879,7 +3875,7 @@ func bleedResHovered():
 		tooltip_text = "protection:  " + str(mitigation * 100) + "%"
 	else:
 		tooltip_text = "extra damage: " + str(-bleed_resistance) + " extra damage"
-	callToolTip(instance, "Bleed Resistance", tooltip_text,"")
+	callToolTip(instance, "Bleed Resistance", tooltip_text)
 func bleedResExited():
 	deleteTooltip()
 
@@ -3896,7 +3892,7 @@ func neuroResHovered():
 		tooltip_text = "protection:  " + str(mitigation * 100) + "%"
 	else:
 		tooltip_text = "extra damage: " + str(-neuro_resistance) + " extra damage"
-	callToolTip(instance, "Neuro Resistance", tooltip_text,"")
+	callToolTip(instance, "Neuro Resistance", tooltip_text)
 func neuroResExited():
 	deleteTooltip()
 
@@ -3913,7 +3909,7 @@ func radiantResHovered():
 		tooltip_text = "protection:  " + str(mitigation * 100) + "%"
 	else:
 		tooltip_text = "extra damage: " + str(-radiant_resistance) + " extra damage"
-	callToolTip(instance, "Radiant Resistance", tooltip_text,"")
+	callToolTip(instance, "Radiant Resistance", tooltip_text)
 func radiantResExited():
 	deleteTooltip()
 
