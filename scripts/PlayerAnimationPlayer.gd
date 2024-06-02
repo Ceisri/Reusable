@@ -187,9 +187,7 @@ func walk()->void:
 						Input.get_action_strength("forward") - Input.get_action_strength("backward"))
 			direction = direction.rotated(Vector3.UP, h_rot).normalized()
 	autoload.movement(self)
-func strafing()->void:
-	strafe = lerp(strafe, strafe_dir, get_physics_process_delta_time() * acceleration)
-	anim_tree.set("parameters/walk/blend_position",Vector2(-strafe.x,strafe.z))
+
 #climbing section
 var is_swimming:bool = false
 var wall_incline
@@ -500,10 +498,6 @@ func fullscreen()-> void:
 		OS.set_window_fullscreen(is_fullscreen)
 		saveGame()
 
-
-
-	
-
 #__________________________________Entitygraphical interface________________________________________
 onready var entity_graphic_interface = $UI/GUI/EnemyUI
 onready var entity_inspector 
@@ -579,7 +573,7 @@ func showEnemyStats()-> void:
 
 #______________________________________________Animations___________________________________________
 var animation : AnimationPlayer
-var anim_tree : AnimationTree
+
 
 enum {
 	fist,
@@ -616,28 +610,61 @@ func switchWeaponStances()-> void:
 		else:
 			if left_hand.get_child_count() == 0:
 				weapon_type = fist
-var overhead_slash_duration = 1
-var fake_root_motion_movement: float = 1.5
-func forceMovement()->void:
-	if anim_tree != null:
-		if anim_tree.get("parameters/skill/active") and anim_tree.active == true:
-			if state != autoload.state_list.guard or state != autoload.state_list.guard_walk:
-				moveDuringAnimation(fake_root_motion_movement)
-#				print("active.")
-#
-#		else:
-#			print("stopped.")
-#
-#	else:
-#		print("anim_tree not found")
+
+
+var overhead_slash_duration:bool = false
+var cyclone_duration:bool = false
 var state = autoload.state_list.idle
 func matchAnimationStates()-> void:
-	forceMovement()
+
 	if current_race_gender == null or animation == null:
 		print("mesh not instanced or animationPlayer not found")
-	elif !is_instance_valid(anim_tree):
-		print("animationTree not found")
-		current_race_gender.animation_tree = anim_tree
+		
+#	if state == autoload.state_list.skill1:
+#		var slot = $UI/GUI/SkillBar/GridContainer/Slot1/Icon
+#		skills(slot)
+#	elif state == autoload.state_list.skill2:
+#		var slot = $UI/GUI/SkillBar/GridContainer/Slot2/Icon
+#		skills(slot)
+#	elif state == autoload.state_list.skill3:
+#		var slot = $UI/GUI/SkillBar/GridContainer/Slot3/Icon
+#		skills(slot)
+	if overhead_slash_duration == true:
+		if overhead_icon.points >0:
+			if necromant.can_overhead_slash == true:
+				if resolve > necromant.overhead_slash_cost:
+					is_in_combat = true
+					match weapon_type:
+						fist:
+							animation.play("combo fist",0.3)
+							moveDuringAnimation(1.5)
+						sword:
+							animation.play("overhand strike",0.3)
+							moveDuringAnimation(1.5)
+						dual_swords:
+							animation.play("overhand strike 2x",0.3)
+							moveDuringAnimation(1.5)
+				else:
+					animation.play("idle sword",0.3)
+			else:
+					animation.play("idle sword",0.3)
+		else:
+					animation.play("idle sword",0.3)
+	elif cyclone_duration == true :
+		if cyclone_icon.points >0 :
+			if necromant.can_cyclone == true:
+				if resolve > autoload.cyclone_cost:
+					match weapon_type:
+						sword:
+							animation.play("spin1",blend,melee_atk_speed)
+							moveDuringAnimation(autoload.cyclone_motion)
+				else:
+					animation.play("idle sword",0.3)
+			else:
+				animation.play("idle sword",0.3)
+		else:
+			animation.play("idle sword",0.3)
+
 	else:
 		
 			match state:
@@ -658,8 +685,7 @@ func matchAnimationStates()-> void:
 						can_walk = true
 					var slot = $UI/GUI/SkillBar/GridContainer/LClickSlot/Icon
 					skills(slot)
-					anim_tree.set("parameters/skill/active",false)
-					anim_tree.active = false
+
 					current_race_gender.resetAllCombos()
 				autoload.state_list.guard:
 					var slot = $UI/GUI/SkillBar/GridContainer/RClickSlot/Icon
@@ -686,15 +712,15 @@ func matchAnimationStates()-> void:
 					else:
 						animation.play("walk",0,1)
 				autoload.state_list.sprint:
-					anim_tree.set("parameters/skill/active",false)
+
 					current_race_gender.resetAllCombos()
 					animation.play("run cycle", 0, sprint_animation_speed * agility)
 				autoload.state_list.run:
-					anim_tree.set("parameters/skill/active",false)
+
 					current_race_gender.resetAllCombos()
 					animation.play("run cycle",0,agility)
 				autoload.state_list.climb:
-					anim_tree.set("parameters/skill/active",false)
+
 					animation.play("climb cycle",blend, strength)
 				autoload.state_list.idle:
 					is_aiming = false
@@ -710,7 +736,7 @@ func matchAnimationStates()-> void:
 							bow:
 								animation.play("idle sword",0.2,1)
 					else:
-						anim_tree.set("parameters/skill/active",false)
+
 						animation.play("idle",0.2,1)
 #skillbar stuff_____________________________________________________________________________________
 				autoload.state_list.skill1:
@@ -780,6 +806,7 @@ onready var overhead_icon = $UI/GUI/SkillTrees/Background/Test/skill8/Icon
 onready var counter_strike_icon = $UI/GUI/SkillTrees/Background/Test/skill20/Icon
 onready var l_click_slot = $UI/GUI/SkillBar/GridContainer/LClickSlot
 onready var r_click_slot = $UI/GUI/SkillBar/GridContainer/RClickSlot
+
 func skills(slot)-> void:
 	if slot != null:
 			if slot.texture != null:
@@ -813,128 +840,84 @@ func skills(slot)-> void:
 				elif slot.texture.resource_path == autoload.guard.get_path():
 					pass
 #melee weapon skills
+#____________________________________________	overhead slash    __________________________________
 				elif slot.texture.resource_path == autoload.overhead_slash.get_path():
-					if current_race_gender.is_stuck_in_skill == false:
 						if overhead_icon.points >0:
 							if necromant.can_overhead_slash == true:
 								if resolve > necromant.overhead_slash_cost:
-									anim_tree.active = true
 									is_in_combat = true
 									match weapon_type:
 											fist:
-												anim_tree.active = false
-												anim_tree.set("parameters/skill/active",true)
+												animation.play("combo fist",0.3)
+												moveDuringAnimation(1.5)
 											sword:
-												anim_tree.set("parameters/sword_gate/blend_amount",-1)
-												anim_tree.set("parameters/sword_skills/blend_amount",-1)
-												anim_tree.set("parameters/Overhead_strike_grip/blend_amount",0)
-												anim_tree.set("parameters/atk_speed/scale",melee_atk_speed+ 0.15)
-												anim_tree.set("parameters/skill/active",true)
+												overhead_slash_duration = true
+												animation.play("overhand strike",0.3)
+												moveDuringAnimation(1.5)
 											dual_swords:
-												anim_tree.set("parameters/sword_gate/blend_amount",-1)
-												anim_tree.set("parameters/sword_skills/blend_amount",-1)
-												anim_tree.set("parameters/Overhead_strike_grip/blend_amount",1)
-												anim_tree.set("parameters/atk_speed/scale",melee_atk_speed+ 0.15)
-												anim_tree.set("parameters/skill/active",true)
-												fake_root_motion_movement = 0.8
+												overhead_slash_duration = true
+												animation.play("overhand strike 2x",0.3)
+												moveDuringAnimation(1.5)
 								else:
-									anim_tree.set("parameters/skill/active",false)
-									fake_root_motion_movement = 1.5
+									animation.play("idle sword",0.3)
 							else:
-								current_race_gender.fury_strike_combo =0
-								anim_tree.set("parameters/skill/active",false)
-								fake_root_motion_movement = 1.5
-				elif slot.texture.resource_path == autoload.fury_strike.get_path():
-					if current_race_gender.is_stuck_in_skill == false:
-						if necromant.can_fury_strike == true:
-							anim_tree.active = true
-							is_in_combat = true
-							anim_tree.set("parameters/sword_gate/blend_amount",-1)
-							anim_tree.set("parameters/sword_skills/blend_amount",1)
-							anim_tree.set("parameters/atk_speed/scale",melee_atk_speed+ 0.15)
-							anim_tree.set("parameters/skill/active",true)
-							anim_tree.set("parameters/atk_range_cast/blend_amount",-1)#-1 for melee,0 for ranged,1 for magic casters
+								animation.play("idle sword",0.3)
 						else:
-							anim_tree.set("parameters/skill/active",false)
+							animation.play("idle sword",0.3)
+#____________________________________________	cyclone    _________________________________________
 				elif slot.texture.resource_path == autoload.cyclone.get_path():
-					if current_race_gender.is_stuck_in_skill == false:
 						if cyclone_icon.points >0 :
 							if necromant.can_cyclone == true:
 								if resolve > autoload.cyclone_cost:
-									anim_tree.active = true
-									is_in_combat = true
-									anim_tree.set("parameters/sword_skills/blend_amount",0)
-									anim_tree.set("parameters/sword_gate/blend_amount",-1)
-									anim_tree.set("parameters/skill/active",true)
-									anim_tree.set("parameters/static move/blend_amount",0)#0 is for skills with movement 1 for static ones
-									anim_tree.set("parameters/atk_speed/scale",melee_atk_speed+ 0.15)
-									anim_tree.set("parameters/skill static/active",false)
-									anim_tree.set("parameters/atk_range_cast/blend_amount",-1)#-1 for melee,0 for ranged,1 for magic casters
-									fake_root_motion_movement = 3
+									match weapon_type:
+										sword:
+											is_in_combat = true
+											animation.play("spin1",blend,melee_atk_speed)
+											moveDuringAnimation(autoload.cyclone_motion)
+											cyclone_duration = true
 								else:
-									anim_tree.active = false
-									anim_tree.set("parameters/skill/active",false)
-									fake_root_motion_movement = 1.5
+									animation.play("idle sword",0.3)
 							else:
-								anim_tree.active = false
-								anim_tree.set("parameters/skill/active",false)
-								fake_root_motion_movement = 1.5
+								animation.play("idle sword",0.3)
+						else:
+							animation.play("idle sword",0.3)
+				elif slot.texture.resource_path == autoload.fury_strike.get_path():
+					if current_race_gender.is_stuck_in_skill == false:
+						if necromant.can_fury_strike == true:
+
+							is_in_combat = true
+							animation.play("fury strike",blend)
+						else:
+							animation.play("idle sword",0.3)
 #guarding icon
 				elif slot.texture.resource_path == autoload.guard_sword.get_path():
 					if current_race_gender.is_stuck_in_skill == false:
 						if resolve > autoload.counter_strike_cost:
-							anim_tree.active = true
+
 							is_in_combat = true
-							anim_tree.set("parameters/sword_skills3/blend_amount",-1)#0 is a battly cry like animation,-1 for parry
-							anim_tree.set("parameters/static move/blend_amount",1)#0 is for skills with movement 1 for static ones
-							anim_tree.set("parameters/atk_speed/scale",melee_atk_speed+ 0.15)
-							anim_tree.set("parameters/skill static/active",true)
-							anim_tree.set("parameters/skill/active",false)
-							anim_tree.set("parameters/atk_range_cast/blend_amount",-1)#-1 for melee,0 for ranged,1 for magic casters
-							fake_root_motion_movement = 1.5
+							animation.play("parry",blend,melee_atk_speed)
 				elif slot.texture.resource_path == autoload.counter_strike.get_path():
 					if current_race_gender.is_stuck_in_skill == false:
 						if necromant.can_counter == true:
 							if resolve > autoload.counter_strike_cost:
-								anim_tree.active = true
+
 								is_in_combat = true
-								anim_tree.set("parameters/sword_defensive/blend_amount",-1)
-								anim_tree.set("parameters/sword_gate/blend_amount",0)
-								anim_tree.set("parameters/static move/blend_amount",0)#0 is for skills with movement 1 for static ones
-								anim_tree.set("parameters/sword_gate/blend_amount",0)#0 is sword_defensive
-								anim_tree.set("parameters/atk_speed/scale",melee_atk_speed+ 0.15)
-								anim_tree.set("parameters/skill static/active",false)
-								anim_tree.set("parameters/skill/active",true)
-								anim_tree.set("parameters/atk_range_cast/blend_amount",-1)#-1 for melee,0 for ranged,1 for magic casters
-								fake_root_motion_movement = 2
+								animation.play("counter strike",blend,melee_atk_speed)
 				elif slot.texture.resource_path == autoload.rising_slash.get_path():
 					if current_race_gender.is_stuck_in_skill == false:
 						if necromant.can_counter == true:
 							if resolve > autoload.counter_strike_cost:
-								anim_tree.active = true
+
 								is_in_combat = true
-								anim_tree.set("parameters/sword_skills2/blend_amount",-1)
-								anim_tree.set("parameters/skcheck2-3/blend_amount",1)
-								anim_tree.set("parameters/static move/blend_amount",0)#0 is for skills with movement 1 for static ones
-								anim_tree.set("parameters/sword_gate/blend_amount",1)
-								anim_tree.set("parameters/atk_speed/scale",melee_atk_speed+ 0.15)
-								anim_tree.set("parameters/skill static/active",false)
-								anim_tree.set("parameters/skill/active",true)
-								anim_tree.set("parameters/atk_range_cast/blend_amount",-1)#-1 for melee,0 for ranged,1 for magic casters
-								fake_root_motion_movement = 2
+								animation.play("chop sword",blend,melee_atk_speed)
 				elif slot.texture.resource_path == autoload.rising_fury.get_path():
 					if necromant.can_counter == true:
 						if resolve > autoload.counter_strike_cost:
 							can_walk = false
 							current_race_gender.can_move = false
-							anim_tree.active = true
+
 							is_in_combat = true
-							anim_tree.set("parameters/sword_skills3/blend_amount",0)#0 is a battly cry like animation,-1 for parry
-							anim_tree.set("parameters/static move/blend_amount",1)#0 is for skills with movement 1 for static ones
-							anim_tree.set("parameters/atk_speed/scale",melee_atk_speed+ 0.15)
-							anim_tree.set("parameters/skill static/active",true)
-							anim_tree.set("parameters/skill/active",false)
-							anim_tree.set("parameters/atk_range_cast/blend_amount",-1)#-1 for melee,0 for ranged,1 for magic casters
+							animation.play("scream",blend,melee_atk_speed)
 #ranged bow skills
 				elif slot.texture.resource_path == autoload.quick_shot.get_path():
 					if weapon_type == bow:
@@ -942,19 +925,13 @@ func skills(slot)-> void:
 						can_walk = false
 						current_race_gender.can_move = false
 						if is_walking == false:
-							anim_tree.active = false
-							anim_tree.set("parameters/skill/active",false)
 							animation.play("quick shot",0.3,ranged_atk_speed + 0.4)
-							moveDuringAnimation(0)
 				elif slot.texture.resource_path == autoload.full_draw.get_path():
 					if weapon_type == bow:
 						is_aiming = true
 						can_walk = false
-						anim_tree.active = false
 						current_race_gender.can_move = false
-						anim_tree.set("parameters/skill/active",false)
 						animation.play("full draw",0.3,ranged_atk_speed)
-						moveDuringAnimation(0)
 				elif slot.texture.resource_path == autoload.base_attack_necromant.get_path():
 					necromant.baseAttack() # placeholder
 				elif slot.texture.resource_path == autoload.necro_guard.get_path():
@@ -963,12 +940,19 @@ func skills(slot)-> void:
 					necromant.switchStance()# different stances or weapons switches base attacks
 					l_click_slot.switchAttackIcon()
 					r_click_slot.switchAttackIcon()
+#consumables________________________________________________________________________________________
+				elif slot.texture.resource_path == autoload.red_potion.get_path():
+					slot.get_parent().displayQuantity()
+					for child in inventory_grid.get_children():
+						if child.is_in_group("Inventory"):
+							var index_str = child.get_name().split("InventorySlot")[1]
+							var index = int(index_str)
+							var button = inventory_grid.get_node("InventorySlot" + str(index))
+							button = inventory_grid.get_node("InventorySlot" + str(index))
+							autoload.consumeRedPotion(self,button,inventory_grid,true,slot.get_parent())				
 
-				else:
-					anim_tree.active = false
-					anim_tree.set("parameters/skill/active",false)
+	
 
-			
 func moveDuringAnimation(speed):
 	if !is_on_wall():
 		if current_race_gender.can_move == true:
@@ -1059,7 +1043,7 @@ func animations():
 			jump_animation_duration = 0 
 	elif is_walking:
 			state =  autoload.state_list.walk
-			#anim_tree.active = false
+
 			jump_animation_duration = 0 
 	elif Input.is_action_pressed("forward") or Input.is_action_pressed("left") or  Input.is_action_pressed("right") or  Input.is_action_pressed("backward"):
 			if Input.is_action_pressed("attack"):
@@ -2752,7 +2736,7 @@ func _on_Toilet1_pressed():
 		var enemies = $Mesh/Piss.get_node("Area").get_overlapping_bodies()
 		for enemy in enemies:
 			if enemy.is_in_group("enemy"):
-#				enemy.applyEffect(enemy,"slow", true)
+				enemy.applyEffect(enemy,"slow", true)
 				if enemy.has_method("takeDamage"):
 					if is_on_floor():
 						#insert sound effect here

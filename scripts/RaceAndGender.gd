@@ -17,7 +17,7 @@ onready var bow: PackedScene = preload("res://Equipment/bows/iron/bow.tscn")
 
 func _ready():	
 	player.animation = $AnimationPlayer
-	player.anim_tree = $AnimationTree
+	#player.anim_tree = $AnimationTree
 	$AnimationTree.active = false
 	loadPlayerData()
 	switchSkin()
@@ -531,7 +531,6 @@ func baseMeleeAtk()->void:
 	var enemies2 = sword2_area.get_overlapping_bodies()
 	dealDMG(sword_area.get_overlapping_bodies(),sword2_area.get_overlapping_bodies(),critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank)
 
-
 func dealDMG(enemy_detector1, enemy_detector2,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank):
 	for victim in enemy_detector1:
 		if victim.is_in_group("enemy"):
@@ -617,8 +616,10 @@ func forcedMovement(speed):
 	if !player.is_on_wall():
 		player.horizontal_velocity = player.direction * 10
 func overheadStrikeCD():
-	player.anim_tree.active = false
+#	player.anim_tree.active = false
+	player.overhead_slash_duration = false
 	player.necromant.overheadStrike()
+	stopSkill()
 func overheadStrike()->void:
 	fury_strike_combo = 0
 	var damage_type:String = "slash"
@@ -639,11 +640,11 @@ func overheadStrike()->void:
 	dealDMG(enemies,enemies2,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank)
 
 var fury_strike_combo: int = 0
-func commitToFuryStrikeSkill():
-	pass
-func resetFuryStrikeSkill():
-	player.anim_tree.active = false
+
+func FuryStrikeCD():
+#	player.anim_tree.active = false
 	player.necromant.furyStrike()
+	stopSkill()
 func furyStrike()->void:
 	fury_strike_combo += 1
 	var damage_type:String = "slash"
@@ -682,8 +683,9 @@ func resetAllCombos():
 
 onready var melee_aoe: Area = $MeleeAOE
 func cycloneCD():
-	player.anim_tree.active = false
+	player.resolve -= autoload.cyclone_cost
 	player.necromant.cyclone()
+	player.cyclone_duration = false
 func cyclone() -> void:
 	var damage_type: String = "slash"
 	var base_damage: float = autoload.cyclone_damage + player.slash_dmg
@@ -699,14 +701,15 @@ func cyclone() -> void:
 	var punishment_damage_type :String = "slash"
 	var aggro_power = damage + 20
 	var enemies = melee_aoe.get_overlapping_bodies()
-	player.resolve -= autoload.cyclone_cost
 	dealDMG(enemies,null,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank)
 
 
 
 
-func counterStrike()->void:
+func counterStrikeCD()->void:
 	player.necromant.counterStrike()
+	stopSkill()
+	stopAnimationTree()
 func counterStrikeDamage()->void:
 	var damage_type:String = "slash"
 	var damage = autoload.counter_strike_damge + player.slash_dmg
@@ -761,3 +764,16 @@ func jumpDown():#called on animation
 
 func stop():
 	animation_tree.active = false
+
+
+var is_stuck_in_skill: bool = false
+func commitToSkill():
+	is_stuck_in_skill =true 
+func stopSkill():
+	animation_tree.active = false
+	is_stuck_in_skill = false
+
+
+func consumeRedPotion():
+	player.consumeRedPotion()
+	
