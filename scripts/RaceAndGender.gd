@@ -749,7 +749,6 @@ var is_parrying: bool = false
 func parry():
 	player.resolve -= autoload.counter_strike_cost
 	is_parrying = true
-	print(str(is_parrying))
 func stopParry():
 	is_parrying = false
 

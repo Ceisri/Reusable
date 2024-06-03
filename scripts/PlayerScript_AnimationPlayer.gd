@@ -52,7 +52,7 @@ func _on_SlowTimer_timeout()->void:
 	showStatusIcon()	
 	displayLabels()
 	regenStats()
-	switchWeaponStances()
+	switchWeaponType()
 	l_click_slot.switchAttackIcon()
 	r_click_slot.switchAttackIcon()
 	$UI/GUI/SkillTrees/Label.text = str("skill points: ")+ str(skill_points)
@@ -573,25 +573,28 @@ func showEnemyStats()-> void:
 
 #______________________________________________Animations___________________________________________
 var animation : AnimationPlayer
-func switchWeaponStances()-> void:
+func switchWeaponType()-> void:
 	if right_hand != null and left_hand !=null: #check if the bone attachments have been initialized
 		if is_instance_valid(sec_current_weapon_instance):
 			if sec_current_weapon_instance.item_type == "bow":
 				weapon_type = autoload.weapon_list.bow
-		if right_hand.get_child_count() > 0: #check if anything is instanced in the bone attachment
+		if right_hand.get_child_count() > 0: #something in the right hand
 			if is_instance_valid(current_weapon_instance): #check if the item instance exists yet
 					print(str(current_weapon_instance.item_type))
 #					if current_weapon_instance.item_type == "bow":
 #						weapon_type = bow
 					if current_weapon_instance.item_type == "sword":
-						if left_hand.get_child_count() > 0:#check if anything is instanced in the bone attachment
+						#check if anything is instanced in the bone attachment
+						if left_hand.get_child_count() > 0:
 							if is_instance_valid(sec_current_weapon_instance):
 								if sec_current_weapon_instance.item_type == "sword":
 										weapon_type = autoload.weapon_list.dual_swords
-						else: #item instance doesn't exist 
+						else: #nothing in the left hand
 							if current_weapon_instance.item_type == "sword":
 								weapon_type = autoload.weapon_list.sword
-		else:
+					elif current_weapon_instance.item_type == "heavy":
+								weapon_type = autoload.weapon_list.heavy
+		else:#nothing in either hand
 			if left_hand.get_child_count() == 0:
 				weapon_type = autoload.weapon_list.fist
 
@@ -637,6 +640,9 @@ func matchAnimationStates()-> void:
 					autoload.weapon_list.dual_swords:
 						animation.play("overhand slash 2x",blend, melee_atk_speed)
 						moveDuringAnimation(1.5)
+					autoload.weapon_list.heavy:
+						animation.play("overhand slash",blend, melee_atk_speed)
+						moveDuringAnimation(1.5)
 			else:
 				animation.play("idle sword",0.3)
 		else:
@@ -652,6 +658,9 @@ func matchAnimationStates()-> void:
 			if resolve > autoload.cyclone_cost:
 				match weapon_type:
 					autoload.weapon_list.sword:
+						animation.play("cyclone heavy",blend,melee_atk_speed)
+						moveDuringAnimation(autoload.cyclone_motion)
+					autoload.weapon_list.heavy:
 						animation.play("cyclone heavy",blend,melee_atk_speed)
 						moveDuringAnimation(autoload.cyclone_motion)
 			else:
@@ -724,14 +733,14 @@ func matchAnimationStates()-> void:
 					is_aiming = false
 					if is_in_combat:
 						match weapon_type:
-							autoload.weapon_list.fist:
-								animation.play("idle fist",0.2,1)
 							autoload.weapon_list.sword:
 								animation.play("idle sword",0.2,1)
 							autoload.weapon_list.dual_swords:
 								animation.play("idle sword",0.2,1)
 							autoload.weapon_list.bow:
 								animation.play("idle sword",0.2,1)
+							autoload.weapon_list.heavy:
+								animation.play("idle heavy",0.2,1)
 					else:
 						animation.play("idle",0.2,1)
 #skillbar stuff_____________________________________________________________________________________
@@ -820,10 +829,12 @@ func skills(slot)-> void:
 					all_skills.areaSpell()
 				elif slot.texture.resource_path == autoload.arcane_blast.get_path():	
 					all_skills.arcaneBlast()
-#melee
+#Lclick and Rclick__________________________________________________________________________________
+#fist
 				elif slot.texture.resource_path == autoload.punch.get_path():
 					animation.play("combo fist",0.3,melee_atk_speed + 0.15)
 					moveDuringAnimation(2)
+#sword
 				elif slot.texture.resource_path == autoload.slash_sword.get_path():
 					is_in_combat = true
 					match weapon_type:
@@ -833,8 +844,22 @@ func skills(slot)-> void:
 						autoload.weapon_list.dual_swords:
 							animation.play("combo 2x",0.3,melee_atk_speed+ 0.2)
 							moveDuringAnimation(1.5)
-				elif slot.texture.resource_path == autoload.guard.get_path():
-					pass
+#bow 
+				elif slot.texture.resource_path == autoload.quick_shot.get_path():
+					if weapon_type == autoload.weapon_list.bow:
+						is_aiming = true
+						can_walk = false
+						current_race_gender.can_move = false
+						if is_walking == false:
+							animation.play("quick shot",0.3,ranged_atk_speed + 0.4)
+#heavy 
+				elif slot.texture.resource_path == autoload.heavy_slash.get_path():
+					animation.play("combo heavy",0.3,melee_atk_speed)
+					moveDuringAnimation(1)
+				elif slot.texture.resource_path == autoload.cleave.get_path():
+					animation.play("cleave",0.3,melee_atk_speed)
+					moveDuringAnimation(2)
+					
 #melee weapon skills
 #__________________________________________  overhead slash    _____________________________________
 				elif slot.texture.resource_path == autoload.overhead_slash.get_path():
@@ -891,13 +916,6 @@ func skills(slot)-> void:
 						else:
 							animation.play("idle sword",0.3)
 #ranged bow skills
-				elif slot.texture.resource_path == autoload.quick_shot.get_path():
-					if weapon_type == autoload.weapon_list.bow:
-						is_aiming = true
-						can_walk = false
-						current_race_gender.can_move = false
-						if is_walking == false:
-							animation.play("quick shot",0.3,ranged_atk_speed + 0.4)
 				elif slot.texture.resource_path == autoload.full_draw.get_path():
 					if weapon_type == autoload.weapon_list.bow:
 						is_aiming = true

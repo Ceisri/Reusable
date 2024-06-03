@@ -18,3 +18,5 @@ func switchAttackIcon() -> void:
 				icon.texture = autoload.slash_sword
 			autoload.weapon_list.bow:
 				icon.texture = autoload.quick_shot
+			autoload.weapon_list.heavy:
+				icon.texture = autoload.heavy_slash
