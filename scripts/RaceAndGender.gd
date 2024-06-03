@@ -61,6 +61,7 @@ func loadAnimations()->void:
 #	animation.add_animation("", load())
 	animation.add_animation("whirlwind sword", load("res://player/universal animations/sword animations/spin1.tres"))
 	animation.add_animation("whirlwind heavy", load("res://player/universal animations/greatsword animations/whirwind heavy.anim"))
+	
 	animation.add_animation("cyclone heavy", load("res://player/universal animations/greatsword animations/cyclone heavy.anim"))
 	
 	animation.add_animation("overhand slash", load("res://player/universal animations/sword animations/overhand slash.tres"))
@@ -193,21 +194,7 @@ func switchHandR():
 		"cloth1":
 			player.applyEffect(player,"Rhand1", true)
 func switchFeet():
-	var feet0 = $Armature/Skeleton/feet0
-	var feet1 = $Armature/Skeleton/feet1
-	var feet2 = $Armature/Skeleton/feet2
-	if feet0 != null and feet1 != null:
-		match player.foot_r:
-			"naked":
-				player.applyEffect(player,"Rshoe1", false)
-				feet0.show()
-				feet1.hide()
-				feet2.hide()
-			"cloth1":
-				player.applyEffect(player,"Rshoe1", true)
-				feet0.hide()
-				feet1.show()
-				feet2.hide()
+	pass
 #______________________________Switch Colors____________________________________
 
 var skin_color = "1"
@@ -318,7 +305,7 @@ func randomizeArmor():
 
 var save_directory: String 
 var save_path: String 
-func savePlayerData():
+func savePlayerData()-> void:
 	var data = {
 		"skin_color": skin_color,
 		"armor_color":armor_color,
@@ -335,7 +322,7 @@ func savePlayerData():
 		file.store_var(data)
 		file.close()
 		
-func loadPlayerData():
+func loadPlayerData()-> void:
 	var file = File.new()
 	if file.file_exists(save_path):
 		var error = file.open_encrypted_with_pass(save_path, File.READ, "P@paB3ar6969")
@@ -395,7 +382,7 @@ var hairstyle:String ="2"
 var hair_color_change = false
 var eyer_color_change = false
 var eyel_color_change = false
-func switchHair():
+func switchHair()-> void:
 	if current_hair_instance:
 		current_hair_instance.queue_free() # Remove the current hair instance
 	match player.species:
@@ -422,13 +409,13 @@ func switchHair():
 						"9":
 							instanceHair(hair0)
 
-func instanceHair(hair_scene):
+func instanceHair(hair_scene)-> void:
 	if hair_attachment and hair_scene:
 		var hair_instance = hair_scene.instance()
 		hair_attachment.add_child(hair_instance)
 		current_hair_instance = hair_instance
 
-func colorhair():
+func colorhair()-> void:
 	if current_hair_instance:
 		# Get the original material of the hair instance
 		var original_material = current_hair_instance.material_override
@@ -450,7 +437,7 @@ onready var face4: PackedScene = preload("res://player/human/fem/Faces/4.tscn")
 onready var HXYface1: PackedScene = preload("res://player/human/mal/Mesh/heads/h0.tscn")
 var face_set:String = "1"
 var current_face_instance: Node = null
-func switchFace():
+func switchFace()-> void:
 	if current_face_instance:
 		current_face_instance.queue_free()
 	match player.species:
@@ -480,7 +467,7 @@ func switchFace():
 							instanceFace(HXYface1)
 						"5":
 							instanceFace(HXYface1)
-func instanceFace(face_scene):
+func instanceFace(face_scene)-> void:
 	if face_attachment and face_scene:
 		var face_instance = face_scene.instance()
 		face_attachment.add_child(face_instance)
@@ -488,11 +475,11 @@ func instanceFace(face_scene):
 var can_move: bool = false
 
 
-func stopMovement():
+func stopMovement()-> void:
 	can_move = false
 func startMovement():
 	can_move = true 
-func punch():
+func punch()-> void:
 	var damage_type = "blunt"
 	var damage = 10 + player.blunt_dmg 
 	var damage_flank = damage + player.flank_dmg
@@ -563,7 +550,7 @@ func baseMeleeAtk()->void:
 	var enemies2 = sword2_area.get_overlapping_bodies()
 	dealDMG(sword_area.get_overlapping_bodies(),sword2_area.get_overlapping_bodies(),critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank)
 
-func dealDMG(enemy_detector1, enemy_detector2,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank):
+func dealDMG(enemy_detector1, enemy_detector2,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank)-> void:
 	for victim in enemy_detector1:
 		if victim.is_in_group("enemy"):
 			if victim != self:
@@ -644,17 +631,17 @@ func stab()->void:
 	dealDMG(enemies,null,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank)
 
 
-func forcedMovement(speed):
+func forcedMovement(speed)-> void:
 	if !player.is_on_wall():
 		player.horizontal_velocity = player.direction * 10
-func overheadSlashCD():
+func overheadSlashCD()-> void:
 	player.resolve -= autoload.overhead_slash_cost
 	player.overhead_slash_duration = false
 	player.all_skills.overheadSlashCD()
 func overheadSlashDMG()->void:
 	var damage_type:String = "slash"
 	var base_damage: float = autoload.overhead_slash_damage + player.slash_dmg  + player.blunt_dmg
-	var points: int = player.overhead_icon.points
+	var points: int = player.overhand_icon.points
 	var damage_multiplier: float = 1.0
 	if points > 1:
 		damage_multiplier += (points - 1) * 0.04
@@ -669,18 +656,16 @@ func overheadSlashDMG()->void:
 	var enemies2 = sword2_area.get_overlapping_bodies()
 	dealDMG(enemies,enemies2,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank)
 
-func underhandSlashCD():
+func underhandSlashCD()-> void:
 	player.all_skills.underhandSlashCD()
 	player.underhand_slash_duration = false
 
-func underhandSlashDMG():
+func underhandSlashDMG()-> void:
 	pass
 
 
-
-
 onready var melee_aoe: Area = $MeleeAOE
-func cycloneCD():
+func cycloneCD()-> void:
 	player.resolve -= autoload.cyclone_cost
 	player.all_skills.cycloneCD()
 	player.cyclone_duration = false
@@ -700,6 +685,33 @@ func cycloneDamage() -> void:
 	var aggro_power = damage + 20
 	var enemies = melee_aoe.get_overlapping_bodies()
 	dealDMG(enemies,null,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank)
+
+func whirlwindCD()-> void:
+	player.resolve -= player.all_skills.whirlwind_cost
+	player.all_skills.whirlwindCD()
+	player.whirlwind_duration = false
+func whirlwindDMG() -> void:
+	var damage_type: String = "slash"
+	var base_damage: float = autoload.cyclone_damage + player.slash_dmg
+	var points: int = player.whirlwind_icon.points
+	var damage_multiplier: float = 1.0
+	if points > 1:
+		damage_multiplier += (points - 1) * 0.05
+	var damage: float = base_damage * damage_multiplier
+	var damage_flank = damage + player.flank_dmg 
+	var critical_damage : float  = damage * player.critical_strength
+	var critical_flank_damage : float  = damage_flank * player.critical_strength
+	var punishment_damage : float = 7 #extra damage for when the victim is trying to block but is facing the wrong way 
+	var punishment_damage_type :String = "slash"
+	var aggro_power = damage + 20
+	var enemies = melee_aoe.get_overlapping_bodies()
+	dealDMG(enemies,null,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank)
+
+
+
+
+
+
 
 
 

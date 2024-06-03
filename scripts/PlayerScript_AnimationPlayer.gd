@@ -602,6 +602,7 @@ func switchWeaponType()-> void:
 var overhead_slash_duration:bool = false
 var underhand_slash_duration:bool = false
 var cyclone_duration:bool = false
+var whirlwind_duration:bool = false
 var counter_strike_duration:bool = false
 
 var state = autoload.state_list.idle
@@ -627,6 +628,9 @@ func matchAnimationStates()-> void:
 			autoload.weapon_list.sword:
 				animation.play("lunge heavy ver2",blend, melee_atk_speed + 0.25)
 				moveDuringAnimation(4.5)
+			autoload.weapon_list.heavy:
+				animation.play("lunge heavy ver2",blend, melee_atk_speed + 0.25)
+				moveDuringAnimation(4.5)
 
 #_______________________________________Overhead Slash______________________________________________
 	elif overhead_slash_duration == true:
@@ -644,9 +648,9 @@ func matchAnimationStates()-> void:
 						animation.play("overhand slash",blend, melee_atk_speed)
 						moveDuringAnimation(1.5)
 			else:
-				animation.play("idle sword",0.3)
+				returnToIdleBasedOnWeaponType()
 		else:
-			animation.play("idle sword",0.3)
+			returnToIdleBasedOnWeaponType()
 #Underhand slash____________________________________________________________________________________
 	elif underhand_slash_duration == true:
 		animation.play("underhand slash",blend,  melee_atk_speed + 0.25)
@@ -664,9 +668,27 @@ func matchAnimationStates()-> void:
 						animation.play("cyclone heavy",blend,melee_atk_speed)
 						moveDuringAnimation(autoload.cyclone_motion)
 			else:
-				animation.play("idle sword",0.3)
+				cyclone_duration = false
+				returnToIdleBasedOnWeaponType()
 		else:
-			animation.play("idle sword",0.3)
+			cyclone_duration = false
+			returnToIdleBasedOnWeaponType()
+	elif whirlwind_duration == true :
+		if all_skills.can_whirlwind == true:
+			if resolve > all_skills.whirlwind_cost:
+				match weapon_type:
+					autoload.weapon_list.sword:
+						animation.play("whirlwind heavy",blend,melee_atk_speed)
+						moveDuringAnimation(3)
+					autoload.weapon_list.heavy:
+						animation.play("whirlwind heavy",blend,melee_atk_speed)
+						moveDuringAnimation(3)
+			else:
+				whirlwind_duration = false
+				returnToIdleBasedOnWeaponType()
+		else:
+			whirlwind_duration = false
+			returnToIdleBasedOnWeaponType()
 #_______________________________________Counter Strike______________________________________________
 	elif counter_strike_duration == true: 
 		cyclone_duration = false
@@ -677,7 +699,8 @@ func matchAnimationStates()-> void:
 				animation.play("counter strike",blend,melee_atk_speed)
 				moveDuringAnimation(-1)
 			else:
-				animation.play("idle sword",0.3)
+				counter_strike_duration = false
+				returnToIdleBasedOnWeaponType()
 
 	else:#_____________________________ Matching States ____________________________________________
 			match state:
@@ -807,8 +830,11 @@ func matchAnimationStates()-> void:
 
 onready var all_skills = $UI/GUI/SkillTrees
 onready var cyclone_icon = $UI/GUI/SkillTrees/Background/Test/skill15/Icon
-onready var overhead_icon = $UI/GUI/SkillTrees/Background/Test/skill8/Icon
+onready var overhand_icon = $UI/GUI/SkillTrees/Background/Test/skill25/Icon
+onready var underhand_icon = $UI/GUI/SkillTrees/Background/Test/skill23/Icon
 onready var counter_strike_icon = $UI/GUI/SkillTrees/Background/Test/skill20/Icon
+onready var whirlwind_icon = $UI/GUI/SkillTrees/Background/Test/skill24/Icon
+
 onready var l_click_slot = $UI/GUI/SkillBar/GridContainer/LClickSlot
 onready var r_click_slot = $UI/GUI/SkillBar/GridContainer/RClickSlot
 
@@ -863,58 +889,79 @@ func skills(slot)-> void:
 #melee weapon skills
 #__________________________________________  overhead slash    _____________________________________
 				elif slot.texture.resource_path == autoload.overhead_slash.get_path():
-						if overhead_icon.points >0:
+						if overhand_icon.points >0:
 							if all_skills.can_overhead_slash == true:
 								if resolve > all_skills.overhead_slash_cost:
 									is_in_combat = true
 									overhead_slash_duration = true
 								else:
-									animation.play("idle sword",0.3)
+									returnToIdleBasedOnWeaponType()
+									overhead_slash_duration = false
 							else:
-								animation.play("idle sword",0.3)
+								returnToIdleBasedOnWeaponType()
+								overhead_slash_duration = false
 						else:
-							animation.play("idle sword",0.3)
+							returnToIdleBasedOnWeaponType()
+							overhead_slash_duration = false
 #_________________________________________ Underhand slash _________________________________________
 				elif slot.texture.resource_path == autoload.underhand_slash.get_path():
-						#if overhead_icon.points >0:
+						if underhand_icon.points >0:
 							if all_skills.can_underhand_slash == true:
 								if resolve > all_skills.overhead_slash_cost:
 									is_in_combat = true
 									underhand_slash_duration = true
 								else:
-									animation.play("idle sword",0.3)
+									returnToIdleBasedOnWeaponType()
+									underhand_slash_duration = false
 							else:
-								animation.play("idle sword",0.3)
-					#	else:
-							#animation.play("idle sword",0.3)
-#____________________________________________	cyclone    _________________________________________
+								returnToIdleBasedOnWeaponType()
+								underhand_slash_duration = false
+						else:
+							returnToIdleBasedOnWeaponType()
+							underhand_slash_duration = false
+#_________________________________________  cyclone   ______________________________________________
 				elif slot.texture.resource_path == autoload.cyclone.get_path():
 						if cyclone_icon.points >0 :
 							if all_skills.can_cyclone == true:
 								if resolve > autoload.cyclone_cost:
 									cyclone_duration = true
 								else:
-									animation.play("idle sword",0.3)
+									returnToIdleBasedOnWeaponType()
+									cyclone_duration = false
 							else:
-								animation.play("idle sword",0.3)
+								returnToIdleBasedOnWeaponType()
+								cyclone_duration = false
 						else:
-							animation.play("idle sword",0.3)
+							returnToIdleBasedOnWeaponType()
+							cyclone_duration = false
+#__________________________________________ Whirlwind _____________________________________________
+				elif slot.texture.resource_path == autoload.whirlwind.get_path():
+						if whirlwind_icon.points >0 :
+							if all_skills.can_whirlwind == true:
+								if resolve > all_skills.whirlwind_cost:
+									whirlwind_duration = true
+								else:
+									returnToIdleBasedOnWeaponType()
+									whirlwind_duration = false
+							else:
+								returnToIdleBasedOnWeaponType()
+								whirlwind_duration = false
+						else:
+							returnToIdleBasedOnWeaponType()
+							whirlwind_duration = false
+
 				elif slot.texture.resource_path == autoload.counter_strike.get_path():
 						if all_skills.can_counter == true:
 							if resolve > autoload.counter_strike_cost:
-								counter_strike_duration = true
-								is_in_combat = true
+								match weapon_type:
+									autoload.weapon_list.sword:
+										counter_strike_duration = true
+										is_in_combat = true
 							else:
-								animation.play("idle sword",0.3)
+								returnToIdleBasedOnWeaponType()
 						else:
-							animation.play("idle sword",0.3)
-				elif slot.texture.resource_path == autoload.fury_strike.get_path():
+							returnToIdleBasedOnWeaponType()
 
-						if all_skills.can_fury_strike == true:
-							is_in_combat = true
-							animation.play("fury strike",blend)
-						else:
-							animation.play("idle sword",0.3)
 #ranged bow skills
 				elif slot.texture.resource_path == autoload.full_draw.get_path():
 					if weapon_type == autoload.weapon_list.bow:
@@ -950,8 +997,18 @@ func skills(slot)-> void:
 							button = inventory_grid.get_node("InventorySlot" + str(index))
 							autoload.consumeRedPotion(self,button,inventory_grid,true,slot.get_parent())				
 
-	
-
+func returnToIdleBasedOnWeaponType():
+	match weapon_type:
+			autoload.weapon_list.fist:
+				animation.play("idle",0.3)
+			autoload.weapon_list.sword:
+				animation.play("idle sword",0.3)
+			autoload.weapon_list.dual_swords:
+				animation.play("idle sword",0.3)
+			autoload.weapon_list.bow:
+				animation.play("idle bow",0.3)
+			autoload.weapon_list.heavy:
+				animation.play("idle heavy",0.3)
 func moveDuringAnimation(speed):
 	if !is_on_wall():
 		if current_race_gender.can_move == true:
@@ -1087,6 +1144,8 @@ func doubleAttack():
 			double_atk_count += 1
 		if double_atk_count == 2:
 			double_atk_duration =true
+		else:
+			double_atk_duration = false
 
 func pushEnemyAway(push_distance, enemy, push_speed):
 	var direction_to_enemy = enemy.global_transform.origin - global_transform.origin
@@ -1520,7 +1579,11 @@ func skillPressed(tree,index)->void:
 	if icon_texture.get_path() == autoload.cyclone.get_path():#check if skill icons match
 		spendSkillPoints(icon_texture_rect,button)
 #___________________________________________________________________________________________________
+	elif icon_texture.get_path() == autoload.whirlwind.get_path():
+		spendSkillPoints(icon_texture_rect,button)
 	elif icon_texture.get_path() == autoload.overhead_slash.get_path():
+		spendSkillPoints(icon_texture_rect,button)
+	elif icon_texture.get_path() == autoload.underhand_slash.get_path():
 		spendSkillPoints(icon_texture_rect,button)
 	elif icon_texture.get_path() == autoload.rising_slash.get_path():
 		spendSkillPoints(icon_texture_rect,button)
@@ -1607,7 +1670,7 @@ func UniversalToolTip(icon_texture,instance):
 			callToolTipSkills(instance,"Cyclone",str("Total Damage: ") + str(total_damage) + " per hit ",str("Base Damage:  3 hits of ") + str(autoload.cyclone_damage) + " damage",str("Resolve cost: ") + str(autoload.cyclone_cost),str("Cooldown: ") + str(autoload.cyclone_cooldown),autoload.cyclone_description)
 		elif icon_texture.get_path() == autoload.overhead_slash.get_path():
 			var base_damage: float = autoload.overhead_slash_damage + slash_dmg + blunt_dmg
-			var points: int = overhead_icon.points
+			var points: int = overhand_icon.points
 			var damage_multiplier: float = 1.0
 			var total_damage: float
 			if points > 1:

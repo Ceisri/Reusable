@@ -47,15 +47,16 @@ func updateCooldownLabel() -> void:
 			var label: Label = child.get_node("CD")
 			if label != null:
 				 updateUnderhand(label,underhand_slash_cooldown, current_time,last_underhand_slash_time)
-#___________________________________________________________________________________________________
-		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.fury_strike.get_path():
-			var label: Label = child.get_node("CD")
-			if label != null:
-				 updateLabelFuryStrike(label,fury_strike_cooldown, current_time,last_fury_strike_time)
+#__________________________________________________Cyclone__________________________________________
 		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.cyclone.get_path():
 			var label: Label = child.get_node("CD")
 			if label != null:
 				 updateLabelCyclone(label,autoload.cyclone_cooldown, current_time,last_cyclone_time)
+#__________________________________________________Whirlwind__________________________________________
+		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.whirlwind.get_path():
+			var label: Label = child.get_node("CD")
+			if label != null:
+				 updateWhirlwind(label,whirlwind_cooldown, current_time,last_whirlwind_time)
 		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.counter_strike.get_path():
 			var label: Label = child.get_node("CD")
 			if label != null:
@@ -463,28 +464,36 @@ func updateUnderhand(label: Label, cooldown: float, current_time: float, last_ti
 		
 		
 			
-var fury_strike_cooldown: float = 3
-var last_fury_strike_time: float = 0.0 
-var fury_strike_cost: float = 5
-var fury_strike_count: int = 2
-func furyStrike():
-	var current_time: float = OS.get_ticks_msec() / 1000.0
-	if current_time - last_fury_strike_time >= fury_strike_cooldown:
-		last_fury_strike_time = current_time
-
 
 var last_cyclone_time: float = 0.0 
-func cycloneCD():
+func cycloneCD()->void:
 	var current_time: float = OS.get_ticks_msec() / 1000.0
 	if current_time - last_cyclone_time >= autoload.cyclone_cooldown:
 		last_cyclone_time = current_time
 
-
-
+#___________________________________________________________________________________________________
+var whirlwind_cooldown: float = 3
+var whirlwind_cost:float = 6
+var last_whirlwind_time: float = 0.0 
+func whirlwindCD()->void:
+	var current_time: float = OS.get_ticks_msec() / 1000.0
+	if current_time - last_whirlwind_time >= whirlwind_cooldown:
+		last_whirlwind_time = current_time
+var can_whirlwind:bool = false
+func updateWhirlwind(label: Label, cooldown: float, current_time: float, last_time: float) -> void:
+	var elapsed_time: float = current_time - last_time
+	var remaining_cooldown: float = max(0, cooldown - elapsed_time)
+	if remaining_cooldown!= 0:
+		can_whirlwind = false
+		label.text = str(round(remaining_cooldown) )
+	else:
+		label.text = ""
+		can_whirlwind = true
+#___________________________________________________________________________________________________
 var counter_cooldown: float = 3
 var last_counter_time: float = 0.0 
 var counter_cost: float = 5
-func counterStrike():
+func counterStrike()->void:
 	var current_time: float = OS.get_ticks_msec() / 1000.0
 	if current_time - last_counter_time >= counter_cooldown:
 		last_counter_time = current_time
