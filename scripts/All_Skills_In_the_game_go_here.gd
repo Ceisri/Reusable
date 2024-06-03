@@ -38,10 +38,16 @@ func updateCooldownLabel() -> void:
 			var label: Label = child.get_node("CD")
 			if label != null:
 				 updateLabel(label,necro_switch_cooldown, current_time, last_necro_switch_time)
+#___________________________________________Overhand and Underhand strike cooldowns_________________
 		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.overhead_slash.get_path():
 			var label: Label = child.get_node("CD")
 			if label != null:
-				 updateLabel2(label,overhead_strike_cooldown, current_time,last_overhead_strike_time)
+				 updateLabel2(label,overhead_slash_cooldown, current_time,last_overhead_slash_time)
+		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.underhand_slash.get_path():
+			var label: Label = child.get_node("CD")
+			if label != null:
+				 updateUnderhand(label,underhand_slash_cooldown, current_time,last_underhand_slash_time)
+#___________________________________________________________________________________________________
 		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.fury_strike.get_path():
 			var label: Label = child.get_node("CD")
 			if label != null:
@@ -72,6 +78,7 @@ func updateLabel2(label: Label, cooldown: float, current_time: float, last_time:
 	else:
 		label.text = ""
 		can_overhead_slash = true
+		
 		
 var can_drink_potion: bool = true
 func updateLabelPotion(label: Label, cooldown: float, current_time: float, last_time: float) -> void:
@@ -425,16 +432,36 @@ func switchStance():
 
 
 #testing overhead strike CD
-var overhead_strike_cooldown: float = 3
-var last_overhead_strike_time: float = 0.0 
+var overhead_slash_cooldown: float = 3
+var last_overhead_slash_time: float = 0.0 
 var overhead_slash_cost: float = 7
-
-func overheadStrike():
+func overheadSlashCD():
 	var current_time: float = OS.get_ticks_msec() / 1000.0
-	if current_time - last_overhead_strike_time >= overhead_strike_cooldown:
+	if current_time - last_overhead_slash_time >= overhead_slash_cooldown:
 		if player.resolve >=overhead_slash_cost:
-			last_overhead_strike_time = current_time
-			
+			last_overhead_slash_time = current_time
+
+#___________________________________________________________________________________________________
+var underhand_slash_cooldown: float = 3
+var last_underhand_slash_time: float = 0.0 
+var underhand_slash_cost: float = 7
+func underhandSlashCD():
+	var current_time: float = OS.get_ticks_msec() / 1000.0
+	if current_time - last_underhand_slash_time >= underhand_slash_cooldown:
+		if player.resolve >=underhand_slash_cost:
+			last_underhand_slash_time = current_time
+var can_underhand_slash: bool = false
+func updateUnderhand(label: Label, cooldown: float, current_time: float, last_time: float) -> void:
+	var elapsed_time: float = current_time - last_time
+	var remaining_cooldown: float = max(0, cooldown - elapsed_time)
+	if remaining_cooldown!= 0:
+		can_underhand_slash = false
+		label.text = str(round(remaining_cooldown) )
+	else:
+		label.text = ""
+		can_underhand_slash = true
+		
+		
 			
 var fury_strike_cooldown: float = 3
 var last_fury_strike_time: float = 0.0 
@@ -447,7 +474,7 @@ func furyStrike():
 
 
 var last_cyclone_time: float = 0.0 
-func cyclone():
+func cycloneCD():
 	var current_time: float = OS.get_ticks_msec() / 1000.0
 	if current_time - last_cyclone_time >= autoload.cyclone_cooldown:
 		last_cyclone_time = current_time

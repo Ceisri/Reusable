@@ -15,10 +15,9 @@ onready var sword2: PackedScene = preload("res://itemTest.tscn")
 onready var bow: PackedScene = preload("res://Equipment/bows/iron/bow.tscn")
 
 
-func _ready():	
+func _ready():
+	$Armature/Skeleton/RightHand/Holder/Sword_For_Testing.queue_free()
 	player.animation = $AnimationPlayer
-#	player.anim_tree = $AnimationTree
-	#$AnimationTree.active = false
 	loadPlayerData()
 	switchSkin()
 	switchArmorTexture()
@@ -30,9 +29,43 @@ func _ready():
 
 
 func loadAnimations()->void:
-	animation.add_animation("combo sword", load("res://player/universal animations/sword animations/combo sword.tres"))
-	animation.add_animation("run cycle", load("res://player/universal animations/movement/run cycle.anim"))
+	animation.add_animation("idle", load("res://player/universal animations/idle animations/idle.anim"))
+	animation.add_animation("idle fist", load("res://player/universal animations/idle animations/idle fist.anim"))
+	animation.add_animation("idle bow", load("res://player/universal animations/idle animations/idle sword.anim"))#placeholder
+	animation.add_animation("idle sword", load("res://player/universal animations/idle animations/idle sword.anim"))
+	animation.add_animation("idle heavy", load("res://player/universal animations/greatsword animations/idle heavy.anim"))
+	
+	animation.add_animation("walk", load("res://player/universal animations/movement/walk.tres"))
+	animation.add_animation("walk bow", load("res://player/universal animations/bow animations/walk bow.anim"))
+	animation.add_animation("walk sword", load("res://player/universal animations/sword animations/walk sword.tres"))
+	animation.add_animation("walk heavy", load("res://player/universal animations/greatsword animations/walk heavy.anim"))
+	
+	
+	animation.add_animation("run", load("res://player/universal animations/movement/run cycle.anim"))
 	animation.add_animation("climb cycle", load("res://testing this shit/climb cycle.anim"))
+	
+	#L-click animations
+	animation.add_animation("combo fist", load("res://player/universal animations/barehanded/combo fist.tres"))
+	animation.add_animation("quick shot", load("res://player/universal animations/bow animations/quick shot.tres"))
+	animation.add_animation("combo sword", load("res://player/universal animations/sword animations/combo sword.tres"))
+	
+	
+	#R-click animations
+	animation.add_animation("full draw", load("res://player/universal animations/bow animations/full draw.anim"))
+	animation.add_animation("parry", load("res://player/universal animations/sword animations/parry.anim"))
+	animation.add_animation("cleave", load("res://player/universal animations/greatsword animations/cleave.anim"))
+	
+	#Double L-click animations
+	animation.add_animation("lunge sword", load("res://player/universal animations/greatsword animations/stab lunge.anim"))
+
+#	animation.add_animation("", load())
+	animation.add_animation("whirlwind sword", load("res://player/universal animations/sword animations/spin1.tres"))
+	animation.add_animation("whirlwind heavy", load("res://player/universal animations/greatsword animations/whirwind heavy.anim"))
+	animation.add_animation("cyclone heavy", load("res://player/universal animations/greatsword animations/cyclone heavy.anim"))
+	
+	animation.add_animation("overhand slash", load("res://player/universal animations/sword animations/overhand slash.tres"))
+	
+
 
 #_____________________________________Equipment 3D______________________________
 func EquipmentSwitch()->void:
@@ -453,15 +486,12 @@ func instanceFace(face_scene):
 		face_attachment.add_child(face_instance)
 		current_face_instance = face_instance
 var can_move: bool = false
-func stopAnimationTree():
-	pass
-#	animation_tree.active = false
+
 
 func stopMovement():
 	can_move = false
 func startMovement():
 	can_move = true 
-	print("moving")
 func punch():
 	var damage_type = "blunt"
 	var damage = 10 + player.blunt_dmg 
@@ -525,7 +555,8 @@ func baseMeleeAtk()->void:
 	var damage_flank = damage + player.flank_dmg 
 	var critical_damage : float  = damage * player.critical_strength
 	var critical_flank_damage : float  = damage_flank * player.critical_strength
-	var punishment_damage : float = 7 #extra damage for when the victim is trying to block but is facing the wrong way 
+	#extra damage when the victim is trying to block but is facing the wrong way 
+	var punishment_damage : float = 7 
 	var punishment_damage_type :String = "slash"
 	var aggro_power = damage + 20
 	var enemies = sword_area.get_overlapping_bodies()
@@ -565,7 +596,7 @@ func dealDMG(enemy_detector1, enemy_detector2,critical_damage,aggro_power,damage
 									victim.takeDamage(damage,aggro_power,player,player.stagger_chance,damage_type)
 								else: #appareantly the victim is showing his back or flanks, extra damage
 									victim.takeDamage(damage_flank,aggro_power,player,player.stagger_chance,damage_type)
-	if player.weapon_type == player.dual_swords:
+	if player.weapon_type == autoload.weapon_list.dual_swords:
 		if enemy_detector2 != null:
 			for victim in enemy_detector2:
 				if victim.is_in_group("enemy"):
@@ -612,17 +643,15 @@ func stab()->void:
 	var enemies = player.detector.get_overlapping_bodies()
 	dealDMG(enemies,null,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank)
 
-var base_damage_overhead_strike = 50
+
 func forcedMovement(speed):
 	if !player.is_on_wall():
 		player.horizontal_velocity = player.direction * 10
-func overheadStrikeCD():
+func overheadSlashCD():
 	player.resolve -= autoload.overhead_slash_cost
 	player.overhead_slash_duration = false
-	player.all_skills.overheadStrike()
-	stopSkill()
-func overheadStrike()->void:
-	fury_strike_combo = 0
+	player.all_skills.overheadSlashCD()
+func overheadSlashDMG()->void:
 	var damage_type:String = "slash"
 	var base_damage: float = autoload.overhead_slash_damage + player.slash_dmg  + player.blunt_dmg
 	var points: int = player.overhead_icon.points
@@ -640,47 +669,22 @@ func overheadStrike()->void:
 	var enemies2 = sword2_area.get_overlapping_bodies()
 	dealDMG(enemies,enemies2,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank)
 
-var fury_strike_combo: int = 0
+func underhandSlashCD():
+	player.all_skills.underhandSlashCD()
+	player.underhand_slash_duration = false
 
-func FuryStrikeCD():
-	player.anim_tree.active = false
-	player.all_skills.furyStrike()
-	stopSkill()
-func furyStrike()->void:
-	fury_strike_combo += 1
-	var damage_type:String = "slash"
-	var damage = autoload.base_fury_strike_damage + player.slash_dmg
-	var damage_flank = damage + player.flank_dmg 
-	var critical_damage : float  = damage * player.critical_strength
-	var critical_flank_damage : float  = damage_flank * player.critical_strength
-	var punishment_damage : float = 7 #extra damage for when the victim is trying to block but is facing the wrong way 
-	var punishment_damage_type :String = "slash"
-	var aggro_power = damage + 20
-	var enemies = sword_area.get_overlapping_bodies()
-	var enemies2 = sword2_area.get_overlapping_bodies()
-	dealDMG(enemies,enemies2,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank)
+func underhandSlashDMG():
+	pass
 
 
-
-func pomelStrike()->void:
-	var damage_type:String = "blunt"
-	var damage = 15 + player.blunt_dmg
-	var damage_flank = damage + player.flank_dmg 
-	var critical_damage : float  = damage * player.critical_strength
-	var critical_flank_damage : float  = damage_flank * player.critical_strength
-	var punishment_damage : float = 3 #extra damage for when the victim is trying to block but is facing the wrong way 
-	var punishment_damage_type :String = "blunt"
-	var aggro_power = damage + 55
-	var enemies = sword_area.get_overlapping_bodies()
-	dealDMG(enemies,null,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank)
 
 
 onready var melee_aoe: Area = $MeleeAOE
 func cycloneCD():
 	player.resolve -= autoload.cyclone_cost
-	player.all_skills.cyclone()
+	player.all_skills.cycloneCD()
 	player.cyclone_duration = false
-func cyclone() -> void:
+func cycloneDamage() -> void:
 	var damage_type: String = "slash"
 	var base_damage: float = autoload.cyclone_damage + player.slash_dmg
 	var points: int = player.cyclone_icon.points
@@ -703,8 +707,6 @@ func cyclone() -> void:
 func counterStrikeCD()->void:
 	player.counter_strike_duration = false
 	player.all_skills.counterStrike()
-	stopSkill()
-	stopAnimationTree()
 func counterStrikeDamage()->void:
 	var damage_type:String = "slash"
 	var damage = autoload.counter_strike_damge + player.slash_dmg
@@ -751,25 +753,7 @@ func parry():
 func stopParry():
 	is_parrying = false
 
-var jump_force : float  = 10
-func jumpUp():#called on animation
-	player.vertical_velocity = Vector3.UP * jump_force 
-func jumpDown():#called on animation
-	player.vertical_velocity = Vector3.UP * -jump_force
-
-func stop():
-	pass
-	#animation_tree.active = false
 
 
-var is_stuck_in_skill: bool = false
-func commitToSkill():
-	is_stuck_in_skill =true 
-func stopSkill():
-#	animation_tree.active = false
-	is_stuck_in_skill = false
-
-
-func consumeRedPotion():
-	player.consumeRedPotion()
-	
+func doubleAtkEnd():
+	player.double_atk_duration = false
