@@ -10,13 +10,13 @@ onready var left_hip = $Armature/Skeleton/LeftHip/holder
 onready var shoulder_r = $Armature/Skeleton/RightShoulder/Holder
 onready var shoulder_l = $Armature/Skeleton/LeftShoulder/Holder
 onready var sword0: PackedScene = preload("res://player/weapons/sword/sword.tscn")
-onready var sword1: PackedScene = preload("res://itemTest.tscn")
-onready var sword2: PackedScene = preload("res://itemTest.tscn")
+onready var heavy0: PackedScene = preload("res://player/weapons/greatsword/greatsword.tscn")
 onready var bow: PackedScene = preload("res://Equipment/bows/iron/bow.tscn")
 
 
 func _ready():
-	$Armature/Skeleton/RightHand/Holder/Sword_For_Testing.queue_free()
+	$Armature/Skeleton/RightHand/Holder/sword.queue_free()#testing sword, delete it on game start
+	$Armature/Skeleton/LeftHand/Holder/sword.queue_free()#testing sword, delete it on game start
 	player.animation = $AnimationPlayer
 	loadPlayerData()
 	switchSkin()
@@ -29,42 +29,51 @@ func _ready():
 
 
 func loadAnimations()->void:
-	animation.add_animation("idle", load("res://player/universal animations/idle animations/idle.anim"))
-	animation.add_animation("idle fist", load("res://player/universal animations/idle animations/idle fist.anim"))
-	animation.add_animation("idle bow", load("res://player/universal animations/idle animations/idle sword.anim"))#placeholder
-	animation.add_animation("idle sword", load("res://player/universal animations/idle animations/idle sword.anim"))
+	animation.add_animation("idle", load("res://player/universal animations/Animations Idle General/idle.anim"))
+	animation.add_animation("idle fist", load("res://player/universal animations/Animations Idle General/idle fist.anim"))
+	animation.add_animation("idle bow", load("res://player/universal animations/Animations Idle General/idle.anim"))#placeholder
+	animation.add_animation("idle sword", load("res://player/universal animations/Animations Sword Light/idle sword.anim"))
 	animation.add_animation("idle heavy", load("res://player/universal animations/greatsword animations/idle heavy.anim"))
 	
-	animation.add_animation("walk", load("res://player/universal animations/movement/walk.tres"))
-	animation.add_animation("walk bow", load("res://player/universal animations/bow animations/walk bow.anim"))
-	animation.add_animation("walk sword", load("res://player/universal animations/sword animations/walk sword.tres"))
-	animation.add_animation("walk heavy", load("res://player/universal animations/greatsword animations/walk heavy.anim"))
+	animation.add_animation("walk", load("res://player/universal animations/Animations Movement General/walk.tres"))
+	animation.add_animation("walk bow", load("res://player/universal animations/Animations Bow/walk bow.anim"))
+	animation.add_animation("walk sword", load("res://player/universal animations/Animations Sword Light/walk sword.anim"))#placeholder
+	animation.add_animation("walk heavy", load("res://player/universal animations/Animations Sword Heavy/walk heavy.tres"))
 	
 	
 	animation.add_animation("run", load("res://player/universal animations/movement/run cycle.anim"))
 	animation.add_animation("climb cycle", load("res://testing this shit/climb cycle.anim"))
 	
 	#L-click animations
-	animation.add_animation("combo fist", load("res://player/universal animations/barehanded/combo fist.tres"))
-	animation.add_animation("quick shot", load("res://player/universal animations/bow animations/quick shot.tres"))
-	animation.add_animation("combo sword", load("res://player/universal animations/sword animations/combo sword.tres"))
+	animation.add_animation("combo fist", load("res://player/universal animations/Animations Fist/combo fist.tres"))
+	animation.add_animation("quick shot", load("res://player/universal animations/Animations Bow/quick shot.tres"))
+	animation.add_animation("combo sword", load("res://player/universal animations/Animations Sword Light/combo sword.anim"))
+	animation.add_animation("combo dual swords", load("res://player/universal animations/Animations Sword Dual Wield/combo dual swords.anim"))
 	
 	
 	#R-click animations
-	animation.add_animation("full draw", load("res://player/universal animations/bow animations/full draw.anim"))
-	animation.add_animation("parry", load("res://player/universal animations/sword animations/parry.anim"))
-	animation.add_animation("cleave", load("res://player/universal animations/greatsword animations/cleave.anim"))
+	animation.add_animation("full draw", load("res://player/universal animations/Animations Bow/full draw.anim"))
+	#animation.add_animation("parry", load("res://player/universal animations/sword animations/parry.anim"))
+	animation.add_animation("cleave", load("res://player/universal animations/Animations Sword Heavy/cleave.tres"))
 	
-	#Double L-click animations
-	animation.add_animation("lunge sword", load("res://player/universal animations/greatsword animations/stab lunge.anim"))
+	#Double L-click animation
+	animation.add_animation("lunge sword", load("res://testing this shit/lunge stab sword.anim"))
+	animation.add_animation("lunge heavy", load("res://player/universal animations/Animations Sword Heavy/lunge stab heeavy.tres"))
+	
 
 #	animation.add_animation("", load())
-	animation.add_animation("whirlwind sword", load("res://player/universal animations/sword animations/spin1.tres"))
-	animation.add_animation("whirlwind heavy", load("res://player/universal animations/greatsword animations/whirwind heavy.anim"))
+	animation.add_animation("whirlwind sword", load("res://player/universal animations/Animations Sword Light/whirlwind sword.anim"))
+	animation.add_animation("whirlwind heavy", load("res://player/universal animations/Animations Sword Heavy/whirlwind heavy.anim"))
 	
-	animation.add_animation("cyclone heavy", load("res://player/universal animations/greatsword animations/cyclone heavy.anim"))
 	
-	animation.add_animation("overhand slash", load("res://player/universal animations/sword animations/overhand slash.tres"))
+	
+	animation.add_animation("cyclone sword", load("res://player/universal animations/Animations Sword Light/cyclone  sword.anim"))#placeholder
+	animation.add_animation("cyclone heavy", load("res://player/universal animations/Animations Sword Heavy/cyclone heavy.anim"))
+	
+	animation.add_animation("overhand slash sword", load("res://player/universal animations/Animations Sword Light/overhand slash sword.tres"))
+	
+	animation.add_animation("underhand slash sword", load("res://player/universal animations/Animations Sword Light/overhand slash sword.tres"))
+	animation.add_animation("underhand slash heavy", load("res://player/universal animations/Animations Sword Heavy/underhand slash heavy.tres"))
 	
 
 

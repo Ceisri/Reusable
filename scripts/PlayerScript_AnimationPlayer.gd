@@ -100,13 +100,9 @@ func _physics_process(delta: float) -> void:
 	doubleAttack()
 	fallDamage()
 	skillUserInterfaceInputs()
-	addItemToInventory()
 	positionCoordinates()
 	MainWeapon()
 	SecWeapon()
-
-
-
 
 
 #_______________________________________________Basic Movement______________________________________
@@ -622,14 +618,14 @@ func matchAnimationStates()-> void:
 #____________________________________Double L_Click Attack__________________________________________
 	elif double_atk_duration ==true:
 		match weapon_type:
-			autoload.weapon_list.fist:
-				animation.play("combo fist",0.3)
-				moveDuringAnimation(3)
 			autoload.weapon_list.sword:
-				animation.play("lunge heavy ver2",blend, melee_atk_speed + 0.25)
+				animation.play("lunge sword",blend, melee_atk_speed + 0.25)
+				moveDuringAnimation(4.5)
+			autoload.weapon_list.dual_swords:
+				animation.play("lunge sword",blend, melee_atk_speed + 0.33)
 				moveDuringAnimation(4.5)
 			autoload.weapon_list.heavy:
-				animation.play("lunge heavy ver2",blend, melee_atk_speed + 0.25)
+				animation.play("lunge heavy",blend, melee_atk_speed + 0.10)
 				moveDuringAnimation(4.5)
 
 #_______________________________________Overhead Slash______________________________________________
@@ -639,22 +635,28 @@ func matchAnimationStates()-> void:
 				is_in_combat = true
 				match weapon_type:
 					autoload.weapon_list.sword:
-						animation.play("overhand slash",blend, melee_atk_speed)
+						animation.play("overhand slash sword",blend, melee_atk_speed)
 						moveDuringAnimation(1.5)
-					autoload.weapon_list.dual_swords:
-						animation.play("overhand slash 2x",blend, melee_atk_speed)
-						moveDuringAnimation(1.5)
-					autoload.weapon_list.heavy:
-						animation.play("overhand slash",blend, melee_atk_speed)
-						moveDuringAnimation(1.5)
+#					autoload.weapon_list.dual_swords:
+#						animation.play("overhand slash dual swords",blend, melee_atk_speed)
+#						moveDuringAnimation(1.5)
+#					autoload.weapon_list.heavy:
+#						animation.play("overhand slash",blend, melee_atk_speed)
+#						moveDuringAnimation(1.5)
 			else:
 				returnToIdleBasedOnWeaponType()
 		else:
 			returnToIdleBasedOnWeaponType()
 #Underhand slash____________________________________________________________________________________
 	elif underhand_slash_duration == true:
-		animation.play("underhand slash",blend,  melee_atk_speed + 0.25)
-		moveDuringAnimation(4)
+		match weapon_type:
+					autoload.weapon_list.sword:
+						animation.play("underhand slash sword",blend,  melee_atk_speed + 0.25)
+					autoload.weapon_list.dual_swords:
+						animation.play("underhand slash sword",blend,  melee_atk_speed + 0.33)
+					autoload.weapon_list.heavy:
+						animation.play("underhand slash heavy",blend,  melee_atk_speed + 0.15)
+						moveDuringAnimation(4)
 		
 #Cyclone____________________________________________________________________________________________
 	elif cyclone_duration == true :
@@ -662,7 +664,7 @@ func matchAnimationStates()-> void:
 			if resolve > autoload.cyclone_cost:
 				match weapon_type:
 					autoload.weapon_list.sword:
-						animation.play("cyclone heavy",blend,melee_atk_speed)
+						animation.play("cyclone sword",blend,melee_atk_speed)
 						moveDuringAnimation(autoload.cyclone_motion)
 					autoload.weapon_list.heavy:
 						animation.play("cyclone heavy",blend,melee_atk_speed)
@@ -678,8 +680,11 @@ func matchAnimationStates()-> void:
 			if resolve > all_skills.whirlwind_cost:
 				match weapon_type:
 					autoload.weapon_list.sword:
-						animation.play("whirlwind heavy",blend,melee_atk_speed)
+						animation.play("whirlwind sword",blend,melee_atk_speed)
 						moveDuringAnimation(3)
+					autoload.weapon_list.dual_swords:
+						animation.play("whirlwind sword",blend,melee_atk_speed + 0.1)
+						moveDuringAnimation(3.3)
 					autoload.weapon_list.heavy:
 						animation.play("whirlwind heavy",blend,melee_atk_speed)
 						moveDuringAnimation(3)
@@ -880,7 +885,7 @@ func skills(slot)-> void:
 							animation.play("quick shot",0.3,ranged_atk_speed + 0.4)
 #heavy 
 				elif slot.texture.resource_path == autoload.heavy_slash.get_path():
-					animation.play("combo heavy",0.3,melee_atk_speed)
+					animation.play("combo heavy",0.3,melee_atk_speed -0.3)
 					moveDuringAnimation(1)
 				elif slot.texture.resource_path == autoload.cleave.get_path():
 					animation.play("cleave",0.3,melee_atk_speed)
@@ -1888,27 +1893,7 @@ func ChopTree():
 
 
 
-func addItemToInventory():
-	pass
-#	var items = $Mesh/Detector.get_overlapping_bodies()
-#	for item in items:
-#		if item.is_in_group("Mushroom1"):
-#			add_item.addStackableItem(inventory_grid,add_item.rasberry_texture)
-#			add_item.addStackableItem(inventory_grid,add_item.pants1)
-#			add_item.addStackableItem(inventory_grid,add_item.hat1)
-#			add_item.addStackableItem(inventory_grid,add_item.red_potion_texture)
-#
-#
-#		if item.is_in_group("Mushroom2"):
-#			add_item.addStackableItem(inventory_grid,add_item.strawberry_texture)
-#			add_item.addStackableItem(inventory_grid,add_item.beetroot_texture)
-#			add_item.addStackableItem(inventory_grid,add_item.rosehip_texture)
-#			add_item.addStackableItem(inventory_grid,add_item.rasberry_texture)
-#
-#		if item.is_in_group("sword0"):
-#			add_item.addNotStackableItem(inventory_grid,add_item.wood_sword_texture)
-#			add_item.addNotStackableItem(inventory_grid,add_item.garment1)
-#			add_item.addNotStackableItem(inventory_grid,add_item.shoe1)
+
 func _on_GiveMeItems_pressed():
 	coins += 55
 	autoload.addStackableItem(inventory_grid,autoload.garlic,200)
@@ -1928,7 +1913,7 @@ func _on_GiveMeItems_pressed():
 	autoload.addStackableItem(inventory_grid,autoload.raspberry,200)
 	autoload.addStackableItem(inventory_grid,autoload.pants1,1)
 	autoload.addStackableItem(inventory_grid,autoload.hat1,200)
-	autoload.addStackableItem(inventory_grid,autoload.red_potion,200)
+	autoload.addStackableItem(inventory_grid,autoload.red_potion,50000)
 	autoload.addStackableItem(inventory_grid,autoload.strawberry,200)
 	autoload.addStackableItem(inventory_grid,autoload.beetroot,200)
 	autoload.addStackableItem(inventory_grid,autoload.rosehip,200)
@@ -1944,6 +1929,7 @@ func _on_GiveMeItems_pressed():
 	autoload.addNotStackableItem(inventory_grid,autoload.shoulder1)
 	autoload.addNotStackableItem(inventory_grid,autoload.shoulder1)
 	autoload.addNotStackableItem(inventory_grid,autoload.bow)
+	autoload.addNotStackableItem(inventory_grid,autoload.heavy_sword0)
 	
 #_____________________________________Currency______________________________________________________
 onready var ethernium_label = $UI/GUI/Inventory/etherniumLabel
@@ -2153,6 +2139,11 @@ func switchWeapon():
 				current_weapon_instance = current_race_gender.sword0.instance()
 				fixInstance()
 				addItemToCharacterSheet(main_weap_icon,main_weap_slot,autoload.wood_sword)
+		"heavy0":
+			if current_weapon_instance == null:
+				current_weapon_instance = current_race_gender.heavy0.instance()
+				fixInstance()
+				addItemToCharacterSheet(main_weap_icon,main_weap_slot,autoload.heavy_sword0)
 		"null":
 			current_weapon_instance = null
 			got_weapon = false
@@ -2344,8 +2335,10 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 			if main_weap_icon.texture.get_path() == autoload.wood_sword.get_path():
 				main_weapon = "sword0"
 				applyEffect(self, "sword0", true)
-			
-		elif main_weap_icon.texture == null:
+			elif main_weap_icon.texture != null:
+				if main_weap_icon.texture.get_path() == autoload.heavy_sword0.get_path():
+					main_weapon = "heavy0"
+		else:
 			removeWeapon()
 			main_weapon = "null"
 			applyEffect(self, "sword0", false)
