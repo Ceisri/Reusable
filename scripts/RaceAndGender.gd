@@ -15,7 +15,7 @@ onready var bow: PackedScene = preload("res://Equipment/bows/iron/bow.tscn")
 
 
 func _ready():
-	$Armature/Skeleton/RightHand/Holder/sword.queue_free()#testing sword, delete it on game start
+	$Armature/Skeleton/RightHand/Holder/Weapon.queue_free()#testing sword, delete it on game start
 	$Armature/Skeleton/LeftHand/Holder/sword.queue_free()#testing sword, delete it on game start
 	player.animation = $AnimationPlayer
 	loadPlayerData()
@@ -30,7 +30,7 @@ func _ready():
 
 func loadAnimations()->void:
 	animation.add_animation("idle", load("res://player/universal animations/Animations Idle General/idle.anim"))
-	animation.add_animation("idle fist", load("res://player/universal animations/Animations Idle General/idle fist.anim"))
+	animation.add_animation("idle fist", load("res://player/universal animations/Animations Fist/idle fist.anim"))
 	animation.add_animation("idle bow", load("res://player/universal animations/Animations Idle General/idle.anim"))#placeholder
 	animation.add_animation("idle sword", load("res://player/universal animations/Animations Sword Light/idle sword.anim"))
 	animation.add_animation("idle heavy", load("res://player/universal animations/greatsword animations/idle heavy.anim"))
@@ -49,12 +49,13 @@ func loadAnimations()->void:
 	animation.add_animation("quick shot", load("res://player/universal animations/Animations Bow/quick shot.tres"))
 	animation.add_animation("combo sword", load("res://player/universal animations/Animations Sword Light/combo sword.anim"))
 	animation.add_animation("combo dual swords", load("res://player/universal animations/Animations Sword Dual Wield/combo dual swords.anim"))
+	animation.add_animation("combo heavy", load("res://player/universal animations/Animations Sword Heavy/combo heavy.anim"))
 	
 	
 	#R-click animations
 	animation.add_animation("full draw", load("res://player/universal animations/Animations Bow/full draw.anim"))
 	#animation.add_animation("parry", load("res://player/universal animations/sword animations/parry.anim"))
-	animation.add_animation("cleave", load("res://player/universal animations/Animations Sword Heavy/cleave.tres"))
+	animation.add_animation("cleave", load("res://player/universal animations/Animations Sword Heavy/cleave.anim"))
 	
 	#Double L-click animation
 	animation.add_animation("lunge sword", load("res://testing this shit/lunge stab sword.anim"))
@@ -71,6 +72,7 @@ func loadAnimations()->void:
 	animation.add_animation("cyclone heavy", load("res://player/universal animations/Animations Sword Heavy/cyclone heavy.anim"))
 	
 	animation.add_animation("overhand slash sword", load("res://player/universal animations/Animations Sword Light/overhand slash sword.tres"))
+	animation.add_animation("overhand slash heavy", load("res://player/universal animations/Animations Sword Heavy/overhand slash heavy.anim"))
 	
 	animation.add_animation("underhand slash sword", load("res://player/universal animations/Animations Sword Light/overhand slash sword.tres"))
 	animation.add_animation("underhand slash heavy", load("res://player/universal animations/Animations Sword Heavy/underhand slash heavy.tres"))
@@ -481,13 +483,6 @@ func instanceFace(face_scene)-> void:
 		var face_instance = face_scene.instance()
 		face_attachment.add_child(face_instance)
 		current_face_instance = face_instance
-var can_move: bool = false
-
-
-func stopMovement()-> void:
-	can_move = false
-func startMovement():
-	can_move = true 
 func punch()-> void:
 	var damage_type = "blunt"
 	var damage = 10 + player.blunt_dmg 
@@ -545,26 +540,165 @@ func slash()->void:
 						else: #apparently the enemy is showing his back or flanks, extra damagec
 							enemy.takeDamage(damage_flank,aggro_power,player,player.stagger_chance,damage_type)
 							
-func baseMeleeAtk()->void:
-	var damage_type:String = "slash"
-	var damage = 10 + player.slash_dmg
+
+
+#Melee Functions to call in the AnimationPlayer
+#Heavy sword
+onready var area_melee_front:Area = $MeleeFront
+func ComboHeavy1()->void:#Heavy
+	var damage_type:String = right_hand.get_child(0).damage_type
+	var damage:float = (5 + player.slash_dmg) * player.agility
+	var damage_flank:float = damage + player.flank_dmg 
+	var critical_damage : float  = damage * player.critical_strength
+	var critical_flank_damage : float  = damage_flank * player.critical_strength
+	#extra damage when the victim is trying to block but is facing the wrong way 
+	var punishment_damage : float = 7 
+	var punishment_damage_type :String = "slash"
+	var aggro_power:float = player.threat_power
+	var push_distance:float = 0.25 * player.total_impact
+	var enemies:Array = area_melee_front.get_overlapping_bodies()
+	dealDMG(enemies,null,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance)
+func ComboHeavy2()->void:#Heavy
+	var damage_type:String = right_hand.get_child(0).damage_type
+	var damage:float = 8 + player.slash_dmg + player.blunt_dmg
+	var damage_flank:float = damage + player.flank_dmg 
+	var critical_damage : float  = damage * player.critical_strength
+	var critical_flank_damage : float  = damage_flank * player.critical_strength
+	#extra damage when the victim is trying to block but is facing the wrong way 
+	var punishment_damage : float = 7 
+	var punishment_damage_type :String = "slash"
+	var aggro_power:float = player.threat_power
+	var push_distance:float = 0.15 * player.total_impact
+	var enemies:Array = area_melee_front.get_overlapping_bodies()
+	dealDMG(enemies,null,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance)
+func ComboHeavy3()->void:#Heavy
+	var damage_type:String = right_hand.get_child(0).damage_type
+	var damage:float = 5 + player.slash_dmg 
+	var damage_flank:float = damage + player.flank_dmg 
+	var critical_damage : float  = damage * player.critical_strength
+	var critical_flank_damage : float  = damage_flank * player.critical_strength
+	#extra damage when the victim is trying to block but is facing the wrong way 
+	var punishment_damage : float = 7 
+	var punishment_damage_type :String = "slash"
+	var aggro_power:float = player.threat_power
+	var push_distance:float = 0.05 * player.total_impact
+	var enemies:Array = area_melee_front.get_overlapping_bodies()
+	dealDMG(enemies,null,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance)
+func ComboHeavy4()->void:#Heavy
+	var damage_type:String = right_hand.get_child(0).damage_type
+	var damage:float = 5 + player.slash_dmg 
 	var damage_flank = damage + player.flank_dmg 
 	var critical_damage : float  = damage * player.critical_strength
 	var critical_flank_damage : float  = damage_flank * player.critical_strength
 	#extra damage when the victim is trying to block but is facing the wrong way 
 	var punishment_damage : float = 7 
 	var punishment_damage_type :String = "slash"
+	var aggro_power:float = player.threat_power
+	var push_distance:float = 1 * player.total_impact
+	var enemies:Array = area_melee_front.get_overlapping_bodies()
+	dealDMG(enemies,null,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance)
+
+
+
+
+#Overhand section
+#This skill is viable for all melee weapon types EXCEPT FIST WEAPONS
+func overhanddSlashCD()-> void:
+	player.resolve -= autoload.overhead_slash_cost
+	player.overhead_slash_duration = false
+	player.all_skills.overheadSlashCD()
+func overhandSlashDMG()->void:
+	var damage_type:String = "slash"
+	var base_damage: float = autoload.overhead_slash_damage + player.slash_dmg  + player.blunt_dmg
+	var points: int = player.overhand_icon.points
+	var damage_multiplier: float = 1.0
+	if points > 1:
+		damage_multiplier += (points - 1) * 0.04
+	var damage: float = base_damage * damage_multiplier
+	var damage_flank = damage + player.flank_dmg 
+	var critical_damage : float  = damage * player.critical_strength
+	var critical_flank_damage : float  = damage_flank * player.critical_strength
+	var punishment_damage : float = 7 #extra damage for when the victim is trying to block but is facing the wrong way 
+	var punishment_damage_type :String = "slash"
 	var aggro_power = damage + 20
+	var push_distance:float = 0.25 * player.total_impact
 	var enemies = sword_area.get_overlapping_bodies()
 	var enemies2 = sword2_area.get_overlapping_bodies()
-	dealDMG(sword_area.get_overlapping_bodies(),sword2_area.get_overlapping_bodies(),critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank)
-
-func dealDMG(enemy_detector1, enemy_detector2,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank)-> void:
+	dealDMG(enemies,enemies2,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance)
+#Underhand section
+#This skill is viable for all melee weapon types EXCEPT FIST WEAPONS
+func underhandSlashCD()-> void:
+	player.all_skills.underhandSlashCD()
+	player.underhand_slash_duration = false
+func underhandSlashDMG()-> void:
+	pass
+#Cyclone section
+#This skill is viable for all melee weapon types EXCEPT FIST WEAPONS
+onready var melee_aoe: Area = $MeleeAOE
+func cycloneCD()-> void:
+	player.resolve -= autoload.cyclone_cost
+	player.all_skills.cycloneCD()
+	player.cyclone_duration = false
+func cycloneDamage() -> void:
+	var damage_type: String = "slash"
+	var base_damage: float = autoload.cyclone_damage + player.slash_dmg
+	var points: int = player.cyclone_icon.points
+	var damage_multiplier: float = 1.0
+	if points > 1:
+		damage_multiplier += (points - 1) * 0.05
+	var damage: float = base_damage * damage_multiplier
+	var damage_flank = damage + player.flank_dmg 
+	var critical_damage : float  = damage * player.critical_strength
+	var critical_flank_damage : float  = damage_flank * player.critical_strength
+	var punishment_damage : float = 7 #extra damage for when the victim is trying to block but is facing the wrong way 
+	var punishment_damage_type :String = "slash"
+	var aggro_power = damage + 20
+	var push_distance:float = 0.25 * player.total_impact
+	var enemies = melee_aoe.get_overlapping_bodies()
+	dealDMG(enemies,null,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance)
+#Whirlwind section
+#This skill is viable for all melee weapon types 
+func whirlwindCD()-> void:
+	player.resolve -= player.all_skills.whirlwind_cost
+	player.all_skills.whirlwindCD()
+	player.whirlwind_duration = false
+func whirlwindDMG() -> void:
+	var damage_type: String = "slash"
+	var base_damage: float = autoload.cyclone_damage + player.slash_dmg
+	var points: int = player.whirlwind_icon.points
+	var damage_multiplier: float = 1.0
+	if points > 1:
+		damage_multiplier += (points - 1) * 0.05
+	var damage: float = base_damage * damage_multiplier
+	var damage_flank = damage + player.flank_dmg 
+	var critical_damage : float  = damage * player.critical_strength
+	var critical_flank_damage : float  = damage_flank * player.critical_strength
+	var punishment_damage : float = 7 #extra damage for when the victim is trying to block but is facing the wrong way 
+	var punishment_damage_type :String = "slash"
+	var aggro_power = damage + 20
+	var push_distance:float = 0.25 * player.total_impact
+	var enemies = melee_aoe.get_overlapping_bodies()
+	dealDMG(enemies,null,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance)
+#___________________________________________________________________________________________________
+#General  Functions to call in the AnimationPlayer
+var can_move: bool = false
+func stopMovement()-> void:
+	can_move = false
+func startMovement():
+	can_move = true 
+func doubleAtkEnd():
+	player.double_atk_duration = false
+var is_parrying: bool = false
+func startParry():
+	is_parrying = true
+func stopParry():
+	is_parrying = false
+func dealDMG(enemy_detector1, enemy_detector2,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance)-> void:
 	for victim in enemy_detector1:
 		if victim.is_in_group("enemy"):
 			if victim != self:
 				if victim.state != autoload.state_list.dead:
-					player.pushEnemyAway(0.3, victim,0.25)
+					player.pushEnemyAway(push_distance, victim,0.25)
 				if player.resolve < player.max_resolve:
 					player.resolve += player.ferocity + 1.25
 				if victim.has_method("takeDamage"):
@@ -626,154 +760,9 @@ func dealDMG(enemy_detector1, enemy_detector2,critical_damage,aggro_power,damage
 											victim.takeDamage(damage,aggro_power,player,player.stagger_chance,damage_type)
 										else: #appareantly the victim is showing his back or flanks, extra damage
 											victim.takeDamage(damage_flank,aggro_power,player,player.stagger_chance,damage_type)
-									
-func stab()->void:
-	var damage_type = "pierce"
-	var damage = 22 + player.pierce_dmg 
-	var damage_flank = damage + player.flank_dmg 
-	var critical_damage : float  = damage * player.critical_strength
-	var critical_flank_damage : float  = damage_flank * player.critical_strength
-	var punishment_damage : float = 7 #extra damage for when the victim is trying to block but is facing the wrong way 
-	var punishment_damage_type :String = "pierce"
-	var aggro_power = damage + 20
-	var enemies = player.detector.get_overlapping_bodies()
-	dealDMG(enemies,null,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank)
-
-
-func forcedMovement(speed)-> void:
-	if !player.is_on_wall():
-		player.horizontal_velocity = player.direction * 10
-func overheadSlashCD()-> void:
-	player.resolve -= autoload.overhead_slash_cost
-	player.overhead_slash_duration = false
-	player.all_skills.overheadSlashCD()
-func overheadSlashDMG()->void:
-	var damage_type:String = "slash"
-	var base_damage: float = autoload.overhead_slash_damage + player.slash_dmg  + player.blunt_dmg
-	var points: int = player.overhand_icon.points
-	var damage_multiplier: float = 1.0
-	if points > 1:
-		damage_multiplier += (points - 1) * 0.04
-	var damage: float = base_damage * damage_multiplier
-	var damage_flank = damage + player.flank_dmg 
-	var critical_damage : float  = damage * player.critical_strength
-	var critical_flank_damage : float  = damage_flank * player.critical_strength
-	var punishment_damage : float = 7 #extra damage for when the victim is trying to block but is facing the wrong way 
-	var punishment_damage_type :String = "slash"
-	var aggro_power = damage + 20
-	var enemies = sword_area.get_overlapping_bodies()
-	var enemies2 = sword2_area.get_overlapping_bodies()
-	dealDMG(enemies,enemies2,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank)
-
-func underhandSlashCD()-> void:
-	player.all_skills.underhandSlashCD()
-	player.underhand_slash_duration = false
-
-func underhandSlashDMG()-> void:
-	pass
-
-
-onready var melee_aoe: Area = $MeleeAOE
-func cycloneCD()-> void:
-	player.resolve -= autoload.cyclone_cost
-	player.all_skills.cycloneCD()
-	player.cyclone_duration = false
-func cycloneDamage() -> void:
-	var damage_type: String = "slash"
-	var base_damage: float = autoload.cyclone_damage + player.slash_dmg
-	var points: int = player.cyclone_icon.points
-	var damage_multiplier: float = 1.0
-	if points > 1:
-		damage_multiplier += (points - 1) * 0.05
-	var damage: float = base_damage * damage_multiplier
-	var damage_flank = damage + player.flank_dmg 
-	var critical_damage : float  = damage * player.critical_strength
-	var critical_flank_damage : float  = damage_flank * player.critical_strength
-	var punishment_damage : float = 7 #extra damage for when the victim is trying to block but is facing the wrong way 
-	var punishment_damage_type :String = "slash"
-	var aggro_power = damage + 20
-	var enemies = melee_aoe.get_overlapping_bodies()
-	dealDMG(enemies,null,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank)
-
-func whirlwindCD()-> void:
-	player.resolve -= player.all_skills.whirlwind_cost
-	player.all_skills.whirlwindCD()
-	player.whirlwind_duration = false
-func whirlwindDMG() -> void:
-	var damage_type: String = "slash"
-	var base_damage: float = autoload.cyclone_damage + player.slash_dmg
-	var points: int = player.whirlwind_icon.points
-	var damage_multiplier: float = 1.0
-	if points > 1:
-		damage_multiplier += (points - 1) * 0.05
-	var damage: float = base_damage * damage_multiplier
-	var damage_flank = damage + player.flank_dmg 
-	var critical_damage : float  = damage * player.critical_strength
-	var critical_flank_damage : float  = damage_flank * player.critical_strength
-	var punishment_damage : float = 7 #extra damage for when the victim is trying to block but is facing the wrong way 
-	var punishment_damage_type :String = "slash"
-	var aggro_power = damage + 20
-	var enemies = melee_aoe.get_overlapping_bodies()
-	dealDMG(enemies,null,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank)
-
-
-
-
-
-
-
-
-
-
-func counterStrikeCD()->void:
-	player.counter_strike_duration = false
-	player.all_skills.counterStrike()
-func counterStrikeDamage()->void:
-	var damage_type:String = "slash"
-	var damage = autoload.counter_strike_damge + player.slash_dmg
-	var damage_flank = damage + player.flank_dmg 
-	var critical_damage : float  = damage * player.critical_strength
-	var critical_flank_damage : float  = damage_flank * player.critical_strength
-	var punishment_damage : float = 7 #extra damage for when the victim is trying to block but is facing the wrong way 
-	var punishment_damage_type:String = "slash"
-	var aggro_power = damage + 25
-	var enemies = melee_aoe.get_overlapping_bodies()
-	dealDMG(enemies,null,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank)
-
-
-func risingFury()->void:
-	melee_aoe.scale = Vector3(5, 5, 5)
-	var damage_type:String = "sonic"
-	var damage = 5
-	var damage_flank = damage + 0
-	var critical_damage : float  = 0
-	var critical_flank_damage : float  = 0
-	var punishment_damage : float = 0
-	var punishment_damage_type:String = "sonic"
-	var aggro_power = 150
-	var enemies = melee_aoe.get_overlapping_bodies()
-	for victim in enemies:	
-		if victim.is_in_group("enemy") and victim != self:
-			if victim.has_method("takeThreat"):
-				victim.takeThreat(aggro_power,self)
-	melee_aoe.scale = Vector3(1, 1, 1)
-
-
+#___________________________________________________________________________________________________
+#Ranged Functions to call in the AnimationPlayer
 func shootArrow():
 	player.all_skills.shootArrow(autoload.quick_shot_damage)
 func fullDrawShootArrow():
 	player.all_skills.shootArrow(autoload.full_draw_damage)
-
-
-var is_parrying: bool = false
-
-func parry():
-	player.resolve -= autoload.counter_strike_cost
-	is_parrying = true
-func stopParry():
-	is_parrying = false
-
-
-
-func doubleAtkEnd():
-	player.double_atk_duration = false

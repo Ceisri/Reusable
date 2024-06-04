@@ -9,6 +9,7 @@ var stay_time = 0.3
 var off1 = -20
 var off2 = 20
 var offset = Vector2(rand_range(-5, 5), rand_range(-5, 5))
+
 var state = "cold"
 
 func _ready():

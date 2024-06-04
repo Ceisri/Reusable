@@ -57,6 +57,7 @@ func _on_SlowTimer_timeout()->void:
 	r_click_slot.switchAttackIcon()
 	$UI/GUI/SkillTrees/Label.text = str("skill points: ")+ str(skill_points)
 	$UI/GUI/SkillTrees/Label2.text =  str("points spent: ")+ str(skill_points_spent)
+	displayClock()
 func _on_3FPS_timeout()->void:
 	$UI/GUI/Equipment/Attributes/AttributePoints.text = "Attributes points left: " + str(attribute)
 # Calculate the sum of all spent attribute points
@@ -73,7 +74,6 @@ func _on_3FPS_timeout()->void:
 func _physics_process(delta: float) -> void:
 	all_skills.updateCooldownLabel()
 	$Debug.text = str(state)
-#	displayClock()
 	convertStats()
 	ChopTree()
 	limitStatsToMaximum()
@@ -241,7 +241,10 @@ var jump_mov_animation_max_duration:float = 3
 func jump():
 	if Input.is_action_just_pressed("jump") and is_on_floor():
 		if is_instance_valid(current_race_gender):
-			current_race_gender.jumpUp()
+			if current_race_gender.has_method("jump"):
+				current_race_gender.jump()
+			else:
+				print(str("current_race_gender doesn't have a jump() function"))
 
 var fall_damage:float = 10
 var fall_distance:float = 0
@@ -617,16 +620,17 @@ func matchAnimationStates()-> void:
 		skills(slot)
 #____________________________________Double L_Click Attack__________________________________________
 	elif double_atk_duration ==true:
-		match weapon_type:
-			autoload.weapon_list.sword:
-				animation.play("lunge sword",blend, melee_atk_speed + 0.25)
-				moveDuringAnimation(4.5)
-			autoload.weapon_list.dual_swords:
-				animation.play("lunge sword",blend, melee_atk_speed + 0.33)
-				moveDuringAnimation(4.5)
-			autoload.weapon_list.heavy:
-				animation.play("lunge heavy",blend, melee_atk_speed + 0.10)
-				moveDuringAnimation(4.5)
+		pass
+#		match weapon_type:
+#			autoload.weapon_list.sword:
+#				animation.play("lunge sword",blend, melee_atk_speed + 0.25)
+#				moveDuringAnimation(4.5)
+#			autoload.weapon_list.dual_swords:
+#				animation.play("lunge sword",blend, melee_atk_speed + 0.33)
+#				moveDuringAnimation(4.5)
+#			autoload.weapon_list.heavy:
+#				animation.play("lunge heavy",blend, melee_atk_speed + 0.10)
+#				moveDuringAnimation(4.5)
 
 #_______________________________________Overhead Slash______________________________________________
 	elif overhead_slash_duration == true:
@@ -640,9 +644,9 @@ func matchAnimationStates()-> void:
 #					autoload.weapon_list.dual_swords:
 #						animation.play("overhand slash dual swords",blend, melee_atk_speed)
 #						moveDuringAnimation(1.5)
-#					autoload.weapon_list.heavy:
-#						animation.play("overhand slash",blend, melee_atk_speed)
-#						moveDuringAnimation(1.5)
+					autoload.weapon_list.heavy:
+						animation.play("overhand slash heavy",blend, melee_atk_speed)
+						moveDuringAnimation(1.5)
 			else:
 				returnToIdleBasedOnWeaponType()
 		else:
@@ -652,8 +656,10 @@ func matchAnimationStates()-> void:
 		match weapon_type:
 					autoload.weapon_list.sword:
 						animation.play("underhand slash sword",blend,  melee_atk_speed + 0.25)
+						moveDuringAnimation(4)
 					autoload.weapon_list.dual_swords:
 						animation.play("underhand slash sword",blend,  melee_atk_speed + 0.33)
+						moveDuringAnimation(4)
 					autoload.weapon_list.heavy:
 						animation.play("underhand slash heavy",blend,  melee_atk_speed + 0.15)
 						moveDuringAnimation(4)
@@ -885,8 +891,8 @@ func skills(slot)-> void:
 							animation.play("quick shot",0.3,ranged_atk_speed + 0.4)
 #heavy 
 				elif slot.texture.resource_path == autoload.heavy_slash.get_path():
-					animation.play("combo heavy",0.3,melee_atk_speed -0.3)
-					moveDuringAnimation(1)
+					animation.play("combo heavy",0.3,melee_atk_speed)
+					moveDuringAnimation(1.75)
 				elif slot.texture.resource_path == autoload.cleave.get_path():
 					animation.play("cleave",0.3,melee_atk_speed)
 					moveDuringAnimation(2)
@@ -1334,8 +1340,8 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
 			instigator.lifesteal(damage_to_take)
 		
 	if current_race_gender.is_parrying:
-		damage_to_take = damage_to_take / 3
-		text.status = "parried"
+		damage_to_take = damage_to_take / guard_dmg_absorbition
+		text.status = "reduced"
 		if resolve < max_resolve:
 			resolve += 15
 
@@ -1993,12 +1999,12 @@ func _on_FPS_pressed():
 
 
 #_____________________________________Display Time/Location______________________________
-#onready var time_label = $UI/GUI/Minimap/Time
-#func displayClock():
-#	# Get the current date and time
-#	var datetime = OS.get_datetime()
-#	# Display hour and minute in the label
-#	time_label.text = "Time: %02d:%02d" % [datetime.hour, datetime.minute]	
+onready var time_label = $UI/GUI/SkillBar/Time
+func displayClock():
+	# Get the current date and time
+	var datetime = OS.get_datetime()
+	# Display hour and minute in the label
+	time_label.text = "Time: %02d:%02d" % [datetime.hour, datetime.minute]
 onready var coordinates = $UI/GUI/Portrait/MinimapHolder/Coordinates
 func positionCoordinates():
 	var rounded_position = Vector3(
@@ -2886,6 +2892,7 @@ var authority: float = 1
 var courage: float = 1 
 
 
+var threat_power:float = 0
 const base_melee_atk_speed: int = 1 
 var melee_atk_speed: float = 1 
 const base_ranged_atk_speed: int = 1 
