@@ -1176,7 +1176,7 @@ func pushEnemyAway(push_distance, enemy, push_speed):
 	var deceleration_distance = motion.length() * acceleration_time * 0.5
 	var collision = enemy.move_and_collide(motion)
 	if collision: #this checks the enemy hits a wall after you punch him 
-		enemy.takeDamage(10, 100, self, 1, "bleed")#the enemy takes damage from being pushed into something
+		enemy.takeDamage(10, 10, self, 1, "bleed")#the enemy takes damage from being pushed into something
 		# Calculate bounce-back direction
 		var normal = collision.normal
 		var bounce_motion = -4 * normal * normal.dot(motion) + motion
@@ -2196,7 +2196,9 @@ func pickItemsMainHand():
 					main_weapon = "sword0"
 					got_weapon = true 
 					body.queue_free()  # Remove the picked-up item from the floor
-				elif body.is_in_group("sword1") and not got_weapon:
+				elif body.is_in_group("heavy0") and not got_weapon:
+					main_weapon = "heavy0"
+					got_weapon = true 
 					body.queue_free()  # Remove the picked-up item from the floor
 				elif body.is_in_group("sword3") and not got_weapon:
 					body.queue_free()  # Remove the picked-up item from the floor
@@ -2231,7 +2233,9 @@ onready var sec_weap_slot = $UI/GUI/Equipment/EquipmentBG/SecWeap
 onready var sec_weap_icon = $UI/GUI/Equipment/EquipmentBG/SecWeap/Icon
 var sec_current_weapon_instance: Node = null  
 
-var secondary_weapon = "null"
+var secondary_weapon: String = "null"
+var tertiary_weapon: String = "null"
+var shield: String = "null"
 var got_sec_weapon = false
 var is_secondary_weapon_on_hip = false 
 
@@ -5051,3 +5055,7 @@ func colorhair():
 func _on_BlendshapeTest_pressed():
 	current_race_gender.smile = rand_range(-2,+2)
 	current_race_gender.current_face_instance.set("blend_shapes/Smile",current_race_gender.smile)
+
+
+func _on_give_me_a_shield_pressed():
+	shield = "shield0"

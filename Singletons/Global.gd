@@ -13,6 +13,7 @@ enum state_list{
 	swim,
 	slide,
 	fall,
+	crouch
 	
 	base_attack,
 	guard_attack,
@@ -22,9 +23,6 @@ enum state_list{
 	guard,
 	
 	healing,
-	
-	
-
 	curious,# for AI
 	engage, # for AI
 	orbit,# for AI
@@ -55,7 +53,24 @@ enum state_list{
 	skillV,
 	skillB}
 
-
+enum weapon_list {
+	fist,
+	sword,
+	dual_swords,
+	bow,
+	cross_bow,
+	heavy,
+	sword_shield,
+	spear,
+	spear_shield,
+	staff,
+}
+enum damage_type {
+	slash,
+	blunt,
+	#....
+	
+}
 #________________________________________Icons and their data_______________________________________
 
 onready var drag_preview = preload("res://scripts/Components/Sprite.tscn")
@@ -88,11 +103,16 @@ onready var rosehip = preload("res://Alchemy ingredients/2.png")
 
 
 onready var red_potion = preload("res://Potions/Red potion.png")
+var red_potion_description: String =  "+100 kcals +250 grams of water.\nHeals by 100 health instantly then by 10 every second, drinking more potions stacks the duration"
 onready var empty_potion = preload("res://Potions/Empty potion.png")
 onready var water = preload("res://Potions/water.png")
 
 #equipment__________________________________________________________________________________________
 onready var wood_sword =  preload("res://0.png")
+onready var heavy_sword0 =  preload("res://Equipment icons/heavy weapons/heav_sword_0.png")
+
+
+
 onready var hat1 = preload("res://Equipment icons/hat1.png")
 onready var pad1 = preload("res://Equipment icons/shoulder1.png")
 onready var garment1 = preload("res://Equipment icons/garment1.png")
@@ -128,6 +148,9 @@ onready var guard =  preload("res://Classes/handcombat/guard.png")
 #sword______________________________________________________________________________________________
 onready var slash_sword =  preload("res://Classes/Swordsmen/slash.png")
 onready var guard_sword =  preload("res://Classes/Swordsmen/cross parry.png")
+#greatsword/heavy
+onready var heavy_slash =  preload("res://Classes/Swordsmen/slash_great_sword.png")
+onready var cleave =  preload("res://Classes/Swordsmen/cleave.png")
 #bow________________________________________________________________________________________________
 onready var quick_shot =  preload("res://Classes/archery icons/quick_shot.png")
 var quick_shot_damage: float = 2.5
@@ -135,7 +158,13 @@ onready var full_draw =  preload("res://Classes/archery icons/full_draw.png")
 var full_draw_damage: float = 5
 
 #sword_skills
-onready var overhead_slash =  preload("res://Classes/Swordsmen/overhead slash.png")
+onready var overhead_slash =  preload("res://Classes/Swordsmen/overhand slash.png")
+var overhead_slash_damage: float = 12.5
+var overhead_slash_cost: float = 5
+var overhead_slash_description: String = "Damage type: Slash\n+4% compounding extra damage per skill level\n +SLASH DAMAGE + BLUNT DAMAGE\n Strike foes in front of you with a downward stroke"
+#___________________________________________________________________________________________________
+onready var underhand_slash =  preload("res://Classes/Swordsmen/underhand_slash.png")
+
 #___________________________________________________________________________________________________
 onready var rising_slash =  preload("res://Classes/Swordsmen/flury of blows.png")
 var rising_slash_damage: float = 3
@@ -146,10 +175,12 @@ var counter_strike_cost:float  = 5
 #___________________________________________________________________________________________________
 onready var cyclone =  preload("res://Classes/Swordsmen/cyclone.png")
 var cyclone_damage: float = 7
-var cyclone_cooldown: float = 12
-var cyclone_cost: float = 21
-var cyclone_description: String = "Base damage: 3 hits of 7 SLASH DAMAGE                        Cost: 15 resolve                                                       Cooldown: 12 seconds"
-var cyclone_description2: String = "+5% compounding extra damage per skill level                +SLASH DAMAGE                                                               'spin and slash foes around you in an area attack, each foe can be hit up to 3 times"
+var cyclone_cooldown: float = 2
+var cyclone_cost: float = 5
+var cyclone_motion: float = 2.25
+var cyclone_description: String = "Damage type: Slash\n+5% compounding extra damage per skill level                +SLASH DAMAGE                                                               'spin and slash foes around you in an area attack, each foe can be hit up to 3 times"
+#___________________________________________________________________________________________________
+onready var whirlwind =  preload("res://Classes/Swordsmen/whirlwind.png")
 #___________________________________________________________________________________________________
 onready var fury_strike =  preload("res://Classes/Swordsmen/fury strike.png")
 var base_fury_strike_damage: float = 5
@@ -162,8 +193,28 @@ var rising_fury_threat: float = 25
 
 #______________________________________3D equipable items___________________________________________
 onready var shoulder_scene0: PackedScene = preload("res://Equipment/Shoulder pads/shoulder plate metal.glb")
+onready var shield_scene0: PackedScene =  preload("res://player/weapons/shields/test Shield.tscn")
+onready var shield_null: PackedScene =  preload("res://player/weapons/shields/inv shield.tscn")
 
-
+#________________Armor and clothing 3Dscenes to instance as children of skeletons___________________
+#stored male armors
+onready var human_xy_naked_torso_0: PackedScene = preload("res://Equipment/Armors/Human_XY/Torso/Torso0.tscn")#save the mesh as a scene and make sure the skin property share's the same bone names as the skeleton
+onready var human_xy_tunic_0: PackedScene = preload("res://Equipment/Armors/Human_XY/Torso/Tunic0.tscn")
+onready var human_xy_gambeson_0: PackedScene = preload("res://Equipment/Armors/Human_XY/Torso/Gambeson0.tscn")
+onready var human_xy_chainmail_0: PackedScene = preload("res://Equipment/Armors/Human_XY/Torso/Chainmail0.tscn")
+onready var human_xy_cuirass_0: PackedScene = preload("res://Equipment/Armors/Human_XY/Torso/Cuirass0.tscn")
+#stored female armors
+onready var human_xx_naked_torso_0: PackedScene = preload("res://Equipment/Armors/Human_XX/Torso/Torso0.tscn")
+onready var human_xx_tunic_0: PackedScene = preload("res://Equipment/Armors/Human_XX/Torso/Tunic0.tscn")
+onready var human_xx_tunic_1: PackedScene = preload("res://Equipment/Armors/Human_XX/Torso/Tunic1.tscn")
+onready var human_xx_gambeson_0: PackedScene = preload("res://Equipment/Armors/Human_XX/Torso/Gambeson0.tscn")
+onready var human_xx_chainmail_0: PackedScene = preload("res://Equipment/Armors/Human_XX/Torso/Chainmail0.tscn")
+onready var human_xx_cuirass_0: PackedScene = preload("res://Equipment/Armors/Human_XX/Torso/Cuirass0.tscn")
+#legs 
+onready var human_xx_legs_0: PackedScene = preload("res://Equipment/Armors/Human_XX/Legs/legs0.tscn")
+onready var human_xx_pants_0: PackedScene = preload("res://Equipment/Armors/Human_XX/Legs/Pants0.tscn")
+onready var human_xx_pants_1: PackedScene = preload("res://Equipment/Armors/Human_XX/Legs/Pants1.tscn")
+onready var human_xx_legs_gambeson_0: PackedScene = preload("res://Equipment/Armors/Human_XX/Legs/Gambeson0.tscn")
 
 
 func addNotStackableItem(inventory_grid,item_texture):
@@ -269,10 +320,6 @@ func movement(user):
 
 
 
-
-
-
-
 #______________________________________skin colors _____________________________
 
 #Panthera
@@ -284,50 +331,22 @@ onready var pant_xy_leo =  preload("res://player/panthera/Skins/Panthera leo.png
 onready var pant_xy_leopard =  preload("res://player/panthera/Skins/Panthera leopard.png")
 onready var pant_xy_leopard_alb =  preload("res://player/panthera/Skins/Panthera leopard snow.png")
 onready var pant_xy_nigris =  preload("res://player/panthera/Skins/Panthera nigris.png")
-
-
 #Human
 onready var hum_xy_white =  preload("res://player/human/mal/Skins/Untitled34_20240519155227.png")
 onready var hum_xy_brown =  preload("res://player/human/mal/Skins/Human_xy_2.png")
 
-
-
-
 #_____________________________________Races and Genders_________________________
 onready var human_male:PackedScene =  preload("res://player/human/mal/Mesh/body/human.tscn")
-onready var human_female:PackedScene =  preload("res://player/human/fem/mesh/body/FemaleHuman.tscn")
+onready var human_female:PackedScene =  preload("res://player/human/fem/mesh/body/FemaleHuman2.tscn")
 
-onready var panthera_male:PackedScene =  preload("res://player/panthera/mal/Panthera.tscn")
-onready var panthera_female:PackedScene =  preload("res://player/panthera/fem/PantheraFemale.glb")
+onready var panthera_male:PackedScene =  preload("res://player/human/fem/mesh/body/FemaleHuman2.tscn")
+onready var panthera_female:PackedScene =  preload("res://player/human/fem/mesh/body/FemaleHuman2.tscn")
 
-onready var sepris:PackedScene =  preload("res://player/Sepris/Sepris.tscn")
-onready var bireas:PackedScene =  preload("res://player/Bireas/Bireas.tscn")
-onready var saurus:PackedScene =  preload("res://player/Saurus test/saurus.tscn")
-onready var skeleton:PackedScene =  preload("res://player/skeleton/skeleton.tscn")
-onready var kadosiel:PackedScene =  preload("res://player/kadosiel test/Kadosiel.tscn")
+onready var sepris:PackedScene =  preload("res://player/human/fem/mesh/body/FemaleHuman2.tscn")
+onready var bireas:PackedScene =  preload("res://player/human/fem/mesh/body/FemaleHuman2.tscn")
+onready var saurus:PackedScene =  preload("res://player/human/fem/mesh/body/FemaleHuman2.tscn")
+onready var skeleton:PackedScene =  preload("res://player/human/fem/mesh/body/FemaleHuman2.tscn")
+onready var kadosiel:PackedScene =  preload("res://player/human/fem/mesh/body/FemaleHuman2.tscn")
 
-
-
-
-
-
-#________________Armor and clothing 3Dscenes to instance as children of skeletons___________________
-#stored male armors
-onready var human_xy_naked_torso_0: PackedScene = preload("res://Equipment/Armors/Human_XY/Torso/Torso0.tscn")#save the mesh as a scene and make sure the skin property share's the same bone names as the skeleton
-onready var human_xy_tunic_0: PackedScene = preload("res://Equipment/Armors/Human_XY/Torso/Tunic0.tscn")
-onready var human_xy_gambeson_0: PackedScene = preload("res://Equipment/Armors/Human_XY/Torso/Gambeson0.tscn")
-onready var human_xy_chainmail_0: PackedScene = preload("res://Equipment/Armors/Human_XY/Torso/Chainmail0.tscn")
-onready var human_xy_cuirass_0: PackedScene = preload("res://Equipment/Armors/Human_XY/Torso/Cuirass0.tscn")
-#stored female armors
-onready var human_xx_naked_torso_0: PackedScene = preload("res://Equipment/Armors/Human_XX/Torso/Torso0.tscn")
-onready var human_xx_tunic_0: PackedScene = preload("res://Equipment/Armors/Human_XX/Torso/Tunic0.tscn")
-onready var human_xx_tunic_1: PackedScene = preload("res://Equipment/Armors/Human_XX/Torso/Tunic1.tscn")
-onready var human_xx_gambeson_0: PackedScene = preload("res://Equipment/Armors/Human_XX/Torso/Gambeson0.tscn")
-onready var human_xx_chainmail_0: PackedScene = preload("res://Equipment/Armors/Human_XX/Torso/Chainmail0.tscn")
-onready var human_xx_cuirass_0: PackedScene = preload("res://Equipment/Armors/Human_XX/Torso/Cuirass0.tscn")
-#legs 
-onready var human_xx_legs_0: PackedScene = preload("res://Equipment/Armors/Human_XX/Legs/legs0.tscn")
-onready var human_xx_pants_0: PackedScene = preload("res://Equipment/Armors/Human_XX/Legs/Pants0.tscn")
-onready var human_xx_pants_1: PackedScene = preload("res://Equipment/Armors/Human_XX/Legs/Pants1.tscn")
-onready var human_xx_legs_gambeson_0: PackedScene = preload("res://Equipment/Armors/Human_XX/Legs/Gambeson0.tscn")
-
+#___________________________________UI and other interface stuff____________________________________
+onready var floatingtext_damage = preload("res://UI/floatingtext.tscn")

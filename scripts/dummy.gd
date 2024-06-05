@@ -30,9 +30,12 @@ func matchState()->void:
 	match state:
 		autoload.state_list.idle:
 			animation.play("idle",0.3)
+			animation.play("triple slash", 0.25)
 		autoload.state_list.wander:
+			animation.play("triple slash", 0.25)
 			pass
 		autoload.state_list.curious:
+			animation.play("triple slash", 0.25)
 			pass
 		autoload.state_list.engage:
 			pass
@@ -65,6 +68,8 @@ func takeThreat(aggro_power,instigator)->void:
 	var target = threat_system.createFindThreat(instigator)
 	state = autoload.state_list.engage
 	target.threat += aggro_power
+var parry: bool =  false
+var absorbing: bool = false
 func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type)->void:
 	take_damage_audio.play()
 	var random = randf()

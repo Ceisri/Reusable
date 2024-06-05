@@ -58,8 +58,8 @@ func loadAnimations()->void:
 	animation.add_animation("cleave", load("res://player/universal animations/Animations Sword Heavy/cleave.anim"))
 	
 	#Double L-click animation
-	animation.add_animation("lunge sword", load("res://testing this shit/lunge stab sword.anim"))
-	animation.add_animation("lunge heavy", load("res://player/universal animations/Animations Sword Heavy/lunge stab heeavy.tres"))
+	#animation.add_animation("lunge sword", load("res://testing this shit/lunge stab sword.anim"))
+	animation.add_animation("lunge heavy", load("res://player/universal animations/Animations Sword Heavy/lunge stab heeavy.anim"))
 	
 
 #	animation.add_animation("", load())
@@ -75,33 +75,17 @@ func loadAnimations()->void:
 	animation.add_animation("overhand slash heavy", load("res://player/universal animations/Animations Sword Heavy/overhand slash heavy.anim"))
 	
 	animation.add_animation("underhand slash sword", load("res://player/universal animations/Animations Sword Light/overhand slash sword.tres"))
-	animation.add_animation("underhand slash heavy", load("res://player/universal animations/Animations Sword Heavy/underhand slash heavy.tres"))
+	animation.add_animation("underhand slash heavy", load("res://player/universal animations/Animations Sword Heavy/underhand slash heavy.anim"))
 	
 
 
 #_____________________________________Equipment 3D______________________________
 func EquipmentSwitch()->void:
-	switchHead()
-	switchTorso()
+	switchEquipment()
 	switchArmorTexture()
-	switchBelt()
-	switchLegs()
-	switchHandL()
-	switchHandR()
-	switchFeet()
+
 	
 
-onready var legs0 = $Armature/Skeleton/legs0
-onready var legs1 = $Armature/Skeleton/legs1
-onready var legs2 = $Armature/Skeleton/legs2
-func switchHead()->void:
-	var head0 = null
-	var head1 = null
-	match player.head:
-		"naked":
-			player.applyEffect(player,"helm1", false)
-		"garment1":
-			player.applyEffect(player,"helm1", true)
 
 
 func equipArmor(clothing_to_equip,clothing_type_to_delete:String)->void:
@@ -112,7 +96,7 @@ func equipArmor(clothing_to_equip,clothing_type_to_delete:String)->void:
 			child.queue_free() # this will delete all the armors that share the same group, use names like "Legs, Torso,Hands,Feet"
 	$Armature/Skeleton.add_child(clothing_to_equip_instance)
 
-func switchTorso()->void:
+func switchEquipment()->void:
 	match player.species:
 		"human":
 			match player.sex:
@@ -158,54 +142,13 @@ func switchTorso()->void:
 							equipArmor(autoload.human_xx_pants_1,"Legs")
 						"gambeson":
 							equipArmor(autoload.human_xx_legs_gambeson_0,"Legs")
-func switchBelt()->void:
-	match player.belt:
-		"naked":
-			player.applyEffect(player,"belt1", false)
-		"belt1":
-			player.applyEffect(player,"belt1", true)
-func switchLegs()->void:
-	if legs0 != null:
-		if legs1 != null:
-			match player.legs:
-				"naked":
-					legs0.visible = true 
-					legs1.visible = false
-					legs2.visible = false
-					player.applyEffect(player,"pants1", false)
-				"cloth1":
-					legs0.visible = false
-					legs1.visible = true
-					legs2.visible = false
-					player.applyEffect(player,"pants1", true)
-				"cloth2":
-					legs0.visible = false
-					legs1.visible = false
-					legs2.visible = true
-					player.applyEffect(player,"pants1", true)
-onready var hand_l0 = $Armature/Skeleton/hands0
-onready var hand_l1 = $Armature/Skeleton/hands1
-func switchHandL():
-	if hand_l0 != null and hand_l1 != null:
-			match player.hand_l:
-				"naked":
-					player.applyEffect(player,"Lhand1", false)
-					hand_l0.show()
-					hand_l1.hide()
-				"cloth1":
-					player.applyEffect(player,"Lhand1", true)
-					hand_l0.hide()
-					hand_l1.show()
-func switchHandR():
-	var hand_r0 = null
-	var hand_r1 = null
-	match player.hand_r:
-		"naked":
-			player.applyEffect(player,"Rhand1", false)
-		"cloth1":
-			player.applyEffect(player,"Rhand1", true)
-func switchFeet():
-	pass
+					match player.shield:
+						"null":
+							equipArmor(autoload.shield_null,"shield")
+						"shield0":
+							equipArmor(autoload.shield_scene0,"shield")
+
+
 #______________________________Switch Colors____________________________________
 
 var skin_color = "1"

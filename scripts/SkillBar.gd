@@ -32,7 +32,7 @@ func _on_Edit_pressed():
 
 
 #lower row of shortcut keybinds 
-onready var skilltree = $"../SkillTrees/Background/SylvanSkills"
+#onready var skilltree = $"../SkillTrees/Background/SylvanSkills"
 onready var skill_slot1 = $GridContainer/Slot1
 onready var skill_slot2 = $GridContainer/Slot2
 onready var skill_slot3 = $GridContainer/Slot3

@@ -1,7 +1,7 @@
 extends Control
 
 onready var player:Spatial = $"../../.."
-onready var grid: GridContainer = $"../../../SkillBar/GridContainer"
+onready var grid: GridContainer = $"../SkillBar/GridContainer"
 var demon : PackedScene = preload("res://Classes/Necromant/Necromant Summonable Servants/Wraith.tscn")
 var demon_distance: float = 10.0 
 var summon_cooldown: float = 0.15 
@@ -142,7 +142,7 @@ func updateLabel(label: Label, cooldown: float, current_time: float, last_time: 
 
 
 
-onready var camera: Camera = $"../../../../../Camroot/h/v/Camera"
+onready var camera: Camera = $"../../../Camroot/h/v/Camera"
 var base_attack: PackedScene = preload("res://Classes/Necromant/Spells/ArcaneBlast.tscn")
 var vertical_spawn_offset: float = 0.8
 var forward_offset: float = 1
