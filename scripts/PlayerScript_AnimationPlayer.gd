@@ -634,6 +634,7 @@ func matchAnimationStates()-> void:
 
 #_______________________________________Overhead Slash______________________________________________
 	elif overhead_slash_duration == true:
+		resetDefensesAndMore()
 		if all_skills.can_overhead_slash == true:
 			if resolve > all_skills.overhead_slash_cost:
 				is_in_combat = true
@@ -653,6 +654,7 @@ func matchAnimationStates()-> void:
 			returnToIdleBasedOnWeaponType()
 #Underhand slash____________________________________________________________________________________
 	elif underhand_slash_duration == true:
+		resetDefensesAndMore()
 		match weapon_type:
 					autoload.weapon_list.sword:
 						animation.play("underhand slash sword",blend,  melee_atk_speed + 0.25)
@@ -666,6 +668,7 @@ func matchAnimationStates()-> void:
 		
 #Cyclone____________________________________________________________________________________________
 	elif cyclone_duration == true :
+		resetDefensesAndMore()
 		if all_skills.can_cyclone == true:
 			if resolve > autoload.cyclone_cost:
 				match weapon_type:
@@ -682,6 +685,7 @@ func matchAnimationStates()-> void:
 			cyclone_duration = false
 			returnToIdleBasedOnWeaponType()
 	elif whirlwind_duration == true :
+		resetDefensesAndMore()
 		if all_skills.can_whirlwind == true:
 			if resolve > all_skills.whirlwind_cost:
 				match weapon_type:
@@ -693,7 +697,7 @@ func matchAnimationStates()-> void:
 						moveDuringAnimation(3.3)
 					autoload.weapon_list.heavy:
 						animation.play("whirlwind heavy",blend,melee_atk_speed)
-						moveDuringAnimation(3)
+						moveDuringAnimation(4)
 			else:
 				whirlwind_duration = false
 				returnToIdleBasedOnWeaponType()
@@ -716,6 +720,7 @@ func matchAnimationStates()-> void:
 	else:#_____________________________ Matching States ____________________________________________
 			match state:
 				autoload.state_list.slide:
+					resetDefensesAndMore()
 					var slide_blend = 0.3
 					animation.play_backwards("backstep",slide_blend)
 					var slide_mov_speed = 15 + slide_blend + rand_range(3, 6)
@@ -734,6 +739,7 @@ func matchAnimationStates()-> void:
 					var slot = $UI/GUI/SkillBar/GridContainer/RClickSlot/Icon
 					skills(slot)
 				autoload.state_list.double_attack:
+					resetDefensesAndMore()
 					match weapon_type:
 						autoload.weapon_list.fist:
 							pass
@@ -741,7 +747,7 @@ func matchAnimationStates()-> void:
 							animation.play("lunge sword",blend,melee_atk_speed)
 #________________________________________movement states____________________________________________
 				autoload.state_list.walk:
-					is_aiming = false
+					resetDefensesAndMore()
 					if is_in_combat:
 						match weapon_type:
 							autoload.weapon_list.fist:
@@ -758,13 +764,16 @@ func matchAnimationStates()-> void:
 					else:
 						animation.play("walk",0,1)
 				autoload.state_list.sprint:
+					resetDefensesAndMore()
 					animation.play("run", 0, sprint_animation_speed * agility)
 				autoload.state_list.run:
+					resetDefensesAndMore()
 					animation.play("run",0,agility)
 				autoload.state_list.climb:
+					resetDefensesAndMore()
 					animation.play("climb cycle",blend, strength)
 				autoload.state_list.idle:
-					is_aiming = false
+					resetDefensesAndMore()
 					if is_in_combat:
 						match weapon_type:
 							autoload.weapon_list.sword:
@@ -774,7 +783,7 @@ func matchAnimationStates()-> void:
 							autoload.weapon_list.bow:
 								animation.play("idle sword",0.2,1)
 							autoload.weapon_list.heavy:
-								animation.play("idle heavy",0.2,1)
+								animation.play("idle heavy",0.1)
 					else:
 						animation.play("idle",0.2,1)
 #skillbar stuff_____________________________________________________________________________________
@@ -1210,149 +1219,152 @@ func speedlabel():
 	$kmh.text = "km/h " + str(movement_speed)
 
 
-onready var floatingtext_damage = preload("res://UI/floatingtext.tscn")
 onready var take_damage_view  = $Mesh/TakeDamageView/Viewport
+var parry: bool =  false
+var absorbing: bool = false
+func resetDefensesAndMore():
+	parry = false
+	absorbing = false
+	is_aiming = false
 func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
-	if all_skills.masochism >0:
-		nefis += damage * 0.5
-	var random = randf()
-	var damage_to_take = damage
-	var text = floatingtext_damage.instance()
-	if damage_type == "slash":
-		var mitigation: float
-		if slash_resistance >= 0:
-			mitigation = slash_resistance / (slash_resistance + 100.0)
-		else:
-			# For every negative point of slash resistance, add to damage to take directly
-			damage_to_take += -slash_resistance
-		damage_to_take *= (1.0 - mitigation)
-		if instigator.has_method("lifesteal"):
-			instigator.lifesteal(damage_to_take)
+	var text = autoload.floatingtext_damage.instance()
+	if parry == false:
+		if all_skills.masochism >0:
+			nefis += damage * 0.5
+		var random = randf()
+		var damage_to_take = damage
+		if damage_type == "slash":
+			var mitigation: float
+			if slash_resistance >= 0:
+				mitigation = slash_resistance / (slash_resistance + 100.0)
+			else:
+				# For every negative point of slash resistance, add to damage to take directly
+				damage_to_take += -slash_resistance
+			damage_to_take *= (1.0 - mitigation)
+			if instigator.has_method("lifesteal"):
+				instigator.lifesteal(damage_to_take)
+				
+		elif damage_type == "pierce":
+			var mitigation: float
+			if pierce_resistance >= 0:
+				mitigation = pierce_resistance / (pierce_resistance + 100.0)
+			else:
+				damage_to_take += -pierce_resistance
+			damage_to_take *= (1.0 - mitigation)
+			if instigator.has_method("lifesteal"):
+				instigator.lifesteal(damage_to_take)
+				
+		elif damage_type == "blunt":
+			var mitigation: float
+			if blunt_resistance >= 0:
+				mitigation = blunt_resistance / (blunt_resistance + 100.0)
+			else:
+				damage_to_take += -blunt_resistance
+			damage_to_take *= (1.0 - mitigation)
+			if instigator.has_method("lifesteal"):
+				instigator.lifesteal(damage_to_take)
+				
+		elif damage_type == "sonic":
+			var mitigation: float
+			if sonic_resistance >= 0:
+				mitigation = sonic_resistance / (sonic_resistance + 100.0)
+			else:
+				damage_to_take += -sonic_resistance
+			damage_to_take *= (1.0 - mitigation)
+			if instigator.has_method("lifesteal"):
+				instigator.lifesteal(damage_to_take)
+				
+		elif damage_type == "heat":
+			var mitigation: float
+			if heat_resistance >= 0:
+				mitigation = heat_resistance / (heat_resistance + 100.0)
+			else:
+				damage_to_take += -heat_resistance
+			damage_to_take *= (1.0 - mitigation)
+			if instigator.has_method("lifesteal"):
+				instigator.lifesteal(damage_to_take)
+				
+		elif damage_type == "cold":
+			var mitigation: float
+			if cold_resistance >= 0:
+				mitigation = cold_resistance / (cold_resistance + 100.0)
+			else:
+				damage_to_take += -cold_resistance
+			damage_to_take *= (1.0 - mitigation)
+			if instigator.has_method("lifesteal"):
+				instigator.lifesteal(damage_to_take)
+				
+		elif damage_type == "jolt":
+			var mitigation: float
+			if jolt_resistance >= 0:
+				mitigation = jolt_resistance / (jolt_resistance + 100.0)
+			else:
+				damage_to_take += -jolt_resistance
+			damage_to_take *= (1.0 - mitigation)
+			if instigator.has_method("lifesteal"):
+				instigator.lifesteal(damage_to_take)
 			
-	elif damage_type == "pierce":
-		var mitigation: float
-		if pierce_resistance >= 0:
-			mitigation = pierce_resistance / (pierce_resistance + 100.0)
-		else:
-			damage_to_take += -pierce_resistance
-		damage_to_take *= (1.0 - mitigation)
-		if instigator.has_method("lifesteal"):
-			instigator.lifesteal(damage_to_take)
+		elif damage_type == "toxic":
+			var mitigation: float
+			if toxic_resistance >= 0:
+				mitigation = toxic_resistance / (toxic_resistance + 100.0)
+			else:
+				damage_to_take += -toxic_resistance
+			damage_to_take *= (1.0 - mitigation)
+			if instigator.has_method("lifesteal"):
+				instigator.lifesteal(damage_to_take)
 			
-	elif damage_type == "blunt":
-		var mitigation: float
-		if blunt_resistance >= 0:
-			mitigation = blunt_resistance / (blunt_resistance + 100.0)
-		else:
-			damage_to_take += -blunt_resistance
-		damage_to_take *= (1.0 - mitigation)
-		if instigator.has_method("lifesteal"):
-			instigator.lifesteal(damage_to_take)
+		elif damage_type == "acid":
+			var mitigation: float
+			if acid_resistance >= 0:
+				mitigation = acid_resistance / (acid_resistance + 100.0)
+			else:
+				damage_to_take += -acid_resistance
+			damage_to_take *= (1.0 - mitigation)
+			if instigator.has_method("lifesteal"):
+				instigator.lifesteal(damage_to_take)
 			
-	elif damage_type == "sonic":
-		var mitigation: float
-		if sonic_resistance >= 0:
-			mitigation = sonic_resistance / (sonic_resistance + 100.0)
-		else:
-			damage_to_take += -sonic_resistance
-		damage_to_take *= (1.0 - mitigation)
-		if instigator.has_method("lifesteal"):
-			instigator.lifesteal(damage_to_take)
+		elif damage_type == "bleed":
+			var mitigation: float
+			if bleed_resistance >= 0:
+				mitigation = bleed_resistance / (bleed_resistance + 100.0)
+			else:
+				damage_to_take += -acid_resistance
+			damage_to_take *= (1.0 - mitigation)
+			if instigator.has_method("lifesteal"):
+				instigator.lifesteal(damage_to_take)
 			
-	elif damage_type == "heat":
-		var mitigation: float
-		if heat_resistance >= 0:
-			mitigation = heat_resistance / (heat_resistance + 100.0)
-		else:
-			damage_to_take += -heat_resistance
-		damage_to_take *= (1.0 - mitigation)
-		if instigator.has_method("lifesteal"):
-			instigator.lifesteal(damage_to_take)
+		elif damage_type == "neuro":
+			var mitigation: float
+			if neuro_resistance >= 0:
+				mitigation = neuro_resistance / (neuro_resistance + 100.0)
+			else:
+				damage_to_take += -neuro_resistance
+			damage_to_take *= (1.0 - mitigation)
+			if instigator.has_method("lifesteal"):
+				instigator.lifesteal(damage_to_take)
 			
-	elif damage_type == "cold":
-		var mitigation: float
-		if cold_resistance >= 0:
-			mitigation = cold_resistance / (cold_resistance + 100.0)
-		else:
-			damage_to_take += -cold_resistance
-		damage_to_take *= (1.0 - mitigation)
-		if instigator.has_method("lifesteal"):
-			instigator.lifesteal(damage_to_take)
-			
-	elif damage_type == "jolt":
-		var mitigation: float
-		if jolt_resistance >= 0:
-			mitigation = jolt_resistance / (jolt_resistance + 100.0)
-		else:
-			damage_to_take += -jolt_resistance
-		damage_to_take *= (1.0 - mitigation)
-		if instigator.has_method("lifesteal"):
-			instigator.lifesteal(damage_to_take)
-		
-	elif damage_type == "toxic":
-		var mitigation: float
-		if toxic_resistance >= 0:
-			mitigation = toxic_resistance / (toxic_resistance + 100.0)
-		else:
-			damage_to_take += -toxic_resistance
-		damage_to_take *= (1.0 - mitigation)
-		if instigator.has_method("lifesteal"):
-			instigator.lifesteal(damage_to_take)
-		
-	elif damage_type == "acid":
-		var mitigation: float
-		if acid_resistance >= 0:
-			mitigation = acid_resistance / (acid_resistance + 100.0)
-		else:
-			damage_to_take += -acid_resistance
-		damage_to_take *= (1.0 - mitigation)
-		if instigator.has_method("lifesteal"):
-			instigator.lifesteal(damage_to_take)
-		
-	elif damage_type == "bleed":
-		var mitigation: float
-		if bleed_resistance >= 0:
-			mitigation = bleed_resistance / (bleed_resistance + 100.0)
-		else:
-			damage_to_take += -acid_resistance
-		damage_to_take *= (1.0 - mitigation)
-		if instigator.has_method("lifesteal"):
-			instigator.lifesteal(damage_to_take)
-		
-	elif damage_type == "neuro":
-		var mitigation: float
-		if neuro_resistance >= 0:
-			mitigation = neuro_resistance / (neuro_resistance + 100.0)
-		else:
-			damage_to_take += -neuro_resistance
-		damage_to_take *= (1.0 - mitigation)
-		if instigator.has_method("lifesteal"):
-			instigator.lifesteal(damage_to_take)
-		
-	elif damage_type == "radiant":
-		var mitigation: float
-		if radiant_resistance >= 0:
-			mitigation = radiant_resistance / (radiant_resistance + 100.0)
-		else:
-			damage_to_take += -radiant_resistance
-		damage_to_take *= (1.0 - mitigation)
-		if instigator.has_method("lifesteal"):
-			instigator.lifesteal(damage_to_take)
-		
-	if current_race_gender.is_parrying:
-		damage_to_take = damage_to_take / guard_dmg_absorbition
-		text.status = "reduced"
-		if resolve < max_resolve:
-			resolve += 15
-
-	health -= damage_to_take
-	text.amount =round(damage_to_take * 100)/ 100
-	text.state = damage_type
-	take_damage_view.add_child(text)
-
+		elif damage_type == "radiant":
+			var mitigation: float
+			if radiant_resistance >= 0:
+				mitigation = radiant_resistance / (radiant_resistance + 100.0)
+			else:
+				damage_to_take += -radiant_resistance
+			damage_to_take *= (1.0 - mitigation)
+			if instigator.has_method("lifesteal"):
+				instigator.lifesteal(damage_to_take)
+				
+		health -= damage_to_take
+		text.amount =round(damage_to_take * 100)/ 100
+		text.state = damage_type
+		take_damage_view.add_child(text)
+	else:
+		text.status = "Parried"
+		text.state = damage_type
+		take_damage_view.add_child(text)
 func takeHealing(healing,healer):
 	health += healing
-	var text = floatingtext_damage.instance()
+	var text = autoload.floatingtext_damage.instance()
 	text.amount =round(healing * 100)/ 100
 	text.state = autoload.state_list.healing
 	take_damage_view.add_child(text)
