@@ -573,13 +573,14 @@ func showEnemyStats()-> void:
 #______________________________________________Animations___________________________________________
 var animation : AnimationPlayer
 func switchWeaponType()-> void:
+	print(str(current_weapon_instance.item_type))
+	print(str(weapon_type))
 	if right_hand != null and left_hand !=null: #check if the bone attachments have been initialized
 		if is_instance_valid(sec_current_weapon_instance):
 			if sec_current_weapon_instance.item_type == "bow":
 				weapon_type = autoload.weapon_list.bow
 		if right_hand.get_child_count() > 0: #something in the right hand
 			if is_instance_valid(current_weapon_instance): #check if the item instance exists yet
-					print(str(current_weapon_instance.item_type))
 #					if current_weapon_instance.item_type == "bow":
 #						weapon_type = bow
 					if current_weapon_instance.item_type == "sword":
@@ -587,10 +588,14 @@ func switchWeaponType()-> void:
 						if left_hand.get_child_count() > 0:
 							if is_instance_valid(sec_current_weapon_instance):
 								if sec_current_weapon_instance.item_type == "sword":
+									if current_race_gender.is_using_shield == false:
 										weapon_type = autoload.weapon_list.dual_swords
 						else: #nothing in the left hand
 							if current_weapon_instance.item_type == "sword":
-								weapon_type = autoload.weapon_list.sword
+								if current_race_gender.is_using_shield == false:
+									weapon_type = autoload.weapon_list.sword
+								else:
+									weapon_type = autoload.weapon_list.sword_shield
 					elif current_weapon_instance.item_type == "heavy":
 								weapon_type = autoload.weapon_list.heavy
 		else:#nothing in either hand
@@ -756,6 +761,8 @@ func matchAnimationStates()-> void:
 								animation.play("walk bow",0,1)	
 							autoload.weapon_list.sword:
 								animation.play("walk sword",0,1)
+							autoload.weapon_list.sword_shield:
+								animation.play("walk shield")
 							autoload.weapon_list.dual_swords:
 								animation.play("walk sword",0,1)
 							autoload.weapon_list.heavy:
@@ -777,13 +784,15 @@ func matchAnimationStates()-> void:
 					if is_in_combat:
 						match weapon_type:
 							autoload.weapon_list.sword:
-								animation.play("idle sword",0.2,1)
+								animation.play("idle sword")
+							autoload.weapon_list.sword_shield:
+								animation.play("idle sword")
 							autoload.weapon_list.dual_swords:
-								animation.play("idle sword",0.2,1)
+								animation.play("idle sword")
 							autoload.weapon_list.bow:
-								animation.play("idle sword",0.2,1)
+								animation.play("idle sword")
 							autoload.weapon_list.heavy:
-								animation.play("idle heavy",0.1)
+								animation.play("idle heavy")
 					else:
 						animation.play("idle",0.2,1)
 #skillbar stuff_____________________________________________________________________________________

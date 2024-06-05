@@ -26,6 +26,7 @@ func _ready():
 	switchFace()
 	player.switchShoulder()
 	loadAnimations()
+	doIhaveAshield()
 
 
 func loadAnimations()->void:
@@ -83,8 +84,17 @@ func loadAnimations()->void:
 func EquipmentSwitch()->void:
 	switchEquipment()
 	switchArmorTexture()
+	doIhaveAshield()
 
-	
+var is_using_shield:bool = false
+func doIhaveAshield() -> void:
+	var skeleton = $Armature/Skeleton
+	for child in skeleton.get_children():
+		if child.get_name() == "shield" or child.get_name() == "Shield":
+			is_using_shield = true
+		else:
+			is_using_shield = false
+
 
 
 
