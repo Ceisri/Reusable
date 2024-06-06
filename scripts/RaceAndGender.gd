@@ -9,9 +9,7 @@ onready var right_hip = $Armature/Skeleton/RightHip/holder
 onready var left_hip = $Armature/Skeleton/LeftHip/holder
 onready var shoulder_r = $Armature/Skeleton/RightShoulder/Holder
 onready var shoulder_l = $Armature/Skeleton/LeftShoulder/Holder
-onready var sword0: PackedScene = preload("res://player/weapons/sword/sword.tscn")
-onready var heavy0: PackedScene = preload("res://player/weapons/greatsword/greatsword.tscn")
-onready var bow: PackedScene = preload("res://Equipment/bows/iron/bow.tscn")
+
 
 
 func _ready():
@@ -26,8 +24,6 @@ func _ready():
 	switchFace()
 	player.switchShoulder()
 	loadAnimations()
-	doIhaveAshield()
-
 
 func loadAnimations()->void:
 	animation.add_animation("idle", load("res://player/universal animations/Animations Idle General/idle.anim"))
@@ -84,19 +80,6 @@ func loadAnimations()->void:
 func EquipmentSwitch()->void:
 	switchEquipment()
 	switchArmorTexture()
-	doIhaveAshield()
-
-var is_using_shield:bool = false
-func doIhaveAshield() -> void:
-	var skeleton = $Armature/Skeleton
-	for child in skeleton.get_children():
-		if child.get_name() == "shield" or child.get_name() == "Shield":
-			is_using_shield = true
-		else:
-			is_using_shield = false
-
-
-
 
 func equipArmor(clothing_to_equip,clothing_type_to_delete:String)->void:
 	var clothing_to_equip_instance = clothing_to_equip.instance()
@@ -152,7 +135,7 @@ func switchEquipment()->void:
 							equipArmor(autoload.human_xx_pants_1,"Legs")
 						"gambeson":
 							equipArmor(autoload.human_xx_legs_gambeson_0,"Legs")
-					match player.shield:
+					match player.tertiary_weapon:
 						"null":
 							equipArmor(autoload.shield_null,"shield")
 						"shield0":

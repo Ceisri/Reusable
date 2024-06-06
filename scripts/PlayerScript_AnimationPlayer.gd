@@ -52,7 +52,7 @@ func _on_SlowTimer_timeout()->void:
 	showStatusIcon()	
 	displayLabels()
 	regenStats()
-	switchWeaponType()
+
 	l_click_slot.switchAttackIcon()
 	r_click_slot.switchAttackIcon()
 	$UI/GUI/SkillTrees/Label.text = str("skill points: ")+ str(skill_points)
@@ -133,7 +133,8 @@ func walk()->void:
 			is_walking = true
 	#		if is_instance_valid(current_race_gender) and current_race_gender.can_move == true:
 		# Sprint input, state and speed
-			if (Input.is_action_pressed("sprint")) and (is_walking == true): 
+			if (Input.is_action_pressed("sprint")) and (is_walking == true):
+				is_in_combat = false
 				if sprint_speed < max_sprint_speed:
 					sprint_speed += 0.005 * agility
 					if sprint_animation_speed < max_sprint_animation_speed:
@@ -150,6 +151,7 @@ func walk()->void:
 				is_aiming = false
 				is_crouching = false
 			elif Input.is_action_pressed("run"):
+				is_in_combat = false
 				sprint_speed = 10
 				is_running = true 
 				is_sprinting = false
@@ -572,36 +574,6 @@ func showEnemyStats()-> void:
 
 #______________________________________________Animations___________________________________________
 var animation : AnimationPlayer
-func switchWeaponType()-> void:
-	print(str(current_weapon_instance.item_type))
-	print(str(weapon_type))
-	if right_hand != null and left_hand !=null: #check if the bone attachments have been initialized
-		if is_instance_valid(sec_current_weapon_instance):
-			if sec_current_weapon_instance.item_type == "bow":
-				weapon_type = autoload.weapon_list.bow
-		if right_hand.get_child_count() > 0: #something in the right hand
-			if is_instance_valid(current_weapon_instance): #check if the item instance exists yet
-#					if current_weapon_instance.item_type == "bow":
-#						weapon_type = bow
-					if current_weapon_instance.item_type == "sword":
-						#check if anything is instanced in the bone attachment
-						if left_hand.get_child_count() > 0:
-							if is_instance_valid(sec_current_weapon_instance):
-								if sec_current_weapon_instance.item_type == "sword":
-									if current_race_gender.is_using_shield == false:
-										weapon_type = autoload.weapon_list.dual_swords
-						else: #nothing in the left hand
-							if current_weapon_instance.item_type == "sword":
-								if current_race_gender.is_using_shield == false:
-									weapon_type = autoload.weapon_list.sword
-								else:
-									weapon_type = autoload.weapon_list.sword_shield
-					elif current_weapon_instance.item_type == "heavy":
-								weapon_type = autoload.weapon_list.heavy
-		else:#nothing in either hand
-			if left_hand.get_child_count() == 0:
-				weapon_type = autoload.weapon_list.fist
-
 
 var overhead_slash_duration:bool = false
 var underhand_slash_duration:bool = false
@@ -636,13 +608,13 @@ func matchAnimationStates()-> void:
 #			autoload.weapon_list.heavy:
 #				animation.play("lunge heavy",blend, melee_atk_speed + 0.10)
 #				moveDuringAnimation(4.5)
-
 #_______________________________________Overhead Slash______________________________________________
 	elif overhead_slash_duration == true:
-		resetDefensesAndMore()
+		is_in_combat = true
+		clearParryAbsorb()
 		if all_skills.can_overhead_slash == true:
 			if resolve > all_skills.overhead_slash_cost:
-				is_in_combat = true
+				
 				match weapon_type:
 					autoload.weapon_list.sword:
 						animation.play("overhand slash sword",blend, melee_atk_speed)
@@ -659,7 +631,8 @@ func matchAnimationStates()-> void:
 			returnToIdleBasedOnWeaponType()
 #Underhand slash____________________________________________________________________________________
 	elif underhand_slash_duration == true:
-		resetDefensesAndMore()
+		is_in_combat = true
+		clearParryAbsorb()
 		match weapon_type:
 					autoload.weapon_list.sword:
 						animation.play("underhand slash sword",blend,  melee_atk_speed + 0.25)
@@ -672,8 +645,9 @@ func matchAnimationStates()-> void:
 						moveDuringAnimation(4)
 		
 #Cyclone____________________________________________________________________________________________
-	elif cyclone_duration == true :
-		resetDefensesAndMore()
+	elif cyclone_duration == true:
+		is_in_combat = true
+		clearParryAbsorb()
 		if all_skills.can_cyclone == true:
 			if resolve > autoload.cyclone_cost:
 				match weapon_type:
@@ -690,7 +664,8 @@ func matchAnimationStates()-> void:
 			cyclone_duration = false
 			returnToIdleBasedOnWeaponType()
 	elif whirlwind_duration == true :
-		resetDefensesAndMore()
+		is_in_combat = true
+		clearParryAbsorb()
 		if all_skills.can_whirlwind == true:
 			if resolve > all_skills.whirlwind_cost:
 				match weapon_type:
@@ -709,23 +684,10 @@ func matchAnimationStates()-> void:
 		else:
 			whirlwind_duration = false
 			returnToIdleBasedOnWeaponType()
-#_______________________________________Counter Strike______________________________________________
-	elif counter_strike_duration == true: 
-		cyclone_duration = false
-		overhead_slash_duration = false
-		if all_skills.can_counter == true:
-			if resolve > autoload.counter_strike_cost:
-				is_in_combat = true
-				animation.play("counter strike",blend,melee_atk_speed)
-				moveDuringAnimation(-1)
-			else:
-				counter_strike_duration = false
-				returnToIdleBasedOnWeaponType()
-
 	else:#_____________________________ Matching States ____________________________________________
 			match state:
 				autoload.state_list.slide:
-					resetDefensesAndMore()
+					clearParryAbsorb()
 					var slide_blend = 0.3
 					animation.play_backwards("backstep",slide_blend)
 					var slide_mov_speed = 15 + slide_blend + rand_range(3, 6)
@@ -734,6 +696,7 @@ func matchAnimationStates()-> void:
 					movement_speed = int(slide_mov_speed)
 					can_walk = true
 				autoload.state_list.base_attack:
+					is_in_combat = true
 					if weapon_type == autoload.weapon_list.bow:
 						can_walk = false
 					else:
@@ -741,10 +704,12 @@ func matchAnimationStates()-> void:
 					var slot = $UI/GUI/SkillBar/GridContainer/LClickSlot/Icon
 					skills(slot)
 				autoload.state_list.guard:
+					is_in_combat = true
 					var slot = $UI/GUI/SkillBar/GridContainer/RClickSlot/Icon
 					skills(slot)
 				autoload.state_list.double_attack:
-					resetDefensesAndMore()
+					is_in_combat = true
+					clearParryAbsorb()
 					match weapon_type:
 						autoload.weapon_list.fist:
 							pass
@@ -752,7 +717,7 @@ func matchAnimationStates()-> void:
 							animation.play("lunge sword",blend,melee_atk_speed)
 #________________________________________movement states____________________________________________
 				autoload.state_list.walk:
-					resetDefensesAndMore()
+					clearParryAbsorb()
 					if is_in_combat:
 						match weapon_type:
 							autoload.weapon_list.fist:
@@ -771,16 +736,16 @@ func matchAnimationStates()-> void:
 					else:
 						animation.play("walk",0,1)
 				autoload.state_list.sprint:
-					resetDefensesAndMore()
+					clearParryAbsorb()
 					animation.play("run", 0, sprint_animation_speed * agility)
 				autoload.state_list.run:
-					resetDefensesAndMore()
+					clearParryAbsorb()
 					animation.play("run",0,agility)
 				autoload.state_list.climb:
-					resetDefensesAndMore()
+					clearParryAbsorb()
 					animation.play("climb cycle",blend, strength)
 				autoload.state_list.idle:
-					resetDefensesAndMore()
+					clearParryAbsorb()
 					if is_in_combat:
 						match weapon_type:
 							autoload.weapon_list.sword:
@@ -1067,10 +1032,10 @@ func animations():
 		state = autoload.state_list.guard_attack
 	elif Input.is_action_pressed("rclick") and !cursor_visible and is_in_combat:
 		state = autoload.state_list.guard
-	elif Input.is_action_pressed("attack") and Input.is_action_pressed("run") and !cursor_visible: 
-		state = autoload.state_list.run_attack
-	elif Input.is_action_pressed("attack") and Input.is_action_pressed("sprint") and !cursor_visible: 
-		state = autoload.state_list.sprint_attack
+#	elif Input.is_action_pressed("attack") and Input.is_action_pressed("run") and !cursor_visible: 
+#		state = autoload.state_list.run_attack
+#	elif Input.is_action_pressed("attack") and Input.is_action_pressed("sprint") and !cursor_visible: 
+#		state = autoload.state_list.sprint_attack
 	elif Input.is_action_pressed("attack") and !cursor_visible:
 		state = autoload.state_list.base_attack
 		can_walk = false
@@ -1152,8 +1117,6 @@ func animations():
 
 #_______________________________________________Combat______________________________________________
 
-var weapon_type = autoload.weapon_list.fist
-
 func attack():
 	if Input.is_action_pressed("attack"):
 		is_attacking = true
@@ -1231,7 +1194,7 @@ func speedlabel():
 onready var take_damage_view  = $Mesh/TakeDamageView/Viewport
 var parry: bool =  false
 var absorbing: bool = false
-func resetDefensesAndMore():
+func clearParryAbsorb():
 	parry = false
 	absorbing = false
 	is_aiming = false
@@ -1957,6 +1920,8 @@ func _on_GiveMeItems_pressed():
 	autoload.addNotStackableItem(inventory_grid,autoload.shoulder1)
 	autoload.addNotStackableItem(inventory_grid,autoload.bow)
 	autoload.addNotStackableItem(inventory_grid,autoload.heavy_sword0)
+	autoload.addNotStackableItem(inventory_grid,autoload.shield0)
+	
 	
 #_____________________________________Currency______________________________________________________
 onready var ethernium_label = $UI/GUI/Inventory/etherniumLabel
@@ -2104,14 +2069,13 @@ onready var detector = $Mesh/Detector
 onready var main_weap_slot = $UI/GUI/Equipment/EquipmentBG/MainWeap
 onready var main_weap_icon = $UI/GUI/Equipment/EquipmentBG/MainWeap/Icon
 
-
-var staff1: PackedScene = preload("res://itemTest.tscn")
 var current_weapon_instance: Node = null  
 var main_weapon = "null"
 var got_weapon = false
-var sheet_weapon = false
-var is_primary_weapon_on_hip = false
-var is_chopping_trees = false
+var got_two_handed_weapon:bool = false
+var sheet_weapon:bool = false
+var is_primary_weapon_on_hip:bool = false
+var is_chopping_trees:bool = false
 func switchMainFromHipToHand():
 	if is_instance_valid(current_weapon_instance):
 		if right_hand != null:
@@ -2163,12 +2127,12 @@ func switchWeapon():
 	match main_weapon:
 		"sword0":
 			if current_weapon_instance == null:
-				current_weapon_instance = current_race_gender.sword0.instance()
+				current_weapon_instance = autoload.sword_scene0.instance()
 				fixInstance()
 				addItemToCharacterSheet(main_weap_icon,main_weap_slot,autoload.wood_sword)
 		"heavy0":
 			if current_weapon_instance == null:
-				current_weapon_instance = current_race_gender.heavy0.instance()
+				current_weapon_instance = autoload.heavy_scene0.instance()
 				fixInstance()
 				addItemToCharacterSheet(main_weap_icon,main_weap_slot,autoload.heavy_sword0)
 		"null":
@@ -2179,6 +2143,7 @@ func removeWeapon():
 		right_hand.remove_child(current_weapon_instance)
 		right_hip.remove_child(current_weapon_instance)
 		got_weapon = false
+		got_two_handed_weapon = false
 func drop():
 	if current_weapon_instance != null and Input.is_action_just_pressed("drop") and got_weapon:
 		removeWeapon()
@@ -2207,7 +2172,8 @@ func pickItemsMainHand():
 					body.queue_free()  # Remove the picked-up item from the floor
 				elif body.is_in_group("heavy0") and not got_weapon:
 					main_weapon = "heavy0"
-					got_weapon = true 
+					got_weapon = true
+					got_two_handed_weapon = true
 					body.queue_free()  # Remove the picked-up item from the floor
 				elif body.is_in_group("sword3") and not got_weapon:
 					body.queue_free()  # Remove the picked-up item from the floor
@@ -2244,7 +2210,7 @@ var sec_current_weapon_instance: Node = null
 
 var secondary_weapon: String = "null"
 var tertiary_weapon: String = "null"
-var shield: String = "null"
+var tertiary_weapon_type  =  autoload.tertiary_list.empty
 var got_sec_weapon = false
 var is_secondary_weapon_on_hip = false 
 
@@ -2260,26 +2226,18 @@ func switchSec():
 	match secondary_weapon:
 		"sword0":
 			if sec_current_weapon_instance == null:
-				sec_current_weapon_instance = current_race_gender.sword0.instance()
+				sec_current_weapon_instance = autoload.sword_scene0.instance()
 				fixSecInstance()
 				addItemToCharacterSheet(sec_weap_icon,sec_weap_slot,autoload.wood_sword)
 		"bow":
 			if sec_current_weapon_instance == null:
-				sec_current_weapon_instance = current_race_gender.bow.instance()
+				sec_current_weapon_instance = autoload.bow_scene0.instance()
 				fixSecInstance()
 				addItemToCharacterSheet(sec_weap_icon,sec_weap_slot,autoload.bow)
 		"null":
 			sec_current_weapon_instance = null
 			got_sec_weapon = false
-func pickUpShield():
-	var bodies = detector.get_overlapping_bodies()
-	for body in bodies:
-		if Input.is_action_pressed("E"):
-			if shield_currentInstance == null:
-				if body.is_in_group("shield3") and not got_shield:
-					has_shield0 = true
-					got_shield = true
-					body.queue_free()
+
 func dropSec():
 	if sec_current_weapon_instance != null and Input.is_action_just_pressed("drop") and got_sec_weapon:
 		left_hand.remove_child(sec_current_weapon_instance)
@@ -2313,77 +2271,70 @@ func removeSecWeapon():
 		left_hand.remove_child(sec_current_weapon_instance)
 		left_hip.remove_child(sec_current_weapon_instance)
 		got_sec_weapon = false
-#Shield_____________________________________________________________________________________________
-onready var attachment_s = $Mesh/Armature/Skeleton/HoldL2
-var shield0: PackedScene = preload("res://itemTest.tscn")
-var shield_currentInstance: Node = null 
-var has_shield0 = false
-var got_shield = false
 
-func fixShieldInstance():
-	attachment_s.add_child(shield_currentInstance)
-	shield_currentInstance.get_node("CollisionShape").disabled = true
-	shield_currentInstance.scale = Vector3(100, 100, 100)
-	got_shield = true
-func switchShield():
-	if has_shield0:
-		if shield_currentInstance == null:
-			shield_currentInstance = shield0.instance()
-			fixShieldInstance()
-
-func dropShield():
-	if shield_currentInstance != null and Input.is_action_just_pressed("drop"):
-		attachment_s.remove_child(shield_currentInstance)
-		# Set the drop position
-		var drop_position = global_transform.origin + direction.normalized() * 1.0
-		shield_currentInstance.global_transform.origin = Vector3(drop_position.x - rand_range(-0.3, 1), global_transform.origin.y + 0.2, drop_position.z + rand_range(-0.5, 0.88))
-		# Set the scale of the dropped instance
-		shield_currentInstance.scale = Vector3(1, 1, 1)
-		var collision_shape = shield_currentInstance.get_node("CollisionShape")
-		if collision_shape != null:
-			collision_shape.disabled = false
-		get_tree().root.add_child(shield_currentInstance)
-		# Reset variables
-		has_shield0 = false
-		got_shield = false
-		shield_currentInstance = null
-func ShieldManagement():
-	pickUpShield()
-	switchShield()
-	if Input.is_action_just_pressed("drop"):
-		dropShield()
-		has_shield0 = false
-
-	
-	
-	
-#____________________________________Equipment 2D_______________________________
+func removeTertiaryWeap():
+	current_race_gender.equipArmor(autoload.shield_null,"shield")
+#Equipment 2D___________________________________________________________________
+var weapon_type = autoload.weapon_list.fist
 func SwitchEquipmentBasedOnEquipmentIcons():
-#__________________________main weapon__________________________________________
+#main weapon____________________________________________________________________
 	if main_weap_icon != null:
 		main_weap_icon.savedata()
 		if main_weap_icon.texture != null:
 			if main_weap_icon.texture.get_path() == autoload.wood_sword.get_path():
 				main_weapon = "sword0"
+				got_two_handed_weapon = false
 				applyEffect(self, "sword0", true)
-			elif main_weap_icon.texture != null:
-				if main_weap_icon.texture.get_path() == autoload.heavy_sword0.get_path():
-					main_weapon = "heavy0"
+				if sec_weap_icon.texture == null:
+					weapon_type = autoload.weapon_list.sword
+			elif main_weap_icon.texture.get_path() == autoload.heavy_sword0.get_path():
+				got_two_handed_weapon = true
+				removeSecWeapon()
+				removeTertiaryWeap()
+				main_weapon = "heavy0"
+				weapon_type = autoload.weapon_list.heavy
+			elif  main_weap_icon.texture.get_path() == autoload.bow0.get_path():
+
+				got_two_handed_weapon = true
+				removeSecWeapon()
+				removeTertiaryWeap()
+				weapon_type = autoload.weapon_list.bow
 		else:
 			removeWeapon()
 			main_weapon = "null"
 			applyEffect(self, "sword0", false)
-#__________________________sec weapon___________________________________________
-	if sec_weap_icon != null:
-		if sec_weap_icon.texture != null:
-			if sec_weap_icon.texture.get_path() == autoload.wood_sword.get_path():
-				secondary_weapon = "sword0"
-			elif sec_weap_icon.texture.get_path() == autoload.bow.get_path():
-				secondary_weapon = "bow"
-		elif sec_weap_icon.texture == null:
+			weapon_type = autoload.weapon_list.fist
+#sec weapon_____________________________________________________________________
+	#Before adding a secondary weapon in the left hand check if the right hand is not empty handed
+	if main_weap_icon.texture != null:
+		if sec_weap_icon != null:
+			if got_two_handed_weapon == false:
+				if sec_weap_icon.texture != null:
+					if sec_weap_icon.texture.get_path() == autoload.wood_sword.get_path():
+						secondary_weapon = "sword0"
+						weapon_type = autoload.weapon_list.dual_swords
+				elif sec_weap_icon.texture == null:
+					removeSecWeapon()
+					secondary_weapon = "null"
+			else:
+				removeSecWeapon()
+				secondary_weapon = "null"
+#shield_________________________________________________________________________
+	var tertiary_weapon_icon = $UI/GUI/Equipment/EquipmentBG/ThirdWeap/Icon
+	if tertiary_weapon_icon != null:
+		if got_two_handed_weapon == false:
+			if tertiary_weapon_icon.texture != null:
+				if tertiary_weapon_icon.texture.get_path() == autoload.shield0.get_path():
+					if sec_weap_icon.texture == null:
+						tertiary_weapon = "shield0"
+						weapon_type = autoload.weapon_list.sword_shield
+						removeSecWeapon()
+			elif tertiary_weapon_icon.texture == null:
+				tertiary_weapon = "null"
+		else:
 			removeSecWeapon()
-			secondary_weapon = "null"
-#_______________________________head____________________________________________
+			tertiary_weapon = "null"
+#head___________________________________________________________________________
 	var helm_icon = $UI/GUI/Equipment/EquipmentBG/Helm/Icon
 	if helm_icon != null:
 		if helm_icon.texture != null:
@@ -4521,12 +4472,10 @@ func savePlayerData():
 		"sex": sex,
 		"species":species,
 		
-		
 		"position": translation,
 		"camera.translation.y" : camera.translation.y,
 		"camera.translation.z" : camera.translation.z,
 
-		
 		"health": health,
 		"max_health": max_health,
 		
@@ -4546,8 +4495,6 @@ func savePlayerData():
 		"max_kilocalories": max_kilocalories,
 		"water": water,
 		"max_water": max_water,
-		
-		
 #leveling 
 		"skill_points":skill_points,
 		"skill_points_spent":skill_points_spent,
@@ -4844,13 +4791,7 @@ func loadPlayerData():
 			if "hair_color" in player_data:
 				hair_color = player_data["hair_color"]
 				
-func _on_pressme_pressed():
-	health = 5
-	breath = 5
-	aefis = 5 
-	nefis += 25
-	resolve = 5 
-	
+
 func _on_pressme2_pressed():
 	slash_resistance = rng.randi_range(-125, 125)
 	pierce_resistance = rng.randi_range(-125, 125)
@@ -5064,7 +5005,3 @@ func colorhair():
 func _on_BlendshapeTest_pressed():
 	current_race_gender.smile = rand_range(-2,+2)
 	current_race_gender.current_face_instance.set("blend_shapes/Smile",current_race_gender.smile)
-
-
-func _on_give_me_a_shield_pressed():
-	shield = "shield0"
