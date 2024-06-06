@@ -51,23 +51,15 @@ func loadAnimations()->void:
 	animation.add_animation("combo dual swords", load("res://player/universal animations/Animations Sword Dual Wield/combo dual swords.anim"))
 	animation.add_animation("combo heavy", load("res://player/universal animations/Animations Sword Heavy/combo heavy.anim"))
 	
-	
 	#R-click animations
 	animation.add_animation("full draw", load("res://player/universal animations/Animations Bow/full draw.anim"))
 	#animation.add_animation("parry", load("res://player/universal animations/sword animations/parry.anim"))
 	animation.add_animation("shield block", load("res://player/universal animations/Animations Shield/shield block.anim"))
 	animation.add_animation("cleave", load("res://player/universal animations/Animations Sword Heavy/cleave.anim"))
 	
-	#Double L-click animation
-	#animation.add_animation("lunge sword", load("res://testing this shit/lunge stab sword.anim"))
-	animation.add_animation("lunge heavy", load("res://player/universal animations/Animations Sword Heavy/lunge stab heeavy.anim"))
-	
-
 #	animation.add_animation("", load())
 	animation.add_animation("whirlwind sword", load("res://player/universal animations/Animations Sword Light/whirlwind sword.anim"))
 	animation.add_animation("whirlwind heavy", load("res://player/universal animations/Animations Sword Heavy/whirlwind heavy.anim"))
-	
-	
 	
 	animation.add_animation("cyclone sword", load("res://player/universal animations/Animations Sword Light/cyclone  sword.anim"))#placeholder
 	animation.add_animation("cyclone heavy", load("res://player/universal animations/Animations Sword Heavy/cyclone heavy.anim"))
@@ -79,7 +71,10 @@ func loadAnimations()->void:
 	animation.add_animation("underhand slash shield", load("res://player/universal animations/Animations Shield/underhand slash shield.anim"))
 	animation.add_animation("underhand slash heavy", load("res://player/universal animations/Animations Sword Heavy/underhand slash heavy.anim"))
 	
-
+	animation.add_animation("heart trust sword", load("res://player/universal animations/Animations Sword Light/heart trust sword.anim"))
+	
+	animation.add_animation("taunt", load("res://player/universal animations/Animations Sword Light/taunt.anim"))
+	animation.add_animation("taunt heavy", load("res://player/universal animations/Animations Sword Heavy/taunt heavy.anim"))
 
 #_____________________________________Equipment 3D______________________________
 func EquipmentSwitch()->void:
@@ -181,16 +176,12 @@ func _on_Button_pressed():
 			
 			
 			
-			
-onready var face = $Armature/Skeleton/face
-onready var feet0 = $Armature/Skeleton/feet0
 func changeHeadTorsoColor(materail_number, new_material, color):
 	new_material.albedo_texture = color
 	new_material.flags_unshaded = true
 	if current_face_instance != null:
 		current_face_instance.set_surface_material(materail_number, new_material)
-	if face != null:
-		face.set_surface_material(materail_number, new_material)
+#		face.set_surface_material(materail_number, new_material)
 #	if torso0 !=null:
 #		torso0.set_surface_material(materail_number, new_material)
 #	if hand_l0 !=null:
@@ -292,7 +283,6 @@ func loadPlayerData()-> void:
 				face_set = player_data["face_set"]
 
 #Face blend shapes__________________________________________________________________________________
-onready var faceblend = $Armature/Skeleton/face
 
 var Bimaxillaryprotrusion = 0 #done
 var BrowProtrusion = 0 #done
@@ -451,37 +441,6 @@ func punch()-> void:
 							enemy.takeDamage(damage,aggro_power,player,player.stagger_chance,"heat")
 						else: #apparently the enemy is showing his back or flanks, extra damagec
 							enemy.takeDamage(damage_flank,aggro_power,player,player.stagger_chance,"jolt")
-onready var sword_area:Area = $Armature/Skeleton/RightHand/Area
-onready var sword2_area:Area = $Armature/Skeleton/LeftHand/Area
-func slash()->void:
-	var damage_type = "slash"
-	var damage = 22 + player.slash_dmg 
-	var damage_flank = damage + player.flank_dmg
-	var critical_damage : float  = damage * player.critical_strength
-	var critical_flank_damage : float  = damage_flank * player.critical_strength
-	var aggro_power = damage + 20
-	var enemies = sword_area.get_overlapping_bodies()
-	for enemy in enemies:
-		if enemy.is_in_group("enemy"):
-			if enemy.has_method("takeDamage"):
-				if enemy.has_method("applyEffect"):
-					enemy.applyEffect(enemy,"bleeding", true)	
-				player.pushEnemyAway(0.25, enemy,0.25)
-				if player.resolve < player.max_resolve:
-					player.resolve += 3
-				if player.is_on_floor():
-					#insert sound effect here
-					if randf() <= player.critical_chance:
-						if player.isFacingSelf(enemy,0.30): #check if the enemy is looking at me 
-							enemy.takeDamage(critical_damage,aggro_power,player,player.stagger_chance,damage_type)
-						else: #apparently the enemy is showing his back or flanks, extra damagec
-							enemy.takeDamage(critical_flank_damage,aggro_power,player,player.stagger_chance,damage_type)
-					else:
-						if player.isFacingSelf(enemy,0.30): #check if the enemy is looking at me 
-							enemy.takeDamage(damage,aggro_power,player,player.stagger_chance,damage_type)
-						else: #apparently the enemy is showing his back or flanks, extra damagec
-							enemy.takeDamage(damage_flank,aggro_power,player,player.stagger_chance,damage_type)
-							
 
 
 #Melee Functions to call in the AnimationPlayer
@@ -573,7 +532,6 @@ func cleaveDMG()->void:#Heavy
 #Overhand section
 #This skill is viable for all melee weapon types EXCEPT FIST WEAPONS
 func overhandSlashCD()-> void:
-	player.resolve -= autoload.overhead_slash_cost
 	player.overhead_slash_duration = false
 	player.all_skills.overheadSlashCD()
 func overhandSlashDMG()->void:
@@ -616,7 +574,6 @@ func underhandSlashDMG()-> void:
 #This skill is viable for all melee weapon types EXCEPT FIST WEAPONS
 onready var melee_aoe: Area = $MeleeAOE
 func cycloneCD()-> void:
-	player.resolve -= autoload.cyclone_cost
 	player.all_skills.cycloneCD()
 	player.cyclone_duration = false
 func cycloneDMG() -> void:
@@ -639,7 +596,6 @@ func cycloneDMG() -> void:
 #Whirlwind section
 #This skill is viable for all melee weapon types 
 func whirlwindCD()-> void:
-	player.resolve -= player.all_skills.whirlwind_cost
 	player.all_skills.whirlwindCD()
 	player.whirlwind_duration = false
 func whirlwindDMG() -> void:
@@ -659,6 +615,29 @@ func whirlwindDMG() -> void:
 	var push_distance:float = 0.25 * player.total_impact
 	var enemies = melee_aoe.get_overlapping_bodies()
 	dealDMG(enemies,null,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance)
+
+#HeartTrust
+onready var trust_area: Area = $MeleeTrusting
+func HeartTrustCD()->void:
+	player.all_skills.heartTrustSlashCD()
+	player.heart_trust_duration = false
+func HeartTrustDMG()->void:
+	var damage_type:String = "pierce"
+	var damage:float = (5 + player.pierce_dmg) 
+	var damage_flank:float = damage + player.flank_dmg 
+	var critical_damage : float  = damage * player.critical_strength
+	var critical_flank_damage : float  = damage_flank * player.critical_strength
+	#extra damage when the victim is trying to block but is facing the wrong way 
+	var punishment_damage : float = 15
+	var punishment_damage_type :String = "slash"
+	var aggro_power:float = player.threat_power + 15
+	var push_distance:float = 0.25 * player.total_impact
+	var enemies:Array = trust_area.get_overlapping_bodies()
+	dealDMG(enemies,null,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance)
+
+func tauntCD()->void:
+	player.taunt_duration = false
+	player.all_skills.tauntCD()
 #___________________________________________________________________________________________________
 #General  Functions to call in the AnimationPlayer
 var can_move: bool = false
@@ -679,6 +658,9 @@ func startAbsorb():
 	player.absorbing = true
 func stopAbsorb():
 	player.absorbing = false
+	
+func jump():
+	player.vertical_velocity =  Vector3.UP * ((player.jumping_power * player.agility) * get_physics_process_delta_time())
 #___________________________________________________________________________________________________
 func dealDMG(enemy_detector1, enemy_detector2,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance)-> void:
 	for victim in enemy_detector1:

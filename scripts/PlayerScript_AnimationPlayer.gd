@@ -97,7 +97,6 @@ func _physics_process(delta: float) -> void:
 	matchAnimationStates()
 	animations()
 	attack()
-	doubleAttack()
 	fallDamage()
 	skillUserInterfaceInputs()
 	positionCoordinates()
@@ -236,10 +235,7 @@ func checkWallInclination()-> void:
 	else:
 		wall_incline = 0  # Set to 0 if there is no collision
 		is_wall_in_range = false
-export var  jump_animation_duration:float = 0
-var jump_animation_max_duration:float = 3
-var jump_mov_animation_duration:float = 0
-var jump_mov_animation_max_duration:float = 3
+
 func jump():
 	if Input.is_action_just_pressed("jump") and is_on_floor():
 		if is_instance_valid(current_race_gender):
@@ -577,37 +573,40 @@ var animation : AnimationPlayer
 
 var overhead_slash_duration:bool = false
 var underhand_slash_duration:bool = false
+var heart_trust_duration:bool = false
 var cyclone_duration:bool = false
 var whirlwind_duration:bool = false
 var counter_strike_duration:bool = false
-
+var taunt_duration:bool = false
 var state = autoload.state_list.idle
+
+var queue_skills:bool = false #this is only for people with disabilities or if the game ever goes online to help with high ping 
 func matchAnimationStates()-> void:
 	if current_race_gender == null or animation == null:
 		print("mesh not instanced or animationPlayer not found")
-		
-	if state == autoload.state_list.skill1:
-		var slot = $UI/GUI/SkillBar/GridContainer/Slot1/Icon
-		skills(slot)
-	elif state == autoload.state_list.skill2:
-		var slot = $UI/GUI/SkillBar/GridContainer/Slot2/Icon
-		skills(slot)
-	elif state == autoload.state_list.skill3:
-		var slot = $UI/GUI/SkillBar/GridContainer/Slot3/Icon
-		skills(slot)
-#____________________________________Double L_Click Attack__________________________________________
-	elif double_atk_duration ==true:
-		pass
-#		match weapon_type:
-#			autoload.weapon_list.sword:
-#				animation.play("lunge sword",blend, melee_atk_speed + 0.25)
-#				moveDuringAnimation(4.5)
-#			autoload.weapon_list.dual_swords:
-#				animation.play("lunge sword",blend, melee_atk_speed + 0.33)
-#				moveDuringAnimation(4.5)
-#			autoload.weapon_list.heavy:
-#				animation.play("lunge heavy",blend, melee_atk_speed + 0.10)
-#				moveDuringAnimation(4.5)
+	
+	 #this is only for people with disabilities or if the game ever goes online to help with high ping 
+	if queue_skills == true:
+		if state == autoload.state_list.skill1:
+			var slot = $UI/GUI/SkillBar/GridContainer/Slot1/Icon
+			skills(slot)
+		elif state == autoload.state_list.skill2:
+			var slot = $UI/GUI/SkillBar/GridContainer/Slot2/Icon
+			skills(slot)
+		elif state == autoload.state_list.skill3:
+			var slot = $UI/GUI/SkillBar/GridContainer/Slot3/Icon
+			skills(slot)
+		elif state == autoload.state_list.skillQ:
+			var slot = $UI/GUI/SkillBar/GridContainer/SlotQ/Icon
+			skills(slot)
+	if taunt_duration == true:
+		can_walk = false
+		is_in_combat = true
+		clearParryAbsorb()
+		if weapon_type == autoload.weapon_list.heavy:
+			animation.play("taunt heavy",blend + 0.1,ferocity)
+		else:
+			animation.play("taunt",blend+ 0.1,ferocity)
 #_______________________________________Overhead Slash______________________________________________
 	elif overhead_slash_duration == true:
 		is_in_combat = true
@@ -664,6 +663,7 @@ func matchAnimationStates()-> void:
 		else:
 			cyclone_duration = false
 			returnToIdleBasedOnWeaponType()
+#Whirlwind__________________________________________________________________________________________
 	elif whirlwind_duration == true :
 		is_in_combat = true
 		clearParryAbsorb()
@@ -688,6 +688,27 @@ func matchAnimationStates()-> void:
 		else:
 			whirlwind_duration = false
 			returnToIdleBasedOnWeaponType()
+	elif heart_trust_duration == true :
+		is_in_combat = true
+		clearParryAbsorb()
+		if all_skills.can_heart_trust == true:
+				match weapon_type:
+					autoload.weapon_list.sword:
+						animation.play("heart trust sword",blend*1.5,melee_atk_speed)
+						moveDuringAnimation(4)
+					autoload.weapon_list.sword_shield:
+						animation.play("heart trust sword",blend*1.5,melee_atk_speed)
+						moveDuringAnimation(3)
+					autoload.weapon_list.dual_swords:
+						animation.play("heart trust sword",blend*1.5,melee_atk_speed + 0.1)
+						moveDuringAnimation(3.3)
+					autoload.weapon_list.heavy:
+						animation.play("heart trust sword",blend*1.5,melee_atk_speed - 0.1)
+						moveDuringAnimation(6)
+		else:
+			returnToIdleBasedOnWeaponType()
+#___________________________________________________________________________________________________
+#___________________________________________________________________________________________________
 	else:#_____________________________ Matching States ____________________________________________
 			match state:
 				autoload.state_list.slide:
@@ -829,11 +850,12 @@ func matchAnimationStates()-> void:
 					skills(slot)
 
 onready var all_skills = $UI/GUI/SkillTrees
-onready var cyclone_icon = $UI/GUI/SkillTrees/Background/Test/skill15/Icon
-onready var overhand_icon = $UI/GUI/SkillTrees/Background/Test/skill25/Icon
-onready var underhand_icon = $UI/GUI/SkillTrees/Background/Test/skill23/Icon
-onready var counter_strike_icon = $UI/GUI/SkillTrees/Background/Test/skill20/Icon
-onready var whirlwind_icon = $UI/GUI/SkillTrees/Background/Test/skill24/Icon
+onready var taunt_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill1/Icon
+onready var cyclone_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill4/Icon
+onready var overhand_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill5/Icon
+onready var underhand_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill3/Icon
+onready var whirlwind_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill2/Icon
+onready var heart_trust_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill6/Icon
 
 onready var l_click_slot = $UI/GUI/SkillBar/GridContainer/LClickSlot
 onready var r_click_slot = $UI/GUI/SkillBar/GridContainer/RClickSlot
@@ -874,8 +896,14 @@ func skills(slot)-> void:
 							animation.play("combo dual swords",blend,melee_atk_speed+ 0.2)
 							moveDuringAnimation(1.5)
 				elif slot.texture.resource_path == autoload.block_shield.get_path():
-					is_in_combat = true
-					animation.play("shield block",blend)
+					if resolve > 0:
+						is_walking = false
+						resolve -= 1 * get_physics_process_delta_time()
+						can_walk = false
+						is_in_combat = true
+						animation.play("shield block",blend)
+					else:
+						returnToIdleBasedOnWeaponType()
 #bow 
 				elif slot.texture.resource_path == autoload.quick_shot.get_path():
 					if weapon_type == autoload.weapon_list.bow:
@@ -908,6 +936,22 @@ func skills(slot)-> void:
 						else:
 							returnToIdleBasedOnWeaponType()
 							overhead_slash_duration = false
+#__________________________________________  overhead slash    _____________________________________
+				elif slot.texture.resource_path == autoload.taunt.get_path():
+						if taunt_icon.points >0:
+							if all_skills.can_taunt == true:
+								if resolve > all_skills.taunt_cost:
+									is_in_combat = true
+									taunt_duration = true
+								else:
+									returnToIdleBasedOnWeaponType()
+									taunt_duration = false
+							else:
+								returnToIdleBasedOnWeaponType()
+								taunt_duration = false
+						else:
+							returnToIdleBasedOnWeaponType()
+							taunt_duration = false
 #_________________________________________ Underhand slash _________________________________________
 				elif slot.texture.resource_path == autoload.underhand_slash.get_path():
 						if underhand_icon.points >0:
@@ -954,17 +998,21 @@ func skills(slot)-> void:
 						else:
 							returnToIdleBasedOnWeaponType()
 							whirlwind_duration = false
-				elif slot.texture.resource_path == autoload.counter_strike.get_path():
-						if all_skills.can_counter == true:
-							if resolve > autoload.counter_strike_cost:
-								match weapon_type:
-									autoload.weapon_list.sword:
-										counter_strike_duration = true
-										is_in_combat = true
+#__________________________________________ Whirlwind _____________________________________________
+				elif slot.texture.resource_path == autoload.heart_trust.get_path():
+						if heart_trust_icon.points >0 :
+							if all_skills.can_whirlwind == true:
+								if resolve > all_skills.heart_trust_cost:
+									heart_trust_duration = true
+								else:
+									returnToIdleBasedOnWeaponType()
+									heart_trust_duration = false
 							else:
 								returnToIdleBasedOnWeaponType()
+								heart_trust_duration = false
 						else:
 							returnToIdleBasedOnWeaponType()
+							heart_trust_duration = false
 #ranged bow skills
 				elif slot.texture.resource_path == autoload.full_draw.get_path():
 					if weapon_type == autoload.weapon_list.bow:
@@ -1026,21 +1074,12 @@ func animations():
 	elif not is_on_floor() and not is_climbing and not is_swimming:
 		state = autoload.state_list.fall
 #attacks________________________________________________________________________
-	elif double_atk_count == 2 and !cursor_visible: 
-		state = autoload.state_list.double_attack
-	elif Input.is_action_pressed("rclick") and Input.is_action_pressed("attack") and !cursor_visible:
-		state = autoload.state_list.guard_attack
 	elif Input.is_action_pressed("rclick") and !cursor_visible and is_in_combat:
 		state = autoload.state_list.guard
-#	elif Input.is_action_pressed("attack") and Input.is_action_pressed("run") and !cursor_visible: 
-#		state = autoload.state_list.run_attack
-#	elif Input.is_action_pressed("attack") and Input.is_action_pressed("sprint") and !cursor_visible: 
-#		state = autoload.state_list.sprint_attack
 	elif Input.is_action_pressed("attack") and !cursor_visible:
 		state = autoload.state_list.base_attack
 		can_walk = false
 #skills put these below the walk elif statment in case of keybinding bugs, as of now it works so no need
-	
 	elif Input.is_action_pressed("1"):
 			state = autoload.state_list.skill1
 	elif Input.is_action_pressed("2"):
@@ -1087,14 +1126,10 @@ func animations():
 		
 	elif is_sprinting == true:
 			state =  autoload.state_list.sprint
-			jump_animation_duration = 0 
 	elif is_running:
 			state = autoload.state_list.run
-			jump_animation_duration = 0 
 	elif is_walking:
 			state =  autoload.state_list.walk
-
-			jump_animation_duration = 0 
 	elif Input.is_action_pressed("forward") or Input.is_action_pressed("left") or  Input.is_action_pressed("right") or  Input.is_action_pressed("backward"):
 			if Input.is_action_pressed("attack"):
 				can_walk = false
@@ -1108,10 +1143,9 @@ func animations():
 	
 	elif Input.is_action_pressed("crouch"):
 		state =  autoload.state_list.crouch
-		jump_animation_duration = 0 
-	
-	elif jump_animation_duration != 0:
-		state =  autoload.state_list.jump
+
+#	elif jump_animation_duration != 0:
+#		state =  autoload.state_list.jump
 	else:
 		state =  autoload.state_list.idle
 
@@ -1122,22 +1156,7 @@ func attack():
 		is_attacking = true
 	else:
 		is_attacking = false
-#Double click to heavy attack_______________________________________________________________________
-var double_atk_count: int = 0
-var double_atk_timer: float = 0.0
-var double_atk_duration:bool = false
-func doubleAttack():
-		if double_atk_count > 0:
-			double_atk_timer += get_physics_process_delta_time()
-		if double_atk_timer >= double_press_time:
-			double_atk_count = 0
-			double_atk_timer = 0.0
-		if Input.is_action_just_pressed("attack"):
-			double_atk_count += 1
-		if double_atk_count == 2:
-			double_atk_duration =true
-		else:
-			double_atk_duration = false
+
 
 func pushEnemyAway(push_distance, enemy, push_speed):
 	var direction_to_enemy = enemy.global_transform.origin - global_transform.origin
@@ -1340,25 +1359,6 @@ func takeHealing(healing,healer):
 	text.amount =round(healing * 100)/ 100
 	text.state = autoload.state_list.healing
 	take_damage_view.add_child(text)
-#__________________________________Combat UI____________________________________
-
-onready var parry_icon = $UI/GUI/ParryIcon
-var animation_duration = 500  # Animation duration in milliseconds
-var start_time = 0
-var total_elapsed_time = 0  # Total elapsed time since the animation started
-var fading_in = true
-
-func parryIcon():
-	var parry_icon: TextureRect = $UI/GUI/ParryIcon
-	var icon_duration: float = 0.5
-
-	# Check if the tween is already active
-	if not tween.is_active():
-		# Modulating the alpha value over time
-		tween.interpolate_property(parry_icon, "modulate:a", 1.0, 0.0, icon_duration,
-									Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
-		tween.start()
-
 
 #_____________________________close buttons/inputs______________________________
 
@@ -1552,6 +1552,7 @@ func saveSkillBarData():
 	$UI/GUI/SkillBar/GridContainer/Slot20/Icon.savedata()
 
 #______________________________________skill tree system____________________________________________
+onready var vanguard_skill_tree: Control = $UI/GUI/SkillTrees/Background/Vanguard
 var cyclone_points:int = 0 
 func connectGenericSkillTee(tree):# this is called by connectSkillTree() to give the the "tree"
 	for child in tree.get_children():
@@ -1564,29 +1565,13 @@ func connectGenericSkillTee(tree):# this is called by connectSkillTree() to give
 	 # Correcting the connection for ResetSkills button
 	$UI/GUI/SkillTrees/ResetSkills.connect("pressed", self, "resetSkills", [tree])
 func connectSkillTree():# connects all skill trees
-	connectGenericSkillTee($UI/GUI/SkillTrees/Background/Necromant)
-	connectGenericSkillTee($UI/GUI/SkillTrees/Background/Test)
+	connectGenericSkillTee(vanguard_skill_tree)
 var skill_points_spent:int = 0 
 func skillPressed(tree,index)->void:
 	var button = tree.get_node("skill" + str(index))
 	var icon_texture_rect = button.get_node("Icon")
 	var icon_texture = icon_texture_rect.texture	
-	if icon_texture.get_path() == autoload.cyclone.get_path():#check if skill icons match
-		spendSkillPoints(icon_texture_rect,button)
-#___________________________________________________________________________________________________
-	elif icon_texture.get_path() == autoload.whirlwind.get_path():
-		spendSkillPoints(icon_texture_rect,button)
-	elif icon_texture.get_path() == autoload.overhead_slash.get_path():
-		spendSkillPoints(icon_texture_rect,button)
-	elif icon_texture.get_path() == autoload.underhand_slash.get_path():
-		spendSkillPoints(icon_texture_rect,button)
-	elif icon_texture.get_path() == autoload.rising_slash.get_path():
-		spendSkillPoints(icon_texture_rect,button)
-	elif icon_texture.get_path() == autoload.counter_strike.get_path():
-		spendSkillPoints(icon_texture_rect,button)
-	elif icon_texture.get_path() == autoload.fury_strike.get_path():
-		spendSkillPoints(icon_texture_rect,button)
-	elif icon_texture.get_path() == autoload.rising_fury.get_path():
+	if icon_texture != null:
 		spendSkillPoints(icon_texture_rect,button)
 	saveGame()
 
@@ -1598,18 +1583,19 @@ func spendSkillPoints(icon_texture_rect,button):
 		skill_points_spent +=  1
 
 func saveSkillTreeData():
-	for child in $UI/GUI/SkillTrees/Background/Test.get_children():
+	for child in vanguard_skill_tree.get_children():
 		if child.is_in_group("Skill"):
 			if child.get_node("Icon").has_method("savedata"):
 				child.get_node("Icon").savedata()
+	
 func loadSkillTreeData():
-	for child in $UI/GUI/SkillTrees/Background/Test.get_children():
+	for child in vanguard_skill_tree.get_children():
 		if child.is_in_group("Skill"):
 			if child.get_node("Icon").has_method("loaddata"):
 				child.get_node("Icon").loaddata()
 				child.skillPoints()
 func setSkillTreeOwner():
-	for child in $UI/GUI/SkillTrees/Background/Test.get_children():
+	for child in vanguard_skill_tree.get_children():
 		if child.is_in_group("Skill"):
 			child.get_node("Icon").player = self 
 func skillMouseEntered(tree, index):
@@ -1621,7 +1607,7 @@ func skillMouseExited(index):
 	deleteTooltip()
 	
 func resetSkills(tree):
-	for child in $UI/GUI/SkillTrees/Background/Test.get_children():
+	for child in tree.get_children():
 		if child.is_in_group("Skill"):
 			child.get_node("Icon").points = 0 
 			skill_points += skill_points_spent
@@ -2778,8 +2764,8 @@ const base_run_speed = 7
 var run_speed = 7
 const base_crouch_speed = 2
 var crouch_speed = 2
-const base_jumping_power = 20
-var jumping_power = 20
+const base_jumping_power = 100
+var jumping_power = 100
 const base_dash_power = 20
 var dash_power = 20
 var attribute = 1000
