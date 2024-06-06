@@ -65,6 +65,11 @@ enum weapon_list {
 	spear_shield,
 	staff,
 }
+enum tertiary_list{
+	shield,
+	boomerang,
+	empty
+}
 enum damage_type {
 	slash,
 	blunt,
@@ -96,8 +101,6 @@ onready var bread = preload("res://Food Icons/Cooked Meals/Bread/bread.png")
 
 
 
-onready var bow =  preload("res://Equipment icons/bows/bow.png")
-
 
 onready var rosehip = preload("res://Alchemy ingredients/2.png")
 
@@ -106,27 +109,6 @@ onready var red_potion = preload("res://Potions/Red potion.png")
 var red_potion_description: String =  "+100 kcals +250 grams of water.\nHeals by 100 health instantly then by 10 every second, drinking more potions stacks the duration"
 onready var empty_potion = preload("res://Potions/Empty potion.png")
 onready var water = preload("res://Potions/water.png")
-
-#equipment__________________________________________________________________________________________
-onready var wood_sword =  preload("res://0.png")
-onready var heavy_sword0 =  preload("res://Equipment icons/heavy weapons/heav_sword_0.png")
-
-
-
-onready var hat1 = preload("res://Equipment icons/hat1.png")
-onready var pad1 = preload("res://Equipment icons/shoulder1.png")
-onready var garment1 = preload("res://Equipment icons/garment1.png")
-onready var pants1 = preload("res://Equipment icons/pants1.png")
-onready var shoe1 = preload("res://Equipment icons/shoe1.png")
-onready var glove1 = preload("res://Equipment icons/glove1.png")
-onready var belt1 = preload("res://Equipment icons/belt1.png")
-
-onready var torso_armor2 = preload("res://Equipment icons/torso2.png")
-onready var torso_armor3 = preload("res://Equipment icons/torso3.png")
-onready var torso_armor4 = preload("res://Equipment icons/torso4.png")
-
-onready var staff1 = preload("res://Equipment icons/staves/staff1.png")
-onready var shoulder1 = preload("res://Equipment icons/shouleder pads/shoulder plate metal.png")
 
 #_________________________________Skill icons___________________________________
 
@@ -148,6 +130,7 @@ onready var guard =  preload("res://Classes/handcombat/guard.png")
 #sword______________________________________________________________________________________________
 onready var slash_sword =  preload("res://Classes/Swordsmen/slash.png")
 onready var guard_sword =  preload("res://Classes/Swordsmen/cross parry.png")
+onready var block_shield =  preload("res://Classes/Swordsmen/block.png")
 #greatsword/heavy
 onready var heavy_slash =  preload("res://Classes/Swordsmen/slash_great_sword.png")
 onready var cleave =  preload("res://Classes/Swordsmen/cleave.png")
@@ -190,12 +173,36 @@ var rising_fury_threat: float = 25
 
 
 
+#equipment 2D icons__________________________________________________________________________________________
+onready var wood_sword =  preload("res://0.png")
+onready var heavy_sword0 =  preload("res://Equipment icons/heavy weapons/heav_sword_0.png")
+onready var shield0 =  preload("res://Equipment icons/shields/shield.png")
+onready var bow0 =  preload("res://Equipment icons/bows/bow.png")
+
+
+onready var hat1 = preload("res://Equipment icons/hat1.png")
+onready var pad1 = preload("res://Equipment icons/shoulder1.png")
+onready var garment1 = preload("res://Equipment icons/garment1.png")
+onready var pants1 = preload("res://Equipment icons/pants1.png")
+onready var shoe1 = preload("res://Equipment icons/shoe1.png")
+onready var glove1 = preload("res://Equipment icons/glove1.png")
+onready var belt1 = preload("res://Equipment icons/belt1.png")
+
+onready var torso_armor2 = preload("res://Equipment icons/torso2.png")
+onready var torso_armor3 = preload("res://Equipment icons/torso3.png")
+onready var torso_armor4 = preload("res://Equipment icons/torso4.png")
+
+onready var staff1 = preload("res://Equipment icons/staves/staff1.png")
+onready var shoulder1 = preload("res://Equipment icons/shouleder pads/shoulder plate metal.png")
 
 #______________________________________3D equipable items___________________________________________
 onready var shoulder_scene0: PackedScene = preload("res://Equipment/Shoulder pads/shoulder plate metal.glb")
 onready var shield_scene0: PackedScene =  preload("res://player/weapons/shields/test Shield.tscn")
-onready var shield_null: PackedScene =  preload("res://player/weapons/shields/inv shield.tscn")
-
+onready var shield_null: PackedScene =  preload("res://player/weapons/shields/inv Shield.tscn")
+onready var sword_scene0: PackedScene = preload("res://player/weapons/sword/sword.tscn")
+onready var heavy_scene0: PackedScene = preload("res://player/weapons/greatsword/greatsword.tscn")
+onready var bow_scene0: PackedScene = preload("res://player/weapons/bows/bow.tscn")
+onready var bow_null: PackedScene = preload("res://player/weapons/bows/bow invsible.tscn")
 #________________Armor and clothing 3Dscenes to instance as children of skeletons___________________
 #stored male armors
 onready var human_xy_naked_torso_0: PackedScene = preload("res://Equipment/Armors/Human_XY/Torso/Torso0.tscn")#save the mesh as a scene and make sure the skin property share's the same bone names as the skeleton

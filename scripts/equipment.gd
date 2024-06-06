@@ -8,7 +8,6 @@ var type : String = ""
 
 
 func get_drag_data(position: Vector2):
-	#$"../../../../..".current_race_gender.EquipmentSwitch()
 	var slot = get_parent().get_name()
 	var data = {
 		"origin_node": self,
@@ -58,4 +57,5 @@ func drop_data(position, data):
 		quantity = origin_quantity
 		origin_node.quantity = temp_quantity
 	icon.savedata()
+
 

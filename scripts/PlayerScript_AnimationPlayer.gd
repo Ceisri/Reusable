@@ -4,7 +4,7 @@ onready var player_mesh: Node = $Mesh
 
 var rng = RandomNumberGenerator.new()
 
-var blend: float = 0.25
+var blend: float = 0.11
 
 var strafe_dir: Vector3 = Vector3.ZERO
 var strafe: Vector3 = Vector3.ZERO
@@ -614,17 +614,16 @@ func matchAnimationStates()-> void:
 		clearParryAbsorb()
 		if all_skills.can_overhead_slash == true:
 			if resolve > all_skills.overhead_slash_cost:
-				
+				moveDuringAnimation(1.5)
 				match weapon_type:
 					autoload.weapon_list.sword:
 						animation.play("overhand slash sword",blend, melee_atk_speed)
-						moveDuringAnimation(1.5)
-#					autoload.weapon_list.dual_swords:
-#						animation.play("overhand slash dual swords",blend, melee_atk_speed)
-#						moveDuringAnimation(1.5)
+					autoload.weapon_list.sword_shield:
+						animation.play("overhand slash sword",blend, melee_atk_speed)
+					autoload.weapon_list.dual_swords:
+						animation.play("overhand slash sword",blend, melee_atk_speed + 0.15)
 					autoload.weapon_list.heavy:
 						animation.play("overhand slash heavy",blend, melee_atk_speed)
-						moveDuringAnimation(1.5)
 			else:
 				returnToIdleBasedOnWeaponType()
 		else:
@@ -633,30 +632,32 @@ func matchAnimationStates()-> void:
 	elif underhand_slash_duration == true:
 		is_in_combat = true
 		clearParryAbsorb()
+		moveDuringAnimation(4)
 		match weapon_type:
 					autoload.weapon_list.sword:
 						animation.play("underhand slash sword",blend,  melee_atk_speed + 0.25)
-						moveDuringAnimation(4)
+					autoload.weapon_list.sword_shield:
+						animation.play("underhand slash sword",blend,  melee_atk_speed + 0.25)
 					autoload.weapon_list.dual_swords:
 						animation.play("underhand slash sword",blend,  melee_atk_speed + 0.33)
-						moveDuringAnimation(4)
 					autoload.weapon_list.heavy:
 						animation.play("underhand slash heavy",blend,  melee_atk_speed + 0.15)
-						moveDuringAnimation(4)
-		
 #Cyclone____________________________________________________________________________________________
 	elif cyclone_duration == true:
 		is_in_combat = true
 		clearParryAbsorb()
 		if all_skills.can_cyclone == true:
 			if resolve > autoload.cyclone_cost:
+				moveDuringAnimation(autoload.cyclone_motion)
 				match weapon_type:
 					autoload.weapon_list.sword:
 						animation.play("cyclone sword",blend,melee_atk_speed)
-						moveDuringAnimation(autoload.cyclone_motion)
+					autoload.weapon_list.sword_shield:
+						animation.play("cyclone sword",blend,melee_atk_speed)
+					autoload.weapon_list.dual_swords:
+						animation.play("cyclone sword",blend,melee_atk_speed)
 					autoload.weapon_list.heavy:
 						animation.play("cyclone heavy",blend,melee_atk_speed)
-						moveDuringAnimation(autoload.cyclone_motion)
 			else:
 				cyclone_duration = false
 				returnToIdleBasedOnWeaponType()
@@ -670,13 +671,16 @@ func matchAnimationStates()-> void:
 			if resolve > all_skills.whirlwind_cost:
 				match weapon_type:
 					autoload.weapon_list.sword:
-						animation.play("whirlwind sword",blend,melee_atk_speed)
+						animation.play("whirlwind sword",blend*1.5,melee_atk_speed)
+						moveDuringAnimation(3)
+					autoload.weapon_list.sword_shield:
+						animation.play("whirlwind sword",blend*1.5,melee_atk_speed)
 						moveDuringAnimation(3)
 					autoload.weapon_list.dual_swords:
-						animation.play("whirlwind sword",blend,melee_atk_speed + 0.1)
+						animation.play("whirlwind sword",blend*1.5,melee_atk_speed + 0.1)
 						moveDuringAnimation(3.3)
 					autoload.weapon_list.heavy:
-						animation.play("whirlwind heavy",blend,melee_atk_speed)
+						animation.play("whirlwind heavy",blend*1.5,melee_atk_speed)
 						moveDuringAnimation(4)
 			else:
 				whirlwind_duration = false
@@ -748,16 +752,18 @@ func matchAnimationStates()-> void:
 					clearParryAbsorb()
 					if is_in_combat:
 						match weapon_type:
+							autoload.weapon_list.fist:
+								animation.play("idle fist",blend)
 							autoload.weapon_list.sword:
-								animation.play("idle sword")
+								animation.play("idle sword",blend)
 							autoload.weapon_list.sword_shield:
-								animation.play("idle sword")
+								animation.play("idle shield",blend)
 							autoload.weapon_list.dual_swords:
-								animation.play("idle sword")
+								animation.play("idle sword",blend)
 							autoload.weapon_list.bow:
-								animation.play("idle sword")
+								animation.play("idle bow",blend)
 							autoload.weapon_list.heavy:
-								animation.play("idle heavy")
+								animation.play("idle heavy",blend)
 					else:
 						animation.play("idle",0.2,1)
 #skillbar stuff_____________________________________________________________________________________
@@ -852,18 +858,24 @@ func skills(slot)-> void:
 #Lclick and Rclick__________________________________________________________________________________
 #fist
 				elif slot.texture.resource_path == autoload.punch.get_path():
-					animation.play("combo fist",0.3,melee_atk_speed + 0.15)
+					animation.play("combo fist",blend,melee_atk_speed + 0.15)
 					moveDuringAnimation(2)
 #sword
 				elif slot.texture.resource_path == autoload.slash_sword.get_path():
 					is_in_combat = true
 					match weapon_type:
 						autoload.weapon_list.sword:
-							animation.play("combo sword",0.3,melee_atk_speed+ 0.15)
+							animation.play("combo sword",blend,melee_atk_speed+ 0.15)
 							moveDuringAnimation(1)
-						autoload.weapon_list.dual_swords:
-							animation.play("combo 2x",0.3,melee_atk_speed+ 0.2)
+						autoload.weapon_list.sword_shield:
+							animation.play("combo shield",blend,melee_atk_speed)
 							moveDuringAnimation(1.5)
+						autoload.weapon_list.dual_swords:
+							animation.play("combo dual swords",blend,melee_atk_speed+ 0.2)
+							moveDuringAnimation(1.5)
+				elif slot.texture.resource_path == autoload.block_shield.get_path():
+					is_in_combat = true
+					animation.play("shield block",blend)
 #bow 
 				elif slot.texture.resource_path == autoload.quick_shot.get_path():
 					if weapon_type == autoload.weapon_list.bow:
@@ -871,7 +883,7 @@ func skills(slot)-> void:
 						can_walk = false
 						current_race_gender.can_move = false
 						if is_walking == false:
-							animation.play("quick shot",0.3,ranged_atk_speed + 0.4)
+							animation.play("shoot",blend,ranged_atk_speed + 0.4)
 #heavy 
 				elif slot.texture.resource_path == autoload.heavy_slash.get_path():
 					animation.play("combo heavy",0.3,melee_atk_speed)
@@ -879,7 +891,6 @@ func skills(slot)-> void:
 				elif slot.texture.resource_path == autoload.cleave.get_path():
 					animation.play("cleave",0.3,melee_atk_speed)
 					moveDuringAnimation(2)
-					
 #melee weapon skills
 #__________________________________________  overhead slash    _____________________________________
 				elif slot.texture.resource_path == autoload.overhead_slash.get_path():
@@ -943,7 +954,6 @@ func skills(slot)-> void:
 						else:
 							returnToIdleBasedOnWeaponType()
 							whirlwind_duration = false
-
 				elif slot.texture.resource_path == autoload.counter_strike.get_path():
 						if all_skills.can_counter == true:
 							if resolve > autoload.counter_strike_cost:
@@ -955,7 +965,6 @@ func skills(slot)-> void:
 								returnToIdleBasedOnWeaponType()
 						else:
 							returnToIdleBasedOnWeaponType()
-
 #ranged bow skills
 				elif slot.texture.resource_path == autoload.full_draw.get_path():
 					if weapon_type == autoload.weapon_list.bow:
@@ -971,15 +980,6 @@ func skills(slot)-> void:
 					all_skills.switchStance()# different stances or weapons switches base attacks
 					l_click_slot.switchAttackIcon()
 					r_click_slot.switchAttackIcon()
-#guarding icon
-				elif slot.texture.resource_path == autoload.guard_sword.get_path():
-						if resolve > autoload.counter_strike_cost:
-							is_aiming = true
-							can_walk = false
-							is_in_combat = true
-							animation.play("parry",0.45,melee_atk_speed)
-						else:
-							animation.play("idle sword",0.45,melee_atk_speed)
 #consumables________________________________________________________________________________________
 				elif slot.texture.resource_path == autoload.red_potion.get_path():
 					slot.get_parent().displayQuantity()
@@ -1918,7 +1918,7 @@ func _on_GiveMeItems_pressed():
 	autoload.addNotStackableItem(inventory_grid,autoload.torso_armor3)
 	autoload.addNotStackableItem(inventory_grid,autoload.shoulder1)
 	autoload.addNotStackableItem(inventory_grid,autoload.shoulder1)
-	autoload.addNotStackableItem(inventory_grid,autoload.bow)
+	autoload.addNotStackableItem(inventory_grid,autoload.bow0)
 	autoload.addNotStackableItem(inventory_grid,autoload.heavy_sword0)
 	autoload.addNotStackableItem(inventory_grid,autoload.shield0)
 	
@@ -2068,7 +2068,6 @@ var right_hip :Spatial = null
 onready var detector = $Mesh/Detector
 onready var main_weap_slot = $UI/GUI/Equipment/EquipmentBG/MainWeap
 onready var main_weap_icon = $UI/GUI/Equipment/EquipmentBG/MainWeap/Icon
-
 var current_weapon_instance: Node = null  
 var main_weapon = "null"
 var got_weapon = false
@@ -2293,12 +2292,6 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 				removeTertiaryWeap()
 				main_weapon = "heavy0"
 				weapon_type = autoload.weapon_list.heavy
-			elif  main_weap_icon.texture.get_path() == autoload.bow0.get_path():
-
-				got_two_handed_weapon = true
-				removeSecWeapon()
-				removeTertiaryWeap()
-				weapon_type = autoload.weapon_list.bow
 		else:
 			removeWeapon()
 			main_weapon = "null"
@@ -3837,7 +3830,7 @@ func joltResHovered():
 		tooltip_text = "protection:  " + str(mitigation * 100) + "%"
 	else:
 		tooltip_text = "extra damage: " + str(-jolt_resistance) + " extra damage"
-	callToolTip(instance, "Colt Resistance", tooltip_text)	
+	callToolTip(instance, "Jolt Resistance", tooltip_text)	
 func joltResExited():
 	deleteTooltip()
 	

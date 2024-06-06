@@ -28,14 +28,16 @@ func _ready():
 func loadAnimations()->void:
 	animation.add_animation("idle", load("res://player/universal animations/Animations Idle General/idle.anim"))
 	animation.add_animation("idle fist", load("res://player/universal animations/Animations Fist/idle fist.anim"))
-	animation.add_animation("idle bow", load("res://player/universal animations/Animations Idle General/idle.anim"))#placeholder
+	animation.add_animation("idle bow", load("res://player/universal animations/Animations Bow/idle  bow.anim"))#placeholder
 	animation.add_animation("idle sword", load("res://player/universal animations/Animations Sword Light/idle sword.anim"))
+	animation.add_animation("idle shield", load("res://player/universal animations/Animations Sword Light/idle sword.anim"))
 	animation.add_animation("idle heavy", load("res://player/universal animations/Animations Sword Heavy/idle heavy.anim"))
 	
 	animation.add_animation("walk", load("res://player/universal animations/Animations Movement General/walk.tres"))
 	animation.add_animation("walk bow", load("res://player/universal animations/Animations Bow/walk bow.anim"))
 	animation.add_animation("walk sword", load("res://player/universal animations/Animations Sword Light/walk sword.anim"))#placeholder
 	animation.add_animation("walk heavy", load("res://player/universal animations/Animations Sword Heavy/walk heavy.anim"))
+	animation.add_animation("walk shield", load("res://player/universal animations/Animations Shield/walk shield.anim"))
 	
 	
 	animation.add_animation("run", load("res://player/universal animations/Animations Movement General/run cycle.anim"))
@@ -43,8 +45,9 @@ func loadAnimations()->void:
 	
 	#L-click animations
 	animation.add_animation("combo fist", load("res://player/universal animations/Animations Fist/combo fist.tres"))
-	animation.add_animation("quick shot", load("res://player/universal animations/Animations Bow/quick shot.tres"))
+	animation.add_animation("shoot", load("res://player/universal animations/Animations Bow/shoot.anim"))
 	animation.add_animation("combo sword", load("res://player/universal animations/Animations Sword Light/combo sword.anim"))
+	animation.add_animation("combo shield", load("res://player/universal animations/Animations Shield/combo shield.anim"))
 	animation.add_animation("combo dual swords", load("res://player/universal animations/Animations Sword Dual Wield/combo dual swords.anim"))
 	animation.add_animation("combo heavy", load("res://player/universal animations/Animations Sword Heavy/combo heavy.anim"))
 	
@@ -52,6 +55,7 @@ func loadAnimations()->void:
 	#R-click animations
 	animation.add_animation("full draw", load("res://player/universal animations/Animations Bow/full draw.anim"))
 	#animation.add_animation("parry", load("res://player/universal animations/sword animations/parry.anim"))
+	animation.add_animation("shield block", load("res://player/universal animations/Animations Shield/shield block.anim"))
 	animation.add_animation("cleave", load("res://player/universal animations/Animations Sword Heavy/cleave.anim"))
 	
 	#Double L-click animation
@@ -68,10 +72,11 @@ func loadAnimations()->void:
 	animation.add_animation("cyclone sword", load("res://player/universal animations/Animations Sword Light/cyclone  sword.anim"))#placeholder
 	animation.add_animation("cyclone heavy", load("res://player/universal animations/Animations Sword Heavy/cyclone heavy.anim"))
 	
-	animation.add_animation("overhand slash sword", load("res://player/universal animations/Animations Sword Light/overhand slash sword.tres"))
+	animation.add_animation("overhand slash sword", load("res://player/universal animations/Animations Sword Light/overhand slash sword.anim"))
 	animation.add_animation("overhand slash heavy", load("res://player/universal animations/Animations Sword Heavy/overhand slash heavy.anim"))
 	
-	animation.add_animation("underhand slash sword", load("res://player/universal animations/Animations Sword Light/overhand slash sword.tres"))
+	animation.add_animation("underhand slash sword", load("res://player/universal animations/Animations Shield/underhand slash shield.anim"))
+	animation.add_animation("underhand slash shield", load("res://player/universal animations/Animations Shield/underhand slash shield.anim"))
 	animation.add_animation("underhand slash heavy", load("res://player/universal animations/Animations Sword Heavy/underhand slash heavy.anim"))
 	
 
@@ -140,6 +145,7 @@ func switchEquipment()->void:
 							equipArmor(autoload.shield_null,"shield")
 						"shield0":
 							equipArmor(autoload.shield_scene0,"shield")
+
 
 
 #______________________________Switch Colors____________________________________
@@ -533,6 +539,20 @@ func ComboHeavy4()->void:#Heavy
 	var push_distance:float = 1 * player.total_impact
 	var enemies:Array = area_melee_front.get_overlapping_bodies()
 	dealDMG(enemies,null,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance)
+
+func ComboLight()->void:#Heavy
+	var damage_type:String = right_hand.get_child(0).damage_type
+	var damage:float = (2 + player.slash_dmg) 
+	var damage_flank:float = damage + player.flank_dmg 
+	var critical_damage : float  = damage * player.critical_strength
+	var critical_flank_damage : float  = damage_flank * player.critical_strength
+	#extra damage when the victim is trying to block but is facing the wrong way 
+	var punishment_damage : float = 7 
+	var punishment_damage_type :String = "slash"
+	var aggro_power:float = player.threat_power
+	var push_distance:float = 0.25 * player.total_impact
+	var enemies:Array = area_melee_front.get_overlapping_bodies()
+	dealDMG(enemies,null,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance)
 #Cleave
 func cleaveDMG()->void:#Heavy
 	var damage_type:String = right_hand.get_child(0).damage_type
@@ -552,7 +572,7 @@ func cleaveDMG()->void:#Heavy
 
 #Overhand section
 #This skill is viable for all melee weapon types EXCEPT FIST WEAPONS
-func overhanddSlashCD()-> void:
+func overhandSlashCD()-> void:
 	player.resolve -= autoload.overhead_slash_cost
 	player.overhead_slash_duration = false
 	player.all_skills.overheadSlashCD()
