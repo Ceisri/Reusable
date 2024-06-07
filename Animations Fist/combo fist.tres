@@ -389,6 +389,23 @@ tracks/54/loop_wrap = true
 tracks/54/imported = false
 tracks/54/enabled = true
 tracks/54/keys = {
+"times": PoolRealArray( 0.6, 1.5 ),
+"transitions": PoolRealArray( 1, 1 ),
+"values": [ {
+"args": [  ],
+"method": "punch"
+}, {
+"args": [  ],
+"method": "punch"
+} ]
+}
+tracks/55/type = "method"
+tracks/55/path = NodePath(".")
+tracks/55/interp = 1
+tracks/55/loop_wrap = true
+tracks/55/imported = false
+tracks/55/enabled = true
+tracks/55/keys = {
 "times": PoolRealArray( 0.2, 1.2 ),
 "transitions": PoolRealArray( 1, 1 ),
 "values": [ {
@@ -399,13 +416,13 @@ tracks/54/keys = {
 "method": "startMovement"
 } ]
 }
-tracks/55/type = "method"
-tracks/55/path = NodePath(".")
-tracks/55/interp = 1
-tracks/55/loop_wrap = true
-tracks/55/imported = false
-tracks/55/enabled = true
-tracks/55/keys = {
+tracks/56/type = "method"
+tracks/56/path = NodePath(".")
+tracks/56/interp = 1
+tracks/56/loop_wrap = true
+tracks/56/imported = false
+tracks/56/enabled = true
+tracks/56/keys = {
 "times": PoolRealArray( 0.7, 1.64 ),
 "transitions": PoolRealArray( 1, 1 ),
 "values": [ {
@@ -414,22 +431,5 @@ tracks/55/keys = {
 }, {
 "args": [  ],
 "method": "stopMovement"
-} ]
-}
-tracks/56/type = "method"
-tracks/56/path = NodePath(".")
-tracks/56/interp = 1
-tracks/56/loop_wrap = true
-tracks/56/imported = false
-tracks/56/enabled = true
-tracks/56/keys = {
-"times": PoolRealArray( 0.6, 1.5 ),
-"transitions": PoolRealArray( 1, 1 ),
-"values": [ {
-"args": [  ],
-"method": "punch"
-}, {
-"args": [  ],
-"method": "punch"
 } ]
 }
