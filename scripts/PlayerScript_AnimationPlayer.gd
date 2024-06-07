@@ -69,8 +69,7 @@ func _on_3FPS_timeout()->void:
 	curtainsDown()
 	SwitchEquipmentBasedOnEquipmentIcons()
 	updateAllStats()
-	switchShoulder()
-	
+
 func _physics_process(delta: float) -> void:
 	all_skills.updateCooldownLabel()
 	$Debug.text = str(state)
@@ -565,9 +564,6 @@ func showEnemyStats()-> void:
 			enemy_ui_tween.start()
 			#print(str(fade_duration))
 
-
-
-
 #______________________________________________Animations___________________________________________
 var animation : AnimationPlayer
 
@@ -580,25 +576,12 @@ var counter_strike_duration:bool = false
 var taunt_duration:bool = false
 var state = autoload.state_list.idle
 
-var queue_skills:bool = false #this is only for people with disabilities or if the game ever goes online to help with high ping 
 func matchAnimationStates()-> void:
 	if current_race_gender == null or animation == null:
 		print("mesh not instanced or animationPlayer not found")
-	
-	 #this is only for people with disabilities or if the game ever goes online to help with high ping 
-	if queue_skills == true:
-		if state == autoload.state_list.skill1:
-			var slot = $UI/GUI/SkillBar/GridContainer/Slot1/Icon
-			skills(slot)
-		elif state == autoload.state_list.skill2:
-			var slot = $UI/GUI/SkillBar/GridContainer/Slot2/Icon
-			skills(slot)
-		elif state == autoload.state_list.skill3:
-			var slot = $UI/GUI/SkillBar/GridContainer/Slot3/Icon
-			skills(slot)
-		elif state == autoload.state_list.skillQ:
-			var slot = $UI/GUI/SkillBar/GridContainer/SlotQ/Icon
-			skills(slot)
+	#this is only for people with disabilities or if the game ever goes online to help with high ping 
+	SkillQueueSystem()
+#___________________________________________________________________________________________________
 	if taunt_duration == true:
 		can_walk = false
 		is_in_combat = true
@@ -672,16 +655,16 @@ func matchAnimationStates()-> void:
 				match weapon_type:
 					autoload.weapon_list.sword:
 						animation.play("whirlwind sword",blend*1.5,melee_atk_speed)
-						moveDuringAnimation(3)
+						moveDuringAnimation(6)
 					autoload.weapon_list.sword_shield:
 						animation.play("whirlwind sword",blend*1.5,melee_atk_speed)
-						moveDuringAnimation(3)
+						moveDuringAnimation(5)
 					autoload.weapon_list.dual_swords:
 						animation.play("whirlwind sword",blend*1.5,melee_atk_speed + 0.1)
-						moveDuringAnimation(3.3)
+						moveDuringAnimation(6.6)
 					autoload.weapon_list.heavy:
 						animation.play("whirlwind heavy",blend*1.5,melee_atk_speed)
-						moveDuringAnimation(4)
+						moveDuringAnimation(5)
 			else:
 				whirlwind_duration = false
 				returnToIdleBasedOnWeaponType()
@@ -849,17 +832,8 @@ func matchAnimationStates()-> void:
 					var slot = $UI/GUI/SkillBar/GridContainer/Slot20/Icon
 					skills(slot)
 
-onready var all_skills = $UI/GUI/SkillTrees
-onready var taunt_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill1/Icon
-onready var cyclone_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill4/Icon
-onready var overhand_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill5/Icon
-onready var underhand_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill3/Icon
-onready var whirlwind_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill2/Icon
-onready var heart_trust_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill6/Icon
-
 onready var l_click_slot = $UI/GUI/SkillBar/GridContainer/LClickSlot
 onready var r_click_slot = $UI/GUI/SkillBar/GridContainer/RClickSlot
-
 func skills(slot)-> void:
 	if slot != null:
 			if slot.texture != null:
@@ -1038,6 +1012,75 @@ func skills(slot)-> void:
 							var button = inventory_grid.get_node("InventorySlot" + str(index))
 							button = inventory_grid.get_node("InventorySlot" + str(index))
 							autoload.consumeRedPotion(self,button,inventory_grid,true,slot.get_parent())				
+
+
+var queue_skills:bool = false #this is only for people with disabilities or if the game ever goes online to help with high ping 
+func _on_SkillQueue_pressed():
+	queue_skills = !queue_skills
+func SkillQueueSystem()-> void:
+	if queue_skills == true:
+		if state == autoload.state_list.skill1:
+			var slot = $UI/GUI/SkillBar/GridContainer/Slot1/Icon
+			skills(slot)
+		elif state == autoload.state_list.skill2:
+			var slot = $UI/GUI/SkillBar/GridContainer/Slot2/Icon
+			skills(slot)
+		elif state == autoload.state_list.skill3:
+			var slot = $UI/GUI/SkillBar/GridContainer/Slot3/Icon
+			skills(slot)
+		elif state == autoload.state_list.skill4:
+			var slot = $UI/GUI/SkillBar/GridContainer/Slot4/Icon
+			skills(slot)
+		elif state == autoload.state_list.skill5:
+			var slot = $UI/GUI/SkillBar/GridContainer/Slot5/Icon
+			skills(slot)
+		elif state == autoload.state_list.skill6:
+			var slot = $UI/GUI/SkillBar/GridContainer/Slot6/Icon
+			skills(slot)
+		elif state == autoload.state_list.skill7:
+			var slot = $UI/GUI/SkillBar/GridContainer/Slot7/Icon
+			skills(slot)
+		elif state == autoload.state_list.skill8:
+			var slot = $UI/GUI/SkillBar/GridContainer/Slot8/Icon
+			skills(slot)
+		elif state == autoload.state_list.skill9:
+			var slot = $UI/GUI/SkillBar/GridContainer/Slot9/Icon
+			skills(slot)
+		elif state == autoload.state_list.skill0:
+			var slot = $UI/GUI/SkillBar/GridContainer/Slot10/Icon
+			skills(slot)
+		elif state == autoload.state_list.skillQ:
+			var slot = $UI/GUI/SkillBar/GridContainer/Slot11/Icon
+			skills(slot)
+		elif state == autoload.state_list.skillE:
+			var slot = $UI/GUI/SkillBar/GridContainer/Slot12/Icon
+			skills(slot)
+		elif state == autoload.state_list.skillR:
+			var slot = $UI/GUI/SkillBar/GridContainer/Slot13/Icon
+			skills(slot)
+		elif state == autoload.state_list.skillT:
+			var slot = $UI/GUI/SkillBar/GridContainer/Slot14/Icon
+			skills(slot)
+		elif state == autoload.state_list.skillF:
+			var slot = $UI/GUI/SkillBar/GridContainer/Slot15/Icon
+			skills(slot)
+		elif state == autoload.state_list.skillG:
+			var slot = $UI/GUI/SkillBar/GridContainer/Slot16/Icon
+			skills(slot)
+		elif state == autoload.state_list.skillY:
+			var slot = $UI/GUI/SkillBar/GridContainer/Slot17/Icon
+			skills(slot)
+		elif state == autoload.state_list.skillH:
+			var slot = $UI/GUI/SkillBar/GridContainer/Slot18/Icon
+			skills(slot)
+		elif state == autoload.state_list.skillV:
+			var slot = $UI/GUI/SkillBar/GridContainer/Slot19/Icon
+			skills(slot)
+		elif state == autoload.state_list.skillB:
+			var slot = $UI/GUI/SkillBar/GridContainer/Slot20/Icon
+			skills(slot)
+
+
 
 func returnToIdleBasedOnWeaponType():
 	match weapon_type:
@@ -1553,7 +1596,15 @@ func saveSkillBarData():
 
 #______________________________________skill tree system____________________________________________
 onready var vanguard_skill_tree: Control = $UI/GUI/SkillTrees/Background/Vanguard
-var cyclone_points:int = 0 
+#skills in skills-tree
+onready var all_skills = $UI/GUI/SkillTrees
+onready var taunt_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill1/Icon
+onready var cyclone_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill4/Icon
+onready var overhand_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill5/Icon
+onready var underhand_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill3/Icon
+onready var whirlwind_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill2/Icon
+onready var heart_trust_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill6/Icon
+
 func connectGenericSkillTee(tree):# this is called by connectSkillTree() to give the the "tree"
 	for child in tree.get_children():
 		if child.is_in_group("Skill"):
@@ -1989,65 +2040,7 @@ func positionCoordinates():
 
 
 #__________________________________Equipment Management____________________________
-#Shoulders__________________________________________________________________________________________
-var right_shoulder: Spatial = null
-var left_shoulder: Spatial = null
 
-onready var shoulder_r_icon = $UI/GUI/Equipment/EquipmentBG/PauldronR/Icon
-onready var shoulder_l_icon = $UI/GUI/Equipment/EquipmentBG/PauldronL/Icon
-var has_left_shoulder_pad = false 
-var has_right_shoulder_pad = false 
-var right_shoulder_pad:String = "null"
-var left_shoulder_pad:String = "null"
-var got_left_shoulder_pad:bool = false
-var got_right_shoulder_pad:bool = false
-func switchShoulder():
-	match right_shoulder_pad:
-		"1":
-			instanceRightShoulder(autoload.shoulder_scene0)
-		"0":    
-			pass
-		"2":    
-			pass
-		"3":
-			pass
-		"null":
-			freeRightShoulderPad()
-	match left_shoulder_pad:
-		"1":
-			 instanceLeftShoulder(autoload.shoulder_scene0)
-		"0":    
-			pass
-		"2":    
-			pass
-		"3":
-			pass
-		"null":
-			freeLeftShoulderPad()
-
-func instanceRightShoulder(scene):
-	if right_shoulder and scene:
-		if got_right_shoulder_pad == false:
-			var scene_instance = scene.instance()
-			right_shoulder.add_child(scene_instance)
-			got_right_shoulder_pad = true
-func instanceLeftShoulder(scene):
-	if left_shoulder and scene:
-		if got_left_shoulder_pad == false:
-			var scene_instance = scene.instance()
-			left_shoulder.add_child(scene_instance)
-			got_left_shoulder_pad = true
-func freeRightShoulderPad():
-	if right_shoulder and right_shoulder.get_child_count() > 0:
-		right_shoulder.get_child(0).queue_free()
-		got_right_shoulder_pad = false
-func freeLeftShoulderPad():
-	if left_shoulder and left_shoulder.get_child_count() > 0:
-		left_shoulder.get_child(0).queue_free()
-		got_left_shoulder_pad = false
-		
-		
-	
 #Main Weapon____________________________________________________________________
 var right_hand:Spatial = null 
 var right_hip :Spatial = null 
@@ -2321,19 +2314,7 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 				head = "garment1"
 		elif helm_icon.texture == null:
 			head = "naked"
-#_____________________________shoulder__________________________________________
-	if shoulder_r_icon != null:
-		if shoulder_r_icon.texture != null:
-			if shoulder_r_icon.texture.get_path() == autoload.shoulder1.get_path():
-				right_shoulder_pad = "1"
-		elif shoulder_r_icon.texture == null:
-			right_shoulder_pad = "null"
-	if shoulder_l_icon != null:
-		if shoulder_l_icon.texture != null:
-			if shoulder_l_icon.texture.get_path() == autoload.shoulder1.get_path():
-				left_shoulder_pad = "1"
-		elif shoulder_l_icon.texture == null:
-			left_shoulder_pad = "null"
+
 #_______________________________chest___________________________________________
 	var chest_icon = $UI/GUI/Equipment/EquipmentBG/BreastPlate/Icon
 	if chest_icon != null: #check if the icon and texture are null just to avoid crashes
@@ -2403,8 +2384,6 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 	var glove_l_icon = $UI/GUI/Equipment/EquipmentBG/GloveL/Icon
 	$UI/GUI/Equipment/EquipmentBG/SecWeap/Icon.savedata()
 	helm_icon.savedata()
-	shoulder_l_icon.savedata()
-	shoulder_r_icon.savedata()
 	chest_icon.savedata()
 	glove_icon.savedata()
 	glove_l_icon.savedata()
@@ -4514,7 +4493,7 @@ func savePlayerData():
 		"spent_attribute_points_ins": spent_attribute_points_ins,
 		"spent_attribute_points_for": spent_attribute_points_for,
 #skills
-		"cyclone_points":cyclone_points,
+		
 #Brain attributes
 		"sanity": sanity,
 		"wisdom" : wisdom,
@@ -4554,6 +4533,7 @@ func savePlayerData():
 		"courage": courage,
 		
 		"hair_color": hair_color,
+		"right_eye_color":right_eye_color
 		}
 	var dir = Directory.new()
 	if !dir.dir_exists(save_directory):
@@ -4769,6 +4749,8 @@ func loadPlayerData():
 				
 			if "hair_color" in player_data:
 				hair_color = player_data["hair_color"]
+			if "right_eye_color" in player_data:
+				right_eye_color = player_data["right_eye_color"]
 				
 
 func _on_pressme2_pressed():
@@ -4801,8 +4783,7 @@ var current_race_gender: Node = null
 func switchSexRace():
 	main_weapon = "null"
 	secondary_weapon = "null"
-	right_shoulder_pad = "null"
-	left_shoulder_pad = "null"
+
 	match sex:
 		"xy":
 			match species:
@@ -4901,8 +4882,6 @@ func switchSexRace():
 		left_hand = current_race_gender.left_hand
 		right_hip = current_race_gender.left_hip
 		left_hip = current_race_gender.right_hip
-		left_shoulder = current_race_gender.shoulder_l
-		right_shoulder = current_race_gender.shoulder_r
 		var current_face_set = current_race_gender.face_set
 
 
@@ -4945,7 +4924,7 @@ func _on_switchhair_pressed():
 		current_hair_index = 0  # Reset index to the beginning
 	current_race_gender.hairstyle = hair_list[current_hair_index]
 	current_race_gender.switchHair()
-	colorhair()
+	colorBodyParts()
 
 var face_list = ["1", "2", "3", "4","5"]
 var current_face_index = 0
@@ -4954,33 +4933,62 @@ func _on_switch_face_pressed():
 	if current_face_index >= face_list.size():  # Wrap around to the beginning if reached the end of the list
 		current_face_index = 0  # Reset index to the beginning
 	current_race_gender.face_set = face_list[current_face_index]
-	current_race_gender.switchFace()
+	current_race_gender.EquipmentSwitch()
 
 func _on_ArmorColorSwitch_pressed():
 	current_race_gender.randomizeArmor()
 
 func _on_SkinColorSwitch_pressed():
 	current_race_gender._on_Button_pressed()
-var hair_color_change = true 
+	
+var hair_color_change:bool = true 
+var left_eye_color_change:bool = true 
+
 var hair_color: Color = Color(1, 1, 1)  # Default color
-func _on_ColorPicker_color_changed(color):
-	if hair_color_change:
-		if current_race_gender.current_hair_instance:
-			# Assuming your hair models have a material with a color property
-			var hair_material = current_race_gender.current_hair_instance.material_override
-			if hair_material:
-				# Set the color property of the material
-				hair_material.albedo_color = color
-				hair_material.flags_unshaded = true
-				hair_color = color
-				colorhair()
-func colorhair():
-	if current_race_gender.current_hair_instance:
-		var original_material = current_race_gender.current_hair_instance.material_override	# Get the original material of the hair instance
-		if original_material:# Check if the original material is not null
-			var new_material = original_material.duplicate()# Duplicate the original material
-			current_race_gender.current_hair_instance.material_override = new_material# Assign the new material to the hair instance
-			new_material.albedo_color = hair_color# Set the color property of the new material
+var left_eye_color: Color = Color(1, 1, 1)  # Default color
+
+onready var iris_image = preload("res://player/human/fem/Faces/Iris.material")
+var right_eye_color_change: bool = true 
+var right_eye_color: Color = Color(1, 1, 1)  # Default color
+
+
+func _on_ColorPicker_color_changed(color: Color) -> void:
+	if right_eye_color_change:
+		var eye_material = current_race_gender.right_eye.material_override
+		if eye_material:
+			eye_material.albedo_color = color
+			eye_material.flags_unshaded = true
+			right_eye_color = color
+			colorBodyParts()
+func colorBodyParts() -> void:
+	if current_race_gender != null:
+		if current_race_gender.right_eye != null:
+			var right_eye = current_race_gender.right_eye
+			var new_material = iris_image.duplicate()  # Duplicate the preloaded material to avoid modifying the original
+			new_material.albedo_color = right_eye_color
+			new_material.flags_unshaded = true
+			right_eye.material_override = new_material  # Assign the new material to the right eye
+
+
 func _on_BlendshapeTest_pressed():
 	current_race_gender.smile = rand_range(-2,+2)
-	current_race_gender.current_face_instance.set("blend_shapes/Smile",current_race_gender.smile)
+	current_race_gender.applyBlendShapes()
+
+
+#	if hair_color_change == true:
+#		if current_race_gender.current_hair_instance:
+#			# Assuming hair models have a material with a color property
+#			var hair_material = current_race_gender.current_hair_instance.material_override
+#			if hair_material:
+#				# Set the color property of the material
+#				hair_material.albedo_color = color
+#				hair_material.flags_unshaded = true
+#				hair_color = color
+#				colorBodyParts()
+#	if current_race_gender.current_hair_instance:
+#		var original_material = current_race_gender.current_hair_instance.material_override	# Get the original material of the hair instance
+#		if original_material:# Check if the original material is not null
+#			var new_material = original_material.duplicate()# Duplicate the original material
+#			current_race_gender.current_hair_instance.material_override = new_material# Assign the new material to the hair instance
+#			new_material.albedo_color = hair_color# Set the color property of the new material
+#

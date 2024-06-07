@@ -7,10 +7,8 @@ onready var left_hand = $Armature/Skeleton/LeftHand/Holder
 onready var right_hand = $Armature/Skeleton/RightHand/Holder
 onready var right_hip = $Armature/Skeleton/RightHip/holder
 onready var left_hip = $Armature/Skeleton/LeftHip/holder
-onready var shoulder_r = $Armature/Skeleton/RightShoulder/Holder
-onready var shoulder_l = $Armature/Skeleton/LeftShoulder/Holder
-
-
+onready var left_eye = $Armature/Skeleton/EyeL
+onready var right_eye = $Armature/Skeleton/EyeR
 
 func _ready():
 	$Armature/Skeleton/RightHand/Holder/Weapon.queue_free()#testing sword, delete it on game start
@@ -20,10 +18,9 @@ func _ready():
 	switchSkin()
 	switchArmorTexture()
 	switchHair()
-	player.colorhair()
-	switchFace()
-	player.switchShoulder()
+	player.colorBodyParts()
 	loadAnimations()
+	applyBlendShapes()
 
 func loadAnimations()->void:
 	animation.add_animation("idle", load("res://player/universal animations/Animations Idle General/idle.anim"))
@@ -76,6 +73,8 @@ func loadAnimations()->void:
 	animation.add_animation("taunt", load("res://player/universal animations/Animations Sword Light/taunt.anim"))
 	animation.add_animation("taunt heavy", load("res://player/universal animations/Animations Sword Heavy/taunt heavy.anim"))
 
+
+
 #_____________________________________Equipment 3D______________________________
 func EquipmentSwitch()->void:
 	switchEquipment()
@@ -111,6 +110,17 @@ func switchEquipment()->void:
 						"naked":
 							pass
 				"xx":
+					match face_set:
+						"1":
+							equipArmor(autoload.HXXface1,"face")
+						"2":
+							equipArmor(autoload.HXXface2,"face")
+						"3":
+							equipArmor(autoload.HXXface3,"face")
+						"4":
+							equipArmor(autoload.HXXface4,"face")
+						"5":
+							equipArmor(autoload.HXXface5,"face")
 					match player.torso:
 							"naked":
 								equipArmor(autoload.human_xx_naked_torso_0,"Torso")
@@ -142,7 +152,7 @@ func switchEquipment()->void:
 							equipArmor(autoload.shield_scene0,"shield")
 
 
-
+var face_set:String = "1"
 #______________________________Switch Colors____________________________________
 
 var skin_color = "1"
@@ -177,10 +187,10 @@ func _on_Button_pressed():
 			
 			
 func changeHeadTorsoColor(materail_number, new_material, color):
-	new_material.albedo_texture = color
-	new_material.flags_unshaded = true
-	if current_face_instance != null:
-		current_face_instance.set_surface_material(materail_number, new_material)
+	pass
+#	new_material.albedo_texture = color
+#	new_material.flags_unshaded = true
+#	current_face_instance.set_surface_material(materail_number, new_material)
 #		face.set_surface_material(materail_number, new_material)
 #	if torso0 !=null:
 #		torso0.set_surface_material(materail_number, new_material)
@@ -255,7 +265,9 @@ func savePlayerData()-> void:
 		"armor_color":armor_color,
 		"face_set":face_set,
 		"hairstyle": hairstyle,
-
+		
+		
+		"smile": smile
 		}
 	var dir = Directory.new()
 	if !dir.dir_exists(save_directory):
@@ -281,7 +293,9 @@ func loadPlayerData()-> void:
 				hairstyle = player_data["hairstyle"]
 			if "face_set" in player_data:
 				face_set = player_data["face_set"]
-
+			
+			if "smile" in player_data:
+				smile = player_data["smile"]
 #Face blend shapes__________________________________________________________________________________
 
 var Bimaxillaryprotrusion = 0 #done
@@ -307,7 +321,10 @@ var NoseRotation = 0 #done
 var NoseSize = 0 #doen
 var smile = 0 # done
 
-
+func  applyBlendShapes():
+	for child in $Armature/Skeleton.get_children():
+		if child.is_in_group("face"):
+			child.set("blend_shapes/Smile",smile)
 #Hairstyle editing 
 onready var hair_attachment = $Armature/Skeleton/head/Holder
 onready var hair0: PackedScene = preload("res://player/human/fem/hairstyles/0.tscn")
@@ -370,77 +387,6 @@ func colorhair()-> void:
 			current_hair_instance.material_override = new_material
 			# Set the color property of the new material
 			new_material.albedo_color = hair_color
-#face editing 
-onready var face_attachment = $Armature/Skeleton/head/Holder2
-onready var face0: PackedScene = preload("res://player/human/fem/Faces/0.tscn")
-onready var face1: PackedScene = preload("res://player/human/fem/Faces/1.tscn")
-onready var face2: PackedScene = preload("res://player/human/fem/Faces/2.tscn")
-onready var face3: PackedScene = preload("res://player/human/fem/Faces/3.tscn")
-onready var face4: PackedScene = preload("res://player/human/fem/Faces/4.tscn")
-onready var HXYface1: PackedScene = preload("res://player/human/mal/Mesh/heads/h0.tscn")
-var face_set:String = "1"
-var current_face_instance: Node = null
-func switchFace()-> void:
-	if current_face_instance:
-		current_face_instance.queue_free()
-	match player.species:
-		"human":
-			match player.sex:
-				"xx":
-					match face_set:
-						"1":
-							instanceFace(face0)
-						"2":
-							instanceFace(face1)
-						"3":
-							instanceFace(face2)
-						"4":
-							instanceFace(face3)
-						"5":
-							instanceFace(face4)
-				"xy":
-					match face_set:
-						"1":
-							instanceFace(HXYface1)
-						"2":
-							instanceFace(HXYface1)
-						"3":
-							instanceFace(HXYface1)
-						"4":
-							instanceFace(HXYface1)
-						"5":
-							instanceFace(HXYface1)
-func instanceFace(face_scene)-> void:
-	if face_attachment and face_scene:
-		var face_instance = face_scene.instance()
-		face_attachment.add_child(face_instance)
-		current_face_instance = face_instance
-func punch()-> void:
-	var damage_type = "blunt"
-	var damage = 10 + player.blunt_dmg 
-	var damage_flank = damage + player.flank_dmg
-	var critical_damage : float  = damage * player.critical_strength
-	var critical_flank_damage : float  = damage_flank * player.critical_strength
-	var aggro_power = damage + 20
-	var enemies = player.detector.get_overlapping_bodies()
-	for enemy in enemies:
-		if enemy.is_in_group("enemy"):
-			if enemy.has_method("takeDamage"):
-				if enemy.has_method("applyEffect"):
-					enemy.applyEffect(enemy,"bleeding", true)	
-				player.pushEnemyAway(2, enemy,0.25)
-				if player.is_on_floor():
-					#insert sound effect here
-					if randf() <= player.critical_chance:
-						if player.isFacingSelf(enemy,0.30): #check if the enemy is looking at me 
-							enemy.takeDamage(critical_damage,aggro_power,player,player.stagger_chance,"acid")
-						else: #apparently the enemy is showing his back or flanks, extra damagec
-							enemy.takeDamage(critical_flank_damage,aggro_power,player,player.stagger_chance,"toxic")
-					else:
-						if player.isFacingSelf(enemy,0.30): #check if the enemy is looking at me 
-							enemy.takeDamage(damage,aggro_power,player,player.stagger_chance,"heat")
-						else: #apparently the enemy is showing his back or flanks, extra damagec
-							enemy.takeDamage(damage_flank,aggro_power,player,player.stagger_chance,"jolt")
 
 
 #Melee Functions to call in the AnimationPlayer
@@ -634,7 +580,13 @@ func HeartTrustDMG()->void:
 	var push_distance:float = 0.25 * player.total_impact
 	var enemies:Array = trust_area.get_overlapping_bodies()
 	dealDMG(enemies,null,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance)
-
+onready var area_mid_range:Area = $MidRangeAOE
+func tauntEffect():
+	var enemies:Array = area_mid_range.get_overlapping_bodies()
+	for victim in enemies:
+		if victim.is_in_group("enemy"):
+			if victim != self:
+				victim.takeThreat(150,player)
 func tauntCD()->void:
 	player.taunt_duration = false
 	player.all_skills.tauntCD()

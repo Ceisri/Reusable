@@ -14,11 +14,19 @@ var random_atk:float
 
 
 func _ready()->void:
-	var process = $Process
+	var process:Timer = $Process #This is a timer node called "Process"
 	process.connect("timeout", self, "process") #remember to set this timer to process mode = Physics
-	process.start(autoload.entity_tick_rate)
+	#you can put any value in here, tick rate is inverse to FPS, smaller ticks = higher FPS for your enemies
+	#like Your_FakeProcess_Timer.start(0.05) means that your enemy will run at 20FPS which is more than enough
+	#and remember to put your time into physics mode and not idle mode otherwise it won't save you from lag
+	process.start(autoload.entity_tick_rate + rand_range(-0.03, 0.03)) 
 
 func process()->void:
+	#if you need to use detal then this function "get_physics_process_delta_time()" works the same 
+	#you can multiply things by this function like speed *get_physics_process_delta_time() 
+	#your_functions_here()
+	
+	
 	if health <=0:
 		if has_died == false:
 			death_time = 3.958
@@ -83,7 +91,7 @@ func matchState()->void:
 				if death_time <= 0:
 					has_died = true
 			else:	
-				animation.play("dead",0.2)
+				animation.play("dead",0.6)
 
 onready var wall_check_ray:RayCast = $RayStraightLonger
 onready var check_floor_ray: RayCast = $RayCheckFloor
