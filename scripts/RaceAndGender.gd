@@ -7,8 +7,8 @@ onready var left_hand = $Armature/Skeleton/LeftHand/Holder
 onready var right_hand = $Armature/Skeleton/RightHand/Holder
 onready var right_hip = $Armature/Skeleton/RightHip/holder
 onready var left_hip = $Armature/Skeleton/LeftHip/holder
-onready var left_eye = $Armature/Skeleton/EyeL
-onready var right_eye = $Armature/Skeleton/EyeR
+onready var left_eye = $Armature/Skeleton/IrisL
+onready var right_eye = $Armature/Skeleton/IrisR
 
 func _ready():
 	$Armature/Skeleton/RightHand/Holder/Weapon.queue_free()#testing sword, delete it on game start
@@ -17,13 +17,13 @@ func _ready():
 	loadPlayerData()
 	switchSkin()
 	switchArmorTexture()
-	switchHair()
 	player.colorBodyParts()
 	loadAnimations()
 	applyBlendShapes()
 
 func loadAnimations()->void:
 	animation.add_animation("idle", load("res://player/universal animations/Animations Idle General/idle.anim"))
+	animation.add_animation("jump", load("res://player/universal animations/Animations Movement General/jump.anim"))
 	animation.add_animation("idle fist", load("res://player/universal animations/Animations Fist/idle fist.anim"))
 	animation.add_animation("idle bow", load("res://player/universal animations/Animations Bow/idle  bow.anim"))#placeholder
 	animation.add_animation("idle sword", load("res://player/universal animations/Animations Sword Light/idle sword.anim"))
@@ -35,7 +35,6 @@ func loadAnimations()->void:
 	animation.add_animation("walk sword", load("res://player/universal animations/Animations Sword Light/walk sword.anim"))#placeholder
 	animation.add_animation("walk heavy", load("res://player/universal animations/Animations Sword Heavy/walk heavy.anim"))
 	animation.add_animation("walk shield", load("res://player/universal animations/Animations Shield/walk shield.anim"))
-	
 	
 	animation.add_animation("run", load("res://player/universal animations/Animations Movement General/run cycle.anim"))
 	animation.add_animation("climb cycle", load("res://player/universal animations/Animations Movement General/climb cycle.anim"))
@@ -72,8 +71,6 @@ func loadAnimations()->void:
 	
 	animation.add_animation("taunt", load("res://player/universal animations/Animations Sword Light/taunt.anim"))
 	animation.add_animation("taunt heavy", load("res://player/universal animations/Animations Sword Heavy/taunt heavy.anim"))
-
-
 
 #_____________________________________Equipment 3D______________________________
 func EquipmentSwitch()->void:
@@ -326,7 +323,7 @@ func  applyBlendShapes():
 		if child.is_in_group("face"):
 			child.set("blend_shapes/Smile",smile)
 #Hairstyle editing 
-onready var hair_attachment = $Armature/Skeleton/head/Holder
+
 onready var hair0: PackedScene = preload("res://player/human/fem/hairstyles/0.tscn")
 onready var hair1: PackedScene = preload("res://player/human/fem/hairstyles/1.tscn")
 onready var hair2: PackedScene = preload("res://player/human/fem/hairstyles/2.tscn")
@@ -342,38 +339,7 @@ var hairstyle:String ="2"
 var hair_color_change = false
 var eyer_color_change = false
 var eyel_color_change = false
-func switchHair()-> void:
-	if current_hair_instance:
-		current_hair_instance.queue_free() # Remove the current hair instance
-	match player.species:
-		"human":
-			match player.sex:
-				"xx":
-					match hairstyle:
-						"1":
-							instanceHair(hair0)
-						"2":
-							instanceHair(hair1)
-						"3":
-							instanceHair(hair2)
-						"4":
-							instanceHair(hair3)
-						"5":
-							instanceHair(hair4)
-						"6":
-							instanceHair(hair5)
-						"7":
-							instanceHair(hair6)
-						"8":
-							instanceHair(hair7)
-						"9":
-							instanceHair(hair0)
 
-func instanceHair(hair_scene)-> void:
-	if hair_attachment and hair_scene:
-		var hair_instance = hair_scene.instance()
-		hair_attachment.add_child(hair_instance)
-		current_hair_instance = hair_instance
 
 func colorhair()-> void:
 	if current_hair_instance:
@@ -388,7 +354,20 @@ func colorhair()-> void:
 			# Set the color property of the new material
 			new_material.albedo_color = hair_color
 
-
+#___________________________________________Combat System___________________________________________
+func punch()->void:#Heavy
+	var damage_type:String = "blunt"
+	var damage:float = player.strength + ((player.agility + player.dexterity + player.ferocity)*0.5)
+	var damage_flank:float = damage + player.flank_dmg 
+	var critical_damage : float  = damage * player.critical_strength
+	var critical_flank_damage : float  = damage_flank * player.critical_strength
+	#extra damage when the victim is trying to block but is facing the wrong way 
+	var punishment_damage : float = 7 
+	var punishment_damage_type :String = "slash"
+	var aggro_power:float = player.threat_power
+	var push_distance:float = 0.25 * player.total_impact
+	var enemies:Array = area_melee_front.get_overlapping_bodies()
+	dealDMG(enemies,null,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance)
 #Melee Functions to call in the AnimationPlayer
 #Heavy sword
 onready var area_melee_front:Area = $MeleeFront
@@ -586,7 +565,10 @@ func tauntEffect():
 	for victim in enemies:
 		if victim.is_in_group("enemy"):
 			if victim != self:
-				victim.takeThreat(150,player)
+				if victim.health > 0:
+					victim.takeThreat(150,player)
+					victim.staggered_duration = true
+					victim.animation.play("staggered",0.2)
 func tauntCD()->void:
 	player.taunt_duration = false
 	player.all_skills.tauntCD()
@@ -612,6 +594,7 @@ func stopAbsorb():
 	player.absorbing = false
 	
 func jump():
+	player.jump_duration = false
 	player.vertical_velocity =  Vector3.UP * ((player.jumping_power * player.agility) * get_physics_process_delta_time())
 #___________________________________________________________________________________________________
 func dealDMG(enemy_detector1, enemy_detector2,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance)-> void:

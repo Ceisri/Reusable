@@ -21,7 +21,7 @@ func displayThreatInfo(label):
 
 
 	
-	
+var staggered_duration: bool = false
 var state = autoload.state_list.wander
 var stagger_time:float  = 0
 var death_time:float  = 0

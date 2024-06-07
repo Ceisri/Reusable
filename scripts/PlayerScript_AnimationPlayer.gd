@@ -239,7 +239,10 @@ func jump():
 	if Input.is_action_just_pressed("jump") and is_on_floor():
 		if is_instance_valid(current_race_gender):
 			if current_race_gender.has_method("jump"):
-				current_race_gender.jump()
+				if is_walking == true:
+					current_race_gender.jump()
+				else:
+					jump_duration = true
 			else:
 				print(str("current_race_gender doesn't have a jump() function"))
 
@@ -567,6 +570,7 @@ func showEnemyStats()-> void:
 #______________________________________________Animations___________________________________________
 var animation : AnimationPlayer
 
+var jump_duration: bool = false 
 var overhead_slash_duration:bool = false
 var underhand_slash_duration:bool = false
 var heart_trust_duration:bool = false
@@ -582,9 +586,17 @@ func matchAnimationStates()-> void:
 	#this is only for people with disabilities or if the game ever goes online to help with high ping 
 	SkillQueueSystem()
 #___________________________________________________________________________________________________
-	if taunt_duration == true:
+	if jump_duration == true:
+		if is_walking == false:
+			animation.play("jump",blend*2, agility)
+		else:
+			jump_duration = false
+	
+	elif taunt_duration == true:
 		can_walk = false
 		is_in_combat = true
+		is_walking = false
+		
 		clearParryAbsorb()
 		if weapon_type == autoload.weapon_list.heavy:
 			animation.play("taunt heavy",blend + 0.1,ferocity)
@@ -872,9 +884,9 @@ func skills(slot)-> void:
 				elif slot.texture.resource_path == autoload.block_shield.get_path():
 					if resolve > 0:
 						is_walking = false
-						resolve -= 1 * get_physics_process_delta_time()
 						can_walk = false
 						is_in_combat = true
+						resolve -= 1 * get_physics_process_delta_time()
 						animation.play("shield block",blend)
 					else:
 						returnToIdleBasedOnWeaponType()
@@ -917,6 +929,8 @@ func skills(slot)-> void:
 								if resolve > all_skills.taunt_cost:
 									is_in_combat = true
 									taunt_duration = true
+									is_walking = false
+									can_walk = false
 								else:
 									returnToIdleBasedOnWeaponType()
 									taunt_duration = false
@@ -4533,7 +4547,8 @@ func savePlayerData():
 		"courage": courage,
 		
 		"hair_color": hair_color,
-		"right_eye_color":right_eye_color
+		"right_eye_color":right_eye_color,
+		"left_eye_color":left_eye_color
 		}
 	var dir = Directory.new()
 	if !dir.dir_exists(save_directory):
@@ -4660,7 +4675,6 @@ func loadPlayerData():
 				spent_attribute_points_fle = player_data["spent_attribute_points_fle"]
 			if "spent_attribute_points_def" in player_data:
 				spent_attribute_points_def = player_data["spent_attribute_points_def"]
-
 #Brute attributes
 			if "force" in player_data:
 				force = player_data["force"]
@@ -4751,7 +4765,8 @@ func loadPlayerData():
 				hair_color = player_data["hair_color"]
 			if "right_eye_color" in player_data:
 				right_eye_color = player_data["right_eye_color"]
-				
+			if "left_eye_color" in player_data:
+				left_eye_color = player_data["left_eye_color"]
 
 func _on_pressme2_pressed():
 	slash_resistance = rng.randi_range(-125, 125)
@@ -4942,16 +4957,16 @@ func _on_SkinColorSwitch_pressed():
 	current_race_gender._on_Button_pressed()
 	
 var hair_color_change:bool = true 
-var left_eye_color_change:bool = true 
+ 
 
 var hair_color: Color = Color(1, 1, 1)  # Default color
-var left_eye_color: Color = Color(1, 1, 1)  # Default color
 
 onready var iris_image = preload("res://player/human/fem/Faces/Iris.material")
 var right_eye_color_change: bool = true 
 var right_eye_color: Color = Color(1, 1, 1)  # Default color
 
-
+var left_eye_color: Color = Color(1, 1, 1)  # Default color
+var left_eye_color_change:bool = true
 func _on_ColorPicker_color_changed(color: Color) -> void:
 	if right_eye_color_change:
 		var eye_material = current_race_gender.right_eye.material_override
@@ -4959,6 +4974,13 @@ func _on_ColorPicker_color_changed(color: Color) -> void:
 			eye_material.albedo_color = color
 			eye_material.flags_unshaded = true
 			right_eye_color = color
+			colorBodyParts()
+	if left_eye_color_change:
+		var eye_material = current_race_gender.left_eye.material_override
+		if eye_material:
+			eye_material.albedo_color = color
+			eye_material.flags_unshaded = true
+			left_eye_color = color
 			colorBodyParts()
 func colorBodyParts() -> void:
 	if current_race_gender != null:
@@ -4968,6 +4990,13 @@ func colorBodyParts() -> void:
 			new_material.albedo_color = right_eye_color
 			new_material.flags_unshaded = true
 			right_eye.material_override = new_material  # Assign the new material to the right eye
+	if current_race_gender != null:
+		if current_race_gender.left_eye != null:
+			var left_eye = current_race_gender.left_eye
+			var new_material = iris_image.duplicate()  # Duplicate the preloaded material to avoid modifying the original
+			new_material.albedo_color = left_eye_color
+			new_material.flags_unshaded = true
+			left_eye.material_override = new_material  # Assign the new material to the right eye
 
 
 func _on_BlendshapeTest_pressed():

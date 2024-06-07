@@ -25,11 +25,17 @@ func process()->void:
 	#if you need to use detal then this function "get_physics_process_delta_time()" works the same 
 	#you can multiply things by this function like speed *get_physics_process_delta_time() 
 	#your_functions_here()
-	
+	if health >0:
+		if staggered_duration == true:
+			state = autoload.state_list.staggered
+#	else:
+#		state = autoload.state_list.wander
 	
 	if health <=0:
 		if has_died == false:
 			death_time = 3.958
+			if has_died == true:
+				state = autoload.state_list.dead
 	moveAside()
 	matchState()
 	autoload.entityGravity(self)
@@ -47,6 +53,7 @@ func displayThreatInfo(label):
 var state = autoload.state_list.wander
 var stagger_time:float  = 0
 var death_time:float  = 0
+var staggered_duration: bool = false
 var has_died:bool = false
 func matchState()->void:
 	match state:
@@ -59,29 +66,35 @@ func matchState()->void:
 		autoload.state_list.curious:
 			lookTarget()
 		autoload.state_list.engage:
-			if health >0:
-				lookTarget()
-				var  distance_to_target = findDistanceTarget()
-				if distance_to_target != null:
-					if distance_to_target > 1.4:
-						followTarget(false)
-						animation.play("walk combat",0.3)
-					else:
-						if random_atk < 0.25:  # 25% chance
-							animation.play("triple slash", 0.25)
-						elif random_atk < 0.50:  # 25% chance
-							animation.play("chop sword", 0.3)
-						elif random_atk < 0.75:  # 25% chance
-							animation.play("heavy swing", 0.3)
-						else:  # 25% chance
-							animation.play("spin", 0.3)
+			if staggered_duration == false:
+				if health >0:
+					lookTarget()
+					var  distance_to_target = findDistanceTarget()
+					if distance_to_target != null:
+						if distance_to_target > 1.4:
+							followTarget(false)
+							animation.play("walk combat",0.3)
+						else:
+							if random_atk < 0.25:  # 25% chance
+								animation.play("triple slash", 0.25)
+							elif random_atk < 0.50:  # 25% chance
+								animation.play("chop sword", 0.3)
+							elif random_atk < 0.75:  # 25% chance
+								animation.play("heavy swing", 0.3)
+							else:  # 25% chance
+								animation.play("spin", 0.3)
+				else:
+					state = autoload.state_list.staggered
+					animation.play("staggered",0.2)
+			
 		autoload.state_list.orbit:
-			if orbit_time > 0:
-				orbit_time -= 3 * get_physics_process_delta_time()
-				orbitTarget()
-				lookTarget()
-			else:
-				state = autoload.state_list.engage
+			if staggered_duration == false:
+				if orbit_time > 0:
+					orbit_time -= 3 * get_physics_process_delta_time()
+					orbitTarget()
+					lookTarget()
+				else:
+					state = autoload.state_list.engage
 		autoload.state_list.staggered:
 			animation.play("staggered",0.2)
 		autoload.state_list.dead:
@@ -185,7 +198,7 @@ var target_point: Vector3
 
 
 
-var staggered = 0 
+
 onready var take_damage_audio = $TakeHit
 onready var take_damage_view  = $TakeDamageView/Viewport
 func takeThreat(aggro_power,instigator)->void:
@@ -533,6 +546,7 @@ func die():
 	state = autoload.state_list.dead
 func staggeredOver():
 	state = autoload.state_list.wander
+	staggered_duration = false
 
 
 
