@@ -101,6 +101,7 @@ func _physics_process(delta: float) -> void:
 	positionCoordinates()
 	MainWeapon()
 	SecWeapon()
+	fieldOfView()
 
 
 #_______________________________________________Basic Movement______________________________________
@@ -380,7 +381,7 @@ export var cam_v_max: float = 200
 export var cam_v_min: float = -125 
 onready var camera_v =$Camroot/h/v
 onready var camera_h =$Camroot/h
-onready var camera = $Camroot/h/v/Camera
+onready var camera:ClippedCamera = $Camroot/h/v/Camera
 onready var minimap_camera = $UI/GUI/Portrait/MinimapHolder/Minimap/Viewport/Camera
 var minimap_rotate: bool = false
 var h_sensitivity: float = 0.1
@@ -392,6 +393,19 @@ var touch_start_position: Vector2 = Vector2.ZERO
 var zoom_speed: float = 0.1
 var mouse_sense: float = 0.1
 
+func fieldOfView():
+	if is_sprinting:
+		if camera.fov < 100:
+			camera.fov += 1 
+	elif is_running:
+		if camera.fov < 80:
+			camera.fov += 2
+		elif camera.fov > 80:
+			camera.fov -= 1
+	else:
+		if camera.fov > 70:
+			camera.fov -= 2
+	
 func Zoom(zoom_direction : float)-> void:
 	# Adjust the camera's position based on the zoom direction
 	camera.translation.y += zoom_direction * zoom_speed
