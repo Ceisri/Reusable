@@ -1,7 +1,7 @@
 extends Node
 
 #____________________________________________Perforance_____________________________________________
-var entity_tick_rate: float = 0.06
+var entity_tick_rate: float = 0.05
 #____________________________________________Enumerators____________________________________________
 enum state_list{
 	idle,
@@ -135,9 +135,9 @@ onready var block_shield =  preload("res://Classes/Swordsmen/block.png")
 onready var heavy_slash =  preload("res://Classes/Swordsmen/slash_great_sword.png")
 onready var cleave =  preload("res://Classes/Swordsmen/cleave.png")
 #bow________________________________________________________________________________________________
-onready var quick_shot =  preload("res://Classes/archery icons/quick_shot.png")
+onready var quick_shot =  preload("res://Classes/Sagitarius/quick_shot.png")
 var quick_shot_damage: float = 2.5
-onready var full_draw =  preload("res://Classes/archery icons/full_draw.png")
+onready var full_draw =  preload("res://Classes/Sagitarius/full_draw.png")
 var full_draw_damage: float = 5
 
 #sword_skills
@@ -147,6 +147,11 @@ var overhead_slash_cost: float = 5
 var overhead_slash_description: String = "Damage type: Slash\n+4% compounding extra damage per skill level\n +SLASH DAMAGE + BLUNT DAMAGE\n Strike foes in front of you with a downward stroke"
 #___________________________________________________________________________________________________
 onready var underhand_slash =  preload("res://Classes/Swordsmen/underhand_slash.png")
+
+onready var heart_trust : Texture = preload("res://Classes/Swordsmen/thrust.png")
+onready var taunt : Texture = preload("res://Classes/Swordsmen/scream.png")
+
+
 
 #___________________________________________________________________________________________________
 onready var rising_slash =  preload("res://Classes/Swordsmen/flury of blows.png")
@@ -222,6 +227,17 @@ onready var human_xx_legs_0: PackedScene = preload("res://Equipment/Armors/Human
 onready var human_xx_pants_0: PackedScene = preload("res://Equipment/Armors/Human_XX/Legs/Pants0.tscn")
 onready var human_xx_pants_1: PackedScene = preload("res://Equipment/Armors/Human_XX/Legs/Pants1.tscn")
 onready var human_xx_legs_gambeson_0: PackedScene = preload("res://Equipment/Armors/Human_XX/Legs/Gambeson0.tscn")
+
+
+
+
+#face editing 
+onready var HXXface1: PackedScene =preload("res://player/human/fem/Faces/Face1.tscn")
+onready var HXXface2: PackedScene =preload("res://player/human/fem/Faces/Face2.tscn")
+onready var HXXface3: PackedScene =preload("res://player/human/fem/Faces/Face3.tscn")
+onready var HXXface4: PackedScene =preload("res://player/human/fem/Faces/Face4.tscn")
+onready var HXXface5: PackedScene =preload("res://player/human/fem/Faces/Face5.tscn")
+onready var HXYface1: PackedScene = preload("res://player/human/mal/Mesh/heads/h0.tscn")
 
 
 func addNotStackableItem(inventory_grid,item_texture):
@@ -326,9 +342,9 @@ func movement(user):
 	user.horizontal_velocity = user.horizontal_velocity.linear_interpolate(user.direction.normalized() * user.movement_speed, user.acceleration * get_process_delta_time())
 
 
+#eye color _________________________________________________________________________________________
 
 #______________________________________skin colors _____________________________
-
 #Panthera
 onready var pant_xy_tigris_alb =  preload("res://player/panthera/Skins/Pantera tigris albino.png")
 onready var pant_xy_tigris_clear =  preload("res://player/panthera/Skins/Pantera tigris clear.png")
