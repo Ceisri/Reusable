@@ -4,31 +4,24 @@ extends Node
 var entity_tick_rate: float = 0.05
 #____________________________________________Enumerators____________________________________________
 enum state_list{
-	idle,
-	walk,
-	run,
-	sprint,
-	climb,
-	vault,
-	swim,
-	slide,
-	fall,
-	crouch
-	
+	idle,#1
+	walk,#2
+	run,#3
+	sprint,#4
+	climb,#5
+	vault,#6
+	swim,#7
+	slide,#8
+	fall,#9
+	crouch,#10
+	jump,#11
+	guard,#12
+	healing,#13
 	base_attack,
-	guard_attack,
-	double_attack,
-	sprint_attack,
-	run_attack,
-	guard,
-	
-	healing,
 	curious,# for AI
 	engage, # for AI
 	orbit,# for AI
 	decimate,# for AI
-	
-	guard_walk,
 	wander,# for AI
 	staggered,
 	dead,
@@ -125,8 +118,10 @@ onready var arcane_blast =  preload("res://Classes/Ability Icons/Magic Icons1/5.
 
 
 #base attacks
-onready var punch =  preload("res://UI/graphics/SkillIcons/fist.png")
-onready var guard =  preload("res://Classes/handcombat/guard.png")
+onready var punch = preload("res://UI/graphics/SkillIcons/fist.png")
+onready var guard = preload("res://Classes/handcombat/guard.png")
+onready var dodge = preload("res://Classes/handcombat/dodge.png")
+var dodge_description: String = "Damage type: Blunt\nDouble press Directional keys to displace enemies, evade, or maneuver behind them. Alternatively, drag and drop it onto the skill bar, then use your keyboard to activate."
 #sword______________________________________________________________________________________________
 onready var slash_sword =  preload("res://Classes/Swordsmen/slash.png")
 onready var guard_sword =  preload("res://Classes/Swordsmen/cross parry.png")
@@ -344,7 +339,14 @@ func movement(user):
 
 #eye color _________________________________________________________________________________________
 
-#______________________________________skin colors _____________________________
+#human female hair _________________________________________________________________________________
+onready var HXX_hair1: PackedScene = preload("res://player/human/fem/hairstyles/Tiled/1.tscn")
+onready var HXX_hair2: PackedScene = preload("res://player/human/fem/hairstyles/Tiled/2.tscn")
+onready var HXX_hair3: PackedScene = preload("res://player/human/fem/hairstyles/Tiled/3.tscn")
+onready var HXX_hair4: PackedScene = preload("res://player/human/fem/hairstyles/Tiled/4.tscn")
+onready var HXX_hair5: PackedScene = preload("res://player/human/fem/hairstyles/Tiled/5.tscn")
+
+#___________________________________________skin colors ____________________________________________
 #Panthera
 onready var pant_xy_tigris_alb =  preload("res://player/panthera/Skins/Pantera tigris albino.png")
 onready var pant_xy_tigris_clear =  preload("res://player/panthera/Skins/Pantera tigris clear.png")
