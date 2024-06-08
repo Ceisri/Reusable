@@ -309,17 +309,17 @@ func drawGlobalThreat(user):
 		if enemy.has_method("takeThreat"):
 			enemy.takeThreat(rand_range(-15,30),user)
 
-var gravity_force: float = 9.8
+var gravity_force: float = 20
 func gravity(user):#for seamless climbing first check if is_climbing
 	if user.is_in_combat == false:
 		if user.is_climbing == false: #this way just walking into a wall starts climbing but only out of combat
 			if not user.is_on_floor():
-					user.vertical_velocity += Vector3.DOWN * gravity_force * 2 * get_physics_process_delta_time()
+					user.vertical_velocity += Vector3.DOWN * gravity_force * get_physics_process_delta_time()
 			else: 
 				user.vertical_velocity = -user.get_floor_normal() * gravity_force / 2.5
 	else:#inside of combat situations,to avoid climbing on enemies by mistake, now you have to jump on the enemy first to start climbing
 		if not user.is_on_floor():
-			user.vertical_velocity += Vector3.DOWN * gravity_force * 2 * get_physics_process_delta_time()
+			user.vertical_velocity += Vector3.DOWN * gravity_force  * get_physics_process_delta_time()
 		else: 
 			user.vertical_velocity = -user.get_floor_normal() * gravity_force / 2.5
 			

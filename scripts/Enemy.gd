@@ -2,7 +2,6 @@ extends KinematicBody
 
 onready var threat_system: Node = $Threat
 onready var animation =  $Mesh/human/AnimationPlayer
-onready var anim_tree = $AnimationTree
 var vertical_velocity : Vector3 = Vector3()
 var movement: Vector3 = Vector3()
 var horizontal_velocity : Vector3 = Vector3()
@@ -191,16 +190,10 @@ func findDistanceTarget():
 var speed: float = 3.0
 var rotation_speed: float = 2.0
 
-var target_point: Vector3
-
-
-
-
-
 
 
 onready var take_damage_audio = $TakeHit
-onready var take_damage_view  = $TakeDamageView/Viewport
+
 func takeThreat(aggro_power,instigator)->void:
 	var target = threat_system.createFindThreat(instigator)
 	state = autoload.state_list.engage
@@ -208,6 +201,7 @@ func takeThreat(aggro_power,instigator)->void:
 var parry: bool =  false
 var absorbing: bool = false
 func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type)->void:
+	var take_damage_view  =$TakeDamageView/Viewport
 	var text = autoload.floatingtext_damage.instance()
 	if parry == false:
 		take_damage_audio.play()

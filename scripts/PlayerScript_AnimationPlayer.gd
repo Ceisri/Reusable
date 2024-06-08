@@ -39,69 +39,70 @@ func _ready()->void:
 	current_race_gender.EquipmentSwitch()
 	l_click_slot.switchAttackIcon()
 func _on_SlowTimer_timeout()->void:
-	allResourcesBarsAndLabels()
-	potionEffects()
-	if $UI/GUI/Equipment.visible == true :
-		current_race_gender.EquipmentSwitch()
-	saveSkillBarData()
-	convertStats()
-	money()
-	hunger()
-	hydration()	
-	frameRate()	
-	showStatusIcon()	
-	displayLabels()
-	regenStats()
-
-	l_click_slot.switchAttackIcon()
-	r_click_slot.switchAttackIcon()
-	$UI/GUI/SkillTrees/Label.text = str("skill points: ")+ str(skill_points)
-	$UI/GUI/SkillTrees/Label2.text =  str("points spent: ")+ str(skill_points_spent)
+	if has_died == false:
+		allResourcesBarsAndLabels()
+		potionEffects()
+		if $UI/GUI/Equipment.visible == true :
+			current_race_gender.EquipmentSwitch()
+		saveSkillBarData()
+		convertStats()
+		money()
+		hunger()
+		hydration()	
+		frameRate()	
+		showStatusIcon()	
+		displayLabels()
+		regenStats()
+		l_click_slot.switchAttackIcon()
+		r_click_slot.switchAttackIcon()
+		$UI/GUI/SkillTrees/Label.text = str("skill points: ")+ str(skill_points)
+		$UI/GUI/SkillTrees/Label2.text =  str("points spent: ")+ str(skill_points_spent)
 	displayClock()
 func _on_3FPS_timeout()->void:
-	$UI/GUI/Equipment/Attributes/AttributePoints.text = "Attributes points left: " + str(attribute)
-# Calculate the sum of all spent attribute points
-	var total_spent_attribute_points = spent_attribute_points_san + spent_attribute_points_wis + spent_attribute_points_mem + spent_attribute_points_int + spent_attribute_points_ins +spent_attribute_points_for + spent_attribute_points_str + spent_attribute_points_fur + spent_attribute_points_imp + spent_attribute_points_fer + spent_attribute_points_foc + spent_attribute_points_bal + spent_attribute_points_dex + spent_attribute_points_acc + spent_attribute_points_poi +spent_attribute_points_has + spent_attribute_points_agi + spent_attribute_points_cel + spent_attribute_points_fle + spent_attribute_points_def + spent_attribute_points_end + spent_attribute_points_sta + spent_attribute_points_vit + spent_attribute_points_res + spent_attribute_points_ten + spent_attribute_points_cha + spent_attribute_points_loy + spent_attribute_points_dip + spent_attribute_points_aut + spent_attribute_points_cou
-	# Update the text in the UI/GUI
-	$UI/GUI/Equipment/Attributes/AttributeSpent.text = "Attributes points Spent: " + str(total_spent_attribute_points)
-	crafting()
-	displayResources(hp_bar,hp_label,health,max_health,"HP")
-	curtainsDown()
-	SwitchEquipmentBasedOnEquipmentIcons()
-	updateAllStats()
-
+	if has_died == false:
+		$UI/GUI/Equipment/Attributes/AttributePoints.text = "Attributes points left: " + str(attribute)
+	# Calculate the sum of all spent attribute points
+		var total_spent_attribute_points = spent_attribute_points_san + spent_attribute_points_wis + spent_attribute_points_mem + spent_attribute_points_int + spent_attribute_points_ins +spent_attribute_points_for + spent_attribute_points_str + spent_attribute_points_fur + spent_attribute_points_imp + spent_attribute_points_fer + spent_attribute_points_foc + spent_attribute_points_bal + spent_attribute_points_dex + spent_attribute_points_acc + spent_attribute_points_poi +spent_attribute_points_has + spent_attribute_points_agi + spent_attribute_points_cel + spent_attribute_points_fle + spent_attribute_points_def + spent_attribute_points_end + spent_attribute_points_sta + spent_attribute_points_vit + spent_attribute_points_res + spent_attribute_points_ten + spent_attribute_points_cha + spent_attribute_points_loy + spent_attribute_points_dip + spent_attribute_points_aut + spent_attribute_points_cou
+		# Update the text in the UI/GUI
+		$UI/GUI/Equipment/Attributes/AttributeSpent.text = "Attributes points Spent: " + str(total_spent_attribute_points)
+		convertStats()
+		limitStatsToMaximum()
+		crafting()
+		displayResources(hp_bar,hp_label,health,max_health,"HP")
+		curtainsDown()
+		SwitchEquipmentBasedOnEquipmentIcons()
+		updateAllStats()
+	
 func _physics_process(delta: float) -> void:
-	all_skills.updateCooldownLabel()
 	$Debug.text = str(state)
-	convertStats()
-	ChopTree()
-	limitStatsToMaximum()
-	cameraRotation()
-	crossHair()
-	crossHairResize()
-	minimapFollow()
-	miniMapVisibility()
-	stiffCamera()
-	walk()
-	climbing()
+	all_skills.updateCooldownLabel()
 	autoload.gravity(self)
-	jump()
-	dodgeIframe()
-	dodgeBack()
-	dodgeFront()
-	dodgeLeft()
-	dodgeRight()
-	fullscreen()
-	showEnemyStats()
 	matchAnimationStates()
-	animations()
-	attack()
-	fallDamage()
 	skillUserInterfaceInputs()
-	positionCoordinates()
-	MainWeapon()
-	SecWeapon()
-	fieldOfView()
+	if state != autoload.state_list.dead:
+		cameraRotation()
+		crossHair()
+		crossHairResize()
+		minimapFollow()
+		miniMapVisibility()
+		stiffCamera()
+		walk()
+		climbing()
+		jump()
+		dodgeIframe()
+		dodgeBack()
+		dodgeFront()
+		dodgeLeft()
+		dodgeRight()
+		fullscreen()
+		showEnemyStats()
+		animations()
+		attack()
+		fallDamage()
+		positionCoordinates()
+		MainWeapon()
+		SecWeapon()
+		fieldOfView()
 
 
 #_______________________________________________Basic Movement______________________________________
@@ -281,7 +282,7 @@ var acceleration = int()
 #	move_and_slide(movement, Vector3.UP)
 #__________________________________________More action based movement_______________________________
 # Dodge
-export var double_press_time: float = 0.18
+export var double_press_time: float = 0.22
 var dash_countback: int = 0
 var dash_timerback: float = 0.0
 # Dodge Left
@@ -293,11 +294,7 @@ var dash_timerright: float = 0.0
 # Dodge forward
 var dash_countforward: int = 0
 var dash_timerforward: float = 0.0
-# Dodge multidirection (not in strafe mode)
-var dash_count1 : int = 0
-var dash_timer1 : float = 0.0
-var dash_count2 : int = 0
-var dash_timer2 : float = 0.0
+
 var dodge_animation_duration : float = 0
 var dodge_animation_max_duration : float = 3
 func dodgeIframe():#apparently combat is too shitty without iframes, more realistic but as boring as watching olympic wrestling or judo, fucking utter ridiculous shit
@@ -395,7 +392,7 @@ var mouse_sense: float = 0.1
 
 func fieldOfView():
 	if is_sprinting:
-		if camera.fov < 100:
+		if camera.fov < 110:
 			camera.fov += 1 
 	elif is_running:
 		if camera.fov < 80:
@@ -582,8 +579,9 @@ func showEnemyStats()-> void:
 			#print(str(fade_duration))
 
 #______________________________________________Animations___________________________________________
-var animation : AnimationPlayer
-
+var animation: AnimationPlayer
+var death_duration: bool = false
+var has_died: bool = false
 var jump_duration: bool = false 
 var overhead_slash_duration:bool = false
 var underhand_slash_duration:bool = false
@@ -604,6 +602,7 @@ func matchAnimationStates()-> void:
 		if is_walking == false:
 			animation.play("jump",blend*2, agility)
 		else:
+			animation.play("run jump",blend*2, agility)
 			jump_duration = false
 	
 	elif taunt_duration == true:
@@ -625,13 +624,13 @@ func matchAnimationStates()-> void:
 				moveDuringAnimation(1.5)
 				match weapon_type:
 					autoload.weapon_list.sword:
-						animation.play("overhand slash sword",blend, melee_atk_speed)
+						animation.play("overhand slash sword",blend, melee_atk_speed+ 0.25)
 					autoload.weapon_list.sword_shield:
-						animation.play("overhand slash sword",blend, melee_atk_speed)
+						animation.play("overhand slash sword",blend, melee_atk_speed+ 0.25)
 					autoload.weapon_list.dual_swords:
-						animation.play("overhand slash sword",blend, melee_atk_speed + 0.15)
+						animation.play("overhand slash sword",blend, melee_atk_speed + 0.25)
 					autoload.weapon_list.heavy:
-						animation.play("overhand slash heavy",blend, melee_atk_speed)
+						animation.play("overhand slash heavy",blend, melee_atk_speed+ 0.25)
 			else:
 				returnToIdleBasedOnWeaponType()
 		else:
@@ -643,13 +642,13 @@ func matchAnimationStates()-> void:
 		moveDuringAnimation(4)
 		match weapon_type:
 					autoload.weapon_list.sword:
-						animation.play("underhand slash sword",blend,  melee_atk_speed + 0.25)
+						animation.play("underhand slash sword",blend, melee_atk_speed + 0.35)
 					autoload.weapon_list.sword_shield:
-						animation.play("underhand slash sword",blend,  melee_atk_speed + 0.25)
+						animation.play("underhand slash sword",blend,melee_atk_speed + 0.35)
 					autoload.weapon_list.dual_swords:
-						animation.play("underhand slash sword",blend,  melee_atk_speed + 0.33)
+						animation.play("underhand slash sword",blend, melee_atk_speed + 0.33)
 					autoload.weapon_list.heavy:
-						animation.play("underhand slash heavy",blend,  melee_atk_speed + 0.15)
+						animation.play("underhand slash heavy",blend,melee_atk_speed + 0.35)
 #Cyclone____________________________________________________________________________________________
 	elif cyclone_duration == true:
 		is_in_combat = true
@@ -659,13 +658,13 @@ func matchAnimationStates()-> void:
 				moveDuringAnimation(autoload.cyclone_motion)
 				match weapon_type:
 					autoload.weapon_list.sword:
-						animation.play("cyclone sword",blend,melee_atk_speed)
+						animation.play("cyclone sword",blend,melee_atk_speed+ 0.35)
 					autoload.weapon_list.sword_shield:
-						animation.play("cyclone sword",blend,melee_atk_speed)
+						animation.play("cyclone sword",blend,melee_atk_speed+ 0.35)
 					autoload.weapon_list.dual_swords:
-						animation.play("cyclone sword",blend,melee_atk_speed)
+						animation.play("cyclone sword",blend,melee_atk_speed+ 0.35)
 					autoload.weapon_list.heavy:
-						animation.play("cyclone heavy",blend,melee_atk_speed)
+						animation.play("cyclone heavy",blend,melee_atk_speed+ 0.35)
 			else:
 				cyclone_duration = false
 				returnToIdleBasedOnWeaponType()
@@ -680,16 +679,16 @@ func matchAnimationStates()-> void:
 			if resolve > all_skills.whirlwind_cost:
 				match weapon_type:
 					autoload.weapon_list.sword:
-						animation.play("whirlwind sword",blend*1.5,melee_atk_speed)
+						animation.play("whirlwind sword",blend*1.5,melee_atk_speed+ 0.15)
 						moveDuringAnimation(6)
 					autoload.weapon_list.sword_shield:
-						animation.play("whirlwind sword",blend*1.5,melee_atk_speed)
+						animation.play("whirlwind sword",blend*1.5,melee_atk_speed+ 0.15)
 						moveDuringAnimation(5)
 					autoload.weapon_list.dual_swords:
 						animation.play("whirlwind sword",blend*1.5,melee_atk_speed + 0.1)
 						moveDuringAnimation(6.6)
 					autoload.weapon_list.heavy:
-						animation.play("whirlwind heavy",blend*1.5,melee_atk_speed)
+						animation.play("whirlwind heavy",blend*1.5,melee_atk_speed+ 0.15)
 						moveDuringAnimation(5)
 			else:
 				whirlwind_duration = false
@@ -703,16 +702,16 @@ func matchAnimationStates()-> void:
 		if all_skills.can_heart_trust == true:
 				match weapon_type:
 					autoload.weapon_list.sword:
-						animation.play("heart trust sword",blend*1.5,melee_atk_speed)
+						animation.play("heart trust sword",blend*1.5,melee_atk_speed+ 0.15)
 						moveDuringAnimation(4)
 					autoload.weapon_list.sword_shield:
-						animation.play("heart trust sword",blend*1.5,melee_atk_speed)
+						animation.play("heart trust sword",blend*1.5,melee_atk_speed+ 0.15)
 						moveDuringAnimation(3)
 					autoload.weapon_list.dual_swords:
 						animation.play("heart trust sword",blend*1.5,melee_atk_speed + 0.1)
 						moveDuringAnimation(3.3)
 					autoload.weapon_list.heavy:
-						animation.play("heart trust sword",blend*1.5,melee_atk_speed - 0.1)
+						animation.play("heart trust sword",blend*1.5,melee_atk_speed + 0.15)
 						moveDuringAnimation(6)
 		else:
 			returnToIdleBasedOnWeaponType()
@@ -722,12 +721,12 @@ func matchAnimationStates()-> void:
 			match state:
 				autoload.state_list.slide:
 					clearParryAbsorb()
-					var slide_blend = 0.3
-					animation.play_backwards("backstep",slide_blend)
-					var slide_mov_speed = 15 + slide_blend + rand_range(3, 6)
+					animation.play_backwards("slide",blend)
 					if !is_on_wall():
-						horizontal_velocity = direction * slide_mov_speed
-					movement_speed = int(slide_mov_speed)
+						if is_sprinting == false:
+							moveDuringAnimation(6)
+						else:
+							moveDuringAnimation(sprint_speed)
 					can_walk = true
 				autoload.state_list.base_attack:
 					is_in_combat = true
@@ -771,7 +770,7 @@ func matchAnimationStates()-> void:
 						animation.play("walk",0,1)
 				autoload.state_list.sprint:
 					clearParryAbsorb()
-					animation.play("run", 0, sprint_animation_speed * agility)
+					animation.play("run", 0,agility)
 				autoload.state_list.run:
 					clearParryAbsorb()
 					animation.play("run",0,agility)
@@ -857,10 +856,17 @@ func matchAnimationStates()-> void:
 				autoload.state_list.skillB:
 					var slot = $UI/GUI/SkillBar/GridContainer/Slot20/Icon
 					skills(slot)
+				autoload.state_list.fall:
+					animation.play("fall",blend)
+				autoload.state_list.dead:
+					if death_duration == true:
+						animation.play("death",blend)
+					else:
+						animation.play("dead",blend)
 
-onready var l_click_slot = $UI/GUI/SkillBar/GridContainer/LClickSlot
-onready var r_click_slot = $UI/GUI/SkillBar/GridContainer/RClickSlot
-func skills(slot)-> void:
+onready var l_click_slot:TextureButton = $UI/GUI/SkillBar/GridContainer/LClickSlot
+onready var r_click_slot:TextureButton = $UI/GUI/SkillBar/GridContainer/RClickSlot
+func skills(slot:TextureRect)-> void:
 	if slot != null:
 			if slot.texture != null:
 				if slot.texture.resource_path == "res://UI/graphics/SkillIcons/rush.png":
@@ -887,13 +893,13 @@ func skills(slot)-> void:
 					is_in_combat = true
 					match weapon_type:
 						autoload.weapon_list.sword:
-							animation.play("combo sword",blend,melee_atk_speed+ 0.15)
+							animation.play("combo sword",blend,melee_atk_speed+ 0.35)
 							moveDuringAnimation(1)
 						autoload.weapon_list.sword_shield:
-							animation.play("combo shield",blend,melee_atk_speed)
+							animation.play("combo shield",blend,melee_atk_speed+ 0.35)
 							moveDuringAnimation(1.5)
 						autoload.weapon_list.dual_swords:
-							animation.play("combo dual swords",blend,melee_atk_speed+ 0.2)
+							animation.play("combo dual swords",blend,melee_atk_speed+ 0.35)
 							moveDuringAnimation(1.5)
 				elif slot.texture.resource_path == autoload.block_shield.get_path():
 					if resolve > 0:
@@ -914,19 +920,20 @@ func skills(slot)-> void:
 							animation.play("shoot",blend,ranged_atk_speed + 0.4)
 #heavy 
 				elif slot.texture.resource_path == autoload.heavy_slash.get_path():
-					animation.play("combo heavy",0.3,melee_atk_speed)
+					animation.play("combo heavy",0.3,melee_atk_speed+ 0.35)
 					moveDuringAnimation(1.75)
 				elif slot.texture.resource_path == autoload.cleave.get_path():
-					animation.play("cleave",0.3,melee_atk_speed)
-					moveDuringAnimation(2)
+					animation.play("cleave",0.3,melee_atk_speed + 0.15)
+					moveDuringAnimation(4)
 #melee weapon skills
 #__________________________________________  overhead slash    _____________________________________
 				elif slot.texture.resource_path == autoload.overhead_slash.get_path():
 						if overhand_icon.points >0:
 							if all_skills.can_overhead_slash == true:
 								if resolve > all_skills.overhead_slash_cost:
-									is_in_combat = true
-									overhead_slash_duration = true
+									if weapon_type != autoload.weapon_list.fist:
+										is_in_combat = true
+										overhead_slash_duration = true
 								else:
 									returnToIdleBasedOnWeaponType()
 									overhead_slash_duration = false
@@ -959,8 +966,9 @@ func skills(slot)-> void:
 						if underhand_icon.points >0:
 							if all_skills.can_underhand_slash == true:
 								if resolve > all_skills.overhead_slash_cost:
-									is_in_combat = true
-									underhand_slash_duration = true
+									if weapon_type != autoload.weapon_list.fist:
+										is_in_combat = true
+										underhand_slash_duration = true
 								else:
 									returnToIdleBasedOnWeaponType()
 									underhand_slash_duration = false
@@ -975,7 +983,8 @@ func skills(slot)-> void:
 						if cyclone_icon.points >0 :
 							if all_skills.can_cyclone == true:
 								if resolve > autoload.cyclone_cost:
-									cyclone_duration = true
+									if weapon_type != autoload.weapon_list.fist:
+										cyclone_duration = true
 								else:
 									returnToIdleBasedOnWeaponType()
 									cyclone_duration = false
@@ -990,7 +999,8 @@ func skills(slot)-> void:
 						if whirlwind_icon.points >0 :
 							if all_skills.can_whirlwind == true:
 								if resolve > all_skills.whirlwind_cost:
-									whirlwind_duration = true
+									if weapon_type != autoload.weapon_list.fist:
+										whirlwind_duration = true
 								else:
 									returnToIdleBasedOnWeaponType()
 									whirlwind_duration = false
@@ -1005,7 +1015,8 @@ func skills(slot)-> void:
 						if heart_trust_icon.points >0 :
 							if all_skills.can_whirlwind == true:
 								if resolve > all_skills.heart_trust_cost:
-									heart_trust_duration = true
+									if weapon_type != autoload.weapon_list.fist:
+										heart_trust_duration = true
 								else:
 									returnToIdleBasedOnWeaponType()
 									heart_trust_duration = false
@@ -1108,9 +1119,7 @@ func SkillQueueSystem()-> void:
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot20/Icon
 			skills(slot)
 
-
-
-func returnToIdleBasedOnWeaponType():
+func returnToIdleBasedOnWeaponType()->void:
 	match weapon_type:
 			autoload.weapon_list.fist:
 				animation.play("idle",0.3)
@@ -1122,7 +1131,7 @@ func returnToIdleBasedOnWeaponType():
 				animation.play("idle bow",0.3)
 			autoload.weapon_list.heavy:
 				animation.play("idle heavy",0.3)
-func moveDuringAnimation(speed):
+func moveDuringAnimation(speed)->void:
 	if !is_on_wall():
 		if current_race_gender.can_move == true:
 			horizontal_velocity = direction * speed
@@ -1132,20 +1141,22 @@ func moveDuringAnimation(speed):
 			movement_speed = 0
 				
 var sprint_animation_speed : float = 1
-func animations():
+func animations()->void:
+	if health <= 0:
+		state = autoload.state_list.dead
+		if has_died == false:
+			death_duration = true
 #on water
-	if is_swimming:
+	elif is_swimming:
 		state = autoload.state_list.swim
-
 #on land
 	elif dodge_animation_duration > 0 and resolve >0:
 		resolve -= 0.2
 		state = autoload.state_list.slide
-
 	elif not is_on_floor() and not is_climbing and not is_swimming:
 		state = autoload.state_list.fall
 #attacks________________________________________________________________________
-	elif Input.is_action_pressed("rclick") and !cursor_visible and is_in_combat:
+	elif Input.is_action_pressed("rclick") and !cursor_visible:
 		state = autoload.state_list.guard
 	elif Input.is_action_pressed("attack") and !cursor_visible:
 		state = autoload.state_list.base_attack
@@ -1222,14 +1233,14 @@ func animations():
 
 #_______________________________________________Combat______________________________________________
 
-func attack():
+func attack()->void:
 	if Input.is_action_pressed("attack"):
 		is_attacking = true
 	else:
 		is_attacking = false
 
 
-func pushEnemyAway(push_distance, enemy, push_speed):
+func pushEnemyAway(push_distance, enemy, push_speed)->void:
 	var direction_to_enemy = enemy.global_transform.origin - global_transform.origin
 	direction_to_enemy.y = 0  # No vertical push
 	direction_to_enemy = direction_to_enemy.normalized()
@@ -1277,18 +1288,17 @@ func isFacingSelf(enemy: Node, threshold: float) -> bool:
 	return dot_product >= threshold
 
 
-func speedlabel():
-	$kmh.text = "km/h " + str(movement_speed)
 
 
-onready var take_damage_view  = $Mesh/TakeDamageView/Viewport
+onready var take_damage_view:Viewport  = $Mesh/TakeDamageView/Viewport
 var parry: bool =  false
 var absorbing: bool = false
-func clearParryAbsorb():
+func clearParryAbsorb()->void:
 	parry = false
 	absorbing = false
 	is_aiming = false
-func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
+func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type)->void:
+	is_sprinting = false
 	var text = autoload.floatingtext_damage.instance()
 	if parry == false:
 		if all_skills.masochism >0:
@@ -1581,10 +1591,6 @@ func _on_Quit_pressed():
 func _on_InventorySaveButton_pressed():
 	saveInventoryData()
 	saveGame()
-onready var skills_list1 = $UI/GUI/SkillTrees/Background/SylvanSkills #placeholder
-func _on_SkillTree1_pressed():
-	closeSwitchOpen(skills_list1)
-	saveSkillBarData()
 func saveInventoryData():
 	# Call savedata() function on each child of inventory_grid that belongs to the group "Inventory"
 	for child in inventory_grid.get_children():
@@ -1623,17 +1629,17 @@ func saveSkillBarData():
 	$UI/GUI/SkillBar/GridContainer/Slot20/Icon.savedata()
 
 #______________________________________skill tree system____________________________________________
-onready var vanguard_skill_tree: Control = $UI/GUI/SkillTrees/Background/Vanguard
+onready var vanguard_skill_tree:Control = $UI/GUI/SkillTrees/Background/Vanguard
 #skills in skills-tree
-onready var all_skills = $UI/GUI/SkillTrees
-onready var taunt_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill1/Icon
-onready var cyclone_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill4/Icon
-onready var overhand_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill5/Icon
-onready var underhand_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill3/Icon
-onready var whirlwind_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill2/Icon
-onready var heart_trust_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill6/Icon
+onready var all_skills:Control = $UI/GUI/SkillTrees
+onready var taunt_icon:TextureRect = $UI/GUI/SkillTrees/Background/Vanguard/skill1/Icon
+onready var cyclone_icon:TextureRect = $UI/GUI/SkillTrees/Background/Vanguard/skill4/Icon
+onready var overhand_icon:TextureRect = $UI/GUI/SkillTrees/Background/Vanguard/skill5/Icon
+onready var underhand_icon:TextureRect= $UI/GUI/SkillTrees/Background/Vanguard/skill3/Icon
+onready var whirlwind_icon:TextureRect = $UI/GUI/SkillTrees/Background/Vanguard/skill2/Icon
+onready var heart_trust_icon:TextureRect = $UI/GUI/SkillTrees/Background/Vanguard/skill6/Icon
 
-func connectGenericSkillTee(tree):# this is called by connectSkillTree() to give the the "tree"
+func connectGenericSkillTee(tree:Control):# this is called by connectSkillTree() to give the the "tree"
 	for child in tree.get_children():
 		if child.is_in_group("Skill"):
 			var index_str = child.get_name().split("skill")[1]
@@ -1775,7 +1781,8 @@ func inventorySlotPressed(index):
 		if last_pressed_index == index and current_time - last_press_time <= double_press_time_inv:
 			print("Inventory slot", index, "pressed twice")
 			if icon_texture.get_path() == autoload.red_potion.get_path():
-				autoload.consumeRedPotion(self,button,inventory_grid,false,null)
+				if state != autoload.state_list.dead:
+					autoload.consumeRedPotion(self,button,inventory_grid,false,null)
 			elif icon_texture.get_path() == autoload.strawberry.get_path():
 					kilocalories +=1
 					health += 5
@@ -1900,60 +1907,21 @@ onready var crafting_slot14 = $UI/GUI/Crafting/CraftingGrid/craftingSlot14/Icon
 onready var crafting_slot15 = $UI/GUI/Crafting/CraftingGrid/craftingSlot15/Icon
 onready var crafting_slot16 = $UI/GUI/Crafting/CraftingGrid/craftingSlot16/Icon
 onready var crafting_result = $UI/GUI/Crafting/CraftingResultSlot/Icon
-onready var icon = $UI/GUI/Crafting/CraftingResultSlot/Icon
+onready var icon:TextureRect = $UI/GUI/Crafting/CraftingResultSlot/Icon
 
 func crafting():
-	if crafting_slot1.texture != null:
-		if crafting_slot1.texture.get_path() == "res://Alchemy ingredients/2.png":
-			crafting_result.texture = preload("res://Processed ingredients/ground rosehip.png")
-			$UI/GUI/Crafting/CraftingResultSlot.quantity = 2
+	if crafting.visible == true:
+		if crafting_slot1.texture != null:
+			if crafting_slot1.texture.get_path() == "res://Alchemy ingredients/2.png":
+				crafting_result.texture = preload("res://Processed ingredients/ground rosehip.png")
+				$UI/GUI/Crafting/CraftingResultSlot.quantity = 2
 
 #________________________________Add items to inventory_________________________
-var loot_amount = 1
-var chopping_power = 3
-var chopping_efficiency = 1 
-var pop_up_resource = preload("res://UI/floatingResource.tscn")
-func ChopTree():
-	var tree = ray.get_collider()
-	if Input.is_action_just_pressed("attack"):
-		if tree != null:
-			if tree.is_in_group("tree"):
-		#		tree.health -= chopping_power
-				# Generate a random number between 0 and 1
-				var random_value = randf()
-				# 25% chance for wood
-				if random_value < 0.2:
-					loot_amount = rng.randi_range(1, 2)
-					autoload.addStackableItem(inventory_grid,autoload.aubergine,loot_amount)
-					autoload.addFloatingIcon(take_damage_view,autoload.aubergine,loot_amount)
-				# 25% chance for acorn
-				elif random_value < 0.4:
-					loot_amount = rng.randi_range(5, 45)
-					autoload.addStackableItem(inventory_grid,autoload.raspberry,loot_amount)
-					autoload.addFloatingIcon(take_damage_view,autoload.raspberry,loot_amount)
-				# 25% chance for branch
-				elif random_value < 0.6:
-					loot_amount = rng.randi_range(3, 5)
-					autoload.addStackableItem(inventory_grid,autoload.potato,loot_amount)
-					autoload.addFloatingIcon(take_damage_view,autoload.potato,loot_amount)
-				elif random_value < 0.8:
-					loot_amount = rng.randi_range(15, 25)
-					autoload.addStackableItem(inventory_grid,autoload.onion,loot_amount)
-					autoload.addFloatingIcon(take_damage_view,autoload.onion,loot_amount)
-		# 25% chance for resin
-				else:
-					loot_amount = rng.randi_range(1, 5)
-					autoload.addStackableItem(inventory_grid,autoload.beetroot,loot_amount)
-					autoload.addFloatingIcon(take_damage_view,autoload.beetroot,loot_amount)
-
-
-
 
 func _on_GiveMeItems_pressed():
 	coins += 55
 	autoload.addStackableItem(inventory_grid,autoload.garlic,200)
 	autoload.addFloatingIcon(take_damage_view,autoload.garlic,200)
-	
 	autoload.addStackableItem(inventory_grid,autoload.potato,200)
 	autoload.addFloatingIcon(take_damage_view,autoload.potato,200)
 	autoload.addStackableItem(inventory_grid,autoload.onion,200)
@@ -1963,8 +1931,6 @@ func _on_GiveMeItems_pressed():
 	autoload.addStackableItem(inventory_grid,autoload.bell_pepper,200)
 	autoload.addStackableItem(inventory_grid,autoload.aubergine,200)
 	autoload.addStackableItem(inventory_grid,autoload.tomato,200)
-
-	
 	autoload.addStackableItem(inventory_grid,autoload.raspberry,200)
 	autoload.addStackableItem(inventory_grid,autoload.pants1,1)
 	autoload.addStackableItem(inventory_grid,autoload.hat1,200)
@@ -2048,7 +2014,6 @@ func _on_FPS_pressed():
 	if fps_mapping.has(current_fps):
 		Engine.set_target_fps(fps_mapping[current_fps])
 
-
 #_____________________________________Display Time/Location______________________________
 onready var time_label = $UI/GUI/SkillBar/Time
 func displayClock():
@@ -2065,7 +2030,6 @@ func positionCoordinates():
 	)
 	# Use %d to format integers without decimals
 	coordinates.text = "%d, %d, %d" % [rounded_position.x, rounded_position.y, rounded_position.z]
-
 
 #__________________________________Equipment Management____________________________
 
@@ -2758,10 +2722,8 @@ func _on_Toilet1_pressed():
 						#insert sound effect here
 							enemy.takeDamage(damage,aggro_power,self,stagger_chance,damage_type)
 
-
 #Stats__________________________________________________________________________
 var level: int = 100
-
 
 const base_weight = 60
 var weight = 60
@@ -2985,10 +2947,8 @@ var total_diplomacy: float = 0
 var total_authority: float = 0
 var total_courage: float = 0
 
-
 func regenStats():
 	regenAefisNefis()
-				
 
 func regenAefisNefis():
 	aefis = min(aefis + intelligence + wisdom, max_aefis)
@@ -5016,8 +4976,6 @@ func colorBodyParts() -> void:
 func _on_BlendshapeTest_pressed():
 	current_race_gender.smile = rand_range(-2,+2)
 	current_race_gender.applyBlendShapes()
-
-
 #	if hair_color_change == true:
 #		if current_race_gender.current_hair_instance:
 #			# Assuming hair models have a material with a color property
@@ -5034,4 +4992,3 @@ func _on_BlendshapeTest_pressed():
 #			var new_material = original_material.duplicate()# Duplicate the original material
 #			current_race_gender.current_hair_instance.material_override = new_material# Assign the new material to the hair instance
 #			new_material.albedo_color = hair_color# Set the color property of the new material
-#

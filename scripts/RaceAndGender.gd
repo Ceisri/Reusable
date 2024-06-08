@@ -22,8 +22,12 @@ func _ready():
 	applyBlendShapes()
 
 func loadAnimations()->void:
+	animation.add_animation("death", load("res://player/universal animations/Animations Movement General/deathPlayer.anim"))
+	animation.add_animation("dead", load("res://player/universal animations/Animations Idle General/dead.anim"))
 	animation.add_animation("idle", load("res://player/universal animations/Animations Idle General/idle.anim"))
 	animation.add_animation("jump", load("res://player/universal animations/Animations Movement General/jump.anim"))
+	animation.add_animation("jump run", load("res://player/universal animations/Animations Movement General/jump run.anim"))
+	animation.add_animation("fall", load("res://player/universal animations/Animations Movement General/fall.anim"))
 	animation.add_animation("idle fist", load("res://player/universal animations/Animations Fist/idle fist.anim"))
 	animation.add_animation("idle bow", load("res://player/universal animations/Animations Bow/idle  bow.anim"))#placeholder
 	animation.add_animation("idle sword", load("res://player/universal animations/Animations Sword Light/idle sword.anim"))
@@ -363,10 +367,10 @@ func punch()->void:#Heavy
 	var critical_flank_damage : float  = damage_flank * player.critical_strength
 	#extra damage when the victim is trying to block but is facing the wrong way 
 	var punishment_damage : float = 7 
-	var punishment_damage_type :String = "slash"
+	var punishment_damage_type :String = "blunt"
 	var aggro_power:float = player.threat_power
 	var push_distance:float = 0.25 * player.total_impact
-	var enemies:Array = area_melee_front.get_overlapping_bodies()
+	var enemies:Array = trust_area.get_overlapping_bodies()
 	dealDMG(enemies,null,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance)
 #Melee Functions to call in the AnimationPlayer
 #Heavy sword
@@ -592,10 +596,17 @@ func startAbsorb():
 	player.absorbing = true
 func stopAbsorb():
 	player.absorbing = false
-	
 func jump():
 	player.jump_duration = false
 	player.vertical_velocity =  Vector3.UP * ((player.jumping_power * player.agility) * get_physics_process_delta_time())
+func die():
+	player.death_duration = false
+	player.has_died = true 
+	player.state = autoload.state_list.dead
+func staggeredOver():
+	player.state = autoload.state_list.wander
+	player.staggered_duration = false
+
 #___________________________________________________________________________________________________
 func dealDMG(enemy_detector1, enemy_detector2,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance)-> void:
 	for victim in enemy_detector1:

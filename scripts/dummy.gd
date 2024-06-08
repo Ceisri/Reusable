@@ -2,7 +2,6 @@ extends KinematicBody
 
 onready var threat_system: Node = $Threat
 onready var animation =  $Mesh/human/AnimationPlayer
-onready var anim_tree = $AnimationTree
 
 func _ready()->void:
 	var process = $Process
