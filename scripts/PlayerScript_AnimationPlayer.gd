@@ -49,7 +49,7 @@ func _on_SlowTimer_timeout()->void:
 		money()
 		hunger()
 		hydration()	
-		frameRate()	
+		#frameRate()	
 		showStatusIcon()	
 		displayLabels()
 		regenStats()
@@ -102,7 +102,7 @@ func _physics_process(delta: float) -> void:
 		positionCoordinates()
 		MainWeapon()
 		SecWeapon()
-		fieldOfView()
+		fieldOfView(delta)
 
 
 #_______________________________________________Basic Movement______________________________________
@@ -392,18 +392,12 @@ var touch_start_position: Vector2 = Vector2.ZERO
 var zoom_speed: float = 0.1
 var mouse_sense: float = 0.1
 
-func fieldOfView():
-	if is_sprinting:
-		if camera.fov < 110:
-			camera.fov += 1 
-	elif is_running:
-		if camera.fov < 80:
-			camera.fov += 2
-		elif camera.fov > 80:
-			camera.fov -= 1
-	else:
-		if camera.fov > 70:
-			camera.fov -= 2
+func fieldOfView(delta: float) -> void:
+	var target_fov := (
+		100.0 if is_sprinting
+		else 80.0 if is_running
+		else 70.0)
+	camera.fov = lerp(camera.fov, target_fov, 1.0 - exp(15.0 * delta))
 	
 func Zoom(zoom_direction : float)-> void:
 	# Adjust the camera's position based on the zoom direction
@@ -1136,7 +1130,7 @@ func returnToIdleBasedOnWeaponType()->void:
 func moveDuringAnimation(speed)->void:
 	if !is_on_wall():
 		if current_race_gender.can_move == true:
-			horizontal_velocity = direction * speed
+			horizontal_velocity = direction * speed * 30
 			movement_speed = speed
 		elif current_race_gender.can_move == false:
 			horizontal_velocity = direction * 0
@@ -1992,7 +1986,7 @@ func frameRate():
 		new_fps = current_fps 
 	else:
 		new_fps = current_fps
-	fps_label.text = str(new_fps)
+	#fps_label.text = str(new_fps)
 
 func _on_FPS_pressed():
 	savePlayerData()
@@ -2853,15 +2847,15 @@ var total_guard_dmg_absorbition:float
 
 
 var staggered = 0 
-var base_flank_dmg : float = 5.0
-var flank_dmg: float =5.0 #extra damage to add to backstabs 
+var base_flank_dmg : float = 2.0
+var flank_dmg: float =2.0 #extra damage to add to backstabs 
 
 var extra_melee_atk_speed : float = 0
 
 
 var slash_dmg: int = 0 
 var pierce_dmg: int = 0
-var blunt_dmg: int = 10
+var blunt_dmg: int = 0
 var sonic_dmg: int = 0
 var heat_dmg: int = 0
 var cold_dmg: int = 0
@@ -4913,8 +4907,8 @@ func _on_switchhair_pressed():
 	current_hair_index += 1  # Increment the index to move to the next hairstyle
 	if current_hair_index >= hair_list.size():  # Wrap around to the beginning if reached the end of the list
 		current_hair_index = 0  # Reset index to the beginning
-	current_race_gender.hairstyle = hair_list[current_hair_index]
-	current_race_gender.switchHair()
+	hairstyle = hair_list[current_hair_index]
+	current_race_gender.switchEquipment()
 	colorBodyParts()
 
 var face_list = ["1", "2", "3", "4","5"]
@@ -4935,12 +4929,14 @@ func _on_SkinColorSwitch_pressed():
 var hair_color_change:bool = true 
  
 
-var hair_color: Color = Color(1, 1, 1)  # Default color
+var hairstyle: String
 
+
+
+var hair_color: Color = Color(1, 1, 1)  # Default color
 onready var iris_image = preload("res://player/human/fem/Faces/Iris.material")
 var right_eye_color_change: bool = true 
 var right_eye_color: Color = Color(1, 1, 1)  # Default color
-
 var left_eye_color: Color = Color(1, 1, 1)  # Default color
 var left_eye_color_change:bool = true
 func _on_ColorPicker_color_changed(color: Color) -> void:
@@ -4966,14 +4962,13 @@ func colorBodyParts() -> void:
 			new_material.albedo_color = right_eye_color
 			new_material.flags_unshaded = true
 			right_eye.material_override = new_material  # Assign the new material to the right eye
-	if current_race_gender != null:
 		if current_race_gender.left_eye != null:
 			var left_eye = current_race_gender.left_eye
 			var new_material = iris_image.duplicate()  # Duplicate the preloaded material to avoid modifying the original
 			new_material.albedo_color = left_eye_color
 			new_material.flags_unshaded = true
 			left_eye.material_override = new_material  # Assign the new material to the right eye
-
+		
 
 func _on_BlendshapeTest_pressed():
 	current_race_gender.smile = rand_range(-2,+2)

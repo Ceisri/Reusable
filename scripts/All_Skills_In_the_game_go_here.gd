@@ -38,6 +38,11 @@ func updateCooldownLabel() -> void:
 			var label: Label = child.get_node("CD")
 			if label != null:
 				 updateLabel(label,necro_switch_cooldown, current_time, last_necro_switch_time)
+#______________________________________________Dodge  cooldowns_____________________________________
+		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.dodge.get_path():
+			var label: Label = child.get_node("CD")
+			if label != null:
+				 updateDodge(label,dodge_cooldown, current_time,last_dodge_time)
 #___________________________________________Overhand and Underhand strike cooldowns_________________
 		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.overhead_slash.get_path():
 			var label: Label = child.get_node("CD")
@@ -143,7 +148,28 @@ func updateLabel(label: Label, cooldown: float, current_time: float, last_time: 
 	else:
 		label.text = ""
 
-
+#___________________________________________________________________________________________________
+var dodge_cooldown: float = 3
+var last_dodge_time: float = 0.0 
+var dodge_cost: float = 5
+func dodgeCD():
+	var current_time: float = OS.get_ticks_msec() / 1000.0
+	if current_time - last_dodge_time >= dodge_cooldown:
+		if player.resolve >= dodge_cost:
+			player.resolve -= dodge_cost
+			player.dodge_animation_duration += player.dodge_animation_max_duration
+			last_dodge_time = current_time
+var can_dodge: bool = false
+func updateDodge(label: Label, cooldown: float, current_time: float, last_time: float) -> void:
+	var elapsed_time: float = current_time - last_time
+	var remaining_cooldown: float = max(0, cooldown - elapsed_time)
+	if remaining_cooldown!= 0:
+		can_dodge = false
+		label.text = str(round(remaining_cooldown) )
+	else:
+		label.text = ""
+		can_dodge = true
+#___________________________________________________________________________________________________	
 
 onready var camera: Camera = $"../../../Camroot/h/v/Camera"
 var base_attack: PackedScene = preload("res://Classes/Necromant/Spells/ArcaneBlast.tscn")
@@ -312,20 +338,6 @@ func summonDemon() -> void:
 		last_summon_time = current_time
 
 
-
-func loadServants():
-	var i = 0
-	while i < summoned_demons:
-		var player_global_transform: Transform = player.global_transform
-		var player_forward: Vector3 = player_global_transform.basis.z.normalized()
-		var spawn_position: Vector3 = player_global_transform.origin + player_forward * demon_distance
-		spawn_position.y += 1.0  # Adjust Y-coordinate to spawn slightly above the player
-		var demon_instance: Node = demon.instance()
-		demon_instance.summoner = player 
-		demon_instance.command = current_command
-		demon_instance.global_transform.origin = spawn_position
-		get_tree().current_scene.add_child(demon_instance)
-		i += 1
 
 
 

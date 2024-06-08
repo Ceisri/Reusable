@@ -81,14 +81,19 @@ func EquipmentSwitch()->void:
 	switchEquipment()
 	switchArmorTexture()
 
+onready var skeleton: Skeleton = $Armature/Skeleton
 func equipArmor(clothing_to_equip,clothing_type_to_delete:String)->void:
 	var clothing_to_equip_instance = clothing_to_equip.instance()
 	clothing_to_equip_instance.scale = Vector3(1,1,1) # just in case you can't see the clothing, it might have been resized due to how mixamo works change this between 0.01 to 1 or 100 to test 
-	for child in $Armature/Skeleton.get_children():
+	for child in skeleton.get_children():
 		if child.is_in_group(clothing_type_to_delete):
 			child.queue_free() # this will delete all the armors that share the same group, use names like "Legs, Torso,Hands,Feet"
-	$Armature/Skeleton.add_child(clothing_to_equip_instance)
-
+		if child.is_in_group("hair"):
+			hair = child
+			player.colorBodyParts()
+	skeleton.add_child(clothing_to_equip_instance)
+	
+onready var hair:MeshInstance
 func switchEquipment()->void:
 	match player.species:
 		"human":
@@ -151,7 +156,17 @@ func switchEquipment()->void:
 							equipArmor(autoload.shield_null,"shield")
 						"shield0":
 							equipArmor(autoload.shield_scene0,"shield")
-
+					match player.hairstyle:
+						"1":
+							equipArmor(autoload.HXX_hair1,"hair")
+						"2":
+							equipArmor(autoload.HXX_hair2,"hair")
+						"3":
+							equipArmor(autoload.HXX_hair3,"hair")
+						"4":
+							equipArmor(autoload.HXX_hair4,"hair")
+						"5":
+							equipArmor(autoload.HXX_hair5,"hair")
 
 var face_set:String = "1"
 #______________________________Switch Colors____________________________________
@@ -166,7 +181,7 @@ onready var set0_color_white =  preload("res://player/Armor colors/beginner armo
 func changeColor(materail_number, new_material, color):
 	new_material.albedo_texture = color
 	new_material.flags_unshaded = true
-	for child in $Armature/Skeleton.get_children():
+	for child in skeleton.get_children():
 		if child.is_in_group("Torso"):
 			child.set_surface_material(materail_number, new_material)
 func switchArmorTexture():
@@ -265,9 +280,6 @@ func savePlayerData()-> void:
 		"skin_color": skin_color,
 		"armor_color":armor_color,
 		"face_set":face_set,
-		"hairstyle": hairstyle,
-		
-		
 		"smile": smile
 		}
 	var dir = Directory.new()
@@ -290,11 +302,8 @@ func loadPlayerData()-> void:
 				skin_color = player_data["skin_color"]
 			if "armor_color" in player_data:
 				armor_color = player_data["armor_color"]
-			if "hairstyle" in player_data:
-				hairstyle = player_data["hairstyle"]
 			if "face_set" in player_data:
 				face_set = player_data["face_set"]
-			
 			if "smile" in player_data:
 				smile = player_data["smile"]
 #Face blend shapes__________________________________________________________________________________
@@ -326,40 +335,24 @@ func  applyBlendShapes():
 	for child in $Armature/Skeleton.get_children():
 		if child.is_in_group("face"):
 			child.set("blend_shapes/Smile",smile)
-#Hairstyle editing 
-
-onready var hair0: PackedScene = preload("res://player/human/fem/hairstyles/0.tscn")
-onready var hair1: PackedScene = preload("res://player/human/fem/hairstyles/1.tscn")
-onready var hair2: PackedScene = preload("res://player/human/fem/hairstyles/2.tscn")
-onready var hair3: PackedScene = preload("res://player/human/fem/hairstyles/3.tscn")
-onready var hair4: PackedScene =preload("res://player/human/fem/hairstyles/4.tscn")
-onready var hair5: PackedScene =preload("res://player/human/fem/hairstyles/5.tscn")
-onready var hair7: PackedScene =preload("res://player/human/fem/hairstyles/6.tscn")
-onready var hair8: PackedScene = preload("res://player/human/fem/hairstyles/7.tscn")
-onready var hair6: PackedScene = preload("res://player/human/fem/hairstyles/8.tscn")
-var hair_color: Color = Color(1, 1, 1)  # Default color
-var current_hair_instance: Node = null
-var hairstyle:String ="2"
-var hair_color_change = false
-var eyer_color_change = false
-var eyel_color_change = false
-
-
-func colorhair()-> void:
-	if current_hair_instance:
-		# Get the original material of the hair instance
-		var original_material = current_hair_instance.material_override
-		# Check if the original material is not null
-		if original_material:
-			# Duplicate the original material
-			var new_material = original_material.duplicate()
-			# Assign the new material to the hair instance
-			current_hair_instance.material_override = new_material
-			# Set the color property of the new material
-			new_material.albedo_color = hair_color
+			
+			
 
 #___________________________________________Combat System___________________________________________
-func punch()->void:#Heavy
+func slideDMG()->void:#fist
+	var damage_type:String = "blunt"
+	var damage:float = player.strength * 0.25
+	var damage_flank:float =player.strength * 0.25
+	var critical_damage : float  = damage * player.critical_strength
+	var critical_flank_damage : float  = damage_flank * player.critical_strength
+	#extra damage when the victim is trying to block but is facing the wrong way 
+	var punishment_damage : float = 0.5
+	var punishment_damage_type :String = "blunt"
+	var aggro_power:float = player.threat_power + 5
+	var push_distance:float = 0
+	var enemies:Array = trust_area.get_overlapping_bodies()
+	dealDMGNoRegen(enemies,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance)
+func punch()->void:#fist
 	var damage_type:String = "blunt"
 	var damage:float = player.strength + ((player.agility + player.dexterity + player.ferocity)*0.5)
 	var damage_flank:float = damage + player.flank_dmg 
@@ -674,6 +667,38 @@ func dealDMG(enemy_detector1, enemy_detector2,critical_damage,aggro_power,damage
 											victim.takeDamage(damage,aggro_power,player,player.stagger_chance,damage_type)
 										else: #appareantly the victim is showing his back or flanks, extra damage
 											victim.takeDamage(damage_flank,aggro_power,player,player.stagger_chance,damage_type)
+
+func dealDMGNoRegen(enemy_detector1,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance)-> void:
+	for victim in enemy_detector1:
+		if victim.is_in_group("enemy"):
+			if victim != self:
+				if victim.state != autoload.state_list.dead:
+					player.pushEnemyAway(push_distance, victim,0.25)
+				if victim.has_method("takeDamage"):
+					if player.is_on_floor():
+						if randf() <= player.critical_chance:#critical hit
+							if victim.absorbing == true or victim.parry == true: #victim is guarding
+								if player.isFacingSelf(victim,0.30): #the victim is looking face to face at self 
+									victim.takeDamage(critical_damage/victim.guard_dmg_absorbition,aggro_power,player,player.stagger_chance,damage_type)
+								else: #apparently the victim is showing his back or flanks while guard, flank damage + punishment damage
+									victim.takeDamage(critical_flank_damage + punishment_damage,aggro_power,player,player.stagger_chance,punishment_damage_type)
+							else:#player is guarding
+								if player.isFacingSelf(victim,0.30): #check if the victim is looking at me 
+									victim.takeDamage(critical_damage/victim.guard_dmg_absorbition,aggro_power,player,player.stagger_chance,damage_type)
+								else: #apparently the victim is showing his back or flanks, extra damage
+									victim.takeDamage(critical_damage,aggro_power,player,player.stagger_chance,punishment_damage_type)
+						else: #normal hit
+							if victim.absorbing == true or victim.parry == true: #victim is guarding
+								if player.isFacingSelf(victim,0.30): #the victim is looking face to face at self 
+									victim.takeDamage(damage/victim.guard_dmg_absorbition,aggro_power,player,player.stagger_chance,damage_type)
+								else: #apparently the victim is showing his back or flanks while guard, flank damage + punishment damage
+									victim.takeDamage(damage_flank + punishment_damage,aggro_power,player,player.stagger_chance,punishment_damage_type)
+							else:#victim is not guarding
+								if player.isFacingSelf(victim,0.30):#the victim is looking face to face at self 
+									victim.takeDamage(damage,aggro_power,player,player.stagger_chance,damage_type)
+								else: #appareantly the victim is showing his back or flanks, extra damage
+									victim.takeDamage(damage_flank,aggro_power,player,player.stagger_chance,damage_type)
+
 #___________________________________________________________________________________________________
 #Ranged Functions to call in the AnimationPlayer
 func shootArrow():

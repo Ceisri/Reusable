@@ -38,6 +38,7 @@ func _ready()->void:
 	aim_label.text = aiming_mode
 	current_race_gender.EquipmentSwitch()
 	l_click_slot.switchAttackIcon()
+	colorBodyParts()
 func _on_SlowTimer_timeout()->void:
 	if health >0:
 		allResourcesBarsAndLabels()
@@ -49,7 +50,7 @@ func _on_SlowTimer_timeout()->void:
 		money()
 		hunger()
 		hydration()	
-		frameRate()	
+		#frameRate()	
 		showStatusIcon()	
 		displayLabels()
 		regenStats()
@@ -67,7 +68,6 @@ func _on_3FPS_timeout()->void:
 		# Update the text in the UI/GUI
 		$UI/GUI/Equipment/Attributes/AttributeSpent.text = "Attributes points Spent: " + str(total_spent_attribute_points)
 		crafting()
-		displayResources(hp_bar,hp_label,health,max_health,"HP")
 		curtainsDown()
 		SwitchEquipmentBasedOnEquipmentIcons()
 		updateAllStats()
@@ -290,11 +290,6 @@ var dash_timerright: float = 0.0
 # Dodge forward
 var dash_countforward: int = 0
 var dash_timerforward: float = 0.0
-# Dodge multidirection (not in strafe mode)
-var dash_count1 : int = 0
-var dash_timer1 : float = 0.0
-var dash_count2 : int = 0
-var dash_timer2 : float = 0.0
 var dodge_animation_duration : float = 0
 var dodge_animation_max_duration : float = 3
 func dodgeIframe():#apparently combat is too shitty without iframes, more realistic but as boring as watching olympic wrestling or judo, fucking utter ridiculous shit
@@ -314,7 +309,7 @@ func dodgeBack()-> void:#Doddge when in strafe mode
 			dash_countback += 1
 		if dash_countback == 2 and dash_timerback < double_press_time:
 			if dodge_animation_duration == 0:
-				dodge_animation_duration += dodge_animation_max_duration
+				all_skills.dodgeCD()
 		else:
 			if dodge_animation_duration > 0: 
 				dodge_animation_duration -= 0.1
@@ -330,7 +325,7 @@ func dodgeFront()-> void:#Dodge when in strafe mode
 			dash_countforward += 1
 		if dash_countforward == 2 and dash_timerforward < double_press_time:
 			if dodge_animation_duration == 0:
-				dodge_animation_duration += dodge_animation_max_duration
+				all_skills.dodgeCD()
 		else:
 			if dodge_animation_duration > 0: 
 				dodge_animation_duration -= 0.1 
@@ -347,7 +342,7 @@ func dodgeLeft()-> void:#Dodge when in strafe mode
 			dash_countleft += 1
 		if dash_countleft == 2 and dash_timerleft < double_press_time:
 			if dodge_animation_duration == 0:
-				dodge_animation_duration += dodge_animation_max_duration
+				all_skills.dodgeCD()
 		else:
 			if dodge_animation_duration > 0: 
 				dodge_animation_duration -= 0.1
@@ -363,7 +358,7 @@ func dodgeRight()-> void:#Dodge when in strafe mode
 			dash_countright += 1
 		if dash_countright == 2 and dash_timerright < double_press_time :
 			if dodge_animation_duration == 0:
-				dodge_animation_duration += dodge_animation_max_duration
+				all_skills.dodgeCD()
 		else:
 			if dodge_animation_duration > 0: 
 				dodge_animation_duration -= 0.1
@@ -699,10 +694,10 @@ func matchAnimationStates()-> void:
 		if all_skills.can_heart_trust == true:
 				match weapon_type:
 					autoload.weapon_list.sword:
-						animation.play("heart trust sword",blend*1.5,melee_atk_speed+ 0.15)
+						animation.play("heart trust sword",blend*1.5,melee_atk_speed+ 0.55)
 						moveDuringAnimation(4)
 					autoload.weapon_list.sword_shield:
-						animation.play("heart trust sword",blend*1.5,melee_atk_speed+ 0.15)
+						animation.play("heart trust sword",blend*1.5,melee_atk_speed+ 0.35)
 						moveDuringAnimation(3)
 					autoload.weapon_list.dual_swords:
 						animation.play("heart trust sword",blend*1.5,melee_atk_speed + 0.1)
@@ -711,6 +706,7 @@ func matchAnimationStates()-> void:
 						animation.play("heart trust sword",blend*1.5,melee_atk_speed + 0.15)
 						moveDuringAnimation(6)
 		else:
+			heart_trust_duration = false
 			returnToIdleBasedOnWeaponType()
 #___________________________________________________________________________________________________
 #___________________________________________________________________________________________________
@@ -721,7 +717,7 @@ func matchAnimationStates()-> void:
 					animation.play_backwards("slide",blend)
 					if !is_on_wall():
 						if is_sprinting == false:
-							moveDuringAnimation(6)
+							horizontal_velocity = direction * 200 * get_physics_process_delta_time()
 						else:
 							moveDuringAnimation(sprint_speed)
 					can_walk = true
@@ -737,9 +733,6 @@ func matchAnimationStates()-> void:
 					is_in_combat = true
 					var slot = $UI/GUI/SkillBar/GridContainer/RClickSlot/Icon
 					skills(slot)
-				autoload.state_list.double_attack:
-					is_in_combat = true
-					clearParryAbsorb()
 					match weapon_type:
 						autoload.weapon_list.fist:
 							pass
@@ -868,8 +861,11 @@ onready var r_click_slot = $UI/GUI/SkillBar/GridContainer/RClickSlot
 func skills(slot)-> void:
 	if slot != null:
 			if slot.texture != null:
-				if slot.texture.resource_path == "res://UI/graphics/SkillIcons/rush.png":
-					pass
+				if slot.texture.resource_path == autoload.dodge.get_path():
+					if all_skills.can_dodge == true:
+						all_skills.dodgeCD()
+					else:
+						returnToIdleBasedOnWeaponType()
 				elif slot.texture.resource_path == "res://UI/graphics/SkillIcons/selfheal.png":
 					pass
 				elif slot.texture.resource_path == autoload.summon_shadow.get_path():
@@ -882,6 +878,8 @@ func skills(slot)-> void:
 					all_skills.areaSpell()
 				elif slot.texture.resource_path == autoload.arcane_blast.get_path():	
 					all_skills.arcaneBlast()
+					
+					
 #Lclick and Rclick__________________________________________________________________________________
 #fist
 				elif slot.texture.resource_path == autoload.punch.get_path():
@@ -1012,7 +1010,7 @@ func skills(slot)-> void:
 #__________________________________________ Whirlwind _____________________________________________
 				elif slot.texture.resource_path == autoload.heart_trust.get_path():
 						if heart_trust_icon.points >0 :
-							if all_skills.can_whirlwind == true:
+							if all_skills.can_heart_trust == true:
 								if resolve > all_skills.heart_trust_cost:
 									if weapon_type != autoload.weapon_list.fist:
 										heart_trust_duration = true
@@ -1049,7 +1047,8 @@ func skills(slot)-> void:
 							var index = int(index_str)
 							var button = inventory_grid.get_node("InventorySlot" + str(index))
 							button = inventory_grid.get_node("InventorySlot" + str(index))
-							autoload.consumeRedPotion(self,button,inventory_grid,true,slot.get_parent())				
+							if health < max_health:
+								autoload.consumeRedPotion(self,button,inventory_grid,true,slot.get_parent())				
 
 
 var queue_skills:bool = false #this is only for people with disabilities or if the game ever goes online to help with high ping 
@@ -1117,7 +1116,6 @@ func SkillQueueSystem()-> void:
 		elif state == autoload.state_list.skillB:
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot20/Icon
 			skills(slot)
-
 func returnToIdleBasedOnWeaponType():
 	match weapon_type:
 			autoload.weapon_list.fist:
@@ -1133,13 +1131,13 @@ func returnToIdleBasedOnWeaponType():
 func moveDuringAnimation(speed):
 	if !is_on_wall():
 		if current_race_gender.can_move == true:
-			horizontal_velocity = direction * speed
+			horizontal_velocity = direction * speed  
 			movement_speed = speed
 		elif current_race_gender.can_move == false:
 			horizontal_velocity = direction * 0
 			movement_speed = 0
 				
-var sprint_animation_speed : float = 1
+var sprint_animation_speed: float = 1
 func animations():
 	if health <= 0:
 		state = autoload.state_list.dead
@@ -1150,16 +1148,19 @@ func animations():
 		if is_swimming:
 			state = autoload.state_list.swim
 
-	#on land
+#on land
 		elif dodge_animation_duration > 0 and resolve >0:
-			resolve -= 0.2
+ 
 			state = autoload.state_list.slide
 
 		elif not is_on_floor() and not is_climbing and not is_swimming:
 			state = autoload.state_list.fall
-	#attacks________________________________________________________________________
-		elif Input.is_action_pressed("rclick") and !cursor_visible and is_in_combat:
-			state = autoload.state_list.guard
+	#attacks________________________________________________________________________________________
+		elif Input.is_action_pressed("rclick") and !cursor_visible:
+			if !is_walking:
+				state = autoload.state_list.guard
+			else:
+				state = autoload.state_list.walk
 		elif Input.is_action_pressed("attack") and !cursor_visible:
 			state = autoload.state_list.base_attack
 			can_walk = false
@@ -1222,6 +1223,7 @@ func animations():
 				elif Input.is_action_pressed("rclick"):
 					can_walk = false
 				else:
+					state =  autoload.state_list.walk
 					can_walk = true
 		elif Input.is_action_pressed("crouch"):
 			state =  autoload.state_list.crouch
@@ -1285,10 +1287,6 @@ func isFacingSelf(enemy: Node, threshold: float) -> bool:
 	return dot_product >= threshold
 
 
-func speedlabel():
-	$kmh.text = "km/h " + str(movement_speed)
-
-
 onready var take_damage_view  = $Mesh/TakeDamageView/Viewport
 var parry: bool =  false
 var absorbing: bool = false
@@ -1297,6 +1295,7 @@ func clearParryAbsorb():
 	absorbing = false
 	is_aiming = false
 func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
+	allResourcesBarsAndLabels()
 	var text = autoload.floatingtext_damage.instance()
 	if parry == false:
 		if all_skills.masochism >0:
@@ -1745,7 +1744,8 @@ func UniversalToolTip(icon_texture,instance):
 				damage_multiplier += (points - 1) * 0.04
 			total_damage = base_damage * damage_multiplier
 			callToolTipSkills(instance,"Overhead Slash",str("Total Damage: ") + str(total_damage),str("Base Damage: ") + str(autoload.overhead_slash_damage),str("Resolve cost: ")+ str(autoload.overhead_slash_cost),str("Cooldown: ") + str(all_skills.overhead_slash_cooldown),autoload.overhead_slash_description)
-
+		elif icon_texture.get_path() == autoload.dodge.get_path():
+			callToolTipSkills(instance,"Dodge",str("Total Damage: ") + str(strength * 0.25) + str(" per frame"),str("Invincibility frame"),str("Resolve cost: ")+ str(all_skills.dodge_cost),str("Cooldown: ") + str(all_skills.dodge_cooldown),autoload.dodge_description)
 #_______________________________________Inventory system____________________________________________
 #for this to work either preload all the item icons here or add the "Global.gd"
 #as an autoload, i called it add_item in my project, and i used it to to compre the path 
@@ -3090,6 +3090,7 @@ onready var food_label = $UI/GUI/Portrait/MinimapHolder/FoodLabel
 onready var water_bar = $UI/GUI/Portrait/MinimapHolder/WaterBar
 onready var water_label = $UI/GUI/Portrait/MinimapHolder/WaterLabel
 func allResourcesBarsAndLabels():
+	displayResources(hp_bar,hp_label,health,max_health,"HP")
 	displayResourcesRound(water_bar,water_label,water,max_water,"")
 	displayResourcesRound(food_bar,food_label,kilocalories,max_kilocalories,"")
 	displayResourcesRound(ne_bar,ne_label,nefis,max_nefis,"NE : ")
@@ -4529,7 +4530,8 @@ func savePlayerData():
 		
 		"hair_color": hair_color,
 		"right_eye_color":right_eye_color,
-		"left_eye_color":left_eye_color
+		"left_eye_color":left_eye_color,
+		"hairstyle":hairstyle
 		}
 	var dir = Directory.new()
 	if !dir.dir_exists(save_directory):
@@ -4741,7 +4743,8 @@ func loadPlayerData():
 #			if "effects" in player_data:
 #				effects = player_data["effects"]
 
-				
+			if "hairstyle" in player_data:
+				hairstyle = player_data["hairstyle"]
 			if "hair_color" in player_data:
 				hair_color = player_data["hair_color"]
 			if "right_eye_color" in player_data:
@@ -4908,18 +4911,18 @@ func _on_switchRace_pressed():
 	species = species_list[current_species_index]
 	switchSexRace() # Call the function to change gender and update scene
 	current_race_gender.EquipmentSwitch()
-	current_race_gender.hairstyle = hair_list[current_hair_index]
+	hairstyle = hair_list[current_hair_index]
 	current_race_gender.face_set = face_list[current_face_index]
 
-var hair_list = ["1", "2", "3","4","5","6","7","8","9"]
+var hair_list = ["1", "2", "3","4","5"]
 var current_hair_index = 0
 
 func _on_switchhair_pressed():
 	current_hair_index += 1  # Increment the index to move to the next hairstyle
 	if current_hair_index >= hair_list.size():  # Wrap around to the beginning if reached the end of the list
 		current_hair_index = 0  # Reset index to the beginning
-	current_race_gender.hairstyle = hair_list[current_hair_index]
-	current_race_gender.switchHair()
+	hairstyle = hair_list[current_hair_index]
+	current_race_gender.switchEquipment()
 	colorBodyParts()
 
 var face_list = ["1", "2", "3", "4","5"]
@@ -4937,9 +4940,10 @@ func _on_ArmorColorSwitch_pressed():
 func _on_SkinColorSwitch_pressed():
 	current_race_gender._on_Button_pressed()
 	
+	
+var hairstyle: String = "1"
 var hair_color_change:bool = true 
 var hair_color: Color = Color(1, 1, 1)  # Default color
-
 onready var iris_image = preload("res://player/human/fem/Faces/Iris.material")
 var right_eye_color_change: bool = true 
 var right_eye_color: Color = Color(1, 1, 1)  # Default color
@@ -4948,19 +4952,15 @@ var left_eye_color: Color = Color(1, 1, 1)  # Default color
 var left_eye_color_change:bool = true
 func _on_ColorPicker_color_changed(color: Color) -> void:
 	if right_eye_color_change:
-		var eye_material = current_race_gender.right_eye.material_override
-		if eye_material:
-			eye_material.albedo_color = color
-			eye_material.flags_unshaded = true
-			right_eye_color = color
-			colorBodyParts()
+		right_eye_color = color
+		colorBodyParts()
 	if left_eye_color_change:
-		var eye_material = current_race_gender.left_eye.material_override
-		if eye_material:
-			eye_material.albedo_color = color
-			eye_material.flags_unshaded = true
-			left_eye_color = color
-			colorBodyParts()
+		left_eye_color = color
+		colorBodyParts()
+	if hair_color_change:
+		hair_color = color
+		colorBodyParts()
+					
 func colorBodyParts() -> void:
 	if current_race_gender != null:
 		if current_race_gender.right_eye != null:
@@ -4976,7 +4976,12 @@ func colorBodyParts() -> void:
 			new_material.albedo_color = left_eye_color
 			new_material.flags_unshaded = true
 			left_eye.material_override = new_material  # Assign the new material to the right eye
-
+	if current_race_gender != null:
+		if current_race_gender.skeleton != null:
+			for child in current_race_gender.skeleton.get_children():
+				if child.is_in_group("hair"):
+					var material = child.mesh.surface_get_material(0) # Assuming only one surface
+					material.albedo_color = hair_color
 
 func _on_BlendshapeTest_pressed():
 	current_race_gender.smile = rand_range(-2,+2)
