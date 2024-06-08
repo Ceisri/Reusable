@@ -39,42 +39,43 @@ func _ready()->void:
 	current_race_gender.EquipmentSwitch()
 	l_click_slot.switchAttackIcon()
 func _on_SlowTimer_timeout()->void:
-	allResourcesBarsAndLabels()
-	potionEffects()
-	if $UI/GUI/Equipment.visible == true :
-		current_race_gender.EquipmentSwitch()
-	saveSkillBarData()
-	convertStats()
-	money()
-	hunger()
-	hydration()	
-	frameRate()	
-	showStatusIcon()	
-	displayLabels()
-	regenStats()
+	if health >0:
+		allResourcesBarsAndLabels()
+		potionEffects()
+		if $UI/GUI/Equipment.visible == true :
+			current_race_gender.EquipmentSwitch()
+		saveSkillBarData()
+		convertStats()
+		money()
+		hunger()
+		hydration()	
+		frameRate()	
+		showStatusIcon()	
+		displayLabels()
+		regenStats()
 
-	l_click_slot.switchAttackIcon()
-	r_click_slot.switchAttackIcon()
-	$UI/GUI/SkillTrees/Label.text = str("skill points: ")+ str(skill_points)
-	$UI/GUI/SkillTrees/Label2.text =  str("points spent: ")+ str(skill_points_spent)
+		l_click_slot.switchAttackIcon()
+		r_click_slot.switchAttackIcon()
+		$UI/GUI/SkillTrees/Label.text = str("skill points: ")+ str(skill_points)
+		$UI/GUI/SkillTrees/Label2.text =  str("points spent: ")+ str(skill_points_spent)
 	displayClock()
 func _on_3FPS_timeout()->void:
-	$UI/GUI/Equipment/Attributes/AttributePoints.text = "Attributes points left: " + str(attribute)
-# Calculate the sum of all spent attribute points
-	var total_spent_attribute_points = spent_attribute_points_san + spent_attribute_points_wis + spent_attribute_points_mem + spent_attribute_points_int + spent_attribute_points_ins +spent_attribute_points_for + spent_attribute_points_str + spent_attribute_points_fur + spent_attribute_points_imp + spent_attribute_points_fer + spent_attribute_points_foc + spent_attribute_points_bal + spent_attribute_points_dex + spent_attribute_points_acc + spent_attribute_points_poi +spent_attribute_points_has + spent_attribute_points_agi + spent_attribute_points_cel + spent_attribute_points_fle + spent_attribute_points_def + spent_attribute_points_end + spent_attribute_points_sta + spent_attribute_points_vit + spent_attribute_points_res + spent_attribute_points_ten + spent_attribute_points_cha + spent_attribute_points_loy + spent_attribute_points_dip + spent_attribute_points_aut + spent_attribute_points_cou
-	# Update the text in the UI/GUI
-	$UI/GUI/Equipment/Attributes/AttributeSpent.text = "Attributes points Spent: " + str(total_spent_attribute_points)
-	crafting()
-	displayResources(hp_bar,hp_label,health,max_health,"HP")
-	curtainsDown()
-	SwitchEquipmentBasedOnEquipmentIcons()
-	updateAllStats()
+	if health >0:
+		$UI/GUI/Equipment/Attributes/AttributePoints.text = "Attributes points left: " + str(attribute)
+	# Calculate the sum of all spent attribute points
+		var total_spent_attribute_points = spent_attribute_points_san + spent_attribute_points_wis + spent_attribute_points_mem + spent_attribute_points_int + spent_attribute_points_ins +spent_attribute_points_for + spent_attribute_points_str + spent_attribute_points_fur + spent_attribute_points_imp + spent_attribute_points_fer + spent_attribute_points_foc + spent_attribute_points_bal + spent_attribute_points_dex + spent_attribute_points_acc + spent_attribute_points_poi +spent_attribute_points_has + spent_attribute_points_agi + spent_attribute_points_cel + spent_attribute_points_fle + spent_attribute_points_def + spent_attribute_points_end + spent_attribute_points_sta + spent_attribute_points_vit + spent_attribute_points_res + spent_attribute_points_ten + spent_attribute_points_cha + spent_attribute_points_loy + spent_attribute_points_dip + spent_attribute_points_aut + spent_attribute_points_cou
+		# Update the text in the UI/GUI
+		$UI/GUI/Equipment/Attributes/AttributeSpent.text = "Attributes points Spent: " + str(total_spent_attribute_points)
+		crafting()
+		displayResources(hp_bar,hp_label,health,max_health,"HP")
+		curtainsDown()
+		SwitchEquipmentBasedOnEquipmentIcons()
+		updateAllStats()
 
 func _physics_process(delta: float) -> void:
 	all_skills.updateCooldownLabel()
 	$Debug.text = str(state)
 	convertStats()
-	ChopTree()
 	limitStatsToMaximum()
 	cameraRotation()
 	crossHair()
@@ -82,10 +83,7 @@ func _physics_process(delta: float) -> void:
 	minimapFollow()
 	miniMapVisibility()
 	stiffCamera()
-	
-	
 	autoload.gravity(self)
-	
 	dodgeIframe()
 	dodgeBack()
 	dodgeFront()
@@ -101,11 +99,13 @@ func _physics_process(delta: float) -> void:
 	positionCoordinates()
 	MainWeapon()
 	SecWeapon()
-	
 	if health >0:
 		climbing()
 		jump()
 		walk()
+		fieldOfView()
+		
+
 #_______________________________________________Basic Movement______________________________________
 var h_rot 
 var blocking = false
@@ -390,6 +390,18 @@ var touch_start_position: Vector2 = Vector2.ZERO
 var zoom_speed: float = 0.1
 var mouse_sense: float = 0.1
 
+func fieldOfView():
+	if is_sprinting:
+		if camera.fov < 110:
+			camera.fov += 1 
+	elif is_running:
+		if camera.fov < 80:
+			camera.fov += 2
+		elif camera.fov > 80:
+			camera.fov -= 1
+	else:
+		if camera.fov > 70:
+			camera.fov -= 2
 func Zoom(zoom_direction : float)-> void:
 	# Adjust the camera's position based on the zoom direction
 	camera.translation.y += zoom_direction * zoom_speed
@@ -569,7 +581,6 @@ func showEnemyStats()-> void:
 var animation: AnimationPlayer
 var death_duration: bool = false
 var has_died: bool = false
-var jump_duration: bool = false 
 var overhead_slash_duration:bool = false
 var underhand_slash_duration:bool = false
 var heart_trust_duration:bool = false
@@ -578,7 +589,14 @@ var whirlwind_duration:bool = false
 var counter_strike_duration:bool = false
 var taunt_duration:bool = false
 var state = autoload.state_list.idle
-
+func stop()->void:
+	overhead_slash_duration = false
+	underhand_slash_duration = false
+	heart_trust_duration = false
+	cyclone_duration = false
+	whirlwind_duration = false
+	counter_strike_duration = false
+	taunt_duration = false
 func matchAnimationStates()-> void:
 	if current_race_gender == null or animation == null:
 		print("mesh not instanced or animationPlayer not found")
@@ -589,7 +607,6 @@ func matchAnimationStates()-> void:
 		can_walk = false
 		is_in_combat = true
 		is_walking = false
-		
 		clearParryAbsorb()
 		if weapon_type == autoload.weapon_list.heavy:
 			animation.play("taunt heavy",blend + 0.1,ferocity)
@@ -638,13 +655,13 @@ func matchAnimationStates()-> void:
 				moveDuringAnimation(autoload.cyclone_motion)
 				match weapon_type:
 					autoload.weapon_list.sword:
-						animation.play("cyclone sword",blend,melee_atk_speed+ 0.35)
+						animation.play("cyclone sword",blend,melee_atk_speed+ 0.5)
 					autoload.weapon_list.sword_shield:
-						animation.play("cyclone sword",blend,melee_atk_speed+ 0.35)
+						animation.play("cyclone sword",blend,melee_atk_speed+ 0.5)
 					autoload.weapon_list.dual_swords:
-						animation.play("cyclone sword",blend,melee_atk_speed+ 0.35)
+						animation.play("cyclone sword",blend,melee_atk_speed+ 0.5)
 					autoload.weapon_list.heavy:
-						animation.play("cyclone heavy",blend,melee_atk_speed+ 0.35)
+						animation.play("cyclone heavy",blend,melee_atk_speed+ 0.5)
 			else:
 				cyclone_duration = false
 				returnToIdleBasedOnWeaponType()
@@ -913,8 +930,9 @@ func skills(slot)-> void:
 						if overhand_icon.points >0:
 							if all_skills.can_overhead_slash == true:
 								if resolve > all_skills.overhead_slash_cost:
-									is_in_combat = true
-									overhead_slash_duration = true
+									if weapon_type != autoload.weapon_list.fist:
+										is_in_combat = true
+										overhead_slash_duration = true
 								else:
 									returnToIdleBasedOnWeaponType()
 									overhead_slash_duration = false
@@ -947,8 +965,9 @@ func skills(slot)-> void:
 						if underhand_icon.points >0:
 							if all_skills.can_underhand_slash == true:
 								if resolve > all_skills.overhead_slash_cost:
-									is_in_combat = true
-									underhand_slash_duration = true
+									if weapon_type != autoload.weapon_list.fist:
+										is_in_combat = true
+										underhand_slash_duration = true
 								else:
 									returnToIdleBasedOnWeaponType()
 									underhand_slash_duration = false
@@ -963,7 +982,8 @@ func skills(slot)-> void:
 						if cyclone_icon.points >0 :
 							if all_skills.can_cyclone == true:
 								if resolve > autoload.cyclone_cost:
-									cyclone_duration = true
+									if weapon_type != autoload.weapon_list.fist:
+										cyclone_duration = true
 								else:
 									returnToIdleBasedOnWeaponType()
 									cyclone_duration = false
@@ -978,7 +998,8 @@ func skills(slot)-> void:
 						if whirlwind_icon.points >0 :
 							if all_skills.can_whirlwind == true:
 								if resolve > all_skills.whirlwind_cost:
-									whirlwind_duration = true
+									if weapon_type != autoload.weapon_list.fist:
+										whirlwind_duration = true
 								else:
 									returnToIdleBasedOnWeaponType()
 									whirlwind_duration = false
@@ -993,7 +1014,8 @@ func skills(slot)-> void:
 						if heart_trust_icon.points >0 :
 							if all_skills.can_whirlwind == true:
 								if resolve > all_skills.heart_trust_cost:
-									heart_trust_duration = true
+									if weapon_type != autoload.weapon_list.fist:
+										heart_trust_duration = true
 								else:
 									returnToIdleBasedOnWeaponType()
 									heart_trust_duration = false
@@ -1028,6 +1050,8 @@ func skills(slot)-> void:
 							var button = inventory_grid.get_node("InventorySlot" + str(index))
 							button = inventory_grid.get_node("InventorySlot" + str(index))
 							autoload.consumeRedPotion(self,button,inventory_grid,true,slot.get_parent())				
+
+
 var queue_skills:bool = false #this is only for people with disabilities or if the game ever goes online to help with high ping 
 func _on_SkillQueue_pressed():
 	queue_skills = !queue_skills
@@ -1201,8 +1225,6 @@ func animations():
 					can_walk = true
 		elif Input.is_action_pressed("crouch"):
 			state =  autoload.state_list.crouch
-		elif jump_duration == true:
-			state =  autoload.state_list.jump
 		else:
 			state =  autoload.state_list.idle
 
@@ -1895,46 +1917,6 @@ func crafting():
 			$UI/GUI/Crafting/CraftingResultSlot.quantity = 2
 
 #________________________________Add items to inventory_________________________
-var loot_amount = 1
-var chopping_power = 3
-var chopping_efficiency = 1 
-var pop_up_resource = preload("res://UI/floatingResource.tscn")
-func ChopTree():
-	var tree = ray.get_collider()
-	if Input.is_action_just_pressed("attack"):
-		if tree != null:
-			if tree.is_in_group("tree"):
-		#		tree.health -= chopping_power
-				# Generate a random number between 0 and 1
-				var random_value = randf()
-				# 25% chance for wood
-				if random_value < 0.2:
-					loot_amount = rng.randi_range(1, 2)
-					autoload.addStackableItem(inventory_grid,autoload.aubergine,loot_amount)
-					autoload.addFloatingIcon(take_damage_view,autoload.aubergine,loot_amount)
-				# 25% chance for acorn
-				elif random_value < 0.4:
-					loot_amount = rng.randi_range(5, 45)
-					autoload.addStackableItem(inventory_grid,autoload.raspberry,loot_amount)
-					autoload.addFloatingIcon(take_damage_view,autoload.raspberry,loot_amount)
-				# 25% chance for branch
-				elif random_value < 0.6:
-					loot_amount = rng.randi_range(3, 5)
-					autoload.addStackableItem(inventory_grid,autoload.potato,loot_amount)
-					autoload.addFloatingIcon(take_damage_view,autoload.potato,loot_amount)
-				elif random_value < 0.8:
-					loot_amount = rng.randi_range(15, 25)
-					autoload.addStackableItem(inventory_grid,autoload.onion,loot_amount)
-					autoload.addFloatingIcon(take_damage_view,autoload.onion,loot_amount)
-		# 25% chance for resin
-				else:
-					loot_amount = rng.randi_range(1, 5)
-					autoload.addStackableItem(inventory_grid,autoload.beetroot,loot_amount)
-					autoload.addFloatingIcon(take_damage_view,autoload.beetroot,loot_amount)
-
-
-
-
 func _on_GiveMeItems_pressed():
 	coins += 55
 	autoload.addStackableItem(inventory_grid,autoload.garlic,200)
@@ -3061,8 +3043,7 @@ func attackSpeedMath():
 	
 	var atk_speed_formula_casting = (total_instinct -1) * 0.35 + ((total_memory-1) * 0.05) + bonus_universal_speed
 	casting_speed = base_casting_speed + atk_speed_formula_casting	
-	
-	
+
 func resistanceMath():
 	var additional_resistance: float  = 0
 	var res_multiplier : float  = 0.5
