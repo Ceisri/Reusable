@@ -597,8 +597,8 @@ func startAbsorb():
 func stopAbsorb():
 	player.absorbing = false
 func jump():
-	player.jump_duration = false
-	player.vertical_velocity =  Vector3.UP * ((player.jumping_power * player.agility) * get_physics_process_delta_time())
+	
+	player.jumping()
 func die():
 	player.death_duration = false
 	player.has_died = true 
