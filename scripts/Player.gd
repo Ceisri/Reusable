@@ -50,7 +50,8 @@ func _on_SlowTimer_timeout()->void:
 		money()
 		hunger()
 		hydration()	
-		#frameRate()	
+		frameRate()	
+		all_skills.ComboSystem()
 		showStatusIcon()	
 		displayLabels()
 		regenStats()
@@ -579,7 +580,10 @@ var has_died: bool = false
 var overhead_slash_duration:bool = false
 var underhand_slash_duration:bool = false
 var heart_trust_duration:bool = false
+#___________________________________________________________________________________________________
 var cyclone_duration:bool = false
+var cyclone_combo:bool = false
+#___________________________________________________________________________________________________
 var whirlwind_duration:bool = false
 var counter_strike_duration:bool = false
 var taunt_duration:bool = false
@@ -646,17 +650,29 @@ func matchAnimationStates()-> void:
 		is_in_combat = true
 		clearParryAbsorb()
 		if all_skills.can_cyclone == true:
-			if resolve > autoload.cyclone_cost:
-				moveDuringAnimation(autoload.cyclone_motion)
+			if resolve > all_skills.cyclone_cost:
+				moveDuringAnimation(all_skills.cyclone_motion)
 				match weapon_type:
 					autoload.weapon_list.sword:
-						animation.play("cyclone sword",blend,melee_atk_speed+ 0.5)
+						if cyclone_combo == false:
+							animation.play("cyclone sword",blend,melee_atk_speed+ 0.25)
+						else:
+							animation.play("cyclone sword",blend,melee_atk_speed+ 1)
 					autoload.weapon_list.sword_shield:
-						animation.play("cyclone sword",blend,melee_atk_speed+ 0.5)
+						if cyclone_combo == false:
+							animation.play("cyclone sword",blend,melee_atk_speed+ 0.25)
+						else:
+							animation.play("cyclone sword",blend,melee_atk_speed+ 1)
 					autoload.weapon_list.dual_swords:
-						animation.play("cyclone sword",blend,melee_atk_speed+ 0.5)
+						if cyclone_combo == false:
+							animation.play("cyclone sword",blend,melee_atk_speed+ 0.25)
+						else:
+							animation.play("cyclone sword",blend,melee_atk_speed+ 1)
 					autoload.weapon_list.heavy:
-						animation.play("cyclone heavy",blend,melee_atk_speed+ 0.5)
+						if cyclone_combo == false:
+							animation.play("cyclone heavy",blend,melee_atk_speed+ 0.15)
+						else:
+							animation.play("cyclone heavy",blend,melee_atk_speed+ 0.95)
 			else:
 				cyclone_duration = false
 				returnToIdleBasedOnWeaponType()
@@ -979,7 +995,7 @@ func skills(slot)-> void:
 				elif slot.texture.resource_path == autoload.cyclone.get_path():
 						if cyclone_icon.points >0 :
 							if all_skills.can_cyclone == true:
-								if resolve > autoload.cyclone_cost:
+								if resolve > all_skills.cyclone_cost:
 									if weapon_type != autoload.weapon_list.fist:
 										cyclone_duration = true
 								else:
@@ -1049,6 +1065,7 @@ func skills(slot)-> void:
 							button = inventory_grid.get_node("InventorySlot" + str(index))
 							if health < max_health:
 								autoload.consumeRedPotion(self,button,inventory_grid,true,slot.get_parent())				
+
 
 
 var queue_skills:bool = false #this is only for people with disabilities or if the game ever goes online to help with high ping 
@@ -1687,7 +1704,7 @@ func setSkillTreeOwner():
 func skillMouseEntered(tree, index):
 	var button = tree.get_node("skill" + str(index))
 	var icon_texture = button.get_node("Icon").texture
-	var instance = preload("res://tooltipSkills.tscn").instance()
+	var instance = preload("res://tooltip.tscn").instance()
 	UniversalToolTip(icon_texture,instance)
 func skillMouseExited(index):
 	deleteTooltip()
@@ -1727,14 +1744,14 @@ func UniversalToolTip(icon_texture,instance):
 			callToolTip(instance,"Farmer Shoe","+1 slash resistance.\n +1 blunt resistance.\n +3 pierce resistance.\n +1 heat resistance.\n +6 cold resistance.\n +15 jolt resistance.\n")
 #_____________________________________sword skill and abilities_____________________________________
 		elif icon_texture.get_path() == autoload.cyclone.get_path():
-			var base_damage: float = autoload.cyclone_damage + slash_dmg
+			var base_damage: float = all_skills.cyclone_damage + slash_dmg
 			var points: int = cyclone_icon.points
 			var damage_multiplier: float = 1.0
 			var total_damage: float
 			if points > 1:
 				damage_multiplier += (points - 1) * 0.05
 			total_damage = base_damage * damage_multiplier
-			callToolTipSkills(instance,"Cyclone",str("Total Damage: ") + str(total_damage) + " per hit ",str("Base Damage:  3 hits of ") + str(autoload.cyclone_damage) + " damage",str("Resolve cost: ") + str(autoload.cyclone_cost),str("Cooldown: ") + str(autoload.cyclone_cooldown),autoload.cyclone_description)
+			callToolTip(instance,"Cyclone","Damage: "+ str(total_damage) + " per hit\n" +str(all_skills.cyclone_description))
 		elif icon_texture.get_path() == autoload.overhead_slash.get_path():
 			var base_damage: float = autoload.overhead_slash_damage + slash_dmg + blunt_dmg
 			var points: int = overhand_icon.points
@@ -1743,9 +1760,9 @@ func UniversalToolTip(icon_texture,instance):
 			if points > 1:
 				damage_multiplier += (points - 1) * 0.04
 			total_damage = base_damage * damage_multiplier
-			callToolTipSkills(instance,"Overhead Slash",str("Total Damage: ") + str(total_damage),str("Base Damage: ") + str(autoload.overhead_slash_damage),str("Resolve cost: ")+ str(autoload.overhead_slash_cost),str("Cooldown: ") + str(all_skills.overhead_slash_cooldown),autoload.overhead_slash_description)
+			callToolTip(instance,"Cyclone",all_skills.cyclone_description)
 		elif icon_texture.get_path() == autoload.dodge.get_path():
-			callToolTipSkills(instance,"Dodge",str("Total Damage: ") + str(strength * 0.25) + str(" per frame"),str("Invincibility frame"),str("Resolve cost: ")+ str(all_skills.dodge_cost),str("Cooldown: ") + str(all_skills.dodge_cooldown),autoload.dodge_description)
+			callToolTip(instance,"Dodge Slide",autoload.dodge_description)
 #_______________________________________Inventory system____________________________________________
 #for this to work either preload all the item icons here or add the "Global.gd"
 #as an autoload, i called it add_item in my project, and i used it to to compre the path 
@@ -1816,9 +1833,7 @@ func inventoryMouseEntered(index):
 func inventoryMouseExited(index):
 	deleteTooltip()
 
-func callToolTipSkills(instance,title,total_value,base_value,cost,cooldown,description):
-		gui.add_child(instance)
-		instance.showTooltip(title,total_value,base_value,cost,cooldown,description)
+
 func callToolTip(instance,title,text):
 		gui.add_child(instance)
 		instance.showTooltip(title,text)
@@ -1881,12 +1896,11 @@ func connectSkillBarButtons():
 func skillBarMouseEntered(index):
 	var button = skill_bar_grid.get_node("Slot" + str(index))
 	var icon_texture = button.get_node("Icon").texture
-	var instance = preload("res://tooltipSkills.tscn").instance()
+	var instance = preload("res://tooltip.tscn").instance()
 	UniversalToolTip(icon_texture,instance)
 	
 func skillBarMouseExited(index):
 	deleteTooltip()
-	
 	
 
 #______________________________________Crafting_________________________________

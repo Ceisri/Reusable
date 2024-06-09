@@ -9,7 +9,16 @@ var last_summon_time: float = 0.0
 
 var masochism : int = 1 
 
-
+var cyclone_combo_start_time = 0.0
+func ComboSystem():
+	var current_time = OS.get_ticks_msec() / 1000.0
+	if player.cyclone_combo:
+		# Check if 2 seconds have passed since the combo was started
+		if current_time - cyclone_combo_start_time >= 2.0:
+			player.cyclone_combo = false
+			print("Cyclone combo is now false")
+			
+			
 func updateCooldownLabel() -> void:
 	var current_time = OS.get_ticks_msec() / 1000.0
 	for child in $"../SkillBar/GridContainer".get_children():
@@ -56,8 +65,8 @@ func updateCooldownLabel() -> void:
 		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.cyclone.get_path():
 			var label: Label = child.get_node("CD")
 			if label != null:
-				 updateLabelCyclone(label,autoload.cyclone_cooldown, current_time,last_cyclone_time)
-#__________________________________________________Whirlwind________________________________________
+				 updateLabelCyclone(label,cyclone_cooldown, current_time,last_cyclone_time)
+#___________________________________1_______________Whirlwind________________________________________
 		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.whirlwind.get_path():
 			var label: Label = child.get_node("CD")
 			if label != null:
@@ -111,18 +120,6 @@ func updateLabelFuryStrike(label: Label, cooldown: float, current_time: float, l
 		label.text = ""
 		can_fury_strike = true
 		
-		
-var can_cyclone: bool = false
-func updateLabelCyclone(label: Label, cooldown: float, current_time: float, last_time: float) -> void:
-	var elapsed_time: float = current_time - last_time
-	var remaining_cooldown: float = max(0, cooldown - elapsed_time)
-	#print("remaining_cooldown:", remaining_cooldown)
-	if remaining_cooldown!= 0:
-		can_cyclone = false
-		label.text = str(round(remaining_cooldown) )
-	else:
-		label.text = ""
-		can_cyclone = true
 var can_counter: bool = false
 func updateLabelCounter(label: Label, cooldown: float, current_time: float, last_time: float) -> void:
 	var elapsed_time: float = current_time - last_time
@@ -159,6 +156,7 @@ func dodgeCD():
 			player.resolve -= dodge_cost
 			player.dodge_animation_duration += player.dodge_animation_max_duration
 			last_dodge_time = current_time
+			activateComboCyclone()
 var can_dodge: bool = false
 func updateDodge(label: Label, cooldown: float, current_time: float, last_time: float) -> void:
 	var elapsed_time: float = current_time - last_time
@@ -169,8 +167,8 @@ func updateDodge(label: Label, cooldown: float, current_time: float, last_time: 
 	else:
 		label.text = ""
 		can_dodge = true
-#___________________________________________________________________________________________________	
 
+#___________________________________________________________________________________________________	
 onready var camera: Camera = $"../../../Camroot/h/v/Camera"
 var base_attack: PackedScene = preload("res://Classes/Necromant/Spells/ArcaneBlast.tscn")
 var vertical_spawn_offset: float = 0.8
@@ -465,7 +463,9 @@ func underhandSlashCD():
 	var current_time: float = OS.get_ticks_msec() / 1000.0
 	if current_time - last_underhand_slash_time >= underhand_slash_cooldown:
 		if player.resolve >=underhand_slash_cost:
+			activateComboCyclone()
 			last_underhand_slash_time = current_time
+			
 var can_underhand_slash: bool = false
 func updateUnderhand(label: Label, cooldown: float, current_time: float, last_time: float) -> void:
 	var elapsed_time: float = current_time - last_time
@@ -514,13 +514,32 @@ func updateTaunt(label: Label, cooldown: float, current_time: float, last_time: 
 	else:
 		label.text = ""
 		can_taunt = true
-#___________________________________________________________________________________________________	
+#___________________________________________________________________________________________________
+
+var cyclone_damage: float = 7
+var cyclone_cooldown: float = 2
+var cyclone_cost: float = 5
+var cyclone_motion: float = 2.25
+var cyclone_description: String = "Damage type: Slash\n+5% compounding extra damage per skill level.\nSpin and slash foes around you in an area attack, each foe can be hit up to 2 times.\nThis skill activates faster after the following skills:  Dodge slide, 4th hit of base attack, Underhand slash"
 var last_cyclone_time: float = 0.0 
 func cycloneCD()->void:
 	var current_time: float = OS.get_ticks_msec() / 1000.0
-	if current_time - last_cyclone_time >= autoload.cyclone_cooldown:
+	if current_time - last_cyclone_time >= cyclone_cooldown:
 		last_cyclone_time = current_time
-
+var can_cyclone: bool = false
+func updateLabelCyclone(label: Label, cooldown: float, current_time: float, last_time: float) -> void:
+	var elapsed_time: float = current_time - last_time
+	var remaining_cooldown: float = max(0, cooldown - elapsed_time)
+	#print("remaining_cooldown:", remaining_cooldown)
+	if remaining_cooldown!= 0:
+		can_cyclone = false
+		label.text = str(round(remaining_cooldown) )
+	else:
+		label.text = ""
+		can_cyclone = true
+func activateComboCyclone():
+	player.cyclone_combo = true
+	cyclone_combo_start_time = OS.get_ticks_msec() / 1000.0
 #___________________________________________________________________________________________________
 var whirlwind_cooldown: float = 3
 var whirlwind_cost:float = 6
