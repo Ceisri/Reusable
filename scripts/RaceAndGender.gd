@@ -64,12 +64,11 @@ func loadAnimations()->void:
 	animation.add_animation("cyclone sword", load("res://player/universal animations/Animations Sword Light/cyclone  sword.anim"))#placeholder
 	animation.add_animation("cyclone heavy", load("res://player/universal animations/Animations Sword Heavy/cyclone heavy.anim"))
 	
-	animation.add_animation("overhand slash sword", load("res://player/universal animations/Animations Sword Light/overhand slash sword.anim"))
-	animation.add_animation("overhand slash heavy", load("res://player/universal animations/Animations Sword Heavy/overhand slash heavy.anim"))
+	animation.add_animation("overhead slash sword", load("res://player/universal animations/Animations Sword Light/overhand slash sword.anim"))
+	animation.add_animation("overhead slash heavy", load("res://player/universal animations/Animations Sword Heavy/overhand slash heavy.anim"))
 	
-	animation.add_animation("underhand slash sword", load("res://player/universal animations/Animations Shield/underhand slash shield.anim"))
-	animation.add_animation("underhand slash shield", load("res://player/universal animations/Animations Shield/underhand slash shield.anim"))
-	animation.add_animation("underhand slash heavy", load("res://player/universal animations/Animations Sword Heavy/underhand slash heavy.anim"))
+	animation.add_animation("rising slash shield", load("res://player/universal animations/Animations Shield/rising slash shield.anim"))
+	animation.add_animation("rising slash heavy", load("res://player/universal animations/Animations Sword Heavy/rising slash heavy.anim"))
 	
 	animation.add_animation("heart trust sword", load("res://player/universal animations/Animations Sword Light/heart trust sword.anim"))
 	
@@ -444,7 +443,7 @@ func cleaveDMG()->void:#Heavy
 
 
 
-#Overhand section
+#Overhead Slash section
 #This skill is viable for all melee weapon types EXCEPT FIST WEAPONS
 func overhandSlashCD()-> void:
 	player.overhead_slash_duration = false
@@ -453,7 +452,7 @@ func overhandSlashCD()-> void:
 func overhandSlashDMG()->void:
 	var damage_type:String = "slash"
 	var base_damage: float = player.all_skills.overhead_slash_damage # + player.slash_dmg  + player.blunt_dmg
-	var points: int = player.overhand_icon.points
+	var points: int = player.overhead_icon.points
 	var damage_multiplier: float = 1.0
 	if points > 1:
 		damage_multiplier += (points - 1) * 0.04
@@ -467,12 +466,12 @@ func overhandSlashDMG()->void:
 	var push_distance:float = 0.25 * player.total_impact
 	var enemies = area_melee_front.get_overlapping_bodies()
 	dealDMG(enemies,null,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,player.stagger_chance)
-#Underhand section
+#rising slash section
 #This skill is viable for all melee weapon types EXCEPT FIST WEAPONS
-func underhandSlashCD()-> void:
-	player.all_skills.underhandSlashCD()
-	player.underhand_slash_duration = false
-func underhandSlashDMG()-> void:
+func risingSlashCD()-> void:
+	player.all_skills.risingSlashCD()
+	player.rising_slash_duration = false
+func risingSlashDMG()-> void:
 	var damage_type:String = right_hand.get_child(0).damage_type
 	var damage:float = 5 + player.slash_dmg 
 	var damage_flank: float = damage + player.flank_dmg 

@@ -54,6 +54,11 @@ var stagger_time:float  = 0
 var death_time:float  = 0
 var staggered_duration: bool = false
 var has_died:bool = false
+
+var atk_1_duration:bool = false
+var atk_2_duration:bool = false
+var atk_3_duration:bool = false
+var atk_4_duration:bool = false
 func matchState()->void:
 	match state:
 		autoload.state_list.idle:
@@ -67,24 +72,34 @@ func matchState()->void:
 		autoload.state_list.engage:
 			if staggered_duration == false:
 				if health >0:
-					lookTarget()
 					var  distance_to_target = findDistanceTarget()
 					if distance_to_target != null:
-						if distance_to_target > 1.4:
+						if distance_to_target > 1.4 and atk_1_duration == false and atk_2_duration == false and atk_3_duration == false and atk_4_duration == false:
+							changeAttackType()
+							lookTarget()
 							followTarget(false)
 							animation.play("walk combat",0.3)
 						else:
 							if random_atk < 0.25:  # 25% chance
-								animation.play("triple slash", 0.25)
+								atk_1_duration = true
 							elif random_atk < 0.50:  # 25% chance
-								animation.play("chop sword", 0.3)
+								atk_2_duration = true
 							elif random_atk < 0.75:  # 25% chance
-								animation.play("heavy swing", 0.3)
+								atk_3_duration = true
 							else:  # 25% chance
-								animation.play("spin", 0.3)
-				else:
-					state = autoload.state_list.staggered
-					animation.play("staggered",0.2)
+								atk_4_duration = true
+				if atk_1_duration == true:
+					animation.play("triple slash", 0.25)
+				elif atk_2_duration == true:
+					animation.play("chop sword", 0.3)
+				elif atk_3_duration == true:
+					animation.play("heavy swing", 0.3)
+				elif atk_4_duration == true:
+					animation.play("spin", 0.3)
+					
+			else:
+				state = autoload.state_list.staggered
+				animation.play("staggered",0.2)
 			
 		autoload.state_list.orbit:
 			if staggered_duration == false:
@@ -105,9 +120,16 @@ func matchState()->void:
 			else:	
 				animation.play("dead",0.6)
 
+func animationCancel()->void:
+	atk_1_duration = false
+	atk_2_duration = false
+	atk_3_duration = false
+	atk_4_duration = false
+
+
 onready var wall_check_ray:RayCast = $RayStraightLonger
 onready var check_floor_ray: RayCast = $RayCheckFloor
-onready var tween = $Tween
+
 func forceDirectionChange() -> void:
 	var collider = wall_check_ray.get_collider()
 	var collider_floor = check_floor_ray.get_collider()
@@ -132,7 +154,45 @@ func moveAside()->void: #move to the side to leave space for other enemies
 						orbit_time = 1.5
 					elif body.is_in_group("Player"):
 							state = autoload.state_list.engage
-					
+
+var direction: Vector3
+onready var tween = $Tween
+func slideForward() -> void:
+	var  distance_to_target = findDistanceTarget()
+	if distance_to_target != null:
+		if distance_to_target > 1.4:
+			var distance: float = 2.0  # Define a shorter distance of movement
+			var speed: float = 2.0  # Define a faster speed
+			var target_position: Vector3 = global_transform.origin + (direction.normalized() * distance)  # Calculate the target position
+
+			# Stop any ongoing tweens
+			tween.stop_all()
+
+			# Tween the position smoothly with an ease-out effect
+			tween.interpolate_property(self, "translation", global_transform.origin, target_position, 0.5, Tween.TRANS_QUAD, Tween.EASE_OUT)
+			tween.start()
+		else:
+			tween.stop_all()
+func slideForward2() -> void:
+	var  distance_to_target = findDistanceTarget()
+	if distance_to_target != null:
+		if distance_to_target > 1.4:
+			var distance: float = 0.5  # Define a shorter distance of movement
+			var speed: float = 1.0  # Define a faster speed
+			var target_position: Vector3 = global_transform.origin + (direction.normalized() * distance)  # Calculate the target position
+
+			# Stop any ongoing tweens
+			tween.stop_all()
+
+			# Tween the position smoothly with an ease-out effect
+			tween.interpolate_property(self, "translation", global_transform.origin, target_position, 0.5, Tween.TRANS_QUAD, Tween.EASE_OUT)
+			tween.start()
+		else:
+			tween.stop_all()
+	
+func stopSlidingForward()-> void:
+	tween.stop_all()
+
 onready var eyes = $Eyes
 var turn_speed = 9
 func lookTarget()->void:
@@ -140,7 +200,7 @@ func lookTarget()->void:
 	if target: 
 		eyes.look_at(target.player.global_transform.origin, Vector3.UP)
 		rotate_y(deg2rad(eyes.rotation.y * turn_speed))
-var direction: Vector3
+
 var walk_speed: float = 3
 func followTarget(angry:bool)->void:
 	if angry == false:
@@ -359,8 +419,6 @@ var radiant_resistance: int = 0
 
 var stagger_resistance: float = 0.5
 
-
-var guard_dmg_absorbition: float = 2 #total damage taken will be divided by this when guarding
 
 
 var base_flank_dmg : float = 10.0

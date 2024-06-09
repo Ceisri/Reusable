@@ -580,7 +580,7 @@ var has_died: bool = false
 var overhead_slash_duration:bool = false
 var overhead_slash_combo:bool = false
 #___________________________________________________________________________________________________
-var underhand_slash_duration:bool = false
+var rising_slash_duration:bool = false
 var heart_trust_duration:bool = false
 #___________________________________________________________________________________________________
 var cyclone_duration:bool = false
@@ -592,14 +592,28 @@ var whirlwind_combo:bool = false
 var counter_strike_duration:bool = false
 var taunt_duration:bool = false
 var state = autoload.state_list.idle
-func stop()->void:
-	overhead_slash_duration = false
-	underhand_slash_duration = false
-	heart_trust_duration = false
-	cyclone_duration = false
-	whirlwind_duration = false
-	counter_strike_duration = false
-	taunt_duration = false
+func animationCancel()->void:
+	overhead_slash_combo = false
+	whirlwind_combo = false
+	cyclone_combo = false
+	if overhead_slash_duration == true:
+		all_skills.overheadSlashCD()
+		overhead_slash_duration = false
+	if rising_slash_duration == true:
+		rising_slash_duration = false
+		all_skills.risingSlashCD()
+	if heart_trust_duration == true:
+		all_skills.heartTrustSlashCD()
+		heart_trust_duration = false
+	if cyclone_duration == true:
+		all_skills.cycloneCD()
+		cyclone_duration = false
+	if whirlwind_duration == true:
+		all_skills.whirlwindCD()
+		whirlwind_duration = false
+	if taunt_duration == true:
+		all_skills.tauntCD()
+		taunt_duration = false
 func matchAnimationStates()-> void:
 	if current_race_gender == null or animation == null:
 		print("mesh not instanced or animationPlayer not found")
@@ -607,10 +621,35 @@ func matchAnimationStates()-> void:
 	SkillQueueSystem()
 	if Input.is_action_pressed("rclick"):
 		state == autoload.state_list.guard
-		stop()
-		
+		animationCancel()
+#_______________________________________Overhead Slash______________________________________________
+	if overhead_slash_duration == true:
+		is_in_combat = true
+		clearParryAbsorb()
+		moveDuringAnimation(1.5)
+		match weapon_type:
+					autoload.weapon_list.sword:
+						if overhead_slash_combo == false:
+							animation.play("overhead slash sword",blend, melee_atk_speed - 0.15)
+						else:
+							animation.play("overhead slash sword",blend, melee_atk_speed + 0.9)
+					autoload.weapon_list.sword_shield:
+						if overhead_slash_combo == false:
+							animation.play("overhead slash sword",blend, melee_atk_speed- 0.15)
+						else:
+							animation.play("overhand slash sword",blend, melee_atk_speed + 0.9)
+					autoload.weapon_list.dual_swords:
+						if overhead_slash_combo == false:
+							animation.play("overhead slash sword",blend, melee_atk_speed- 0.15)
+						else:
+							animation.play("overhead slash sword",blend, melee_atk_speed + 1)
+					autoload.weapon_list.heavy:
+						if overhead_slash_combo == false:
+							animation.play("overhead slash heavy",blend, melee_atk_speed- 0.25)
+						else:
+							animation.play("overhead slash heavy",blend, melee_atk_speed + 0.6)	
 #___________________________________________________________________________________________________
-	if taunt_duration == true:
+	elif taunt_duration == true:
 		can_walk = false
 		is_in_combat = true
 		is_walking = false
@@ -619,52 +658,22 @@ func matchAnimationStates()-> void:
 			animation.play("taunt heavy",blend + 0.1,ferocity)
 		else:
 			animation.play("taunt",blend+ 0.1,ferocity)
-#_______________________________________Overhead Slash______________________________________________
-	elif overhead_slash_duration == true:
-		is_in_combat = true
-		clearParryAbsorb()
-		if all_skills.can_overhead_slash == true:
-			if resolve > all_skills.overhead_slash_cost:
-				moveDuringAnimation(1.5)
-				match weapon_type:
-					autoload.weapon_list.sword:
-						if overhead_slash_combo == false:
-							animation.play("overhand slash sword",blend, melee_atk_speed - 0.15)
-						else:
-							animation.play("overhand slash sword",blend, melee_atk_speed + 0.9)
-					autoload.weapon_list.sword_shield:
-						if overhead_slash_combo == false:
-							animation.play("overhand slash sword",blend, melee_atk_speed- 0.15)
-						else:
-							animation.play("overhand slash sword",blend, melee_atk_speed + 0.9)
-					autoload.weapon_list.dual_swords:
-						if overhead_slash_combo == false:
-							animation.play("overhand slash sword",blend, melee_atk_speed- 0.15)
-						else:
-							animation.play("overhand slash sword",blend, melee_atk_speed + 1)
-					autoload.weapon_list.heavy:
-						if overhead_slash_combo == false:
-							animation.play("overhand slash heavy",blend, melee_atk_speed- 0.25)
-						else:
-							animation.play("overhand slash heavy",blend, melee_atk_speed + 0.6)
-			else:
-				returnToIdleBasedOnWeaponType()
-		else:
-			returnToIdleBasedOnWeaponType()
-#Underhand slash____________________________________________________________________________________
-	elif underhand_slash_duration == true:
+
+
+#Rising slash____________________________________________________________________________________
+	elif rising_slash_duration == true:
 		is_in_combat = true
 		clearParryAbsorb()
 		moveDuringAnimation(4)
 		match weapon_type:
 					autoload.weapon_list.sword:
-						animation.play("underhand slash sword",blend, melee_atk_speed + 0.35)
+						animation.play("rising slash shield",blend, melee_atk_speed + 0.35)
 					autoload.weapon_list.sword_shield:
-						animation.play("underhand slash sword",blend,melee_atk_speed + 0.35)
+						animation.play("rising slash shield",blend,melee_atk_speed + 0.35)
 					autoload.weapon_list.dual_swords:
-						animation.play("underhand slash sword",blend, melee_atk_speed + 0.33)
+						animation.play("rising slash shield",blend, melee_atk_speed + 0.33)
 					autoload.weapon_list.heavy:
-						animation.play("underhand slash heavy",blend,melee_atk_speed + 0.35)
+						animation.play("rising slash heavy",blend,melee_atk_speed + 0.35)
 #Cyclone____________________________________________________________________________________________
 	elif cyclone_duration == true:
 		is_in_combat = true
@@ -956,7 +965,7 @@ func skills(slot)-> void:
 #melee weapon skills
 #__________________________________________  overhead slash    _____________________________________
 				elif slot.texture.resource_path == autoload.overhead_slash.get_path():
-						if overhand_icon.points >0:
+						if overhead_icon.points >0:
 							if all_skills.can_overhead_slash == true:
 								if resolve > all_skills.overhead_slash_cost:
 									if weapon_type != autoload.weapon_list.fist:
@@ -989,23 +998,23 @@ func skills(slot)-> void:
 						else:
 							returnToIdleBasedOnWeaponType()
 							taunt_duration = false
-#_________________________________________ Underhand slash _________________________________________
-				elif slot.texture.resource_path == autoload.underhand_slash.get_path():
-						if underhand_icon.points >0:
-							if all_skills.can_underhand_slash == true:
-								if resolve > all_skills.overhead_slash_cost:
+#_________________________________________ rising slash ____________________________________________
+				elif slot.texture.resource_path == autoload.rising_slash.get_path():
+						if rising_icon.points >0:
+							if all_skills.can_rising_slash == true:
+								if resolve > all_skills.rising_slash_cost:
 									if weapon_type != autoload.weapon_list.fist:
 										is_in_combat = true
-										underhand_slash_duration = true
+										rising_slash_duration = true
 								else:
 									returnToIdleBasedOnWeaponType()
-									underhand_slash_duration = false
+									rising_slash_duration = false
 							else:
 								returnToIdleBasedOnWeaponType()
-								underhand_slash_duration = false
+								rising_slash_duration = false
 						else:
 							returnToIdleBasedOnWeaponType()
-							underhand_slash_duration = false
+							rising_slash_duration = false
 #_________________________________________  cyclone   ______________________________________________
 				elif slot.texture.resource_path == autoload.cyclone.get_path():
 						if cyclone_icon.points >0 :
@@ -1667,8 +1676,8 @@ onready var vanguard_skill_tree: Control = $UI/GUI/SkillTrees/Background/Vanguar
 onready var all_skills = $UI/GUI/SkillTrees
 onready var taunt_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill1/Icon
 onready var cyclone_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill4/Icon
-onready var overhand_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill5/Icon
-onready var underhand_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill3/Icon
+onready var overhead_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill5/Icon
+onready var rising_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill3/Icon
 onready var whirlwind_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill2/Icon
 onready var heart_trust_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill6/Icon
 
@@ -1785,7 +1794,7 @@ func UniversalToolTip(icon_texture,instance):
 
 		elif icon_texture.get_path() == autoload.overhead_slash.get_path():
 			var base_damage: float = all_skills.overhead_slash_damage + slash_dmg + blunt_dmg
-			var points: int = overhand_icon.points
+			var points: int = overhead_icon.points
 			var damage_multiplier: float = 1.0
 			var total_damage: float
 			if points > 1:
@@ -2896,7 +2905,7 @@ var stagger_resistance: float = 0.5
 var deflection_chance : float = 0.33
 
 
-var guard_dmg_absorbition: float = 1.5 #total damage taken will be divided by this when guarding
+var guard_dmg_absorbition: float = 50 #total damage taken will be divided by this when guarding
 var extra_guard_dmg_absorbition:float
 var total_guard_dmg_absorbition:float
 

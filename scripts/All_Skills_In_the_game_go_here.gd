@@ -56,15 +56,15 @@ func updateCooldownLabel() -> void:
 			var label: Label = child.get_node("CD")
 			if label != null:
 				 updateDodge(label,dodge_cooldown, current_time,last_dodge_time)
-#___________________________________________Overhand and Underhand strike cooldowns_________________
+#___________________________________________Overhead and rising slash cooldowns_________________
 		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.overhead_slash.get_path():
 			var label: Label = child.get_node("CD")
 			if label != null:
-				 updateOverhandSlash(label,overhead_slash_cooldown, current_time,last_overhead_slash_time)
-		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.underhand_slash.get_path():
+				 updateOverheadSlash(label,overhead_slash_cooldown, current_time,last_overhead_slash_time)
+		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.rising_slash.get_path():
 			var label: Label = child.get_node("CD")
 			if label != null:
-				 updateUnderhand(label,underhand_slash_cooldown, current_time,last_underhand_slash_time)
+				 updateRising(label,rising_slash_cooldown, current_time,last_rising_slash_time)
 #__________________________________________________Cyclone__________________________________________
 		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.cyclone.get_path():
 			var label: Label = child.get_node("CD")
@@ -441,7 +441,7 @@ func switchStance():
 var overhead_slash_cooldown: float = 3
 var last_overhead_slash_time: float = 0.0 
 var overhead_slash_cost: float = 7
-var overhead_slash_description: String = "+5% compounding extra damage per skill level.\nStrike foes in front of you in the head,\nThis skill activates faster and guarantees to stagger foes after the following: Cyclone, Desperate Slash, Heart Trust,Underhand slash, 4th hit of base attack"
+var overhead_slash_description: String = "+5% compounding extra damage per skill level.\nStrike foes in front of you in the head,\nThis skill activates faster and guarantees to stagger foes after the following: Cyclone, Desperate Slash, Heart Trust,rising slash, 4th hit of base attack"
 var overhead_slash_damage: float = 5.0
 var overhead_slash_start_time: float = 0.0
 func overheadSlashCD():
@@ -451,7 +451,7 @@ func overheadSlashCD():
 			activateComboWhirlwind()
 			last_overhead_slash_time = current_time
 var can_overhead_slash: bool = false
-func updateOverhandSlash(label: Label, cooldown: float, current_time: float, last_time: float) -> void:
+func updateOverheadSlash(label: Label, cooldown: float, current_time: float, last_time: float) -> void:
 	var elapsed_time: float = current_time - last_time
 	var remaining_cooldown: float = max(0, cooldown - elapsed_time)
 	if remaining_cooldown!= 0:
@@ -464,27 +464,28 @@ func activateComboOverheadslash():
 	player.overhead_slash_combo = true
 	overhead_slash_start_time = OS.get_ticks_msec() / 1000.0
 #___________________________________________________________________________________________________
-var underhand_slash_cooldown: float = 3
-var last_underhand_slash_time: float = 0.0 
-var underhand_slash_cost: float = 7
-func underhandSlashCD():
+var rising_slash_cooldown: float = 3
+var last_rising_slash_time: float = 0.0 
+var rising_slash_description: String = "+5% compounding extra damage per skill level.\nStrike foes in front of you in the head,\nThis skill activates faster and guarantees to stagger foes after the following: Cyclone, Desperate Slash, Heart Trust,rRsing slash, 4th hit of base attack"
+var rising_slash_cost: float = 7
+func risingSlashCD():
 	var current_time: float = OS.get_ticks_msec() / 1000.0
-	if current_time - last_underhand_slash_time >= underhand_slash_cooldown:
-		if player.resolve >=underhand_slash_cost:
+	if current_time - last_rising_slash_time >= rising_slash_cooldown:
+		if player.resolve >=rising_slash_cost:
 			activateComboCyclone()
 			activateComboOverheadslash()
-			last_underhand_slash_time = current_time
+			last_rising_slash_time = current_time
 			
-var can_underhand_slash: bool = false
-func updateUnderhand(label: Label, cooldown: float, current_time: float, last_time: float) -> void:
+var can_rising_slash: bool = false
+func updateRising(label: Label, cooldown: float, current_time: float, last_time: float) -> void:
 	var elapsed_time: float = current_time - last_time
 	var remaining_cooldown: float = max(0, cooldown - elapsed_time)
 	if remaining_cooldown!= 0:
-		can_underhand_slash = false
+		can_rising_slash = false
 		label.text = str(round(remaining_cooldown) )
 	else:
 		label.text = ""
-		can_underhand_slash = true
+		can_rising_slash = true
 #___________________________________________________________________________________________________
 var heart_trust_cooldown: float = 3
 var last_heart_trust_time: float = 0.0 
@@ -530,7 +531,7 @@ var cyclone_damage: float = 7
 var cyclone_cooldown: float = 2
 var cyclone_cost: float = 5
 var cyclone_motion: float = 2.25
-var cyclone_description: String = "\n+5% compounding extra damage per skill level.\nSpin and slash foes around you in an area attack, each foe can be hit up to 2 times.\nThis skill activates faster and guarantees to stagger foes after the following:  Dodge slide, 4th hit of base attack, Underhand slash"
+var cyclone_description: String = "\n+5% compounding extra damage per skill level.\nSpin and slash foes around you in an area attack, each foe can be hit up to 2 times.\nThis skill activates faster and guarantees to stagger foes after the following:  Dodge slide, 4th hit of base attack, Rising slash"
 var last_cyclone_time: float = 0.0 
 func cycloneCD()->void:
 	var current_time: float = OS.get_ticks_msec() / 1000.0
