@@ -74,12 +74,14 @@ func matchState()->void:
 				if health >0:
 					var  distance_to_target = findDistanceTarget()
 					if distance_to_target != null:
-						if distance_to_target > 1.4 and atk_1_duration == false and atk_2_duration == false and atk_3_duration == false and atk_4_duration == false:
-							changeAttackType()
-							lookTarget()
-							followTarget(false)
-							animation.play("walk combat",0.3)
+						if distance_to_target > 1.4:
+							if  atk_1_duration == false and atk_2_duration == false and atk_3_duration == false and atk_4_duration == false:
+								changeAttackType()
+								lookTarget()
+								followTarget(false)
+								animation.play("walk combat",0.3)
 						else:
+							lookTarget()
 							if random_atk < 0.25:  # 25% chance
 								atk_1_duration = true
 							elif random_atk < 0.50:  # 25% chance
