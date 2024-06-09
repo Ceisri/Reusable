@@ -13,11 +13,15 @@ var cyclone_combo_start_time = 0.0
 func ComboSystem():
 	var current_time = OS.get_ticks_msec() / 1000.0
 	if player.cyclone_combo:
-		# Check if 2 seconds have passed since the combo was started
-		if current_time - cyclone_combo_start_time >= 2.0:
+		# Check if time has passed have passed since the combo was started
+		if current_time - cyclone_combo_start_time >= 1.5:
 			player.cyclone_combo = false
 			print("Cyclone combo is now false")
-			
+	if player.overhead_slash_combo:
+		if current_time - overhead_slash_start_time>= 2.25:
+			player.overhead_slash_combo = false
+			print("overhead_slash_combo is now false")
+		
 			
 func updateCooldownLabel() -> void:
 	var current_time = OS.get_ticks_msec() / 1000.0
@@ -56,7 +60,7 @@ func updateCooldownLabel() -> void:
 		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.overhead_slash.get_path():
 			var label: Label = child.get_node("CD")
 			if label != null:
-				 updateLabel2(label,overhead_slash_cooldown, current_time,last_overhead_slash_time)
+				 updateOverhandSlash(label,overhead_slash_cooldown, current_time,last_overhead_slash_time)
 		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.underhand_slash.get_path():
 			var label: Label = child.get_node("CD")
 			if label != null:
@@ -83,19 +87,6 @@ func updateCooldownLabel() -> void:
 				 updateTaunt(label,taunt_cooldown, current_time,last_taunt_time)
 		
 				
-				
-				
-				
-var can_overhead_slash: bool = false
-func updateLabel2(label: Label, cooldown: float, current_time: float, last_time: float) -> void:
-	var elapsed_time: float = current_time - last_time
-	var remaining_cooldown: float = max(0, cooldown - elapsed_time)
-	if remaining_cooldown!= 0:
-		can_overhead_slash = false
-		label.text = str(round(remaining_cooldown) )
-	else:
-		label.text = ""
-		can_overhead_slash = true
 		
 		
 var can_drink_potion: bool = true
@@ -157,6 +148,7 @@ func dodgeCD():
 			player.dodge_animation_duration += player.dodge_animation_max_duration
 			last_dodge_time = current_time
 			activateComboCyclone()
+			activateComboWhirlwind()
 var can_dodge: bool = false
 func updateDodge(label: Label, cooldown: float, current_time: float, last_time: float) -> void:
 	var elapsed_time: float = current_time - last_time
@@ -449,12 +441,28 @@ func switchStance():
 var overhead_slash_cooldown: float = 3
 var last_overhead_slash_time: float = 0.0 
 var overhead_slash_cost: float = 7
+var overhead_slash_description: String = "+5% compounding extra damage per skill level.\nStrike foes in front of you in the head,\nThis skill activates faster and guarantees to stagger foes after the following: Cyclone, Desperate Slash, Heart Trust,Underhand slash, 4th hit of base attack"
+var overhead_slash_damage: float = 5.0
+var overhead_slash_start_time: float = 0.0
 func overheadSlashCD():
 	var current_time: float = OS.get_ticks_msec() / 1000.0
 	if current_time - last_overhead_slash_time >= overhead_slash_cooldown:
 		if player.resolve >=overhead_slash_cost:
+			activateComboWhirlwind()
 			last_overhead_slash_time = current_time
-
+var can_overhead_slash: bool = false
+func updateOverhandSlash(label: Label, cooldown: float, current_time: float, last_time: float) -> void:
+	var elapsed_time: float = current_time - last_time
+	var remaining_cooldown: float = max(0, cooldown - elapsed_time)
+	if remaining_cooldown!= 0:
+		can_overhead_slash = false
+		label.text = str(round(remaining_cooldown) )
+	else:
+		label.text = ""
+		can_overhead_slash = true
+func activateComboOverheadslash():
+	player.overhead_slash_combo = true
+	overhead_slash_start_time = OS.get_ticks_msec() / 1000.0
 #___________________________________________________________________________________________________
 var underhand_slash_cooldown: float = 3
 var last_underhand_slash_time: float = 0.0 
@@ -464,6 +472,7 @@ func underhandSlashCD():
 	if current_time - last_underhand_slash_time >= underhand_slash_cooldown:
 		if player.resolve >=underhand_slash_cost:
 			activateComboCyclone()
+			activateComboOverheadslash()
 			last_underhand_slash_time = current_time
 			
 var can_underhand_slash: bool = false
@@ -484,6 +493,7 @@ func heartTrustSlashCD():
 	var current_time: float = OS.get_ticks_msec() / 1000.0
 	if current_time - last_heart_trust_time >= heart_trust_cooldown:
 		if player.resolve >=heart_trust_cost:
+			activateComboOverheadslash()
 			last_heart_trust_time = current_time
 var can_heart_trust: bool = false
 func updateHeartTrust(label: Label, cooldown: float, current_time: float, last_time: float) -> void:
@@ -520,11 +530,12 @@ var cyclone_damage: float = 7
 var cyclone_cooldown: float = 2
 var cyclone_cost: float = 5
 var cyclone_motion: float = 2.25
-var cyclone_description: String = "Damage type: Slash\n+5% compounding extra damage per skill level.\nSpin and slash foes around you in an area attack, each foe can be hit up to 2 times.\nThis skill activates faster after the following skills:  Dodge slide, 4th hit of base attack, Underhand slash"
+var cyclone_description: String = "\n+5% compounding extra damage per skill level.\nSpin and slash foes around you in an area attack, each foe can be hit up to 2 times.\nThis skill activates faster and guarantees to stagger foes after the following:  Dodge slide, 4th hit of base attack, Underhand slash"
 var last_cyclone_time: float = 0.0 
 func cycloneCD()->void:
 	var current_time: float = OS.get_ticks_msec() / 1000.0
 	if current_time - last_cyclone_time >= cyclone_cooldown:
+		activateComboOverheadslash()
 		last_cyclone_time = current_time
 var can_cyclone: bool = false
 func updateLabelCyclone(label: Label, cooldown: float, current_time: float, last_time: float) -> void:
@@ -541,12 +552,17 @@ func activateComboCyclone():
 	player.cyclone_combo = true
 	cyclone_combo_start_time = OS.get_ticks_msec() / 1000.0
 #___________________________________________________________________________________________________
-var whirlwind_cooldown: float = 3
-var whirlwind_cost:float = 6
+var whirlwind_cooldown: float = 3.0
+var whirlwind_cost:float = 6.0
+var whirlwind_damage: float = 3.0
+var whirlwind_damage_multiplier:float = 1.0
+var whirlwind_description: String = "+5% compounding extra damage per skill level.\n+1 damage per 3% missing health.\nSlice foes around you, dealing higher damage the less health you have"
 var last_whirlwind_time: float = 0.0 
+var whirlwind_combo_start_time: float =  0.0
 func whirlwindCD()->void:
 	var current_time: float = OS.get_ticks_msec() / 1000.0
 	if current_time - last_whirlwind_time >= whirlwind_cooldown:
+		activateComboOverheadslash()
 		last_whirlwind_time = current_time
 var can_whirlwind:bool = false
 func updateWhirlwind(label: Label, cooldown: float, current_time: float, last_time: float) -> void:
@@ -558,6 +574,9 @@ func updateWhirlwind(label: Label, cooldown: float, current_time: float, last_ti
 	else:
 		label.text = ""
 		can_whirlwind = true
+func activateComboWhirlwind():
+	player.whirlwind_combo = true
+	whirlwind_combo_start_time = OS.get_ticks_msec() / 1000.0
 #___________________________________________________________________________________________________
 var counter_cooldown: float = 3
 var last_counter_time: float = 0.0 

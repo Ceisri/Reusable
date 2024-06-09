@@ -578,6 +578,8 @@ var animation: AnimationPlayer
 var death_duration: bool = false
 var has_died: bool = false
 var overhead_slash_duration:bool = false
+var overhead_slash_combo:bool = false
+#___________________________________________________________________________________________________
 var underhand_slash_duration:bool = false
 var heart_trust_duration:bool = false
 #___________________________________________________________________________________________________
@@ -585,6 +587,8 @@ var cyclone_duration:bool = false
 var cyclone_combo:bool = false
 #___________________________________________________________________________________________________
 var whirlwind_duration:bool = false
+var whirlwind_combo:bool = false
+#___________________________________________________________________________________________________
 var counter_strike_duration:bool = false
 var taunt_duration:bool = false
 var state = autoload.state_list.idle
@@ -601,6 +605,10 @@ func matchAnimationStates()-> void:
 		print("mesh not instanced or animationPlayer not found")
 	#this is only for people with disabilities or if the game ever goes online to help with high ping 
 	SkillQueueSystem()
+	if Input.is_action_pressed("rclick"):
+		state == autoload.state_list.guard
+		stop()
+		
 #___________________________________________________________________________________________________
 	if taunt_duration == true:
 		can_walk = false
@@ -620,13 +628,25 @@ func matchAnimationStates()-> void:
 				moveDuringAnimation(1.5)
 				match weapon_type:
 					autoload.weapon_list.sword:
-						animation.play("overhand slash sword",blend, melee_atk_speed+ 0.25)
+						if overhead_slash_combo == false:
+							animation.play("overhand slash sword",blend, melee_atk_speed - 0.15)
+						else:
+							animation.play("overhand slash sword",blend, melee_atk_speed + 0.9)
 					autoload.weapon_list.sword_shield:
-						animation.play("overhand slash sword",blend, melee_atk_speed+ 0.25)
+						if overhead_slash_combo == false:
+							animation.play("overhand slash sword",blend, melee_atk_speed- 0.15)
+						else:
+							animation.play("overhand slash sword",blend, melee_atk_speed + 0.9)
 					autoload.weapon_list.dual_swords:
-						animation.play("overhand slash sword",blend, melee_atk_speed + 0.25)
+						if overhead_slash_combo == false:
+							animation.play("overhand slash sword",blend, melee_atk_speed- 0.15)
+						else:
+							animation.play("overhand slash sword",blend, melee_atk_speed + 1)
 					autoload.weapon_list.heavy:
-						animation.play("overhand slash heavy",blend, melee_atk_speed+ 0.25)
+						if overhead_slash_combo == false:
+							animation.play("overhand slash heavy",blend, melee_atk_speed- 0.25)
+						else:
+							animation.play("overhand slash heavy",blend, melee_atk_speed + 0.6)
 			else:
 				returnToIdleBasedOnWeaponType()
 		else:
@@ -749,11 +769,6 @@ func matchAnimationStates()-> void:
 					is_in_combat = true
 					var slot = $UI/GUI/SkillBar/GridContainer/RClickSlot/Icon
 					skills(slot)
-					match weapon_type:
-						autoload.weapon_list.fist:
-							pass
-						autoload.weapon_list.sword:
-							animation.play("lunge sword",blend,melee_atk_speed)
 #________________________________________movement states____________________________________________
 				autoload.state_list.walk:
 					clearParryAbsorb()
@@ -1751,16 +1766,32 @@ func UniversalToolTip(icon_texture,instance):
 			if points > 1:
 				damage_multiplier += (points - 1) * 0.05
 			total_damage = base_damage * damage_multiplier
-			callToolTip(instance,"Cyclone","Damage: "+ str(total_damage) + " per hit\n" +str(all_skills.cyclone_description))
+			callToolTip(instance,"Cyclone\n","Total Damage: "+ str(total_damage) + "\n " +str(all_skills.cyclone_description))
+		elif icon_texture.get_path() == autoload.whirlwind.get_path():
+			var base_damage: float = all_skills.whirlwind_damage + slash_dmg
+			var points: int =  whirlwind_icon.points
+			var health_ratio: float = float(health) / float(max_health)
+			var missing_health_percentage: float = 1.0 - (float(health) / float(max_health))  # Missing health as a percentage
+			var damage_multiplier: float = all_skills.whirlwind_damage_multiplier
+			var total_damage: float
+			if points > 1:
+				damage_multiplier += (points - 1) * 0.05
+			# Health-based additional damage
+			var additional_damage_per_3_percent: float = 1.0
+			var additional_damage: float = (missing_health_percentage / 0.03) * additional_damage_per_3_percent
+
+			total_damage = (base_damage * damage_multiplier) + additional_damage
+			callToolTip(instance,"Desperate Slash","Total Damage: "+ str(total_damage) + " per hit\n" +str(all_skills.whirlwind_description))
+
 		elif icon_texture.get_path() == autoload.overhead_slash.get_path():
-			var base_damage: float = autoload.overhead_slash_damage + slash_dmg + blunt_dmg
+			var base_damage: float = all_skills.overhead_slash_damage + slash_dmg + blunt_dmg
 			var points: int = overhand_icon.points
 			var damage_multiplier: float = 1.0
 			var total_damage: float
 			if points > 1:
 				damage_multiplier += (points - 1) * 0.04
 			total_damage = base_damage * damage_multiplier
-			callToolTip(instance,"Cyclone",all_skills.cyclone_description)
+			callToolTip(instance,"Overhead Slash",all_skills.overhead_slash_description)
 		elif icon_texture.get_path() == autoload.dodge.get_path():
 			callToolTip(instance,"Dodge Slide",autoload.dodge_description)
 #_______________________________________Inventory system____________________________________________
@@ -5000,3 +5031,9 @@ func colorBodyParts() -> void:
 func _on_BlendshapeTest_pressed():
 	current_race_gender.smile = rand_range(-2,+2)
 	current_race_gender.applyBlendShapes()
+
+
+func _on_reviveme_pressed():
+	state  = autoload.state_list.idle
+	health = max_health
+	translation = Vector3(0, 10, 0)

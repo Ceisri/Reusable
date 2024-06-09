@@ -448,10 +448,11 @@ func cleaveDMG()->void:#Heavy
 #This skill is viable for all melee weapon types EXCEPT FIST WEAPONS
 func overhandSlashCD()-> void:
 	player.overhead_slash_duration = false
+	player.overhead_slash_combo = false
 	player.all_skills.overheadSlashCD()
 func overhandSlashDMG()->void:
 	var damage_type:String = "slash"
-	var base_damage: float = autoload.overhead_slash_damage + player.slash_dmg  + player.blunt_dmg
+	var base_damage: float = player.all_skills.overhead_slash_damage # + player.slash_dmg  + player.blunt_dmg
 	var points: int = player.overhand_icon.points
 	var damage_multiplier: float = 1.0
 	if points > 1:
@@ -513,20 +514,27 @@ func cycloneDMG() -> void:
 	else:
 		stagger_chance = 100
 	var enemies = melee_aoe.get_overlapping_bodies()
-	dealDMG(enemies,null,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,player.stagger_chance)
+	dealDMG(enemies,null,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,stagger_chance)
 #Whirlwind section
 #This skill is viable for all melee weapon types 
 func whirlwindCD()-> void:
 	player.all_skills.whirlwindCD()
 	player.whirlwind_duration = false
+	player.whirlwind_combo = false
 func whirlwindDMG() -> void:
 	var damage_type: String = "slash"
-	var base_damage: float = autoload.cyclone_damage + player.slash_dmg
+	var base_damage: float = player.all_skills.whirlwind_damage + player.slash_dmg
 	var points: int = player.whirlwind_icon.points
 	var damage_multiplier: float = 1.0
+	var health_ratio: float = float(player.health) / float(player.max_health)
 	if points > 1:
 		damage_multiplier += (points - 1) * 0.05
-	var damage: float = base_damage * damage_multiplier
+	var health_multiplier_strength: float = 2.0  # Increase this value to make the effect stronger
+	var missing_health_percentage: float = 1.0 - (float(player.health) / float(player.max_health))
+	var additional_damage_per_3_percent: float = 1
+	var additional_damage: float = (missing_health_percentage / 0.03) * additional_damage_per_3_percent
+
+	var damage: float = (base_damage * damage_multiplier) + additional_damage
 	var damage_flank = damage + player.flank_dmg 
 	var critical_damage : float  = damage * player.critical_strength
 	var critical_flank_damage : float  = damage_flank * player.critical_strength
