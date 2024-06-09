@@ -137,9 +137,9 @@ func updateLabel(label: Label, cooldown: float, current_time: float, last_time: 
 		label.text = ""
 
 #___________________________________________________________________________________________________
-var dodge_cooldown: float = 3
+var dodge_cooldown: float = 1
 var last_dodge_time: float = 0.0 
-var dodge_cost: float = 5
+var dodge_cost: float = 10
 func dodgeCD():
 	var current_time: float = OS.get_ticks_msec() / 1000.0
 	if current_time - last_dodge_time >= dodge_cooldown:
@@ -438,11 +438,12 @@ func switchStance():
 
 
 #___________________________________________________________________________________________________
-var overhead_slash_cooldown: float = 3
+var overhead_slash_cooldown: float = 2.5
 var last_overhead_slash_time: float = 0.0 
 var overhead_slash_cost: float = 7
-var overhead_slash_description: String = "+5% compounding extra damage per skill level.\nStrike foes in front of you in the head,\nThis skill activates faster and guarantees to stagger foes after the following: Cyclone, Desperate Slash, Heart Trust,rising slash, 4th hit of base attack"
-var overhead_slash_damage: float = 5.0
+var overhead_slash_description: String = "+6% compounding extra damage per skill level.\nDamage increased by both SLASH DAMAGE and BLUNT DAMAGE stats\nStrike foes in front of you in the head,\nThis skill activates faster and guarantees to stagger foes after the following: Cyclone, Desperate Slash, Heart Trust,rising slash, 4th hit of base attack"
+var overhead_slash_damage: float = 12
+var overhead_slash_dmg_proportion: float = 0.06
 var overhead_slash_start_time: float = 0.0
 func overheadSlashCD():
 	var current_time: float = OS.get_ticks_msec() / 1000.0
@@ -464,10 +465,12 @@ func activateComboOverheadslash():
 	player.overhead_slash_combo = true
 	overhead_slash_start_time = OS.get_ticks_msec() / 1000.0
 #___________________________________________________________________________________________________
-var rising_slash_cooldown: float = 3
+var rising_slash_cooldown: float = 5
 var last_rising_slash_time: float = 0.0 
-var rising_slash_description: String = "+5% compounding extra damage per skill level.\nStrike foes in front of you in the head,\nThis skill activates faster and guarantees to stagger foes after the following: Cyclone, Desperate Slash, Heart Trust,rRsing slash, 4th hit of base attack"
+var rising_slash_description: String = "+4% compounding extra damage per skill level.\nHit foes in front of you with an upward slash staggering them"
 var rising_slash_cost: float = 7
+var rising_slash_damage: float = 5
+var rising_slash_dmg_proportion: float = 0.04
 func risingSlashCD():
 	var current_time: float = OS.get_ticks_msec() / 1000.0
 	if current_time - last_rising_slash_time >= rising_slash_cooldown:
@@ -490,6 +493,7 @@ func updateRising(label: Label, cooldown: float, current_time: float, last_time:
 var heart_trust_cooldown: float = 3
 var last_heart_trust_time: float = 0.0 
 var heart_trust_cost: float = 7
+var heart_trust_damage: float =  11
 func heartTrustSlashCD():
 	var current_time: float = OS.get_ticks_msec() / 1000.0
 	if current_time - last_heart_trust_time >= heart_trust_cooldown:
@@ -529,8 +533,8 @@ func updateTaunt(label: Label, cooldown: float, current_time: float, last_time: 
 
 var cyclone_damage: float = 7
 var cyclone_cooldown: float = 2
-var cyclone_cost: float = 5
-var cyclone_motion: float = 2.25
+var cyclone_cost: float = 4.5
+var cyclone_motion: float = 6
 var cyclone_description: String = "\n+5% compounding extra damage per skill level.\nSpin and slash foes around you in an area attack, each foe can be hit up to 2 times.\nThis skill activates faster and guarantees to stagger foes after the following:  Dodge slide, 4th hit of base attack, Rising slash"
 var last_cyclone_time: float = 0.0 
 func cycloneCD()->void:

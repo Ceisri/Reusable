@@ -451,11 +451,11 @@ func overhandSlashCD()-> void:
 	player.all_skills.overheadSlashCD()
 func overhandSlashDMG()->void:
 	var damage_type:String = "slash"
-	var base_damage: float = player.all_skills.overhead_slash_damage # + player.slash_dmg  + player.blunt_dmg
+	var base_damage: float = player.all_skills.overhead_slash_damage  + player.slash_dmg  + player.blunt_dmg
 	var points: int = player.overhead_icon.points
 	var damage_multiplier: float = 1.0
 	if points > 1:
-		damage_multiplier += (points - 1) * 0.04
+		damage_multiplier += (points - 1) * player.all_skills.overhead_slash_dmg_proportion
 	var damage: float = base_damage * damage_multiplier
 	var damage_flank = damage + player.flank_dmg 
 	var critical_damage : float  = damage * player.critical_strength
@@ -473,7 +473,13 @@ func risingSlashCD()-> void:
 	player.rising_slash_duration = false
 func risingSlashDMG()-> void:
 	var damage_type:String = right_hand.get_child(0).damage_type
-	var damage:float = 5 + player.slash_dmg 
+	var base_damage:float = player.all_skills.rising_slash_damage + player.slash_dmg+  player.pierce_dmg
+	var points: int = player.rising_icon.points
+	var damage_multiplier: float = 1.0
+	var total_damage: float
+	if points > 1:
+			damage_multiplier += (points - 1) * player.all_skills.rising_slash_dmg_proportion
+	var damage = base_damage * damage_multiplier	
 	var damage_flank: float = damage + player.flank_dmg 
 	var critical_damage: float  = damage * player.critical_strength
 	var critical_flank_damage : float  = damage_flank * player.critical_strength
@@ -482,8 +488,9 @@ func risingSlashDMG()-> void:
 	var punishment_damage_type :String = "slash"
 	var aggro_power:float = player.threat_power
 	var push_distance:float = 1 * player.total_impact
+	var stagger_chance: float = 100
 	var enemies:Array = area_melee_front.get_overlapping_bodies()
-	dealDMG(enemies,null,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,player.stagger_chance)
+	dealDMG(enemies,null,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,stagger_chance)
 
 #Cyclone section
 #This skill is viable for all melee weapon types EXCEPT FIST WEAPONS

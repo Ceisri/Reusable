@@ -40,8 +40,8 @@ func _ready()->void:
 	l_click_slot.switchAttackIcon()
 	colorBodyParts()
 func _on_SlowTimer_timeout()->void:
+	allResourcesBarsAndLabels()
 	if health >0:
-		allResourcesBarsAndLabels()
 		potionEffects()
 		if $UI/GUI/Equipment.visible == true :
 			current_race_gender.EquipmentSwitch()
@@ -386,6 +386,20 @@ var touch_start_position: Vector2 = Vector2.ZERO
 var zoom_speed: float = 0.1
 var mouse_sense: float = 0.1
 
+
+var aiming_mode: String = "directional"
+onready var aim_label: Label = $UI/GUI/Menu/AimingMode/AimLabel
+func _on_AimingMode_pressed():
+		if aiming_mode == "camera":
+			aiming_mode = "directional"
+			aim_label.text = aiming_mode
+		else:
+			aiming_mode = "camera"
+			aim_label.text = aiming_mode
+func directionToCamera():#put this on attacks 
+	if aiming_mode =="camera":
+		direction = -camera.global_transform.basis.z
+
 func fieldOfView():
 	if is_sprinting:
 		if camera.fov < 110:
@@ -435,7 +449,6 @@ func stiffCamera()-> void:
 #		if direction != Vector3.ZERO and is_climbing:
 #			player_mesh.rotation.y = -(atan2($ClimbRay.get_collision_normal().z,$ClimbRay.get_collision_normal().x) - PI/2)
 	else: # Normal turn movement mechanics
-		strafe = lerp(strafe, strafe_dir + Vector3.RIGHT * aim_turn, get_physics_process_delta_time() * acceleration)
 		player_mesh.rotation.y = lerp_angle(player_mesh.rotation.y, atan2(direction.x, direction.z) - rotation.y, get_physics_process_delta_time() * angular_acceleration)
 func minimapFollow()-> void:# Update the position of the minimap camera
 	minimap_camera.translation = Vector3(translation.x, translation.y + 30,translation.z)
@@ -589,7 +602,7 @@ var cyclone_combo:bool = false
 var whirlwind_duration:bool = false
 var whirlwind_combo:bool = false
 #___________________________________________________________________________________________________
-var counter_strike_duration:bool = false
+var staggered_duration:bool = false
 var taunt_duration:bool = false
 var state = autoload.state_list.idle
 func animationCancel()->void:
@@ -623,10 +636,14 @@ func matchAnimationStates()-> void:
 		state == autoload.state_list.guard
 		animationCancel()
 #_______________________________________Overhead Slash______________________________________________
+	if staggered_duration == true:
+		animation.play("staggered",blend)
+		animationCancel()
 	if overhead_slash_duration == true:
+		directionToCamera()
 		is_in_combat = true
 		clearParryAbsorb()
-		moveDuringAnimation(1.5)
+		moveDuringAnimation(4)
 		match weapon_type:
 					autoload.weapon_list.sword:
 						if overhead_slash_combo == false:
@@ -650,6 +667,7 @@ func matchAnimationStates()-> void:
 							animation.play("overhead slash heavy",blend, melee_atk_speed + 0.6)	
 #___________________________________________________________________________________________________
 	elif taunt_duration == true:
+		directionToCamera()
 		can_walk = false
 		is_in_combat = true
 		is_walking = false
@@ -662,9 +680,10 @@ func matchAnimationStates()-> void:
 
 #Rising slash____________________________________________________________________________________
 	elif rising_slash_duration == true:
+		directionToCamera()
 		is_in_combat = true
 		clearParryAbsorb()
-		moveDuringAnimation(4)
+		moveDuringAnimation(6)
 		match weapon_type:
 					autoload.weapon_list.sword:
 						animation.play("rising slash shield",blend, melee_atk_speed + 0.35)
@@ -676,6 +695,7 @@ func matchAnimationStates()-> void:
 						animation.play("rising slash heavy",blend,melee_atk_speed + 0.35)
 #Cyclone____________________________________________________________________________________________
 	elif cyclone_duration == true:
+		directionToCamera()
 		is_in_combat = true
 		clearParryAbsorb()
 		if all_skills.can_cyclone == true:
@@ -710,6 +730,7 @@ func matchAnimationStates()-> void:
 			returnToIdleBasedOnWeaponType()
 #Whirlwind__________________________________________________________________________________________
 	elif whirlwind_duration == true :
+		directionToCamera()
 		is_in_combat = true
 		clearParryAbsorb()
 		if all_skills.can_whirlwind == true:
@@ -734,6 +755,7 @@ func matchAnimationStates()-> void:
 			whirlwind_duration = false
 			returnToIdleBasedOnWeaponType()
 	elif heart_trust_duration == true :
+		directionToCamera()
 		is_in_combat = true
 		clearParryAbsorb()
 		if all_skills.can_heart_trust == true:
@@ -767,6 +789,7 @@ func matchAnimationStates()-> void:
 							moveDuringAnimation(sprint_speed)
 					can_walk = true
 				autoload.state_list.base_attack:
+					directionToCamera()
 					is_in_combat = true
 					if weapon_type == autoload.weapon_list.bow:
 						can_walk = false
@@ -902,8 +925,11 @@ func skills(slot)-> void:
 	if slot != null:
 			if slot.texture != null:
 				if slot.texture.resource_path == autoload.dodge.get_path():
-					if all_skills.can_dodge == true:
-						all_skills.dodgeCD()
+					if dodge_animation_duration ==0:
+						if all_skills.can_dodge == true:
+							all_skills.dodgeCD()
+						else:
+							returnToIdleBasedOnWeaponType()
 					else:
 						returnToIdleBasedOnWeaponType()
 				elif slot.texture.resource_path == "res://UI/graphics/SkillIcons/selfheal.png":
@@ -931,13 +957,13 @@ func skills(slot)-> void:
 					match weapon_type:
 						autoload.weapon_list.sword:
 							animation.play("combo sword",blend,melee_atk_speed+ 0.15)
-							moveDuringAnimation(1)
+							moveDuringAnimation(2.7)
 						autoload.weapon_list.sword_shield:
-							animation.play("combo shield",blend,melee_atk_speed)
-							moveDuringAnimation(1.5)
+							animation.play("combo shield",blend,melee_atk_speed+ 0.2)
+							moveDuringAnimation(2.7)
 						autoload.weapon_list.dual_swords:
-							animation.play("combo dual swords",blend,melee_atk_speed+ 0.2)
-							moveDuringAnimation(1.5)
+							animation.play("combo dual swords",blend,melee_atk_speed+ 0.3)
+							moveDuringAnimation(2.7)
 				elif slot.texture.resource_path == autoload.block_shield.get_path():
 					if resolve > 0:
 						is_walking = false
@@ -1172,7 +1198,7 @@ func returnToIdleBasedOnWeaponType():
 func moveDuringAnimation(speed):
 	if !is_on_wall():
 		if current_race_gender.can_move == true:
-			horizontal_velocity = direction * speed  
+			horizontal_velocity = direction * speed 
 			movement_speed = speed
 		elif current_race_gender.can_move == false:
 			horizontal_velocity = direction * 0
@@ -1336,9 +1362,8 @@ func clearParryAbsorb():
 	absorbing = false
 	is_aiming = false
 func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
-	allResourcesBarsAndLabels()
-	var text = autoload.floatingtext_damage.instance()
-	if parry == false:
+		allResourcesBarsAndLabels()
+		var text = autoload.floatingtext_damage.instance()
 		if all_skills.masochism >0:
 			nefis += damage * 0.5
 		var random = randf()
@@ -1464,14 +1489,18 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
 			if instigator.has_method("lifesteal"):
 				instigator.lifesteal(damage_to_take)
 				
+		if random < stagger_chance - stagger_resistance:
+				state = autoload.state_list.staggered
+				staggered_duration = true
+				text.status = "Staggered"
+				
 		health -= damage_to_take
 		text.amount =round(damage_to_take * 100)/ 100
 		text.state = damage_type
 		take_damage_view.add_child(text)
-	else:
-		text.status = "Parried"
-		text.state = damage_type
-		take_damage_view.add_child(text)
+		
+		
+		
 func takeHealing(healing,healer):
 	health += healing
 	var text = autoload.floatingtext_damage.instance()
@@ -1728,8 +1757,7 @@ func setSkillTreeOwner():
 func skillMouseEntered(tree, index):
 	var button = tree.get_node("skill" + str(index))
 	var icon_texture = button.get_node("Icon").texture
-	var instance = preload("res://tooltip.tscn").instance()
-	UniversalToolTip(icon_texture,instance)
+	UniversalToolTip(icon_texture)
 func skillMouseExited(index):
 	deleteTooltip()
 	
@@ -1741,7 +1769,9 @@ func resetSkills(tree):
 			child.skillPoints()
 			skill_points_spent = 0 
 	
-func UniversalToolTip(icon_texture,instance):
+func UniversalToolTip(icon_texture):
+	var instance = preload("res://tooltip.tscn").instance()
+	var instance_skills = preload("res://tooltipSkills.tscn").instance()
 	if icon_texture != null:
 		#consumablaes
 		if icon_texture.get_path() == autoload.red_potion.get_path():
@@ -1766,7 +1796,7 @@ func UniversalToolTip(icon_texture,instance):
 			callToolTip(instance,"Farmer Pants","+3 slash resistance.\n +1 pierce resistance.\n +12 heat resistance.\n +12 cold resistance.")
 		elif icon_texture.get_path() == autoload.shoe1.get_path():
 			callToolTip(instance,"Farmer Shoe","+1 slash resistance.\n +1 blunt resistance.\n +3 pierce resistance.\n +1 heat resistance.\n +6 cold resistance.\n +15 jolt resistance.\n")
-#_____________________________________sword skill and abilities_____________________________________
+
 		elif icon_texture.get_path() == autoload.cyclone.get_path():
 			var base_damage: float = all_skills.cyclone_damage + slash_dmg
 			var points: int = cyclone_icon.points
@@ -1775,8 +1805,15 @@ func UniversalToolTip(icon_texture,instance):
 			if points > 1:
 				damage_multiplier += (points - 1) * 0.05
 			total_damage = base_damage * damage_multiplier
-			callToolTip(instance,"Cyclone\n","Total Damage: "+ str(total_damage) + "\n " +str(all_skills.cyclone_description))
+			var total_value = str("Damage: ") + str(total_damage) + "per hit"
+			var cost = "Cost: " + str(all_skills.cyclone_cost) + " Resolve"
+			var description: String = all_skills.cyclone_description
+			var cooldown = str("Cooldown: ") + str(all_skills.cyclone_cooldown)+ str("Resolve")
+			var extra:String = "AOE, Stagger, Movement"
+			callToolTipSkill(instance_skills,"cyclone",total_value,cost,extra,cooldown,description)
 		elif icon_texture.get_path() == autoload.whirlwind.get_path():
+			var cooldown:float = all_skills.whirlwind_cooldown
+			var description: String = all_skills.whirlwind_description
 			var base_damage: float = all_skills.whirlwind_damage + slash_dmg
 			var points: int =  whirlwind_icon.points
 			var health_ratio: float = float(health) / float(max_health)
@@ -1788,9 +1825,10 @@ func UniversalToolTip(icon_texture,instance):
 			# Health-based additional damage
 			var additional_damage_per_3_percent: float = 1.0
 			var additional_damage: float = (missing_health_percentage / 0.03) * additional_damage_per_3_percent
-
+			
 			total_damage = (base_damage * damage_multiplier) + additional_damage
-			callToolTip(instance,"Desperate Slash","Total Damage: "+ str(total_damage) + " per hit\n" +str(all_skills.whirlwind_description))
+			
+			callToolTip(instance,"Desperate Slash","Damage: "+ str(total_damage) + " per hit\n" + "Cooldown:"+ str(cooldown) +str(description))
 
 		elif icon_texture.get_path() == autoload.overhead_slash.get_path():
 			var base_damage: float = all_skills.overhead_slash_damage + slash_dmg + blunt_dmg
@@ -1798,9 +1836,29 @@ func UniversalToolTip(icon_texture,instance):
 			var damage_multiplier: float = 1.0
 			var total_damage: float
 			if points > 1:
-				damage_multiplier += (points - 1) * 0.04
+				damage_multiplier += (points - 1) * all_skills.overhead_slash_dmg_proportion
 			total_damage = base_damage * damage_multiplier
-			callToolTip(instance,"Overhead Slash",all_skills.overhead_slash_description)
+			callToolTip(instance,"Overhead Slash","Total Damage: "+ str(total_damage) + "\n" +all_skills.overhead_slash_description)
+	
+		elif icon_texture.get_path() == autoload.rising_slash.get_path():
+			var base_damage: float = all_skills.rising_slash_damage + slash_dmg + pierce_dmg
+			var points: int = rising_icon.points
+			var damage_multiplier: float = 1.0
+			var total_damage: float
+			if points > 1:
+				damage_multiplier += (points - 1) * all_skills.rising_slash_dmg_proportion
+			total_damage = base_damage * damage_multiplier
+			callToolTip(instance,"Rising Slash","Total Damage: "+ str(total_damage)+ " per hit \n" +str(all_skills.rising_slash_description))
+		elif icon_texture.get_path() == autoload.heart_trust.get_path():
+			var base_damage: float = all_skills.rising_slash_damage + slash_dmg + pierce_dmg
+			var points: int = rising_icon.points
+			var damage_multiplier: float = 1.0
+			var total_damage: float
+			if points > 1:
+				damage_multiplier += (points - 1) * all_skills.rising_slash_dmg_proportion
+			total_damage = base_damage * damage_multiplier
+			callToolTip(instance,"Heart Trust","Total Damage: "+ str(total_damage) +str(all_skills.heart_trust_description))
+
 		elif icon_texture.get_path() == autoload.dodge.get_path():
 			callToolTip(instance,"Dodge Slide",autoload.dodge_description)
 #_______________________________________Inventory system____________________________________________
@@ -1868,12 +1926,15 @@ func inventoryMouseEntered(index):
 	var button = inventory_grid.get_node("InventorySlot" + str(index))
 	var icon_texture = button.get_node("Icon").texture
 	var instance = preload("res://tooltip.tscn").instance()
-	UniversalToolTip(icon_texture,instance)
+	var instance2 = preload("res://tooltip.tscn").instance()
+	UniversalToolTip(icon_texture)
 
 func inventoryMouseExited(index):
 	deleteTooltip()
 
-
+func callToolTipSkill(instance,title,total_value,base_value,cost,cooldown,description):
+		gui.add_child(instance)
+		instance.showTooltip(title,total_value,base_value,cost,cooldown,description)
 func callToolTip(instance,title,text):
 		gui.add_child(instance)
 		instance.showTooltip(title,text)
@@ -1937,7 +1998,7 @@ func skillBarMouseEntered(index):
 	var button = skill_bar_grid.get_node("Slot" + str(index))
 	var icon_texture = button.get_node("Icon").texture
 	var instance = preload("res://tooltip.tscn").instance()
-	UniversalToolTip(icon_texture,instance)
+	UniversalToolTip(icon_texture)
 	
 func skillBarMouseExited(index):
 	deleteTooltip()
@@ -4477,6 +4538,7 @@ func savePlayerData():
 	
 	current_race_gender.savePlayerData()
 	var data = {
+		"aiming_mode":aiming_mode,
 		"sex": sex,
 		"species":species,
 		
@@ -4602,6 +4664,8 @@ func loadPlayerData():
 		if error == OK:
 			var player_data = file.get_var()
 			file.close()
+			if "aiming_mode" in player_data:
+				aiming_mode = player_data["aiming_mode"]
 			if "sex" in player_data:
 				sex = player_data["sex"]
 			if "species" in player_data:
@@ -4820,15 +4884,7 @@ func _on_pressme2_pressed():
 	neuro_resistance= rng.randi_range(-125, 125)
 	radiant_resistance= rng.randi_range(-125, 125)
 
-var aiming_mode: String = "directional"
-onready var aim_label: Label = $UI/GUI/Menu/AimingMode/AimLabel
-func _on_AimingMode_pressed():
-		if aiming_mode == "camera":
-			aiming_mode = "directional"
-			aim_label.text = aiming_mode
-		else:
-			aiming_mode = "camera"
-			aim_label.text = aiming_mode
+
 var species: String = "human"
 var sex: String = "xx"
 var current_race_gender: Node = null 

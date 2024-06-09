@@ -384,9 +384,9 @@ var max_vifis = 100
 var vifis = 100 
 
 #health system 
-const base_max_health = 2000
-var max_health = 2000
-var health = 2000
+const base_max_health = 600
+var max_health = 600
+var health = 600
 #________________________
 
 
@@ -486,9 +486,14 @@ func dealDMG(enemy_detector1,critical_damage,aggro_power,damage_type,critical_fl
 			if victim != self:
 				if victim.state != autoload.state_list.dead:
 						if randf() <= critical_chance:#critical hit
-							if victim.absorbing == true or victim.parry == true: #victim is guarding
+							if victim.absorbing == true: #victim is guarding
 								if isFacingSelf(victim,0.30): #the victim is looking face to face at self 
 									victim.takeDamage(critical_damage/victim.guard_dmg_absorbition,aggro_power,self,stagger_chance,damage_type)
+								else: #apparently the victim is showing his back or flanks while guarding, flank damage + punishment damage
+									victim.takeDamage(critical_flank_damage + punishment_damage,aggro_power,self,stagger_chance,punishment_damage_type)
+							elif victim.parry == true: 
+								if isFacingSelf(victim,0.30): #the victim is looking face to face at self
+									victim.takeDamage(0,aggro_power,self,0,damage_type)
 								else: #apparently the victim is showing his back or flanks while guarding, flank damage + punishment damage
 									victim.takeDamage(critical_flank_damage + punishment_damage,aggro_power,self,stagger_chance,punishment_damage_type)
 							else:#player is guarding
@@ -498,12 +503,16 @@ func dealDMG(enemy_detector1,critical_damage,aggro_power,damage_type,critical_fl
 									victim.takeDamage(critical_flank_damage + punishment_damage,aggro_power,self,stagger_chance,punishment_damage_type)
 ##______________________________________________________________normal hit_______________________________________________________________________________________________
 						else: 
-							if victim.absorbing == true or victim.parry == true: #victim is guarding
+							if victim.absorbing == true:#victim is guarding
 								if isFacingSelf(victim,0.30): #the victim is looking face to face at self 
 									victim.takeDamage(damage/victim.guard_dmg_absorbition,aggro_power,self,stagger_chance,damage_type)
 								else: #apparently the victim is showing his back or flanks while guard, flank damage + punishment damage
 									victim.takeDamage(damage_flank + punishment_damage,aggro_power,self,stagger_chance,punishment_damage_type)
-							#victim is not guarding
+							elif victim.parry == true:
+								if isFacingSelf(victim,0.30): #the victim is looking face to face at self 
+									victim.takeDamage(0,aggro_power,self,0,damage_type)
+								else: #apparently the victim is showing his back or flanks while guard, flank damage + punishment damage
+									victim.takeDamage(damage_flank + punishment_damage,aggro_power,self,stagger_chance,punishment_damage_type)
 							else:
 								if isFacingSelf(victim,0.30):#the victim is looking face to face at self 
 									victim.takeDamage(damage,aggro_power,self,stagger_chance,damage_type)
