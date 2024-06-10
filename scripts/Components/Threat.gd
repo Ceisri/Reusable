@@ -208,22 +208,28 @@ func loseThreat()->void: #call this function every few ticks to lose threat from
 			if is_instance_valid(assailant):
 				if assailant != null:
 					if assailant.player != null:
-						var distance = assailant.player.global_transform.origin.distance_to(parent_position)
-						# Calculate reduction based on distance range
-						var reduction:int = 0#Decrease the aggro of all targets based on distance to parent
-						if distance <= close_range:
-							reduction = 0
-						elif distance >= middle_range:
-							reduction = 1
-						elif distance > middle_range * 1.5:
-							reduction = 25
-						# Ensure the reduction doesn't exceed the current threat
-						assailant.threat = max(0, assailant.threat - reduction)
+						
+						if assailant.player.health <= 0:
+							assailant.threat = 0
+						else:
+							var distance = assailant.player.global_transform.origin.distance_to(parent_position)
+							# Calculate reduction based on distance range
+							var reduction:int = 0#Decrease the aggro of all targets based on distance to parent
+							if distance <= close_range:
+								reduction = 0
+							elif distance >= middle_range:
+								reduction = 1
+							elif distance > middle_range * 1.5:
+								reduction = 25
+							# Ensure the reduction doesn't exceed the current threat
+							assailant.threat = max(0, assailant.threat - reduction)
 	var all_zero_threat = true
 	for assailant in targets:
 		if assailant.threat > 0:#Check if all targets have zero threat
 			all_zero_threat = false
 			break
+			
+			
 	if get_parent().health > 0:
 		if get_parent().state != autoload.state_list.staggered:
 			if all_zero_threat: #if no player or entity  has any threat towards the parent of this node, return to a harmless state

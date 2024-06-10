@@ -23,7 +23,11 @@ func _ready()->void:
 	process.start(autoload.entity_tick_rate + rand_range(0, 0.015)) 
 
 func process()->void:
+	autoload.entityGravity(self)
+	moveAside()
+	matchState()	
 	if health >0:
+		threat_system.loseThreat()
 		if staggered_duration == true:
 			state = autoload.state_list.staggered
 	if health <=0:
@@ -32,11 +36,6 @@ func process()->void:
 			if has_died == true:
 				state = autoload.state_list.dead
 	
-	moveAside()
-	matchState()
-	autoload.entityGravity(self)
-
-	threat_system.loseThreat()
 func oneSecondTimer()->void:
 	effectDurations()
 
@@ -68,39 +67,42 @@ func matchState()->void:
 		autoload.state_list.curious:
 			lookTarget()
 		autoload.state_list.engage:
-			if staggered_duration == false:
-				if health >0:
-					var  distance_to_target = findDistanceTarget()
-					if distance_to_target != null:
-						if distance_to_target > 1.4:
-							if  atk_1_duration == false and atk_2_duration == false and atk_3_duration == false and atk_4_duration == false:
-								changeAttackType()
-								lookTarget()
-								followTarget(false)
-								animation.play("walk combat",0.3)
-						else:
-							lookTarget()
-							if random_atk < 0.25:  # 25% chance
-								atk_1_duration = true
-							elif random_atk < 0.50:  # 25% chance
-								atk_2_duration = true
-							elif random_atk < 0.75:  # 25% chance
-								atk_3_duration = true
-							else:  # 25% chance
-								atk_4_duration = true
-				if atk_1_duration == true:
-					animation.play("triple slash", 0.25)
-				elif atk_2_duration == true:
-					animation.play("chop sword", 0.3)
-				elif atk_3_duration == true:
-					animation.play("heavy swing", 0.3)
-				elif atk_4_duration == true:
-					animation.play("spin", 0.3)
-					
-			else:
-				state = autoload.state_list.staggered
+			if stunned_duration > 0:
+				state = autoload.state_list.stunned
 				animation.play("staggered",0.2)
-			
+				
+			else:
+				if staggered_duration == false:
+					if health >0:
+						var  distance_to_target = findDistanceTarget()
+						if distance_to_target != null:
+							if distance_to_target > 1.4:
+								if  atk_1_duration == false and atk_2_duration == false and atk_3_duration == false and atk_4_duration == false:
+									changeAttackType()
+									lookTarget()
+									followTarget(false)
+									animation.play("walk combat",0.3)
+							else:
+								lookTarget()
+								if random_atk < 0.25:  # 25% chance
+									atk_1_duration = true
+								elif random_atk < 0.50:  # 25% chance
+									atk_2_duration = true
+								elif random_atk < 0.75:  # 25% chance
+									atk_3_duration = true
+								else:  # 25% chance
+									atk_4_duration = true
+					if atk_1_duration == true:
+						animation.play("triple slash", 0.25)
+					elif atk_2_duration == true:
+						animation.play("chop sword", 0.3)
+					elif atk_3_duration == true:
+						animation.play("heavy swing", 0.3)
+					elif atk_4_duration == true:
+						animation.play("spin", 0.3)
+				else:
+					state = autoload.state_list.staggered
+					animation.play("staggered",0.2)
 		autoload.state_list.orbit:
 			if staggered_duration == false:
 				if orbit_time > 0:
@@ -109,6 +111,8 @@ func matchState()->void:
 					lookTarget()
 				else:
 					state = autoload.state_list.engage
+		autoload.state_list.stunned:
+			animation.play("staggered",0.2)
 		autoload.state_list.staggered:
 			animation.play("staggered",0.2)
 		autoload.state_list.dead:
@@ -125,11 +129,8 @@ func animationCancel()->void:
 	atk_2_duration = false
 	atk_3_duration = false
 	atk_4_duration = false
-
-
 onready var wall_check_ray:RayCast = $RayStraightLonger
 onready var check_floor_ray: RayCast = $RayCheckFloor
-
 func forceDirectionChange() -> void:
 	var collider = wall_check_ray.get_collider()
 	var collider_floor = check_floor_ray.get_collider()
@@ -140,7 +141,6 @@ func forceDirectionChange() -> void:
 	if not collider_floor:
 		tween.interpolate_property(self, "rotation_degrees:y", self.rotation_degrees.y, self.rotation_degrees.y + 90, 0.5, Tween.TRANS_LINEAR, Tween.EASE_OUT)
 		tween.start()
-			
 var orbit_time:float = 5
 onready var ray_straight: RayCast = $RayStraight
 func moveAside()->void: #move to the side to leave space for other enemies
@@ -154,7 +154,6 @@ func moveAside()->void: #move to the side to leave space for other enemies
 						orbit_time = 1.5
 					elif body.is_in_group("Player"):
 							state = autoload.state_list.engage
-
 var direction: Vector3
 onready var tween = $Tween
 func slideForward() -> void:
@@ -189,10 +188,8 @@ func slideForward2() -> void:
 			tween.start()
 		else:
 			tween.stop_all()
-	
 func stopSlidingForward()-> void:
 	tween.stop_all()
-
 onready var eyes = $Eyes
 var turn_speed = 9
 func lookTarget()->void:
@@ -200,7 +197,6 @@ func lookTarget()->void:
 	if target: 
 		eyes.look_at(target.player.global_transform.origin, Vector3.UP)
 		rotate_y(deg2rad(eyes.rotation.y * turn_speed))
-
 var walk_speed: float = 3
 func followTarget(angry:bool)->void:
 	if angry == false:
@@ -249,8 +245,6 @@ func findDistanceTarget():
 # Declare class variables
 var speed: float = 3.0
 var rotation_speed: float = 2.0
-
-
 
 onready var take_damage_audio = $TakeHit
 
@@ -353,7 +347,6 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type)->v
 var entity_name = "Demon"
 var level: int = 100
 
-
 const base_weight = 60
 var weight = 60
 const base_walk_speed = 6
@@ -452,9 +445,10 @@ func isFacingSelf(enemy: Node, threshold: float) -> bool:
 
 var stored_instigator:KinematicBody 
 var bleeding_duration:float = 0
+var stunned_duration:float = 0
 func effectDurations():
+
 	if bleeding_duration > 0:
-		print(bleeding_duration )
 		if stored_instigator == null:
 			pass
 		else:
@@ -464,6 +458,13 @@ func effectDurations():
 		bleeding_duration -= 1
 	else:
 		applyEffect("bleeding",false)
+	if stunned_duration > 0:
+		state = autoload.state_list.stunned
+		applyEffect("stunned",true)
+		stunned_duration -= 1
+	else:
+		state = autoload.state_list.engage
+		applyEffect("stunned",false)
 	
 
 
@@ -620,6 +621,8 @@ func dealDMG(enemy_detector1,critical_damage,aggro_power,damage_type,critical_fl
 	for victim in enemy_detector1:
 		if victim.is_in_group("Player"):
 			if victim != self:
+				victim.stored_instigator = self 
+				victim.stunned_duration = 10
 				if victim.state != autoload.state_list.dead:
 						if randf() <= critical_chance:#critical hit
 							if victim.absorbing == true: #victim is guarding

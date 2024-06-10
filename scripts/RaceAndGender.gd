@@ -633,14 +633,14 @@ func HeartTrustDMG()->void:
 
 onready var area_mid_range:Area = $MidRangeAOE
 func tauntEffect():
+	player.berserk_duration = 6
 	var enemies:Array = area_mid_range.get_overlapping_bodies()
 	for victim in enemies:
 		if victim.is_in_group("enemy"):
 			if victim != self:
 				if victim.health > 0:
 					victim.takeThreat(150,player)
-					victim.staggered_duration = true
-					victim.animation.play("staggered",0.2)
+					victim.stunned_duration = 2.5
 func tauntCD()->void:
 	player.taunt_duration = false
 	player.all_skills.tauntCD()

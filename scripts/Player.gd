@@ -40,6 +40,7 @@ func _ready()->void:
 	l_click_slot.switchAttackIcon()
 	colorBodyParts()
 func _on_SlowTimer_timeout()->void:
+	effectDurations()
 	allResourcesBarsAndLabels()
 	if health >0:
 		potionEffects()
@@ -2548,7 +2549,7 @@ var effects = {
 	"redpotion": {"stats": {}, "applied": false},
 	
 #_________________________________________________Buffs ____________________________________________
-	"berserk": {"stats": {"extra_intelligence": -0.5,"extra_balance": -0.5,"extra_agility": 0.5,"extra_melee_atk_speed": 1,"extra_ranged_atk_speed": 0.5,"extra_casting_atk_speed": 0.3,"extra_ferocity": 0.3,"extra_fury": 0.3,}, "applied": false},
+	"berserk": {"stats": {"extra_intelligence": -0.5,"extra_balance": -0.5,"extra_agility": 0.5,"extra_melee_atk_speed": 1,"extra_range_atk_speed": 0.5,"extra_cast_atk_speed": 0.3,"extra_ferocity": 0.3,"extra_fury": 0.3,}, "applied": false},
 	
 	#equipment effects______________________________________________________________________________
 	"helm1": {"stats": {"blunt_resistance": 3,"heat_resistance": 6,"cold_resistance": 3,"radiant_resistance": 6}, "applied": false},
@@ -2583,7 +2584,35 @@ func applyEffect(effect_name: String, active: bool)->void:
 
 
 
+var stored_instigator:KinematicBody 
+var bleeding_duration:float = 0
+var stunned_duration:float = 0
 
+var berserk_duration:float = 0 
+func effectDurations():
+	print(str(berserk_duration) + str("+berserk_duration"))
+	if bleeding_duration > 0:
+		if stored_instigator == null:
+			pass
+		else:
+			var damage: float = autoload.bleed_dmg +stored_instigator.bleed_dmg
+			takeDamage(damage,damage,stored_instigator,0,"bleed")
+		applyEffect("bleeding",true)
+		bleeding_duration -= 1
+	else:
+		applyEffect("bleeding",false)
+	if stunned_duration > 0:
+		state = autoload.state_list.stunned
+		applyEffect("stunned",true)
+		stunned_duration -= 1
+	else:
+		state = autoload.state_list.engage
+		applyEffect("stunned",false)
+	if berserk_duration > 0:
+		berserk_duration -= 1
+		applyEffect("berserk",true)
+	else:
+		applyEffect("berserk",false)
 
 
 func showStatusIcon():
@@ -2970,6 +2999,8 @@ var base_flank_dmg : float = 5.0
 var flank_dmg: float =5.0 #extra damage to add to backstabs 
 
 var extra_melee_atk_speed : float = 0
+var extra_range_atk_speed : float = 0
+var extra_cast_atk_speed : float = 0
 
 
 var slash_dmg: int = 0 
@@ -3148,10 +3179,10 @@ func attackSpeedMath():
 	melee_atk_speed = base_melee_atk_speed + atk_speed_formula + bonus_universal_speed + extra_melee_atk_speed
 	
 	var atk_speed_formula_ranged = (total_strength -1) * 0.5
-	ranged_atk_speed = base_ranged_atk_speed + atk_speed_formula_ranged + bonus_universal_speed
+	ranged_atk_speed = base_ranged_atk_speed + atk_speed_formula_ranged + bonus_universal_speed+ extra_range_atk_speed
 	
 	var atk_speed_formula_casting = (total_instinct -1) * 0.35 + ((total_memory-1) * 0.05) + bonus_universal_speed
-	casting_speed = base_casting_speed + atk_speed_formula_casting	
+	casting_speed = base_casting_speed + atk_speed_formula_casting	+ extra_cast_atk_speed
 
 func resistanceMath():
 	var additional_resistance: float  = 0

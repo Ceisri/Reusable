@@ -515,7 +515,7 @@ func updateHeartTrust(label: Label, cooldown: float, current_time: float, last_t
 		label.text = ""
 		can_heart_trust = true
 #___________________________________________________________________________________________________
-var taunt_cooldown: float = 3
+var taunt_cooldown: float = 12
 var last_taunt_time: float = 0.0 
 var taunt_cost: float = 7
 func tauntCD():
