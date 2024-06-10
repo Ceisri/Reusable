@@ -1,7 +1,7 @@
 extends Node
 
 #____________________________________________Perforance_____________________________________________
-var entity_tick_rate: float = 0.05
+var entity_tick_rate: float = 0.04
 #____________________________________________Enumerators____________________________________________
 enum state_list{
 	idle,#1
@@ -121,7 +121,7 @@ onready var arcane_blast =  preload("res://Classes/Ability Icons/Magic Icons1/5.
 onready var punch = preload("res://UI/graphics/SkillIcons/fist.png")
 onready var guard = preload("res://Classes/handcombat/guard.png")
 onready var dodge = preload("res://Classes/handcombat/dodge.png")
-var dodge_description: String = "Damage type: Blunt\nDouble press Directional keys to displace enemies, evade, or maneuver behind them. Alternatively, drag and drop it onto the skill bar, then use your keyboard to activate."
+var dodge_description: String = "Slide in the chosen direction to evade attacks, becoming invincible for the duration and pushing back foes you collide with.\n Sliding between their legs allows you to maneuver and get behind them.\n\n Double press DIRECTIONAL KEYS alternatively, drag and drop it onto the skill bar, then use your keyboard to activate."
 #sword______________________________________________________________________________________________
 onready var slash_sword =  preload("res://Classes/Swordsmen/slash.png")
 onready var guard_sword =  preload("res://Classes/Swordsmen/cross parry.png")
@@ -137,31 +137,15 @@ var full_draw_damage: float = 5
 
 #sword_skills
 onready var overhead_slash =  preload("res://Classes/Swordsmen/overhand slash.png")
-var overhead_slash_damage: float = 12.5
-var overhead_slash_cost: float = 5
+
 var overhead_slash_description: String = "Damage type: Slash\n+4% compounding extra damage per skill level\n +SLASH DAMAGE + BLUNT DAMAGE\n Strike foes in front of you with a downward stroke"
 #___________________________________________________________________________________________________
-onready var underhand_slash =  preload("res://Classes/Swordsmen/underhand_slash.png")
+onready var rising_slash =  preload("res://Classes/Swordsmen/underhand_slash.png")
 
 onready var heart_trust : Texture = preload("res://Classes/Swordsmen/thrust.png")
 onready var taunt : Texture = preload("res://Classes/Swordsmen/scream.png")
-
-
-
-#___________________________________________________________________________________________________
-onready var rising_slash =  preload("res://Classes/Swordsmen/flury of blows.png")
-var rising_slash_damage: float = 3
-#___________________________________________________________________________________________________
-onready var counter_strike =  preload("res://Classes/Swordsmen/counter strike.png")
-var counter_strike_damge:float  = 7.5
-var counter_strike_cost:float  = 5
 #___________________________________________________________________________________________________
 onready var cyclone =  preload("res://Classes/Swordsmen/cyclone.png")
-var cyclone_damage: float = 7
-var cyclone_cooldown: float = 2
-var cyclone_cost: float = 5
-var cyclone_motion: float = 2.25
-var cyclone_description: String = "Damage type: Slash\n+5% compounding extra damage per skill level                +SLASH DAMAGE                                                               'spin and slash foes around you in an area attack, each foe can be hit up to 3 times"
 #___________________________________________________________________________________________________
 onready var whirlwind =  preload("res://Classes/Swordsmen/whirlwind.png")
 #___________________________________________________________________________________________________
@@ -170,6 +154,101 @@ var base_fury_strike_damage: float = 5
 #___________________________________________________________________________________________________
 onready var rising_fury =  preload("res://Classes/Swordsmen/scream.png")
 var rising_fury_threat: float = 25
+
+
+#__________________________________EFFECTS AND RELATED STUFF________________________________________
+
+var bleed_dmg: float = 10
+
+	# Preload textures
+var dehydration_texture = preload("res://waterbubbles.png")
+var overhydration_texture = preload("res://waterbubbles.png")
+var bloated_texture = preload("res://UI/graphics/mushrooms/PNG/background/28.png")
+var hungry_texture = preload("res://DebuffIcons/Hungry.png")
+var bleeding_texture = preload("res://DebuffIcons/bleed.png")
+var stunned_texture = preload("res://DebuffIcons/stunned.png")
+var frozen_texture = preload("res://DebuffIcons/frozen.png")
+var blinded_texture = preload("res://DebuffIcons/blinded.png")
+var terrorized_texture = preload("res://DebuffIcons/terrorized.png")
+var scared_texture = preload("res://DebuffIcons/scared.png")
+var intimidated_texture = preload("res://DebuffIcons/intimidated.png")
+var rooted_texture = preload("res://DebuffIcons/chained.png")
+var blockbuffs_texture = preload("res://DebuffIcons/blockbuffs.png")
+var block_active_texture = preload("res://DebuffIcons/blockactiveskills.png") 
+var block_passive_texture = preload("res://DebuffIcons/blockpassive.png")
+var broken_defense_texture = preload("res://DebuffIcons/broken defense.png") 
+var bomb_texture = preload("res://DebuffIcons/bomb.png") 
+var heal_reduction_texture = preload("res://DebuffIcons/healreduction.png")
+var slow_texture = preload("res://DebuffIcons/slow.png")
+var burn_texture = preload("res://DebuffIcons/burn.png")
+var sleep_texture = preload("res://DebuffIcons/sleep.png")
+var weakness_texture = preload("res://DebuffIcons/weakness.png")
+var poisoned_texture = preload("res://DebuffIcons/poisoned.png")
+var confusion_texture = preload("res://DebuffIcons/confusion.png")
+var impaired_texture = preload("res://DebuffIcons/impaired.png")
+var lethargy_texture = preload("res://DebuffIcons/Cooldown increased.png")
+var red_potion_texture = preload("res://Potions/Red potion.png")
+var berserk_texture = preload("res://Classes/Swordsmen/scream.png")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -295,7 +374,7 @@ func consumeRedPotion(player:KinematicBody, button: TextureButton,inventory_grid
 				if inventory_grid != null:
 					addStackableItem(inventory_grid, empty_potion, 1)
 	if player.has_method("applyEffect"):
-		player.applyEffect(player, "redpotion", true)
+		player.applyEffect("redpotion", true)
 		
 		
 func drawGlobalThreat(user):
@@ -375,3 +454,4 @@ onready var kadosiel:PackedScene =  preload("res://player/human/fem/mesh/body/Fe
 
 #___________________________________UI and other interface stuff____________________________________
 onready var floatingtext_damage = preload("res://UI/floatingtext.tscn")
+
