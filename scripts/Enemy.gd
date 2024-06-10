@@ -67,42 +67,42 @@ func matchState()->void:
 		autoload.state_list.curious:
 			lookTarget()
 		autoload.state_list.engage:
-			if stunned_duration > 0:
-				state = autoload.state_list.stunned
-				animation.play("staggered",0.2)
-				
-			else:
-				if staggered_duration == false:
-					if health >0:
-						var  distance_to_target = findDistanceTarget()
-						if distance_to_target != null:
-							if distance_to_target > 1.4:
-								if  atk_1_duration == false and atk_2_duration == false and atk_3_duration == false and atk_4_duration == false:
-									changeAttackType()
-									lookTarget()
-									followTarget(false)
-									animation.play("walk combat",0.3)
-							else:
-								lookTarget()
-								if random_atk < 0.25:  # 25% chance
-									atk_1_duration = true
-								elif random_atk < 0.50:  # 25% chance
-									atk_2_duration = true
-								elif random_atk < 0.75:  # 25% chance
-									atk_3_duration = true
-								else:  # 25% chance
-									atk_4_duration = true
-					if atk_1_duration == true:
-						animation.play("triple slash", 0.25)
-					elif atk_2_duration == true:
-						animation.play("chop sword", 0.3)
-					elif atk_3_duration == true:
-						animation.play("heavy swing", 0.3)
-					elif atk_4_duration == true:
-						animation.play("spin", 0.3)
-				else:
-					state = autoload.state_list.staggered
+			if health >0:#not dead
+#_______________________Entity is Stunned, Stop all attacks_______________________________________
+				if stunned_duration > 0:# not stunned 
+					animationCancel()
+					state = autoload.state_list.stunned
 					animation.play("staggered",0.2)
+#_______________________Entity is staggered, Stop all attacks_______________________________________
+				elif staggered_duration == true:
+					animationCancel()
+					state = autoload.state_list.staggered
+					animation.play("staggered",0.2)	
+#_______________________Entity is free to move and attack_______________________________________
+				else:
+					attackAnimations()
+					var  distance_to_target = findDistanceTarget()
+					if distance_to_target != null:
+#________________________Target in range start choosing an attack and lock it in____________________
+						if distance_to_target < 1.4:
+							if random_atk < 0.25:  # 25% chance
+								atk_1_duration = true
+							elif random_atk < 0.50:  # 25% chance
+								atk_2_duration = true
+							elif random_atk < 0.75:  # 25% chance
+								atk_3_duration = true
+							else:  # 25% chance
+								atk_4_duration = true
+							if  atk_1_duration == false and atk_2_duration == false and atk_3_duration == false and atk_4_duration == false:
+								lookTarget()
+#__________________Target too far away, if not stuck in attack animation, follow it_________________
+						else:
+							if  atk_1_duration == false and atk_2_duration == false and atk_3_duration == false and atk_4_duration == false:
+								changeAttackType()
+								lookTarget()
+								followTarget(false)
+								animation.play("walk combat",0.3)
+								
 		autoload.state_list.orbit:
 			if staggered_duration == false:
 				if orbit_time > 0:
@@ -123,6 +123,18 @@ func matchState()->void:
 					has_died = true
 			else:	
 				animation.play("dead",0.6)
+
+
+func attackAnimations()->void:
+	if atk_1_duration == true:
+		animation.play("triple slash", 0.25)
+	elif atk_2_duration == true:
+		animation.play("chop sword", 0.3)
+	elif atk_3_duration == true:
+		animation.play("heavy swing", 0.3)
+	elif atk_4_duration == true:
+		animation.play("spin", 0.3)
+
 
 func animationCancel()->void:
 	atk_1_duration = false
@@ -416,10 +428,7 @@ var radiant_resistance: int = 0
 
 var base_flank_dmg : float = 10.0
 var flank_dmg: float = 10.0 #extra damage to add to backstabs 
-
 var extra_melee_atk_speed : float = 0
-
-
 func isFacingSelf(enemy: Node, threshold: float) -> bool:
 	# Get the global transform of the enemy
 	var enemy_global_transform = enemy.global_transform
@@ -452,7 +461,7 @@ func effectDurations():
 		if stored_instigator == null:
 			pass
 		else:
-			var damage: float = autoload.bleed_dmg +stored_instigator.bleed_dmg
+			var damage: float = autoload.bleed_dmg 
 			takeDamage(damage,damage,stored_instigator,0,"bleed")
 		applyEffect("bleeding",true)
 		bleeding_duration -= 1

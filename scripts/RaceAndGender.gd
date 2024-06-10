@@ -363,7 +363,7 @@ func punch()->void:#fist
 onready var area_melee_front:Area = $MeleeFront
 func ComboHeavy1()->void:#Heavy
 	var damage_type:String = right_hand.get_child(0).damage_type
-	var damage:float = (5 + player.slash_dmg) * player.agility
+	var damage:float = 5 * player.agility
 	var damage_flank:float = damage + player.flank_dmg 
 	var critical_damage : float  = damage * player.critical_strength
 	var critical_flank_damage : float  = damage_flank * player.critical_strength
@@ -381,7 +381,7 @@ func ComboHeavy1()->void:#Heavy
 		dealDMG(victim,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,player.stagger_chance)
 func ComboHeavy2()->void:#Heavy
 	var damage_type:String = right_hand.get_child(0).damage_type
-	var damage:float = 8 + player.slash_dmg + player.blunt_dmg
+	var damage:float = 8 
 	var damage_flank:float = damage + player.flank_dmg 
 	var critical_damage : float  = damage * player.critical_strength
 	var critical_flank_damage : float  = damage_flank * player.critical_strength
@@ -399,7 +399,7 @@ func ComboHeavy2()->void:#Heavy
 		dealDMG(victim,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,player.stagger_chance)
 func ComboHeavy3()->void:#Heavy
 	var damage_type:String = right_hand.get_child(0).damage_type
-	var damage:float = 5 + player.slash_dmg 
+	var damage:float = 5 
 	var damage_flank:float = damage + player.flank_dmg 
 	var critical_damage : float  = damage * player.critical_strength
 	var critical_flank_damage : float  = damage_flank * player.critical_strength
@@ -418,7 +418,7 @@ func ComboHeavy3()->void:#Heavy
 func ComboHeavy4()->void:#Heavy
 	player.all_skills.activateComboCyclone()
 	var damage_type:String = right_hand.get_child(0).damage_type
-	var damage:float = 5 + player.slash_dmg 
+	var damage:float = 5 
 	var damage_flank = damage + player.flank_dmg 
 	var critical_damage : float  = damage * player.critical_strength
 	var critical_flank_damage : float  = damage_flank * player.critical_strength
@@ -436,7 +436,7 @@ func ComboHeavy4()->void:#Heavy
 		dealDMG(victim,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,player.stagger_chance)
 func ComboLight()->void:#Heavy
 	var damage_type:String = right_hand.get_child(0).damage_type
-	var damage:float = (2 + player.slash_dmg) 
+	var damage:float =2 
 	var damage_flank:float = damage + player.flank_dmg 
 	var critical_damage : float  = damage * player.critical_strength
 	var critical_flank_damage : float  = damage_flank * player.critical_strength
@@ -455,7 +455,7 @@ func ComboLight()->void:#Heavy
 #Cleave
 func cleaveDMG()->void:#Heavy
 	var damage_type:String = right_hand.get_child(0).damage_type
-	var damage:float = 3 + player.slash_dmg 
+	var damage:float = 3 
 	var damage_flank = damage + player.flank_dmg 
 	var critical_damage : float  = damage * player.critical_strength
 	var critical_flank_damage : float  = damage_flank * player.critical_strength
@@ -481,7 +481,7 @@ func overhandSlashCD()-> void:
 	player.all_skills.overheadSlashCD()
 func overhandSlashDMG()->void:
 	var damage_type:String = "slash"
-	var base_damage: float = player.all_skills.overhead_slash_damage  + player.slash_dmg  + player.blunt_dmg
+	var base_damage: float = player.all_skills.overhead_slash_damage
 	var points: int = player.overhead_icon.points
 	var damage_multiplier: float = 1.0
 	if points > 1:
@@ -510,7 +510,7 @@ func risingSlashCD()-> void:
 	player.rising_slash_duration = false
 func risingSlashDMG()-> void:
 	var damage_type:String = right_hand.get_child(0).damage_type
-	var base_damage:float = player.all_skills.rising_slash_damage + player.slash_dmg+  player.pierce_dmg
+	var base_damage:float = player.all_skills.rising_slash_damage 
 	var points: int = player.rising_icon.points
 	var damage_multiplier: float = 1.0
 	var total_damage: float
@@ -532,7 +532,7 @@ func risingSlashDMG()-> void:
 			if victim != self:
 				if victim.state != autoload.state_list.dead:
 					player.pushEnemyAway(push_distance, victim,0.25)
-		dealDMG(victim,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,player.stagger_chance)
+		dealDMG(victim,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,stagger_chance)
 
 #Cyclone section
 #This skill is viable for all melee weapon types EXCEPT FIST WEAPONS
@@ -543,7 +543,7 @@ func cycloneCD()-> void:
 	player.cyclone_combo = false
 func cycloneDMG() -> void:
 	var damage_type: String = "slash"
-	var base_damage: float = player.all_skills.cyclone_damage + player.slash_dmg
+	var base_damage: float = player.all_skills.cyclone_damage 
 	var points: int = player.cyclone_icon.points
 	var damage_multiplier: float = 1.0
 	if points > 1:
@@ -567,7 +567,7 @@ func cycloneDMG() -> void:
 			if victim != self:
 				if victim.state != autoload.state_list.dead:
 					player.pushEnemyAway(push_distance, victim,0.25)
-		dealDMG(victim,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,player.stagger_chance)
+		dealDMG(victim,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,stagger_chance)
 
 
 #Whirlwind section
@@ -578,7 +578,7 @@ func whirlwindCD()-> void:
 	player.whirlwind_combo = false
 func whirlwindDMG() -> void:
 	var damage_type: String = "slash"
-	var base_damage: float = player.all_skills.whirlwind_damage + player.slash_dmg
+	var base_damage: float = player.all_skills.whirlwind_damage 
 	var points: int = player.whirlwind_icon.points
 	var damage_multiplier: float = 1.0
 	var health_ratio: float = float(player.health) / float(player.max_health)
@@ -611,8 +611,14 @@ func HeartTrustCD()->void:
 	player.all_skills.heartTrustSlashCD()
 	player.heart_trust_duration = false
 func HeartTrustDMG()->void:
+
 	var damage_type:String = "pierce"
-	var damage:float = (player.all_skills.heart_trust_dmg + player.pierce_dmg) 
+	var base_damage: float = player.all_skills.heart_trust_dmg 
+	var points: int = player.heart_trust_icon.points
+	var damage_multiplier: float = 1.0
+	if points > 1:
+		damage_multiplier += (points - 1) * player.all_skills.heart_trust_dmg_proportion
+	var damage: float = base_damage * damage_multiplier
 	var damage_flank:float = damage + player.flank_dmg 
 	var critical_damage : float  = damage * player.critical_strength
 	var critical_flank_damage : float  = damage_flank * player.critical_strength

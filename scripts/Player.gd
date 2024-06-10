@@ -1797,7 +1797,7 @@ func UniversalToolTip(icon_texture):
 			callToolTip(instance,"Farmer Shoe","+1 slash resistance.\n +1 blunt resistance.\n +3 pierce resistance.\n +1 heat resistance.\n +6 cold resistance.\n +15 jolt resistance.\n")
 
 		elif icon_texture.get_path() == autoload.cyclone.get_path():
-			var base_damage: float = all_skills.cyclone_damage + slash_dmg
+			var base_damage: float = all_skills.cyclone_damage 
 			var points: int = cyclone_icon.points
 			var damage_multiplier: float = 1.0
 			var total_damage: float
@@ -1805,15 +1805,13 @@ func UniversalToolTip(icon_texture):
 				damage_multiplier += (points - 1) * 0.05
 			total_damage = base_damage * damage_multiplier
 			var total_value = str("Damage: ") + str(total_damage) + "per hit"
-			var cost = "Cost: " + str(all_skills.cyclone_cost) + " Resolve"
+			var cost = "Cost: " + str(all_skills.cyclone_cost) + " resolve"
 			var description: String = all_skills.cyclone_description
-			var cooldown = str("Cooldown: ") + str(all_skills.cyclone_cooldown)+ str("Resolve")
+			var cooldown = str("Cooldown: ") + str(all_skills.cyclone_cooldown)+ str(" seconds")
 			var extra:String = "AOE, Stagger, Movement"
 			callToolTipSkill(instance_skills,"cyclone",total_value,cost,extra,cooldown,description)
 		elif icon_texture.get_path() == autoload.whirlwind.get_path():
-			var cooldown:float = all_skills.whirlwind_cooldown
-			var description: String = all_skills.whirlwind_description
-			var base_damage: float = all_skills.whirlwind_damage + slash_dmg
+			var base_damage: float = all_skills.whirlwind_damage 
 			var points: int =  whirlwind_icon.points
 			var health_ratio: float = float(health) / float(max_health)
 			var missing_health_percentage: float = 1.0 - (float(health) / float(max_health))  # Missing health as a percentage
@@ -1824,40 +1822,60 @@ func UniversalToolTip(icon_texture):
 			# Health-based additional damage
 			var additional_damage_per_3_percent: float = 1.0
 			var additional_damage: float = (missing_health_percentage / 0.03) * additional_damage_per_3_percent
-			
 			total_damage = (base_damage * damage_multiplier) + additional_damage
-			
-			callToolTip(instance,"Desperate Slash","Damage: "+ str(total_damage) + " per hit\n" + "Cooldown:"+ str(cooldown) +str(description))
+			var total_value = str("Damage: ") + str(total_damage) 
+			var cost = "Cost: " + str(all_skills.whirlwind_cost) + " resolve"
+			var description: String =  all_skills.whirlwind_description
+			var cooldown = str("Cooldown: ") + str(all_skills.whirlwind_cooldown)+ str(" seconds")
+			var extra:String = "Burst damage,AOE, situational"
+			callToolTipSkill(instance_skills,"Overhead Slash",total_value,cost,extra,cooldown,description)
+		
 
 		elif icon_texture.get_path() == autoload.overhead_slash.get_path():
-			var base_damage: float = all_skills.overhead_slash_damage + slash_dmg + blunt_dmg
+			var base_damage: float = all_skills.overhead_slash_damage 
 			var points: int = overhead_icon.points
 			var damage_multiplier: float = 1.0
 			var total_damage: float
 			if points > 1:
 				damage_multiplier += (points - 1) * all_skills.overhead_slash_dmg_proportion
 			total_damage = base_damage * damage_multiplier
-			callToolTip(instance,"Overhead Slash","Total Damage: "+ str(total_damage) + "\n" +all_skills.overhead_slash_description)
-	
+			var total_value = str("Damage: ") + str(total_damage) 
+			var cost = "Cost: " + str(all_skills.overhead_slash_cost) + " resolve"
+			var description: String = all_skills.overhead_slash_description
+			var cooldown = str("Cooldown: ") + str(all_skills.overhead_slash_cooldown)+ str(" seconds")
+			var extra:String = "Damage"
+			callToolTipSkill(instance_skills,"Overhead Slash",total_value,cost,extra,cooldown,description)
+		
 		elif icon_texture.get_path() == autoload.rising_slash.get_path():
-			var base_damage: float = all_skills.rising_slash_damage + slash_dmg + pierce_dmg
+			var base_damage: float = all_skills.rising_slash_damage 
 			var points: int = rising_icon.points
 			var damage_multiplier: float = 1.0
 			var total_damage: float
 			if points > 1:
 				damage_multiplier += (points - 1) * all_skills.rising_slash_dmg_proportion
 			total_damage = base_damage * damage_multiplier
-			callToolTip(instance,"Rising Slash","Total Damage: "+ str(total_damage)+ " per hit \n" +str(all_skills.rising_slash_description))
+			var total_value = str("Damage: ") + str(total_damage) 
+			var cost = "Cost: " + str(all_skills.rising_slash_cost) + " resolve"
+			var description: String = all_skills.rising_slash_description
+			var cooldown = str("Cooldown: ") + str(all_skills.rising_slash_cooldown)+ str(" seconds")
+			var extra:String = "Damage, Stagger"
+			callToolTipSkill(instance_skills,"Rising Slash",total_value,cost,extra,cooldown,description)
+		
+		
 		elif icon_texture.get_path() == autoload.heart_trust.get_path():
-			var base_damage: float = all_skills.rising_slash_damage + slash_dmg + pierce_dmg
-			var points: int = rising_icon.points
+			var base_damage: float = all_skills.heart_trust_damage 
+			var points: int = heart_trust_icon.points
 			var damage_multiplier: float = 1.0
 			var total_damage: float
 			if points > 1:
-				damage_multiplier += (points - 1) * all_skills.rising_slash_dmg_proportion
+				damage_multiplier += (points - 1) * all_skills.heart_trust_dmg_proportion
 			total_damage = base_damage * damage_multiplier
-			callToolTip(instance,"Heart Trust","Total Damage: "+ str(total_damage) +str(all_skills.heart_trust_description))
-
+			var total_value = str("Damage: ") + str(total_damage) 
+			var cost = "Cost: " + str(all_skills.heart_trust_cost) + " resolve"
+			var description: String = all_skills.heart_trust_description
+			var cooldown = str("Cooldown: ") + str(all_skills.heart_trust_cooldown)+ str(" seconds")
+			var extra:String = "Burst damage, Damage over time"
+			callToolTipSkill(instance_skills,"Heart Trust",total_value,cost,extra,cooldown,str(description) + str(all_skills.heart_trust_bleed_duration) + " seconds")
 		elif icon_texture.get_path() == autoload.dodge.get_path():
 			callToolTip(instance,"Dodge Slide",autoload.dodge_description)
 #_______________________________________Inventory system____________________________________________
@@ -2560,7 +2578,7 @@ var effects = {
 	"Rhand1": {"stats": {"slash_resistance": 1,"blunt_resistance": 1,"pierce_resistance": 1,"cold_resistance": 3,"jolt_resistance": 5,"acid_resistance": 3}, "applied": false},
 	"Lshoe1": {"stats": {"slash_resistance": 1,"blunt_resistance": 3,"pierce_resistance": 1,"heat_resistance": 1,"cold_resistance": 6,"jolt_resistance": 15}, "applied": false},
 	"Rshoe1": {"stats": {"slash_resistance": 1,"blunt_resistance": 3,"pierce_resistance": 1,"heat_resistance": 1,"cold_resistance": 6,"jolt_resistance": 15}, "applied": false},
-	"sword0": {"stats": { "extra_guard_dmg_absorbition": 0.3,"slash_dmg":12}, "applied": false}
+	"sword0": {"stats": { "extra_guard_dmg_absorbition": 0.3}, "applied": false}
 }
 
 # Function to apply or remove effects
@@ -3003,18 +3021,7 @@ var extra_range_atk_speed : float = 0
 var extra_cast_atk_speed : float = 0
 
 
-var slash_dmg: int = 0 
-var pierce_dmg: int = 0
-var blunt_dmg: int = 10
-var sonic_dmg: int = 0
-var heat_dmg: int = 0
-var cold_dmg: int = 0
-var jolt_dmg: int = 0
-var toxic_dmg: int = 0
-var acid_dmg: int = 0
-var bleed_dmg: int = 0
-var neuro_dmg: int = 0
-var radiant_dmg: int = 0
+
 
 var casting_speed: float = 1 
 
@@ -3396,33 +3403,6 @@ func displayLabels():
 	displayStats(val_neuro, neuro_resistance)
 	var val_radiant : Label = $UI/GUI/Equipment/DmgDef/Defenses/Radiantval
 	displayStats(val_radiant, radiant_resistance)
-	#damages____________________________________________________________________
-	var val_dmg_slash : Label = $UI/GUI/Equipment/DmgDef/Damages/Slaval
-	displayStats(val_dmg_slash, slash_dmg)
-	var val_dmg_blunt : Label = $UI/GUI/Equipment/DmgDef/Damages/Bluntval
-	displayStats(val_dmg_blunt, blunt_dmg)
-	var val_dmg_pierce : Label = $UI/GUI/Equipment/DmgDef/Damages/Pierceval
-	displayStats(val_dmg_pierce, pierce_dmg)
-	var val_dmg_sonic : Label = $UI/GUI/Equipment/DmgDef/Damages/Sonicval
-	displayStats(val_dmg_sonic, sonic_dmg)
-	var val_dmg_heat : Label = $UI/GUI/Equipment/DmgDef/Damages/Heatval
-	displayStats(val_dmg_heat, heat_dmg)
-	var val_dmg_cold : Label = $UI/GUI/Equipment/DmgDef/Damages/Coldval
-	displayStats(val_dmg_cold, cold_dmg)
-	var val_dmg_jolt : Label = $UI/GUI/Equipment/DmgDef/Damages/Joltval
-	displayStats(val_dmg_jolt, jolt_dmg)
-	var val_dmg_toxic : Label = $UI/GUI/Equipment/DmgDef/Damages/Toxicval
-	displayStats(val_dmg_toxic, toxic_dmg)
-	var val_dmg_acid : Label = $UI/GUI/Equipment/DmgDef/Damages/Acidval
-	displayStats(val_dmg_acid, acid_dmg)
-	var val_dmg_bleed : Label = $UI/GUI/Equipment/DmgDef/Damages/Bleedval
-	displayStats(val_dmg_bleed, bleed_dmg)
-	var val_dmg_neuro : Label = $UI/GUI/Equipment/DmgDef/Damages/Neuroval
-	displayStats(val_dmg_neuro, neuro_dmg)
-	var val_dmg_radiant : Label = $UI/GUI/Equipment/DmgDef/Damages/Radiantval
-	displayStats(val_dmg_radiant, radiant_dmg)
-
-
 
 
 func displayStats(label, value):
