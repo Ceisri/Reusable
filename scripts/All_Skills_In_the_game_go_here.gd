@@ -7,9 +7,7 @@ var demon_distance: float = 10.0
 var summon_cooldown: float = 0.15 
 var last_summon_time: float = 0.0 
 
-var masochism : int = 1 
 
-var cyclone_combo_start_time = 0.0
 func ComboSystem():
 	var current_time = OS.get_ticks_msec() / 1000.0
 	if player.cyclone_combo:
@@ -21,6 +19,11 @@ func ComboSystem():
 		if current_time - overhead_slash_start_time>= 2.25:
 			player.overhead_slash_combo = false
 			print("overhead_slash_combo is now false")
+		
+		
+
+		
+		
 		
 			
 func updateCooldownLabel() -> void:
@@ -493,7 +496,8 @@ func updateRising(label: Label, cooldown: float, current_time: float, last_time:
 var heart_trust_cooldown: float = 3
 var last_heart_trust_time: float = 0.0 
 var heart_trust_cost: float = 7
-var heart_trust_damage: float =  11
+var heart_trust_dmg: float =  11
+var heart_trust_description: String = "empty"
 func heartTrustSlashCD():
 	var current_time: float = OS.get_ticks_msec() / 1000.0
 	if current_time - last_heart_trust_time >= heart_trust_cooldown:
@@ -536,6 +540,7 @@ var cyclone_cooldown: float = 2
 var cyclone_cost: float = 4.5
 var cyclone_motion: float = 6
 var cyclone_description: String = "\n+5% compounding extra damage per skill level.\nSpin and slash foes around you in an area attack, each foe can be hit up to 2 times.\nThis skill activates faster and guarantees to stagger foes after the following:  Dodge slide, 4th hit of base attack, Rising slash"
+var cyclone_combo_start_time:float = 0.0
 var last_cyclone_time: float = 0.0 
 func cycloneCD()->void:
 	var current_time: float = OS.get_ticks_msec() / 1000.0

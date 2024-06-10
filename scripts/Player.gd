@@ -92,8 +92,8 @@ func _physics_process(delta: float) -> void:
 	dodgeRight()
 	fullscreen()
 	showEnemyStats()
-	matchAnimationStates()
-	animations()
+	inputOrStateToAnimation()
+	inputToState()
 	attack()
 	fallDamage()
 	skillUserInterfaceInputs()
@@ -627,7 +627,7 @@ func animationCancel()->void:
 	if taunt_duration == true:
 		all_skills.tauntCD()
 		taunt_duration = false
-func matchAnimationStates()-> void:
+func inputOrStateToAnimation()-> void:
 	if current_race_gender == null or animation == null:
 		print("mesh not instanced or animationPlayer not found")
 	#this is only for people with disabilities or if the game ever goes online to help with high ping 
@@ -1205,7 +1205,7 @@ func moveDuringAnimation(speed):
 			movement_speed = 0
 				
 var sprint_animation_speed: float = 1
-func animations():
+func inputToState():
 	if health <= 0:
 		state = autoload.state_list.dead
 		if has_died == false:
@@ -1364,8 +1364,6 @@ func clearParryAbsorb():
 func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
 		allResourcesBarsAndLabels()
 		var text = autoload.floatingtext_damage.instance()
-		if all_skills.masochism >0:
-			nefis += damage * 0.5
 		var random = randf()
 		var damage_to_take = damage
 		if damage_type == "slash":
@@ -2373,7 +2371,7 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 			if main_weap_icon.texture.get_path() == autoload.wood_sword.get_path():
 				main_weapon = "sword0"
 				got_two_handed_weapon = false
-				applyEffect(self, "sword0", true)
+				applyEffect("sword0", true)
 				if sec_weap_icon.texture == null:
 					weapon_type = autoload.weapon_list.sword
 			elif main_weap_icon.texture.get_path() == autoload.heavy_sword0.get_path():
@@ -2385,7 +2383,7 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 		else:
 			removeWeapon()
 			main_weapon = "null"
-			applyEffect(self, "sword0", false)
+			applyEffect("sword0", false)
 			weapon_type = autoload.weapon_list.fist
 #sec weapon_____________________________________________________________________
 	#Before adding a secondary weapon in the left hand check if the right hand is not empty handed
@@ -2513,11 +2511,14 @@ var hand_l = "naked"
 var hand_r = "naked"
 var foot_l = "naked"
 var foot_r = "naked"
-
+#___________________________________________________________________________________________________
 #___________________________________Status effects______________________________
 # Define effects and their corresponding stat changes
 var effects = {
 	"effect2": {"stats": { "extra_vitality": 2,"extra_agility": 0.05,}, "applied": false},
+	
+	
+#_______________________________________________Debuffs ____________________________________________
 	"overhydration": {"stats": { "extra_vitality": -0.02,"extra_agility": -0.05,}, "applied": false},
 	"dehydration": {"stats": { "extra_intelligence": -0.25,"extra_agility": -0.25,}, "applied": false},
 	"bloated": {"stats": {"extra_intelligence": -0.02,"extra_agility": -0.15,}, "applied": false},
@@ -2545,6 +2546,10 @@ var effects = {
 	"impaired": {"stats": { "extra_dexterity": -0.25}, "applied": false},
 	"lethargy": {"stats": {}, "applied": false},
 	"redpotion": {"stats": {}, "applied": false},
+	
+#_________________________________________________Buffs ____________________________________________
+	"berserk": {"stats": {"extra_intelligence": -0.5,"extra_balance": -0.5,"extra_agility": 0.5,"extra_melee_atk_speed": 1,"extra_ranged_atk_speed": 0.5,"extra_casting_atk_speed": 0.3,"extra_ferocity": 0.3,"extra_fury": 0.3,}, "applied": false},
+	
 	#equipment effects______________________________________________________________________________
 	"helm1": {"stats": {"blunt_resistance": 3,"heat_resistance": 6,"cold_resistance": 3,"radiant_resistance": 6}, "applied": false},
 	"garment1": {"stats": {"slash_resistance": 3,"pierce_resistance": 1,"heat_resistance": 12,"cold_resistance": 12}, "applied": false},
@@ -2558,15 +2563,14 @@ var effects = {
 }
 
 # Function to apply or remove effects
-func applyEffect(player: Node, effect_name: String, active: bool):
-
+func applyEffect(effect_name: String, active: bool)->void:
+	var player = self 
 	if effects.has(effect_name):
 		var effect = effects[effect_name]
 		if active and not effect["applied"]:
 			# Apply effect
 			for stat_name in effect["stats"].keys():
-				if stat_name in player:
-					player[stat_name] += effect["stats"][stat_name]
+				player[stat_name] += effect["stats"][stat_name]
 			effect["applied"] = true
 		elif not active and effect["applied"]:
 			# Remove effect
@@ -2577,7 +2581,11 @@ func applyEffect(player: Node, effect_name: String, active: bool):
 	else:
 		print("Effect not found:", effect_name)
 
-onready var status_grid = $UI/GUI/Portrait/StatusGrid
+
+
+
+
+
 func showStatusIcon():
 #	applyEffect(self, "bleeding", true)
 #	applyEffect(self, "hungry", true)
@@ -2632,63 +2640,37 @@ func showStatusIcon():
 		icon.texture = null
 		icon.modulate = Color(1, 1, 1)
 
-	# Preload textures
-	var dehydration_texture = preload("res://waterbubbles.png")
-	var overhydration_texture = preload("res://waterbubbles.png")
-	var bloated_texture = preload("res://UI/graphics/mushrooms/PNG/background/28.png")
-	var hungry_texture = preload("res://DebuffIcons/Hungry.png")
-	var bleeding_texture = preload("res://DebuffIcons/bleed.png")
-	var stunned_texture = preload("res://DebuffIcons/stunned.png")
-	var frozen_texture = preload("res://DebuffIcons/frozen.png")
-	var blinded_texture = preload("res://DebuffIcons/blinded.png")
-	var terrorized_texture = preload("res://DebuffIcons/terrorized.png")
-	var scared_texture = preload("res://DebuffIcons/scared.png")
-	var intimidated_texture = preload("res://DebuffIcons/intimidated.png")
-	var rooted_texture = preload("res://DebuffIcons/chained.png")
-	var blockbuffs_texture = preload("res://DebuffIcons/blockbuffs.png")
-	var block_active_texture = preload("res://DebuffIcons/blockactiveskills.png") 
-	var block_passive_texture = preload("res://DebuffIcons/blockpassive.png")
-	var broken_defense_texture = preload("res://DebuffIcons/broken defense.png") 
-	var bomb_texture = preload("res://DebuffIcons/bomb.png") 
-	var heal_reduction_texture = preload("res://DebuffIcons/healreduction.png")
-	var slow_texture = preload("res://DebuffIcons/slow.png")
-	var burn_texture = preload("res://DebuffIcons/burn.png")
-	var sleep_texture = preload("res://DebuffIcons/sleep.png")
-	var weakness_texture = preload("res://DebuffIcons/weakness.png")
-	var poisoned_texture = preload("res://DebuffIcons/poisoned.png")
-	var confusion_texture = preload("res://DebuffIcons/confusion.png")
-	var impaired_texture = preload("res://DebuffIcons/impaired.png")
-	var lethargy_texture = preload("res://DebuffIcons/Cooldown increased.png")
-	var red_potion_texture = preload("res://Potions/Red potion.png")
+
 	# Apply status icons based on applied effects
 	var applied_effects = [
-		{"name": "dehydration", "texture": dehydration_texture, "modulation_color": Color(1, 0, 0)},
-		{"name": "overhydration", "texture": overhydration_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "bloated", "texture": bloated_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "hungry", "texture": hungry_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "bleeding", "texture": bleeding_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "frozen", "texture": frozen_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "stunned", "texture": stunned_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "blinded", "texture": blinded_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "terrorized", "texture": terrorized_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "scared", "texture": scared_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "intimidated", "texture": intimidated_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "rooted", "texture": rooted_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "blockbuffs", "texture": blockbuffs_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "blockactive", "texture": block_active_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "blockpassive", "texture": block_passive_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "brokendefense", "texture": broken_defense_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "healreduction", "texture": heal_reduction_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "bomb", "texture": bomb_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "slow", "texture": slow_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "burn", "texture": burn_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "sleep", "texture": sleep_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "weakness", "texture": weakness_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "poisoned", "texture": poisoned_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "confused", "texture": confusion_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "impaired", "texture": impaired_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "lethargy", "texture": lethargy_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "redpotion", "texture": red_potion_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "dehydration", "texture": autoload.dehydration_texture, "modulation_color": Color(1, 0, 0)},
+		{"name": "overhydration", "texture": autoload.overhydration_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "bloated", "texture": autoload.bloated_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "hungry", "texture": autoload.hungry_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "bleeding", "texture": autoload.bleeding_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "frozen", "texture": autoload.frozen_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "stunned", "texture": autoload.stunned_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "blinded", "texture": autoload.blinded_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "terrorized", "texture": autoload.terrorized_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "scared", "texture": autoload.scared_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "intimidated", "texture": autoload.intimidated_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "rooted", "texture": autoload.rooted_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "blockbuffs", "texture": autoload.blockbuffs_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "blockactive", "texture": autoload.block_active_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "blockpassive", "texture": autoload.block_passive_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "brokendefense", "texture": autoload.broken_defense_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "healreduction", "texture": autoload.heal_reduction_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "bomb", "texture": autoload.bomb_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "slow", "texture": autoload.slow_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "burn", "texture": autoload.burn_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "sleep", "texture": autoload.sleep_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "weakness", "texture": autoload.weakness_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "poisoned", "texture": autoload.poisoned_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "confused", "texture": autoload.confusion_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "impaired", "texture": autoload.impaired_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "lethargy", "texture": autoload.lethargy_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "redpotion", "texture": autoload.red_potion_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "berserk", "texture": autoload.berserk_texture, "modulation_color": Color(1, 1, 1)},
 	]
 
 	for effect in applied_effects:
@@ -2708,9 +2690,21 @@ func redPotion():
 		if red_potion_duration >0:
 			health += 10
 			red_potion_duration -= 1
-			applyEffect(self,"redpotion",true)
+			applyEffect("redpotion",true)
 		else:
-			applyEffect(self,"redpotion",false)
+			applyEffect("redpotion",false)
+			
+			
+func berserk(player: Node, effect_name: String, active: bool)->void:
+	if effects.has("berserk") and effects["berserk"]["applied"]:
+		if red_potion_duration >0:
+			health += 10
+			red_potion_duration -= 1
+			applyEffect("redpotion",true)
+		else:
+			applyEffect("redpotion",false)
+			
+			
 #_____________________________Hunger system and Hydration System___________________________
 onready var kilocalories_label = $UI/GUI/Portrait/MinimapHolder/FoodLabel
 onready var kilocalories_bar = $UI/GUI/Portrait/MinimapHolder/FoodBar
@@ -2749,13 +2743,13 @@ func hunger():
 	else:
 		kilocalories -= decrease_amount
 	if kilocalories > max_kilocalories * 1.15:
-		applyEffect(self, "bloated", true)
+		applyEffect("bloated", true)
 	else:
-		applyEffect(self, "bloated", false)
+		applyEffect("bloated", false)
 	if kilocalories < 0:
-		applyEffect(self, "hungry", true)
+		applyEffect("hungry", true)
 	else:
-		applyEffect(self, "hungry", false)
+		applyEffect("hungry", false)
 
 const base_water = 4000
 var max_water = 4000
@@ -2791,15 +2785,15 @@ func hydration():
 			water -= decrease_amount	
 
 	if water > max_water * 1.15:
-		applyEffect(self, "overhydration", true)
+		applyEffect("overhydration", true)
 	elif water < 0:
 		health -= 10 * elapsed_time
-		applyEffect(self, "dehydration", true)
+		applyEffect("dehydration", true)
 	elif water < max_water * 0.75:
-		applyEffect(self, "dehydration", true)
+		applyEffect("dehydration", true)
 	else:
-		applyEffect(self, "overhydration", false)
-		applyEffect(self, "dehydration", false)
+		applyEffect("overhydration", false)
+		applyEffect("dehydration", false)
 
 onready var black_screen = $UI/GUI/BlackScreen
 onready var tween = $Camroot/h/v/Camera/Aim/Cross/Tween

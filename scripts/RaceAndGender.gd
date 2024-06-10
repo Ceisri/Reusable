@@ -101,10 +101,8 @@ func switchEquipment()->void:
 					match player.torso:
 							"naked":
 								equipArmor(autoload.human_xy_naked_torso_0,"Torso")
-								player.applyEffect(player,"garment1", false)
 							"tunic0":
 								equipArmor(autoload.human_xy_tunic_0,"Torso")
-								player.applyEffect(player,"garment1", true)
 							"gambeson0":
 								equipArmor(autoload.human_xy_gambeson_0,"Torso")
 							"chainmail0":
@@ -129,10 +127,8 @@ func switchEquipment()->void:
 					match player.torso:
 							"naked":
 								equipArmor(autoload.human_xx_naked_torso_0,"Torso")
-								player.applyEffect(player,"garment1", false)
 							"tunic0":
 								equipArmor(autoload.human_xx_tunic_0,"Torso")
-								player.applyEffect(player,"garment1", true)
 							"tunic1":
 								equipArmor(autoload.human_xx_tunic_1,"Torso")
 							"gambeson0":
@@ -355,9 +351,15 @@ func punch()->void:#fist
 	var aggro_power:float = player.threat_power
 	var push_distance:float = 0.25 * player.total_impact
 	var enemies:Array = trust_area.get_overlapping_bodies()
-	dealDMG(enemies,null,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,player.stagger_chance)
+	for victim in enemies:
+		if victim.is_in_group("enemy"):
+			if victim != self:
+				if victim.state != autoload.state_list.dead:
+					player.pushEnemyAway(push_distance, victim,0.25)
+		dealDMG(victim,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,player.stagger_chance)
 #Melee Functions to call in the AnimationPlayer
 #Heavy sword
+
 onready var area_melee_front:Area = $MeleeFront
 func ComboHeavy1()->void:#Heavy
 	var damage_type:String = right_hand.get_child(0).damage_type
@@ -371,7 +373,12 @@ func ComboHeavy1()->void:#Heavy
 	var aggro_power:float = player.threat_power
 	var push_distance:float = 0.25 * player.total_impact
 	var enemies:Array = area_melee_front.get_overlapping_bodies()
-	dealDMG(enemies,null,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,player.stagger_chance)
+	for victim in enemies:
+		if victim.is_in_group("enemy"):
+			if victim != self:
+				if victim.state != autoload.state_list.dead:
+					player.pushEnemyAway(push_distance, victim,0.25)
+		dealDMG(victim,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,player.stagger_chance)
 func ComboHeavy2()->void:#Heavy
 	var damage_type:String = right_hand.get_child(0).damage_type
 	var damage:float = 8 + player.slash_dmg + player.blunt_dmg
@@ -384,7 +391,12 @@ func ComboHeavy2()->void:#Heavy
 	var aggro_power:float = player.threat_power
 	var push_distance:float = 0.15 * player.total_impact
 	var enemies:Array = area_melee_front.get_overlapping_bodies()
-	dealDMG(enemies,null,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,player.stagger_chance)
+	for victim in enemies:
+		if victim.is_in_group("enemy"):
+			if victim != self:
+				if victim.state != autoload.state_list.dead:
+					player.pushEnemyAway(push_distance, victim,0.25)
+		dealDMG(victim,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,player.stagger_chance)
 func ComboHeavy3()->void:#Heavy
 	var damage_type:String = right_hand.get_child(0).damage_type
 	var damage:float = 5 + player.slash_dmg 
@@ -397,7 +409,12 @@ func ComboHeavy3()->void:#Heavy
 	var aggro_power:float = player.threat_power
 	var push_distance:float = 0.05 * player.total_impact
 	var enemies:Array = area_melee_front.get_overlapping_bodies()
-	dealDMG(enemies,null,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,player.stagger_chance)
+	for victim in enemies:
+		if victim.is_in_group("enemy"):
+			if victim != self:
+				if victim.state != autoload.state_list.dead:
+					player.pushEnemyAway(push_distance, victim,0.25)
+		dealDMG(victim,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,player.stagger_chance)
 func ComboHeavy4()->void:#Heavy
 	player.all_skills.activateComboCyclone()
 	var damage_type:String = right_hand.get_child(0).damage_type
@@ -411,8 +428,12 @@ func ComboHeavy4()->void:#Heavy
 	var aggro_power:float = player.threat_power
 	var push_distance:float = 1 * player.total_impact
 	var enemies:Array = area_melee_front.get_overlapping_bodies()
-	dealDMG(enemies,null,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,player.stagger_chance)
-
+	for victim in enemies:
+		if victim.is_in_group("enemy"):
+			if victim != self:
+				if victim.state != autoload.state_list.dead:
+					player.pushEnemyAway(push_distance, victim,0.25)
+		dealDMG(victim,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,player.stagger_chance)
 func ComboLight()->void:#Heavy
 	var damage_type:String = right_hand.get_child(0).damage_type
 	var damage:float = (2 + player.slash_dmg) 
@@ -425,7 +446,12 @@ func ComboLight()->void:#Heavy
 	var aggro_power:float = player.threat_power
 	var push_distance:float = 0.25 * player.total_impact
 	var enemies:Array = area_melee_front.get_overlapping_bodies()
-	dealDMG(enemies,null,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,player.stagger_chance)
+	for victim in enemies:
+		if victim.is_in_group("enemy"):
+			if victim != self:
+				if victim.state != autoload.state_list.dead:
+					player.pushEnemyAway(push_distance, victim,0.25)
+		dealDMG(victim,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,player.stagger_chance)
 #Cleave
 func cleaveDMG()->void:#Heavy
 	var damage_type:String = right_hand.get_child(0).damage_type
@@ -439,8 +465,12 @@ func cleaveDMG()->void:#Heavy
 	var aggro_power:float = player.threat_power + 15
 	var push_distance:float = 0.35 * player.total_impact
 	var enemies:Array = area_melee_front.get_overlapping_bodies()
-	dealDMG(enemies,null,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,player.stagger_chance)
-
+	for victim in enemies:
+		if victim.is_in_group("enemy"):
+			if victim != self:
+				if victim.state != autoload.state_list.dead:
+					player.pushEnemyAway(push_distance, victim,0.25)
+		dealDMG(victim,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,player.stagger_chance)
 
 
 #Overhead Slash section
@@ -465,7 +495,14 @@ func overhandSlashDMG()->void:
 	var aggro_power = damage + 20
 	var push_distance:float = 0.25 * player.total_impact
 	var enemies = area_melee_front.get_overlapping_bodies()
-	dealDMG(enemies,null,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,player.stagger_chance)
+	for victim in enemies:
+		if victim.is_in_group("enemy"):
+			if victim != self:
+				if victim.state != autoload.state_list.dead:
+					player.pushEnemyAway(push_distance, victim,0.25)
+		dealDMG(victim,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,player.stagger_chance)
+
+
 #rising slash section
 #This skill is viable for all melee weapon types EXCEPT FIST WEAPONS
 func risingSlashCD()-> void:
@@ -490,7 +527,12 @@ func risingSlashDMG()-> void:
 	var push_distance:float = 1 * player.total_impact
 	var stagger_chance: float = 100
 	var enemies:Array = area_melee_front.get_overlapping_bodies()
-	dealDMG(enemies,null,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,stagger_chance)
+	for victim in enemies:
+		if victim.is_in_group("enemy"):
+			if victim != self:
+				if victim.state != autoload.state_list.dead:
+					player.pushEnemyAway(push_distance, victim,0.25)
+		dealDMG(victim,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,player.stagger_chance)
 
 #Cyclone section
 #This skill is viable for all melee weapon types EXCEPT FIST WEAPONS
@@ -520,7 +562,14 @@ func cycloneDMG() -> void:
 	else:
 		stagger_chance = 100
 	var enemies = melee_aoe.get_overlapping_bodies()
-	dealDMG(enemies,null,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,stagger_chance)
+	for victim in enemies:
+		if victim.is_in_group("enemy"):
+			if victim != self:
+				if victim.state != autoload.state_list.dead:
+					player.pushEnemyAway(push_distance, victim,0.25)
+		dealDMG(victim,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,player.stagger_chance)
+
+
 #Whirlwind section
 #This skill is viable for all melee weapon types 
 func whirlwindCD()-> void:
@@ -549,7 +598,12 @@ func whirlwindDMG() -> void:
 	var aggro_power =  20
 	var push_distance:float = 0.25 * player.total_impact
 	var enemies = melee_aoe.get_overlapping_bodies()
-	dealDMG(enemies,null,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,player.stagger_chance)
+	for victim in enemies:
+		if victim.is_in_group("enemy"):
+			if victim != self:
+				if victim.state != autoload.state_list.dead:
+					player.pushEnemyAway(push_distance, victim,0.25)
+		dealDMG(victim,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,player.stagger_chance)
 
 #HeartTrust
 onready var trust_area: Area = $MeleeTrusting
@@ -558,7 +612,7 @@ func HeartTrustCD()->void:
 	player.heart_trust_duration = false
 func HeartTrustDMG()->void:
 	var damage_type:String = "pierce"
-	var damage:float = (5 + player.pierce_dmg) 
+	var damage:float = (player.all_skills.heart_trust_dmg + player.pierce_dmg) 
 	var damage_flank:float = damage + player.flank_dmg 
 	var critical_damage : float  = damage * player.critical_strength
 	var critical_flank_damage : float  = damage_flank * player.critical_strength
@@ -568,7 +622,15 @@ func HeartTrustDMG()->void:
 	var aggro_power:float = player.threat_power + 15
 	var push_distance:float = 0.25 * player.total_impact
 	var enemies:Array = trust_area.get_overlapping_bodies()
-	dealDMG(enemies,null,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,player.stagger_chance)
+	for victim in enemies:
+		if victim.is_in_group("enemy"):
+			victim.bleeding_duration = 10
+			if victim != self:
+				if victim.state != autoload.state_list.dead:
+					player.pushEnemyAway(push_distance, victim,0.25)
+		dealDMG(victim,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,player.stagger_chance)
+
+
 onready var area_mid_range:Area = $MidRangeAOE
 func tauntEffect():
 	var enemies:Array = area_mid_range.get_overlapping_bodies()
@@ -603,8 +665,8 @@ func startAbsorb():
 func stopAbsorb():
 	player.absorbing = false
 func jump():
-	
 	player.jumping()
+	player.jump_duration = false
 func die():
 	player.death_duration = false
 	player.has_died = true 
@@ -614,72 +676,33 @@ func staggeredOver():
 	player.staggered_duration = false
 
 #___________________________________________________________________________________________________
-func dealDMG(enemy_detector1, enemy_detector2,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,stagger_chance)-> void:
-	for victim in enemy_detector1:
-		if victim.is_in_group("enemy"):
-			if victim != self:
-				if victim.state != autoload.state_list.dead:
-					player.pushEnemyAway(push_distance, victim,0.25)
-				if player.resolve < player.max_resolve:
-					player.resolve += player.ferocity + 1.25
-				if victim.has_method("takeDamage"):
-					if player.is_on_floor():
-						if randf() <= player.critical_chance:#critical hit
-							if victim.absorbing == true or victim.parry == true: #victim is guarding
-								if player.isFacingSelf(victim,0.30): #the victim is looking face to face at self 
-									victim.takeDamage(critical_damage/victim.guard_dmg_absorbition,aggro_power,player,stagger_chance,damage_type)
-								else: #apparently the victim is showing his back or flanks while guard, flank damage + punishment damage
-									victim.takeDamage(critical_flank_damage + punishment_damage,aggro_power,player,stagger_chance,punishment_damage_type)
-							else:#player is guarding
-								if player.isFacingSelf(victim,0.30): #check if the victim is looking at me 
-									victim.takeDamage(critical_damage/victim.guard_dmg_absorbition,aggro_power,player,stagger_chance,damage_type)
-								else: #apparently the victim is showing his back or flanks, extra damage
-									victim.takeDamage(critical_damage,aggro_power,player,stagger_chance,punishment_damage_type)
-						else: #normal hit
-							if victim.absorbing == true or victim.parry == true: #victim is guarding
-								if player.isFacingSelf(victim,0.30): #the victim is looking face to face at self 
-									victim.takeDamage(damage/victim.guard_dmg_absorbition,aggro_power,player,stagger_chance,damage_type)
-								else: #apparently the victim is showing his back or flanks while guard, flank damage + punishment damage
-									victim.takeDamage(damage_flank + punishment_damage,aggro_power,player,stagger_chance,punishment_damage_type)
-							else:#victim is not guarding
-								if player.isFacingSelf(victim,0.30):#the victim is looking face to face at self 
-									victim.takeDamage(damage,aggro_power,player,stagger_chance,damage_type)
-								else: #appareantly the victim is showing his back or flanks, extra damage
-									victim.takeDamage(damage_flank,aggro_power,player,stagger_chance,damage_type)
-	if player.weapon_type == autoload.weapon_list.dual_swords:
-		if enemy_detector2 != null:
-			for victim in enemy_detector2:
-				if victim.is_in_group("enemy"):
-					if victim != self:
-						if victim.state != autoload.state_list.dead:
-							player.pushEnemyAway(0.3, victim,0.25)
-						if player.resolve < player.max_resolve:
-							player.resolve += player.ferocity + 1.25
-						if victim.has_method("takeDamage"):
-							if player.is_on_floor():
-								#insert sound effect here
-								if randf() <= player.critical_chance:#critical hit
-									if victim.state == autoload.state_list.guard or victim.state == autoload.state_list.guard_walk: #victim is guarding
-										if player.isFacingSelf(victim,0.30): #the victim is looking face to face at self 
-											victim.takeDamage(critical_damage/victim.guard_dmg_absorbition,aggro_power,player,player.stagger_chance,damage_type)
-										else: #apparently the victim is showing his back or flanks while guard, flank damage + punishment damage
-											victim.takeDamage(critical_flank_damage + punishment_damage,aggro_power,player,player.stagger_chance,punishment_damage_type)
-									else:#player is guarding
-										if player.isFacingSelf(victim,0.30): #check if the victim is looking at me 
-											victim.takeDamage(critical_damage/victim.guard_dmg_absorbition,aggro_power,player,player.stagger_chance,damage_type)
-										else: #apparently the victim is showing his back or flanks, extra damage
-											victim.takeDamage(critical_damage,aggro_power,player,player.stagger_chance,punishment_damage_type)
-								else: #normal hit
-									if victim.state == autoload.state_list.guard or victim.state == autoload.state_list.guard_walk: #victim is guarding
-										if player.isFacingSelf(victim,0.30): #the victim is looking face to face at self 
-											victim.takeDamage(damage/victim.guard_dmg_absorbition,aggro_power,player,player.stagger_chance,damage_type)
-										else: #apparently the victim is showing his back or flanks while guard, flank damage + punishment damage
-											victim.takeDamage(damage_flank + punishment_damage,aggro_power,player,player.stagger_chance,punishment_damage_type)
-									else:#victim is not guarding
-										if player.isFacingSelf(victim,0.30):#the victim is looking face to face at self 
-											victim.takeDamage(damage,aggro_power,player,player.stagger_chance,damage_type)
-										else: #appareantly the victim is showing his back or flanks, extra damage
-											victim.takeDamage(damage_flank,aggro_power,player,player.stagger_chance,damage_type)
+func dealDMG(victim,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,stagger_chance)-> void:
+		if victim  != player:
+			if victim.has_method("takeDamage"):
+				if randf() <= player.critical_chance:#critical hit
+					if victim.absorbing == true or victim.parry == true: #victim is guarding
+						if player.isFacingSelf(victim,0.30): #the victim is looking face to face at self 
+								victim.takeDamage(critical_damage/victim.guard_dmg_absorbition,aggro_power,player,stagger_chance,damage_type)
+						else: #apparently the victim is showing his back or flanks while guard, flank damage + punishment damage
+								victim.takeDamage(critical_flank_damage + punishment_damage,aggro_power,player,stagger_chance,punishment_damage_type)
+					else:#player is guarding
+						if player.isFacingSelf(victim,0.30): #check if the victim is looking at me 
+							victim.takeDamage(critical_damage/victim.guard_dmg_absorbition,aggro_power,player,stagger_chance,damage_type)
+						else: #apparently the victim is showing his back or flanks, extra damage
+							victim.takeDamage(critical_damage,aggro_power,player,stagger_chance,punishment_damage_type)
+				else: #normal hit
+					if victim.absorbing == true or victim.parry == true: #victim is guarding
+						if player.isFacingSelf(victim,0.30): #the victim is looking face to face at self 
+							victim.takeDamage(damage/victim.guard_dmg_absorbition,aggro_power,player,stagger_chance,damage_type)
+						else: #apparently the victim is showing his back or flanks while guard, flank damage + punishment damage
+							victim.takeDamage(damage_flank + punishment_damage,aggro_power,player,stagger_chance,punishment_damage_type)
+					else:#victim is not guarding
+						if player.isFacingSelf(victim,0.30):#the victim is looking face to face at self 
+							victim.takeDamage(damage,aggro_power,player,stagger_chance,damage_type)
+						else: #appareantly the victim is showing his back or flanks, extra damage
+							victim.takeDamage(damage_flank,aggro_power,player,stagger_chance,damage_type)
+
+
 
 func slideImpact(enemy_detector1,aggro_power,push_distance)-> void:
 	for victim in enemy_detector1:

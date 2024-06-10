@@ -13,34 +13,32 @@ var random_atk:float
 
 
 func _ready()->void:
+	var one_sec:Timer = $"1secTimer"
 	var process:Timer = $Process #This is a timer node called "Process"
 	process.connect("timeout", self, "process") #remember to set this timer to process mode = Physics
+	one_sec.connect("timeout", self, "oneSecondTimer")
 	#you can put any value in here, tick rate is inverse to FPS, smaller ticks = higher FPS for your enemies
 	#like Your_FakeProcess_Timer.start(0.05) means that your enemy will run at 20FPS which is more than enough
 	#and remember to put your time into physics mode and not idle mode otherwise it won't save you from lag
-	process.start(autoload.entity_tick_rate + rand_range(-0.03, 0.03)) 
+	process.start(autoload.entity_tick_rate + rand_range(0, 0.015)) 
 
 func process()->void:
-	#if you need to use detal then this function "get_physics_process_delta_time()" works the same 
-	#you can multiply things by this function like speed *get_physics_process_delta_time() 
-	#your_functions_here()
 	if health >0:
 		if staggered_duration == true:
 			state = autoload.state_list.staggered
-#	else:
-#		state = autoload.state_list.wander
-	
 	if health <=0:
 		if has_died == false:
 			death_time = 3.958
 			if has_died == true:
 				state = autoload.state_list.dead
+	
 	moveAside()
 	matchState()
 	autoload.entityGravity(self)
-	autoload.movement(self)
-	threat_system.loseThreat()
 
+	threat_system.loseThreat()
+func oneSecondTimer()->void:
+	effectDurations()
 
 func displayThreatInfo(label):
 	threat_system.threat_info = threat_system.getBestFive()
@@ -257,17 +255,19 @@ var rotation_speed: float = 2.0
 onready var take_damage_audio = $TakeHit
 
 func takeThreat(aggro_power,instigator)->void:
+	stored_instigator = instigator
 	var target = threat_system.createFindThreat(instigator)
 	state = autoload.state_list.engage
 	target.threat += aggro_power
 var parry: bool =  false
 var absorbing: bool = false
 func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type)->void:
+	stored_instigator = instigator
 	var take_damage_view  =$TakeDamageView/Viewport
 	var text = autoload.floatingtext_damage.instance()
 	if parry == false:
 		take_damage_audio.play()
-		var random = randf()
+		var random_range = rand_range(0,100)
 		var damage_to_take = damage
 		var instigatorAggro = threat_system.createFindThreat(instigator)
 		if damage_type == "slash":
@@ -332,7 +332,7 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type)->v
 				instigator.lifesteal(damage_to_take)
 				
 				
-		if random < stagger_chance - stagger_resistance:
+		if random_range < stagger_chance:
 				state = autoload.state_list.staggered
 				staggered_duration = true
 				text.status = "Staggered"
@@ -419,8 +419,6 @@ var neuro_resistance: int = 0
 var radiant_resistance: int = 0
 
 
-var stagger_resistance: float = 0.5
-
 
 
 var base_flank_dmg : float = 10.0
@@ -452,6 +450,147 @@ func isFacingSelf(enemy: Node, threshold: float) -> bool:
 	return dot_product >= threshold
 
 
+var stored_instigator:KinematicBody 
+var bleeding_duration:float = 0
+func effectDurations():
+	if bleeding_duration > 0:
+		print(bleeding_duration )
+		if stored_instigator == null:
+			pass
+		else:
+			var damage: float = autoload.bleed_dmg +stored_instigator.bleed_dmg
+			takeDamage(damage,damage,stored_instigator,0,"bleed")
+		applyEffect("bleeding",true)
+		bleeding_duration -= 1
+	else:
+		applyEffect("bleeding",false)
+	
+
+
+#___________________________________________________________________________________________________
+func showStatusIcon(
+	icon1: TextureRect, icon2: TextureRect, icon3: TextureRect, icon4: TextureRect, 
+	icon5: TextureRect, icon6: TextureRect, icon7: TextureRect, icon8: TextureRect, 
+	icon9: TextureRect, icon10: TextureRect, icon11: TextureRect, icon12: TextureRect, 
+	icon13: TextureRect, icon14: TextureRect, icon15: TextureRect, icon16: TextureRect, 
+	icon17: TextureRect, icon18: TextureRect, icon19: TextureRect, icon20: TextureRect, 
+	icon21: TextureRect, icon22: TextureRect, icon23: TextureRect, icon24: TextureRect
+):
+	# Reset all icons
+	var all_icons = [icon1, icon2, icon3, icon4, icon5, icon6, icon7, icon8, icon9, icon10, icon11, icon12, icon13, icon14, icon15, icon16, icon17, icon18, icon19, icon20, icon21, icon22, icon23, icon24]
+	for icon in all_icons:
+		icon.texture = null
+		icon.modulate = Color(1, 1, 1)
+	# Apply status icons based on applied effects
+	var applied_effects = [
+		{"name": "dehydration", "texture": autoload.dehydration_texture, "modulation_color": Color(1, 0, 0)},
+		{"name": "overhydration", "texture": autoload.overhydration_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "bloated", "texture": autoload.bloated_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "hungry", "texture": autoload.hungry_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "bleeding", "texture": autoload.bleeding_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "frozen", "texture": autoload.frozen_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "stunned", "texture": autoload.stunned_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "blinded", "texture": autoload.blinded_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "terrorized", "texture": autoload.terrorized_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "scared", "texture": autoload.scared_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "intimidated", "texture": autoload.intimidated_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "rooted", "texture": autoload.rooted_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "blockbuffs", "texture": autoload.blockbuffs_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "blockactive", "texture": autoload.block_active_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "blockpassive", "texture": autoload.block_passive_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "brokendefense", "texture": autoload.broken_defense_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "healreduction", "texture": autoload.heal_reduction_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "bomb", "texture": autoload.bomb_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "slow", "texture": autoload.slow_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "burn", "texture": autoload.burn_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "sleep", "texture": autoload.sleep_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "weakness", "texture": autoload.weakness_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "poisoned", "texture": autoload.poisoned_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "confused", "texture": autoload.confusion_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "impaired", "texture": autoload.impaired_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "lethargy", "texture": autoload.lethargy_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "redpotion", "texture": autoload.red_potion_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "berserk", "texture": autoload.berserk_texture, "modulation_color": Color(1, 1, 1)},
+	]
+
+	for effect in applied_effects:
+		if effects.has(effect["name"]) and effects[effect["name"]]["applied"]:
+			for icon in all_icons:
+				if icon.texture == null:
+					icon.texture = effect["texture"]
+					icon.modulate = effect["modulation_color"]
+					break  # Exit loop after applying status to the first available icon
+
+#___________________________________________Status effects__________________________________________
+# Define effects and their corresponding stat changes
+var effects = {
+	"effect2": {"stats": { "extra_vitality": 2,"extra_agility": 0.05,}, "applied": false},
+#_______________________________________________Debuffs ____________________________________________
+	"overhydration": {"stats": { "extra_vitality": -0.02,"extra_agility": -0.05,}, "applied": false},
+	"dehydration": {"stats": { "extra_intelligence": -0.25,"extra_agility": -0.25,}, "applied": false},
+	"bloated": {"stats": {"extra_intelligence": -0.02,"extra_agility": -0.15,}, "applied": false},
+	"hungry": {"stats": {"extra_intelligence": -0.22,"extra_agility": -0.05,}, "applied": false},
+	"bleeding": {"stats": {}, "applied": false},
+	"stunned": {"stats": {}, "applied": false},
+	"frozen": {"stats": {}, "applied": false},
+	"blinded": {"stats": {}, "applied": false},
+	"terrorized": {"stats": {}, "applied": false},
+	"scared": {"stats": {}, "applied": false},
+	"intimidated": {"stats": {}, "applied": false},
+	"rooted": {"stats": {}, "applied": false},
+	"blockbuffs": {"stats": {}, "applied": false},
+	"blockactive": {"stats": {}, "applied": false},
+	"blockpassive": {"stats": {}, "applied": false},
+	"brokendefense": {"stats": {}, "applied": false},
+	"healreduction": {"stats": {}, "applied": false},
+	"bomb": {"stats": {}, "applied": false},
+	"slow": {"stats": {}, "applied": false},
+	"burn": {"stats": {}, "applied": false},
+	"sleep": {"stats": {}, "applied": false},
+	"weakness": {"stats": {}, "applied": false},
+	"poisoned": {"stats": {}, "applied": false},
+	"confused": {"stats": { "extra_intelligence": -0.75}, "applied": false},
+	"impaired": {"stats": { "extra_dexterity": -0.25}, "applied": false},
+	"lethargy": {"stats": {}, "applied": false},
+	"redpotion": {"stats": {}, "applied": false},
+	
+#_________________________________________________Buffs ____________________________________________
+	"berserk": {"stats": {"extra_intelligence": -0.5,"extra_balance": -0.5,"extra_agility": 0.5,"extra_melee_atk_speed": 1,"extra_ranged_atk_speed": 0.5,"extra_casting_atk_speed": 0.3,"extra_ferocity": 0.3,"extra_fury": 0.3,}, "applied": false},
+	
+	#equipment effects______________________________________________________________________________
+	"helm1": {"stats": {"blunt_resistance": 3,"heat_resistance": 6,"cold_resistance": 3,"radiant_resistance": 6}, "applied": false},
+	"garment1": {"stats": {"slash_resistance": 3,"pierce_resistance": 1,"heat_resistance": 12,"cold_resistance": 12}, "applied": false},
+	"belt1": {"stats": {"extra_balance": 0.03,"extra_charisma": 0.011 }, "applied": false},
+	"pants1": {"stats": {"slash_resistance": 4,"pierce_resistance": 3,"heat_resistance": 6,"cold_resistance": 8}, "applied": false},
+	"Lhand1": {"stats": {"slash_resistance": 1,"blunt_resistance": 1,"pierce_resistance": 1,"cold_resistance": 3,"jolt_resistance": 5,"acid_resistance": 3}, "applied": false},
+	"Rhand1": {"stats": {"slash_resistance": 1,"blunt_resistance": 1,"pierce_resistance": 1,"cold_resistance": 3,"jolt_resistance": 5,"acid_resistance": 3}, "applied": false},
+	"Lshoe1": {"stats": {"slash_resistance": 1,"blunt_resistance": 3,"pierce_resistance": 1,"heat_resistance": 1,"cold_resistance": 6,"jolt_resistance": 15}, "applied": false},
+	"Rshoe1": {"stats": {"slash_resistance": 1,"blunt_resistance": 3,"pierce_resistance": 1,"heat_resistance": 1,"cold_resistance": 6,"jolt_resistance": 15}, "applied": false},
+	"sword0": {"stats": { "extra_guard_dmg_absorbition": 0.3,"slash_dmg":12}, "applied": false}
+}
+
+
+# Function to apply or remove effects
+func applyEffect(effect_name: String, active: bool)->void:
+	var player = self 
+	if effects.has(effect_name):
+		var effect = effects[effect_name]
+		if active and not effect["applied"]:
+			# Apply effect
+			for stat_name in effect["stats"].keys():
+				player[stat_name] += effect["stats"][stat_name]
+			effect["applied"] = true
+		elif not active and effect["applied"]:
+			# Remove effect
+			for stat_name in effect["stats"].keys():
+				if stat_name in player:
+					player[stat_name] -= effect["stats"][stat_name]
+			effect["applied"] = false
+	else:
+		print("Effect not found:", effect_name)
+
+
+
 
 func changeAttackType()->void:
 	random_atk = rand_range(0,1)
@@ -463,10 +602,7 @@ func staggeredOver():
 	state = autoload.state_list.wander
 	staggered_duration = false
 
-
-
-
-
+#___________________________________________________________________________________________________
 func baseMeleeAtk()->void:
 	var damage_type:String = "slash"
 	var damage = 10 
