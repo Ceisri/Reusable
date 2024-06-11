@@ -53,9 +53,16 @@ var staggered_duration: bool = false
 var has_died:bool = false
 
 var atk_1_duration:bool = false
+var atk1_spam:int = 0
+
 var atk_2_duration:bool = false
+var atk2_spam:int = 0
+
 var atk_3_duration:bool = false
+var atk3_spam:int = 0
+
 var atk_4_duration:bool = false
+var atk4_spam:int = 0
 func matchState()->void:
 	match state:
 		autoload.state_list.idle:
@@ -65,8 +72,9 @@ func matchState()->void:
 				$Wandering.wander()# animations are inside 
 				forceDirectionChange()
 		autoload.state_list.curious:
-			lookTarget()
+			lookTarget(turn_speed)
 		autoload.state_list.engage:
+			var target = threat_system.findHighestThreat()
 			if health >0:#not dead
 #_______________________Entity is Stunned, Stop all attacks_______________________________________
 				if stunned_duration > 0:# not stunned 
@@ -84,22 +92,34 @@ func matchState()->void:
 					var  distance_to_target = findDistanceTarget()
 					if distance_to_target != null:
 #________________________Target in range start choosing an attack and lock it in____________________
-						if distance_to_target < 1.4:
-							if random_atk < 0.25:  # 25% chance
-								atk_1_duration = true
-							elif random_atk < 0.50:  # 25% chance
-								atk_2_duration = true
-							elif random_atk < 0.75:  # 25% chance
-								atk_3_duration = true
-							else:  # 25% chance
-								atk_4_duration = true
-							if  atk_1_duration == false and atk_2_duration == false and atk_3_duration == false and atk_4_duration == false:
-								lookTarget()
+						if distance_to_target < 1.3:
+							var random_value = randf()
+
+							if random_atk < 0.25:  # 25% 
+									atk_1_duration = true
+									#Entity is stuck in animation, check how many times it attacked to see if it can turn around 
+									if atk1_spam > 2:
+										lookTarget(turn_speed)
+							elif random_atk < 0.50:  # 25% 
+									atk_2_duration = true
+									#Entity is stuck in animation, check how many times it attacked to see if it can turn around 
+									if atk2_spam > 1:
+										lookTarget(turn_speed)
+							elif random_atk < 0.75:  # 25%
+									atk_3_duration = true
+									if atk3_spam > 1:
+										lookTarget(turn_speed)
+							else:  # 25% of the remaining 70% 
+									atk_4_duration = true
+									#Entity is stuck in animation, check how many times it attacked to see if it can turn around 
+									if atk4_spam > 1:
+										lookTarget(turn_speed)
+
 #__________________Target too far away, if not stuck in attack animation, follow it_________________
 						else:
 							if  atk_1_duration == false and atk_2_duration == false and atk_3_duration == false and atk_4_duration == false:
 								changeAttackType()
-								lookTarget()
+								lookTarget(turn_speed)
 								followTarget(false)
 								animation.play("walk combat",0.3)
 								
@@ -108,7 +128,7 @@ func matchState()->void:
 				if orbit_time > 0:
 					orbit_time -= 3 * get_physics_process_delta_time()
 					orbitTarget()
-					lookTarget()
+					lookTarget(turn_speed)
 				else:
 					state = autoload.state_list.engage
 		autoload.state_list.stunned:
@@ -127,13 +147,13 @@ func matchState()->void:
 
 func attackAnimations()->void:
 	if atk_1_duration == true:
-		animation.play("triple slash", 0.25)
+		animation.play("atk1", 0.25)
 	elif atk_2_duration == true:
-		animation.play("chop sword", 0.3)
+		animation.play("atk2", 0.3)
 	elif atk_3_duration == true:
-		animation.play("heavy swing", 0.3)
+		animation.play("atk3", 0.3)
 	elif atk_4_duration == true:
-		animation.play("spin", 0.3)
+		animation.play("atk4", 0.3)
 
 
 func animationCancel()->void:
@@ -204,11 +224,30 @@ func stopSlidingForward()-> void:
 	tween.stop_all()
 onready var eyes = $Eyes
 var turn_speed = 9
-func lookTarget()->void:
+func lookTarget(turning_speed)->void:
 	var target = threat_system.findHighestThreat()
 	if target: 
 		eyes.look_at(target.player.global_transform.origin, Vector3.UP)
-		rotate_y(deg2rad(eyes.rotation.y * turn_speed))
+		rotate_y(deg2rad(eyes.rotation.y * turning_speed))
+		
+		
+func lookTargetTween(turning_speed: float) -> void:
+	var target = threat_system.findHighestThreat()
+	if target:
+		var target_position = target.player.global_transform.origin
+		var look_at_target_transform = eyes.global_transform.looking_at(target_position, Vector3.UP)
+		var target_rotation_y = look_at_target_transform.basis.get_euler().y
+
+		# Stop any existing tweening
+		tween.stop_all()
+
+		# Tween the rotation.y to target_rotation_y over a duration based on turning_speed
+		tween.interpolate_property(eyes, "rotation:y", eyes.rotation.y, target_rotation_y, turning_speed, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
+		tween.start()
+
+		
+		
+		
 var walk_speed: float = 3
 func followTarget(angry:bool)->void:
 	if angry == false:
@@ -268,6 +307,7 @@ func takeThreat(aggro_power,instigator)->void:
 var parry: bool =  false
 var absorbing: bool = false
 func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type)->void:
+	lookTarget(turn_speed*3)
 	stored_instigator = instigator
 	var take_damage_view  =$TakeDamageView/Viewport
 	var text = autoload.floatingtext_damage.instance()
@@ -611,7 +651,6 @@ func die():
 func staggeredOver():
 	state = autoload.state_list.wander
 	staggered_duration = false
-
 #___________________________________________________________________________________________________
 func baseMeleeAtk()->void:
 	var damage_type:String = "slash"
@@ -624,8 +663,6 @@ func baseMeleeAtk()->void:
 	var aggro_power = 0
 	var enemies = $Area.get_overlapping_bodies()
 	dealDMG(enemies,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank)
-	
-	
 func dealDMG(enemy_detector1,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank):
 	for victim in enemy_detector1:
 		if victim.is_in_group("Player"):
@@ -666,3 +703,22 @@ func dealDMG(enemy_detector1,critical_damage,aggro_power,damage_type,critical_fl
 									victim.takeDamage(damage,aggro_power,self,stagger_chance,damage_type)
 								else: #appareantly the victim is showing his back or flanks, extra damage
 									victim.takeDamage(damage_flank,aggro_power,self,stagger_chance,damage_type)
+
+
+
+func atk1Spam()->void:
+	atk1_spam += 1
+	if atk1_spam == 4:
+		atk1_spam = 0
+func atk2Spam()->void:
+	atk2_spam += 1
+	if atk2_spam == 4:
+		atk2_spam = 0
+func atk3Spam()->void:
+	atk3_spam += 1
+	if atk3_spam == 4:
+		atk3_spam = 0
+func atk4Spam()->void:
+	atk4_spam += 1
+	if atk4_spam == 4:
+		atk4_spam = 0

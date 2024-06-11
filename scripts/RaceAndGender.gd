@@ -30,8 +30,8 @@ func loadAnimations()->void:
 	animation.add_animation("fall", load("res://player/universal animations/Animations Movement General/fall.anim"))
 	animation.add_animation("idle fist", load("res://player/universal animations/Animations Fist/idle fist.anim"))
 	animation.add_animation("idle bow", load("res://player/universal animations/Animations Bow/idle  bow.anim"))#placeholder
-	animation.add_animation("idle sword", load("res://player/universal animations/Animations Sword Light/idle sword.anim"))
-	animation.add_animation("idle shield", load("res://player/universal animations/Animations Sword Light/idle sword.anim"))
+	animation.add_animation("idle sword", load("res://player/universal animations/dump2/idle sword.anim"))
+	animation.add_animation("idle shield", load("res://player/universal animations/dump2/idle sword.anim"))
 	animation.add_animation("idle heavy", load("res://player/universal animations/Animations Sword Heavy/idle heavy.anim"))
 	
 	animation.add_animation("walk", load("res://player/universal animations/Animations Movement General/walk.tres"))
@@ -64,8 +64,8 @@ func loadAnimations()->void:
 	animation.add_animation("cyclone sword", load("res://player/universal animations/Animations Sword Light/cyclone  sword.anim"))#placeholder
 	animation.add_animation("cyclone heavy", load("res://player/universal animations/Animations Sword Heavy/cyclone heavy.anim"))
 	
-	animation.add_animation("overhead slash sword", load("res://player/universal animations/Animations Sword Light/overhand slash sword.anim"))
-	animation.add_animation("overhead slash heavy", load("res://player/universal animations/Animations Sword Heavy/overhand slash heavy.anim"))
+	animation.add_animation("overhead slash sword", load("res://player/universal animations/Animations Sword Light/overhead slash.anim"))
+	animation.add_animation("overhead slash heavy", load("res://player/universal animations/Animations Sword Light/overhead slash.anim"))
 	
 	animation.add_animation("rising slash shield", load("res://player/universal animations/Animations Shield/rising slash shield.anim"))
 	animation.add_animation("rising slash heavy", load("res://player/universal animations/Animations Sword Heavy/rising slash heavy.anim"))

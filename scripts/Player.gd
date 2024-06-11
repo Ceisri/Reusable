@@ -4,7 +4,7 @@ onready var player_mesh: Node = $Mesh
 
 var rng = RandomNumberGenerator.new()
 
-var blend: float = 0.11
+var blend: float = 0.22
 
 var strafe_dir: Vector3 = Vector3.ZERO
 var strafe: Vector3 = Vector3.ZERO
@@ -136,7 +136,7 @@ func walk()->void:
 			is_walking = true
 	#		if is_instance_valid(current_race_gender) and current_race_gender.can_move == true:
 		# Sprint input, state and speed
-			if (Input.is_action_pressed("sprint")) and (is_walking == true):
+			if (Input.is_action_pressed("sprint")) and (is_walking == true) and is_in_combat == false:
 				is_in_combat = false
 				if sprint_speed < max_sprint_speed:
 					sprint_speed += 0.005 * agility
@@ -153,7 +153,7 @@ func walk()->void:
 				is_running = false
 				is_aiming = false
 				is_crouching = false
-			elif Input.is_action_pressed("run"):
+			elif Input.is_action_pressed("run")and is_in_combat == false:
 				is_in_combat = false
 				sprint_speed = 10
 				is_running = true 
@@ -655,7 +655,7 @@ func inputOrStateToAnimation()-> void:
 						if overhead_slash_combo == false:
 							animation.play("overhead slash sword",blend, melee_atk_speed- 0.15)
 						else:
-							animation.play("overhand slash sword",blend, melee_atk_speed + 0.9)
+							animation.play("overhead slash sword",blend, melee_atk_speed + 0.9)
 					autoload.weapon_list.dual_swords:
 						if overhead_slash_combo == false:
 							animation.play("overhead slash sword",blend, melee_atk_speed- 0.15)
