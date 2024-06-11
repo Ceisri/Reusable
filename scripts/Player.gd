@@ -42,13 +42,13 @@ func _ready()->void:
 func _on_SlowTimer_timeout()->void:
 	effectDurations()
 	allResourcesBarsAndLabels()
+	money()
 	if health >0:
 		potionEffects()
 		if $UI/GUI/Equipment.visible == true :
 			current_race_gender.EquipmentSwitch()
 		saveSkillBarData()
 		convertStats()
-		money()
 		hunger()
 		hydration()	
 		frameRate()	
@@ -61,7 +61,11 @@ func _on_SlowTimer_timeout()->void:
 		r_click_slot.switchAttackIcon()
 		$UI/GUI/SkillTrees/Label.text = str("skill points: ")+ str(skill_points)
 		$UI/GUI/SkillTrees/Label2.text =  str("points spent: ")+ str(skill_points_spent)
+		
 	displayClock()
+	
+	if health <= 0 :
+		revival_wait_time -= 1
 func _on_3FPS_timeout()->void:
 	if health >0:
 		$UI/GUI/Equipment/Attributes/AttributePoints.text = "Attributes points left: " + str(attribute)
@@ -101,12 +105,104 @@ func _physics_process(delta: float) -> void:
 	positionCoordinates()
 	MainWeapon()
 	SecWeapon()
+	
+	deathLife(delta)#Main function
+	
+
+		
+
+onready var revival_label:Label =  $UI/GUI/SkillBar/ReviveLabel
+onready var struggle_button:Button = $UI/GUI/SkillBar/Struggle
+onready var revive_here:Button = $UI/GUI/SkillBar/ReviveHere
+onready var revive_here_free:Button = $UI/GUI/SkillBar/ReviveHereFree
+onready var revive_in_town:Button = $UI/GUI/SkillBar/ReviveInTown
+
+var revival_wait_time:int = 300
+var struggles:int = 15
+var revival_cost:int =  500
+func deathLife(delta)->void:
+	hideShowDeath()
+	if death_duration == false:
+		walk()
 	if health >0:
+
 		climbing()
 		jump()
-		walk()
 		fieldOfView()
+	else:
+		animationCancel()
+
+		if revival_wait_time >0:
+			revival_label.text = "Wait" + str(revival_wait_time) + " seconds"
+		else:
+			revival_label.text = "Free revival ready!"
+
+
+func hideShowDeath()->void:
+	if health <=0:
+		revival_label.visible = true
+		struggle_button.visible = true
+		revive_here.visible = true
+		revive_here.text = "Revive here(" + str(revival_cost/100) + "silver)"
+		revive_here_free.visible = true
+		revive_in_town.visible = true
+		$UI/GUI/SkillBar/filler.visible = true
+	else:
+		revival_label.visible = false
+		struggle_button.visible = false
+		revive_here.visible = false
+		revive_here_free.visible = false
+		revive_in_town.visible = false
+		$UI/GUI/SkillBar/filler.visible = false
+	
+
+func reviveHereFree()->void:
+	if revival_wait_time <= 0:
+		state  = autoload.state_list.idle
+		health = max_health * 0.25
+		resolve = max_resolve * 0.25
+		nefis = max_nefis * 0.05
+		aefis = max_aefis * 0.05
+		breath = max_breath * 0.5
+		kilocalories = max_kilocalories * 0.1
+		water = max_water * 0.1
+		revival_wait_time = 120
+		struggles = 15
 		
+func reviveHere()->void:#Paid option
+	if coins >= revival_cost:
+		coins-= revival_cost
+		state  = autoload.state_list.idle
+		health = max_health * 0.5
+		resolve = max_resolve * 0.5
+		nefis = max_nefis 
+		aefis = max_aefis 
+		breath = max_breath 
+		kilocalories = max_kilocalories 
+		water = max_water 
+		revival_wait_time = 120
+		struggles = 15
+		
+
+func struggle()->void:
+	if struggles >0:
+		revival_wait_time -= rng.randi_range(1,6)
+		struggles -= 1 
+	struggle_button.text = "Struggle:" + str(struggles)+ " remaining"
+
+
+func reviveInTown()->void:
+	state  = autoload.state_list.idle
+	health = max_health 
+	resolve = max_resolve 
+	nefis = max_nefis 
+	aefis = max_aefis 
+	breath = max_breath
+	kilocalories = max_kilocalories 
+	water = max_water 
+	revival_wait_time = 120
+	struggles = 5
+	translation = Vector3(0, 10, 0)
 
 #_______________________________________________Basic Movement______________________________________
 var h_rot 
@@ -918,7 +1014,12 @@ func inputOrStateToAnimation()-> void:
 					if death_duration == true:
 						animation.play("death",blend)
 					else:
-						animation.play("dead",blend)
+						if is_walking == true:
+							is_in_combat = false
+							switchMainFromHipToHand()
+							animation.play("crawl",blend)
+						else:
+							animation.play("dead",blend)
 
 onready var l_click_slot = $UI/GUI/SkillBar/GridContainer/LClickSlot
 onready var r_click_slot = $UI/GUI/SkillBar/GridContainer/RClickSlot
@@ -1296,7 +1397,8 @@ func inputToState():
 		elif Input.is_action_pressed("crouch"):
 			state =  autoload.state_list.crouch
 		else:
-			state =  autoload.state_list.idle
+			if health >0:
+				state =  autoload.state_list.idle
 
 #_______________________________________________Combat______________________________________________
 
@@ -1573,6 +1675,10 @@ func _on_OpenAllUI_pressed():
 	$UI/GUI/CharacterEditor.visible = !$UI/GUI/CharacterEditor.visible
 	
 func connectUIButtons():
+	revive_here.connect("pressed", self , "reviveHere")
+	revive_in_town.connect("pressed", self , "reviveInTown")
+	revive_here_free.connect("pressed", self , "reviveHereFree")
+	struggle_button.connect("pressed", self , "struggle")
 	var close_dmg: TextureButton = $UI/GUI/Equipment/DmgDef/Close
 	if close_dmg != null:
 		close_dmg.connect("pressed", self, "closeDamageTypes")
@@ -1582,7 +1688,6 @@ func connectUIButtons():
 	var open_dmg: TextureButton = $UI/GUI/Equipment/EquipmentBG/OpenDmgDef
 	if open_dmg != null:
 		 open_dmg.connect("pressed", self, "switchAttsStatsUI")
-		
 		
 onready var dmg_ui: Control = $UI/GUI/Equipment/DmgDef	
 onready var atts_ui: Control = $UI/GUI/Equipment/Attributes
@@ -2050,7 +2155,7 @@ func crafting():
 
 #________________________________Add items to inventory_________________________
 func _on_GiveMeItems_pressed():
-	coins += 55
+	coins += 550
 	autoload.addStackableItem(inventory_grid,autoload.garlic,200)
 	autoload.addFloatingIcon(take_damage_view,autoload.garlic,200)
 	
@@ -5103,7 +5208,3 @@ func _on_BlendshapeTest_pressed():
 	current_race_gender.applyBlendShapes()
 
 
-func _on_reviveme_pressed():
-	state  = autoload.state_list.idle
-	health = max_health
-	translation = Vector3(0, 10, 0)
