@@ -80,7 +80,10 @@ func _on_3FPS_timeout()->void:
 
 func _physics_process(delta: float) -> void:
 	all_skills.updateCooldownLabel()
-	$Debug.text = str(state)
+	var state_enum = autoload.state_list  # Access the enum from the singleton
+	var state_value = state  # Get the current state value
+	var state_name = state_enum.keys()[state_value]  # Convert enum to string
+	$Debug.text = state_name  # Assuming $Debug is a reference to a Label node
 	convertStats()
 	limitStatsToMaximum()
 	cameraRotation()
@@ -105,7 +108,7 @@ func _physics_process(delta: float) -> void:
 	positionCoordinates()
 	MainWeapon()
 	SecWeapon()
-	
+	jump()
 	deathLife(delta)#Main function
 	
 
@@ -125,13 +128,10 @@ func deathLife(delta)->void:
 	if death_duration == false:
 		walk()
 	if health >0:
-
 		climbing()
-		jump()
 		fieldOfView()
 	else:
 		animationCancel()
-
 		if revival_wait_time >0:
 			revival_label.text = "Wait" + str(revival_wait_time) + " seconds"
 		else:
@@ -232,7 +232,7 @@ func walk()->void:
 			is_walking = true
 	#		if is_instance_valid(current_race_gender) and current_race_gender.can_move == true:
 		# Sprint input, state and speed
-			if (Input.is_action_pressed("sprint")) and (is_walking == true) and is_in_combat == false:
+			if (Input.is_action_pressed("sprint")) and (is_walking == true) and is_in_combat == false and  health > 0:
 				is_in_combat = false
 				if sprint_speed < max_sprint_speed:
 					sprint_speed += 0.005 * agility
@@ -249,7 +249,7 @@ func walk()->void:
 				is_running = false
 				is_aiming = false
 				is_crouching = false
-			elif Input.is_action_pressed("run")and is_in_combat == false:
+			elif Input.is_action_pressed("run")and is_in_combat == false and  health > 0:
 				is_in_combat = false
 				sprint_speed = 10
 				is_running = true 
@@ -337,8 +337,9 @@ func checkWallInclination()-> void:
 		is_wall_in_range = false
 
 func jump():
-	if Input.is_action_just_pressed("jump") and is_on_floor():
-		vertical_velocity =  Vector3.UP * ((jumping_power * agility) * get_physics_process_delta_time())
+	if health > 0:
+		if Input.is_action_just_pressed("jump") and is_on_floor():
+			vertical_velocity =  Vector3.UP * ((jumping_power * agility) * get_physics_process_delta_time())
 
 
 	
@@ -1307,6 +1308,7 @@ func moveDuringAnimation(speed):
 			movement_speed = 0
 				
 var sprint_animation_speed: float = 1
+var anim_cancel:bool = true #If true using abilities and skills interupts base attacks or other animations
 func inputToState():
 	if health <= 0:
 		state = autoload.state_list.dead
@@ -1325,14 +1327,20 @@ func inputToState():
 		elif not is_on_floor() and not is_climbing and not is_swimming:
 			state = autoload.state_list.fall
 	#attacks________________________________________________________________________________________
-		elif Input.is_action_pressed("rclick") and !cursor_visible:
+		elif Input.is_action_pressed("rclick") and !cursor_visible: #DON'T MOVE THIS, RCLICK STAYS FOR ANIM CANCEL
 			if !is_walking:
 				state = autoload.state_list.guard
 			else:
 				state = autoload.state_list.walk
-		elif Input.is_action_pressed("attack") and !cursor_visible:
-			state = autoload.state_list.base_attack
-			can_walk = false
+		
+		elif anim_cancel == false:#We chec twice for "attack" input based on animation cancelling settings 
+			if Input.is_action_pressed("attack") and !cursor_visible: 
+				state = autoload.state_list.base_attack
+				can_walk = false
+
+
+
+
 	#skills put these below the walk elif statment in case of keybinding bugs, as of now it works so no need
 		elif Input.is_action_pressed("1"):
 				state = autoload.state_list.skill1
@@ -1376,6 +1384,12 @@ func inputToState():
 				state = autoload.state_list.skillV
 		elif Input.is_action_pressed("B"):
 				state = autoload.state_list.skillB
+				
+		elif Input.is_action_pressed("attack") and !cursor_visible: 
+			state = autoload.state_list.base_attack
+			can_walk = false
+				
+				
 	#_______________________________________________________________________________
 			
 		elif is_sprinting == true:
@@ -2729,7 +2743,6 @@ func effectDurations():
 		applyEffect("stunned",true)
 		stunned_duration -= 1
 	else:
-		state = autoload.state_list.engage
 		applyEffect("stunned",false)
 	if berserk_duration > 0:
 		berserk_duration -= 1
