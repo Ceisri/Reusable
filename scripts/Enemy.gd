@@ -31,14 +31,14 @@ func process()->void:
 		threat_system.loseThreat()
 		if staggered_duration == true:
 			state = autoload.state_list.staggered
-	if health <=0:
+	if health <0 or health ==0:
 		if has_died == false:
 			death_time = 3.958
 			if has_died == true:
 				state = autoload.state_list.dead
 	
 func oneSecondTimer()->void:
-	effectDurations()
+	damage_effect_manager.effectDurations()
 
 func displayThreatInfo(label):
 	threat_system.threat_info = threat_system.getBestFive()
@@ -133,7 +133,10 @@ func matchState()->void:
 				else:
 					state = autoload.state_list.engage
 		autoload.state_list.stunned:
-			animation.play("staggered",0.2)
+			if stunned_duration > 0:
+				animation.play("staggered",0.2)
+			else:
+				state = autoload.state_list.engage
 		autoload.state_list.staggered:
 			animation.play("staggered",0.2)
 		autoload.state_list.dead:
@@ -299,7 +302,7 @@ var speed: float = 3.0
 var rotation_speed: float = 2.0
 
 onready var take_damage_audio = $TakeHit
-onready var take_damage_view  =$TakeDamageView/Viewport
+onready var take_damage_view  = $"Damage&Effects/Viewport"
 func takeThreat(aggro_power,instigator)->void:
 	stored_instigator = instigator
 	var target = threat_system.createFindThreat(instigator)
@@ -308,108 +311,16 @@ func takeThreat(aggro_power,instigator)->void:
 	
 	
 func takeStagger(stagger_chance: float) -> void:
-	if randf() <= stagger_chance:
-		var text = autoload.floatingtext_damage.instance()
-		state = autoload.state_list.staggered
-		staggered_duration = true
-		text.status = "Staggered"
-		take_damage_view.add_child(text)
+	damage_effect_manager.takeStagger(stagger_chance)
 	
 var parry: bool =  false
 var absorbing: bool = false
-
+onready var damage_effect_manager = $"Damage&Effects"
 func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type)->void:
-	
-	$TakeDamageView.takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type)
-	
-#	var random_range = rand_range(0,1)
-#	var text = autoload.floatingtext_damage.instance()
-#	lookTarget(turn_speed*3)
-#	stored_instigator = instigator
-#	if parry == false:
-#		take_damage_audio.play()
-#		var damage_to_take = damage
-#		var instigatorAggro = threat_system.createFindThreat(instigator)
-#		if damage_type == "slash":
-#			var mitigation = slash_resistance / (slash_resistance + 100.0)
-#			damage_to_take *= (1.0 - mitigation)
-#			if instigator.has_method("lifesteal"):
-#				instigator.lifesteal(damage_to_take)
-#		elif damage_type == "pierce":
-#			var mitigation = pierce_resistance / (pierce_resistance + 100.0)
-#			damage_to_take *= (1.0 - mitigation)
-#			if instigator.has_method("lifesteal"):
-#				instigator.lifesteal(damage_to_take)
-#		elif damage_type == "blunt":
-#			var mitigation = blunt_resistance / (blunt_resistance + 100.0)
-#			damage_to_take *= (1.0 - mitigation)
-#			if instigator.has_method("lifesteal"):
-#				instigator.lifesteal(damage_to_take)
-#		elif damage_type == "sonic":
-#			var mitigation = sonic_resistance / (sonic_resistance + 100.0)
-#			damage_to_take *= (1.0 - mitigation)
-#			if instigator.has_method("lifesteal"):
-#				instigator.lifesteal(damage_to_take)
-#		elif damage_type == "heat":
-#			var mitigation = heat_resistance / (heat_resistance + 100.0)
-#			damage_to_take *= (1.0 - mitigation)
-#			if instigator.has_method("lifesteal"):
-#				instigator.lifesteal(damage_to_take)
-#		elif damage_type == "cold":
-#			var mitigation = cold_resistance / (cold_resistance + 100.0)
-#			damage_to_take *= (1.0 - mitigation)
-#			if instigator.has_method("lifesteal"):
-#				instigator.lifesteal(damage_to_take)
-#		elif damage_type == "jolt":
-#			var mitigation = jolt_resistance / (jolt_resistance + 100.0)
-#			damage_to_take *= (1.0 - mitigation)
-#			if instigator.has_method("lifesteal"):
-#				instigator.lifesteal(damage_to_take)
-#		elif damage_type == "toxic":
-#			var mitigation = toxic_resistance / (toxic_resistance + 100.0)
-#			damage_to_take *= (1.0 - mitigation)
-#			if instigator.has_method("lifesteal"):
-#				instigator.lifesteal(damage_to_take)
-#		elif damage_type == "acid":
-#			var mitigation = acid_resistance / (acid_resistance + 100.0)
-#			damage_to_take *= (1.0 - mitigation)
-#			if instigator.has_method("lifesteal"):
-#				instigator.lifesteal(damage_to_take)
-#		elif damage_type == "bleed":
-#			var mitigation = bleed_resistance / (bleed_resistance + 100.0)
-#			damage_to_take *= (1.0 - mitigation)
-#			if instigator.has_method("lifesteal"):
-#				instigator.lifesteal(damage_to_take)
-#		elif damage_type == "neuro":
-#			var mitigation = neuro_resistance / (neuro_resistance + 100.0)
-#			damage_to_take *= (1.0 - mitigation)
-#			if instigator.has_method("lifesteal"):
-#				instigator.lifesteal(damage_to_take)
-#		elif damage_type == "radiant":
-#			var mitigation = radiant_resistance / (radiant_resistance + 100.0)
-#			damage_to_take *= (1.0 - mitigation)
-#			if instigator.has_method("lifesteal"):
-#				instigator.lifesteal(damage_to_take)
-#
-#
-#		if randf() < stagger_chance- stagger_resistance:
-#				state = autoload.state_list.staggered
-#				staggered_duration = true
-#				text.status = "Staggered"
-#		health -= damage_to_take	
-#		instigatorAggro.threat += damage_to_take + aggro_power
-#		text.amount =round(damage_to_take * 100)/ 100
-#		text.state = damage_type
-#		take_damage_view.add_child(text)
-#		if health <= 0:
-#			state =autoload.state_list.dead
-#			if instigator.has_method("takeExperience"):
-#				instigator.takeExperience(round((max_health * 0.01)+ experience_worth))
-#	else:
-#		text.status = "Parried"
-#		text.state = damage_type
-#		take_damage_view.add_child(text)
-		
+	stored_instigator = instigator
+	damage_effect_manager.takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type)
+	damage_effect_manager.getKilled(instigator)
+
 #stats______________________________________________________________________________________________
 var entity_name = "Demon"
 var level: int = 1
@@ -462,7 +373,7 @@ var scale_factor = 1
 
 var critical_chance: float = 0
 var critical_strength: float = 2.0
-var stagger_chance: float = 15 #0 to 100 in percentage
+var stagger_chance: float = 8 #0 to 100 in percentage
 var life_steal: float = 0
 #resistances
 var stagger_resistance: float = 0.0 #0 to 100 in percentage, this is directly detracted to instigator.stagger_chance 
@@ -511,8 +422,8 @@ func isFacingSelf(enemy: Node, threshold: float) -> bool:
 var stored_instigator:KinematicBody 
 var bleeding_duration:float = 0
 var stunned_duration:float = 0
+var berserk_duration:float = 0 
 func effectDurations():
-
 	if bleeding_duration > 0:
 		if stored_instigator == null:
 			pass
@@ -685,8 +596,6 @@ func dealDMG(enemy_detector1,critical_damage,aggro_power,damage_type,critical_fl
 			if victim != self:
 				victim.stored_instigator = self 
 				var rand = rand_range(0,1)
-				if rand > 0.5:
-					victim.stunned_duration = 1
 				if victim.state != autoload.state_list.dead:
 						if randf() <= critical_chance:#critical hit
 							if victim.absorbing == true: #victim is guarding

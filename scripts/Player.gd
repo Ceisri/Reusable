@@ -1,6 +1,6 @@
 extends KinematicBody
 onready var player_mesh: Node = $Mesh
-
+onready var damage_effects_manager = $"Damage&Effects"
 
 var rng = RandomNumberGenerator.new()
 
@@ -40,9 +40,9 @@ func _ready()->void:
 	l_click_slot.switchAttackIcon()
 	colorBodyParts()
 func _on_SlowTimer_timeout()->void:
+
 	experienceSystem()
-	current_race_gender.stagger_chance = stagger_chance
-	effectDurations()
+	damage_effects_manager.effectDurations()
 	allResourcesBarsAndLabels()
 	money()
 	if health >0:
@@ -1049,165 +1049,28 @@ func isFacingSelf(enemy: Node, threshold: float) -> bool:
 	var dot_product = -enemy_facing_direction.dot(direction_to_enemy)
 	# If the dot product is greater than a certain threshold, consider the enemy is facing the calling object (self)
 	return dot_product >= threshold
-onready var take_damage_view  = $Mesh/TakeDamageView/Viewport
 var parry: bool =  false
 var absorbing: bool = false
 func clearParryAbsorb():
 	parry = false
 	absorbing = false
 	is_aiming = false
+	
+func takeStagger(stagger_chance: float) -> void:
+	damage_effects_manager.takeStagger(stagger_chance)
+	
 func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
 		allResourcesBarsAndLabels()
-		var text = autoload.floatingtext_damage.instance()
-		var random_range = rand_range(0,100)
-		var damage_to_take = damage
-		if damage_type == "slash":
-			var mitigation: float
-			if slash_resistance >= 0:
-				mitigation = slash_resistance / (slash_resistance + 100.0)
-			else:
-				# For every negative point of slash resistance, add to damage to take directly
-				damage_to_take += -slash_resistance
-			damage_to_take *= (1.0 - mitigation)
-			if instigator.has_method("lifesteal"):
-				instigator.lifesteal(damage_to_take)
-				
-		elif damage_type == "pierce":
-			var mitigation: float
-			if pierce_resistance >= 0:
-				mitigation = pierce_resistance / (pierce_resistance + 100.0)
-			else:
-				damage_to_take += -pierce_resistance
-			damage_to_take *= (1.0 - mitigation)
-			if instigator.has_method("lifesteal"):
-				instigator.lifesteal(damage_to_take)
-				
-		elif damage_type == "blunt":
-			var mitigation: float
-			if blunt_resistance >= 0:
-				mitigation = blunt_resistance / (blunt_resistance + 100.0)
-			else:
-				damage_to_take += -blunt_resistance
-			damage_to_take *= (1.0 - mitigation)
-			if instigator.has_method("lifesteal"):
-				instigator.lifesteal(damage_to_take)
-				
-		elif damage_type == "sonic":
-			var mitigation: float
-			if sonic_resistance >= 0:
-				mitigation = sonic_resistance / (sonic_resistance + 100.0)
-			else:
-				damage_to_take += -sonic_resistance
-			damage_to_take *= (1.0 - mitigation)
-			if instigator.has_method("lifesteal"):
-				instigator.lifesteal(damage_to_take)
-				
-		elif damage_type == "heat":
-			var mitigation: float
-			if heat_resistance >= 0:
-				mitigation = heat_resistance / (heat_resistance + 100.0)
-			else:
-				damage_to_take += -heat_resistance
-			damage_to_take *= (1.0 - mitigation)
-			if instigator.has_method("lifesteal"):
-				instigator.lifesteal(damage_to_take)
-				
-		elif damage_type == "cold":
-			var mitigation: float
-			if cold_resistance >= 0:
-				mitigation = cold_resistance / (cold_resistance + 100.0)
-			else:
-				damage_to_take += -cold_resistance
-			damage_to_take *= (1.0 - mitigation)
-			if instigator.has_method("lifesteal"):
-				instigator.lifesteal(damage_to_take)
-				
-		elif damage_type == "jolt":
-			var mitigation: float
-			if jolt_resistance >= 0:
-				mitigation = jolt_resistance / (jolt_resistance + 100.0)
-			else:
-				damage_to_take += -jolt_resistance
-			damage_to_take *= (1.0 - mitigation)
-			if instigator.has_method("lifesteal"):
-				instigator.lifesteal(damage_to_take)
-			
-		elif damage_type == "toxic":
-			var mitigation: float
-			if toxic_resistance >= 0:
-				mitigation = toxic_resistance / (toxic_resistance + 100.0)
-			else:
-				damage_to_take += -toxic_resistance
-			damage_to_take *= (1.0 - mitigation)
-			if instigator.has_method("lifesteal"):
-				instigator.lifesteal(damage_to_take)
-			
-		elif damage_type == "acid":
-			var mitigation: float
-			if acid_resistance >= 0:
-				mitigation = acid_resistance / (acid_resistance + 100.0)
-			else:
-				damage_to_take += -acid_resistance
-			damage_to_take *= (1.0 - mitigation)
-			if instigator.has_method("lifesteal"):
-				instigator.lifesteal(damage_to_take)
-			
-		elif damage_type == "bleed":
-			var mitigation: float
-			if bleed_resistance >= 0:
-				mitigation = bleed_resistance / (bleed_resistance + 100.0)
-			else:
-				damage_to_take += -acid_resistance
-			damage_to_take *= (1.0 - mitigation)
-			if instigator.has_method("lifesteal"):
-				instigator.lifesteal(damage_to_take)
-			
-		elif damage_type == "neuro":
-			var mitigation: float
-			if neuro_resistance >= 0:
-				mitigation = neuro_resistance / (neuro_resistance + 100.0)
-			else:
-				damage_to_take += -neuro_resistance
-			damage_to_take *= (1.0 - mitigation)
-			if instigator.has_method("lifesteal"):
-				instigator.lifesteal(damage_to_take)
-			
-		elif damage_type == "radiant":
-			var mitigation: float
-			if radiant_resistance >= 0:
-				mitigation = radiant_resistance / (radiant_resistance + 100.0)
-			else:
-				damage_to_take += -radiant_resistance
-			damage_to_take *= (1.0 - mitigation)
-			if instigator.has_method("lifesteal"):
-				instigator.lifesteal(damage_to_take)
-				
-		if randf() < stagger_chance- stagger_resistance:
-				state = autoload.state_list.staggered
-				staggered_duration = true
-				text.status = "Staggered"
-				
-		health -= damage_to_take
-		text.amount =round(damage_to_take * 100)/ 100
-		text.state = damage_type
-		take_damage_view.add_child(text)
+		damage_effects_manager.takeDamagePlayer(damage, aggro_power, instigator, stagger_chance, damage_type)
+
+
+
 func takeHealing(healing,healer):
-	health += healing
-	var text = autoload.floatingtext_damage.instance()
-	text.amount =round(healing * 100)/ 100
-	text.state = autoload.state_list.healing
-	take_damage_view.add_child(text)
+	damage_effects_manager.takeHealing(healing,healer)
+	
 var lifesteal_pop = preload("res://UI/lifestealandhealing.tscn")	
 func lifesteal(damage_to_take)-> void:#This is called by the enemy's script when they take damage
-	if life_steal > 0:
-		var text = lifesteal_pop.instance()
-		var life_steal_ratio = damage_to_take * life_steal
-		if health < max_health:
-			health += life_steal_ratio
-			text.amount = round(life_steal_ratio * 100)/ 100
-			take_damage_view.add_child(text)
-		elif health > max_health:
-			health = max_health
+	damage_effects_manager.lifesteal(damage_to_take)
 
 #_____________________________________DEATH AND LIFE STATE__________________________________________
 onready var revival_label:Label =  $UI/GUI/SkillBar/ReviveLabel
@@ -1295,8 +1158,6 @@ func reviveInTown()->void:
 	translation = Vector3(0,5, 0)
 	can_walk = true
 	autoload.gravity(self)
-
-
 
 
 
@@ -2282,6 +2143,7 @@ func crafting():
 			crafting_result.texture = preload("res://Processed ingredients/ground rosehip.png")
 			$UI/GUI/Crafting/CraftingResultSlot.quantity = 2
 
+onready var take_damage_view = $"Damage&Effects/Viewport"
 #________________________________Add items to inventory_________________________
 func _on_GiveMeItems_pressed():
 	coins += 550
@@ -2839,15 +2701,14 @@ func applyEffect(effect_name: String, active: bool)->void:
 var stored_instigator:KinematicBody 
 var bleeding_duration:float = 0
 var stunned_duration:float = 0
-
 var berserk_duration:float = 0 
+
 func effectDurations():
-	print(str(berserk_duration) + str("+berserk_duration"))
 	if bleeding_duration > 0:
 		if stored_instigator == null:
 			pass
 		else:
-			var damage: float = autoload.bleed_dmg +stored_instigator.bleed_dmg
+			var damage: float = autoload.bleed_dmg 
 			takeDamage(damage,damage,stored_instigator,0,"bleed")
 		applyEffect("bleeding",true)
 		bleeding_duration -= 1
@@ -3215,7 +3076,7 @@ const base_casting_speed: int  = 1
 var critical_chance: float = 0.00
 var critical_strength: float = 2.0
 var stagger_chance: float  = 0.25
-var life_steal: float = 0
+var life_steal: float = 0.5
 #resistances
 var slash_resistance: int = 0 #50 equals 33.333% damage reduction 100 equals 50% damage reduction, 200 equals 66.666% damage reduction
 var pierce_resistance: int = 0
@@ -3403,7 +3264,7 @@ func convertStats():
 	run_speed = base_run_speed * total_agility
 	total_guard_dmg_absorbition = extra_guard_dmg_absorbition + guard_dmg_absorbition
 	
-	stagger_chance = max(0, (total_impact - 1.00) * 0.45) +  max(0, (total_ferocity - 1.00) * 0.005) 
+	stagger_chance = max(0, (total_impact - 1.00) * 0.45) +  max(0, (total_ferocity - 1.00) * 0.005) + 50
 	
 func flankDamageMath():
 	flank_dmg = (base_flank_dmg * (total_ferocity + total_accuracy)) 
@@ -5331,8 +5192,13 @@ var experience_to_next_level: int = 100  # Initial experience required to level 
 onready var exper_label: Label = $UI/GUI/Portrait/MinimapHolder/XPS
 var skill_points = 1
 var attribute = 1
+
+var exp_pop = preload("res://UI/experience_points_floater.tscn")	
 func takeExperience(points)->void:
+	var text = exp_pop.instance()
+	text.amount = points
 	experience_points += points
+	$"Damage&Effects/Viewport".add_child(text)
 	
 func experienceSystem():
 	while experience_points >= experience_to_next_level:
