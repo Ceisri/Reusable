@@ -298,22 +298,31 @@ var speed: float = 3.0
 var rotation_speed: float = 2.0
 
 onready var take_damage_audio = $TakeHit
-
+onready var take_damage_view  =$TakeDamageView/Viewport
 func takeThreat(aggro_power,instigator)->void:
 	stored_instigator = instigator
 	var target = threat_system.createFindThreat(instigator)
 	state = autoload.state_list.engage
 	target.threat += aggro_power
+	
+	
+func takeStagger(stagger_chance: float) -> void:
+	if randf() <= stagger_chance:
+		var text = autoload.floatingtext_damage.instance()
+		state = autoload.state_list.staggered
+		staggered_duration = true
+		text.status = "Staggered"
+		take_damage_view.add_child(text)
+	
 var parry: bool =  false
 var absorbing: bool = false
 func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type)->void:
+	var random_range = rand_range(0,1)
+	var text = autoload.floatingtext_damage.instance()
 	lookTarget(turn_speed*3)
 	stored_instigator = instigator
-	var take_damage_view  =$TakeDamageView/Viewport
-	var text = autoload.floatingtext_damage.instance()
 	if parry == false:
 		take_damage_audio.play()
-		var random_range = rand_range(0,100)
 		var damage_to_take = damage
 		var instigatorAggro = threat_system.createFindThreat(instigator)
 		if damage_type == "slash":
@@ -376,13 +385,12 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type)->v
 			damage_to_take *= (1.0 - mitigation)
 			if instigator.has_method("lifesteal"):
 				instigator.lifesteal(damage_to_take)
-				
-				
-		if random_range < stagger_chance:
+	
+	
+		if randf() < stagger_chance- stagger_resistance:
 				state = autoload.state_list.staggered
 				staggered_duration = true
 				text.status = "Staggered"
-
 		health -= damage_to_take	
 		instigatorAggro.threat += damage_to_take + aggro_power
 		text.amount =round(damage_to_take * 100)/ 100

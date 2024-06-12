@@ -40,6 +40,7 @@ func _ready()->void:
 	l_click_slot.switchAttackIcon()
 	colorBodyParts()
 func _on_SlowTimer_timeout()->void:
+	current_race_gender.stagger_chance = stagger_chance
 	effectDurations()
 	allResourcesBarsAndLabels()
 	money()
@@ -127,7 +128,7 @@ var revival_cost:int =  500
 func deathLife(delta)->void:
 	hideShowDeath()
 	if death_duration == false:
-		walk()
+		walk() 
 	if health >0:
 		climbing()
 		fieldOfView()
@@ -169,6 +170,10 @@ func reviveHereFree()->void:
 		water = max_water * 0.1
 		revival_wait_time = 120
 		struggles = 15
+		death_duration = false
+		staggered_duration = false
+		can_walk = true
+		autoload.gravity(self)
 		
 func reviveHere()->void:#Paid option
 	if coins >= revival_cost:
@@ -183,7 +188,10 @@ func reviveHere()->void:#Paid option
 		water = max_water 
 		revival_wait_time = 120
 		struggles = 15
-		
+		death_duration = false
+		staggered_duration = false
+		can_walk = true
+		autoload.gravity(self)
 
 func struggle()->void:
 	if struggles >0:
@@ -203,7 +211,11 @@ func reviveInTown()->void:
 	water = max_water 
 	revival_wait_time = 120
 	struggles = 5
-	translation = Vector3(0, 10, 0)
+	death_duration = false
+	staggered_duration = false
+	translation = Vector3(0,5, 0)
+	can_walk = true
+	autoload.gravity(self)
 
 #_______________________________________________Basic Movement______________________________________
 var h_rot 
@@ -1663,7 +1675,7 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
 			if instigator.has_method("lifesteal"):
 				instigator.lifesteal(damage_to_take)
 				
-		if random_range < stagger_chance- stagger_resistance:
+		if randf() < stagger_chance- stagger_resistance:
 				state = autoload.state_list.staggered
 				staggered_duration = true
 				text.status = "Staggered"
@@ -3163,7 +3175,7 @@ var ranged_atk_speed: float = 1
 const base_casting_speed: int  = 1 
 var critical_chance: float = 0.00
 var critical_strength: float = 2.0
-var stagger_chance: int = 1000 #0 to 100 in percentage
+var stagger_chance: float  = 0.25
 var life_steal: float = 0
 #resistances
 var slash_resistance: int = 0 #50 equals 33.333% damage reduction 100 equals 50% damage reduction, 200 equals 66.666% damage reduction
@@ -3352,7 +3364,7 @@ func convertStats():
 	run_speed = base_run_speed * total_agility
 	total_guard_dmg_absorbition = extra_guard_dmg_absorbition + guard_dmg_absorbition
 	
-	stagger_chance = max(0, (total_impact - 1.00) * 0.45) +  max(0, (total_ferocity - 1.00) * 0.005)# + 200 #remove the 100 after testing
+	stagger_chance = max(0, (total_impact - 1.00) * 0.45) +  max(0, (total_ferocity - 1.00) * 0.005) 
 	
 func flankDamageMath():
 	flank_dmg = (base_flank_dmg * (total_ferocity + total_accuracy)) 
@@ -5283,3 +5295,11 @@ func _on_BlendshapeTest_pressed():
 
 
 
+
+
+func _on_Unstuck_pressed():
+	death_duration = false
+	staggered_duration = false
+	translation = Vector3(0,5, 0)
+	can_walk = true
+	autoload.gravity(self)
