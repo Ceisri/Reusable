@@ -219,6 +219,8 @@ func takeThreat(aggro_power,instigator)->void:
 var parry: bool =  false
 var absorbing: bool = false
 func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type)->void:
+	if instigator.has_method("takeExperience"):
+		instigator.takeExperience(damage)
 	var take_damage_view  =$TakeDamageView/Viewport
 	var text = autoload.floatingtext_damage.instance()
 	if parry == false:

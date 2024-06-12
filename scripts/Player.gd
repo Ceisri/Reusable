@@ -40,6 +40,7 @@ func _ready()->void:
 	l_click_slot.switchAttackIcon()
 	colorBodyParts()
 func _on_SlowTimer_timeout()->void:
+	experienceSystem()
 	current_race_gender.stagger_chance = stagger_chance
 	effectDurations()
 	allResourcesBarsAndLabels()
@@ -115,586 +116,8 @@ func _physics_process(delta: float) -> void:
 	walk() 
 	
 
-		
-
-onready var revival_label:Label =  $UI/GUI/SkillBar/ReviveLabel
-onready var struggle_button:Button = $UI/GUI/SkillBar/Struggle
-onready var revive_here:Button = $UI/GUI/SkillBar/ReviveHere
-onready var revive_here_free:Button = $UI/GUI/SkillBar/ReviveHereFree
-onready var revive_in_town:Button = $UI/GUI/SkillBar/ReviveInTown
-
-var revival_wait_time:int = 300
-var struggles:int = 15
-var revival_cost:int =  500
-func deathLife(delta)->void:
-	hideShowDeath()
-	if health >0:
-		climbing()
-		fieldOfView()
-	else:
-		animationCancel()
-		if revival_wait_time >0:
-			revival_label.text = "Wait" + str(revival_wait_time) + " seconds"
-		else:
-			revival_label.text = "Free revival ready!"
-
-
-func hideShowDeath()->void:
-	if health <=0:
-		revival_label.visible = true
-		struggle_button.visible = true
-		revive_here.visible = true
-		revive_here.text = "Revive here(" + str(revival_cost/100) + "silver)"
-		revive_here_free.visible = true
-		revive_in_town.visible = true
-		$UI/GUI/SkillBar/filler.visible = true
-	else:
-		revival_label.visible = false
-		struggle_button.visible = false
-		revive_here.visible = false
-		revive_here_free.visible = false
-		revive_in_town.visible = false
-		$UI/GUI/SkillBar/filler.visible = false
-	
-
-func reviveHereFree()->void:
-	if revival_wait_time <= 0:
-		state  = autoload.state_list.idle
-		health = max_health * 0.25
-		resolve = max_resolve * 0.25
-		nefis = max_nefis * 0.05
-		aefis = max_aefis * 0.05
-		breath = max_breath * 0.5
-		kilocalories = max_kilocalories * 0.1
-		water = max_water * 0.1
-		revival_wait_time = 120
-		struggles = 15
-		staggered_duration = false
-		autoload.gravity(self)
-		
-func reviveHere()->void:#Paid option
-	if coins >= revival_cost:
-		coins-= revival_cost
-		state  = autoload.state_list.idle
-		health = max_health * 0.5
-		resolve = max_resolve * 0.5
-		nefis = max_nefis 
-		aefis = max_aefis 
-		breath = max_breath 
-		kilocalories = max_kilocalories 
-		water = max_water 
-		revival_wait_time = 120
-		struggles = 15
-		staggered_duration = false
-		autoload.gravity(self)
-
-func struggle()->void:
-	if struggles >0:
-		revival_wait_time -= rng.randi_range(1,6)
-		struggles -= 1 
-	struggle_button.text = "Struggle:" + str(struggles)+ " remaining"
-
-
-func reviveInTown()->void:
-	state  = autoload.state_list.idle
-	health = max_health 
-	resolve = max_resolve 
-	nefis = max_nefis 
-	aefis = max_aefis 
-	breath = max_breath
-	kilocalories = max_kilocalories 
-	water = max_water 
-	revival_wait_time = 120
-	struggles = 5
-	staggered_duration = false
-	translation = Vector3(0,5, 0)
-	can_walk = true
-	autoload.gravity(self)
-
-#_______________________________________________Basic Movement______________________________________
-var h_rot 
-var blocking = false
-var is_in_combat = false
-var enabled_climbing = false
-var is_crouching = false
-var is_sprinting = false
-var sprint_speed = 10
-const base_max_sprint_speed = 25
-var max_sprint_speed = 25
-var max_sprint_animation_speed = 2.5
-
-var can_walk:bool = true 
-func walk()->void:
-	h_rot = $Camroot/h.global_transform.basis.get_euler().y
-	movement_speed = 0
-	angular_acceleration = 3.25
-	acceleration = 15
-	if can_walk == true and health > -100:
-		if (Input.is_action_pressed("forward") ||  Input.is_action_pressed("backward") ||  Input.is_action_pressed("left") ||  Input.is_action_pressed("right")):
-			direction = Vector3(Input.get_action_strength("left") - Input.get_action_strength("right"),
-						0,
-						Input.get_action_strength("forward") - Input.get_action_strength("backward"))
-			strafe_dir = direction
-			direction = direction.rotated(Vector3.UP, h_rot).normalized()
-			is_walking = true
-		# Sprint input, state and speed
-			if (Input.is_action_pressed("sprint")) and (is_walking == true) and is_in_combat == false and  health > 0:
-				is_in_combat = false
-				if sprint_speed < max_sprint_speed:
-					sprint_speed += 0.005 * agility
-					if sprint_animation_speed < max_sprint_animation_speed:
-						sprint_animation_speed +=0.0005 * agility
-						#print("sprint_an_speed " + str(sprint_animation_speed))
-					elif sprint_animation_speed > max_sprint_animation_speed:
-						sprint_animation_speed = max_sprint_animation_speed 
-					#print(str(sprint_speed))
-				elif sprint_speed > max_sprint_speed:
-					sprint_speed = max_sprint_speed
-				movement_speed = sprint_speed
-				is_sprinting = true
-				is_running = false
-				is_aiming = false
-				is_crouching = false
-			elif Input.is_action_pressed("run")and is_in_combat == false and  health > 0:
-				is_in_combat = false
-				sprint_speed = 10
-				is_running = true 
-				is_sprinting = false
-				is_aiming = false
-				is_crouching = false
-				movement_speed = run_speed
-
-			else: # Walk State and speed
-				sprint_speed = 10
-				sprint_animation_speed = 1
-				#print(str(sprint_speed))
-				movement_speed = walk_speed 
-				is_sprinting = false
-				is_running = false
-				is_crouching = false
-		else: 
-			sprint_speed = 10
-			is_walking = false
-			is_sprinting = false
-			is_running = false
-			is_crouching = false
-	else:
-		sprint_speed = 10
-		is_walking = false
-		is_sprinting = false
-		is_running = false
-		is_crouching = false
-
-	autoload.movement(self)
-
-#climbing section
-var is_swimming:bool = false
-var wall_incline
-var is_wall_in_range:bool = false
-var is_climbing:bool = false
-onready var head_ray = $Mesh/HeadRay
-onready var climb_ray = $Mesh/ClimbRay
-func climbing()-> void:
-	if not is_swimming and strength > 0.99:
-		if climb_ray.is_colliding() and is_on_wall():
-			if Input.is_action_pressed("forward"):
-					checkWallInclination()
-					is_climbing = true
-					is_swimming = false
-					if not head_ray.is_colliding() and not is_wall_in_range:#vaulting
-						state = autoload.state_list.vault
-						vertical_velocity = Vector3.UP * 3 
-					elif not is_wall_in_range:#normal climb
-						state = autoload.state_list.climb
-						vertical_velocity = Vector3.UP * 3 
-					else:
-						vertical_velocity = Vector3.UP * (strength * 1.25 + (agility * 0.15))
-						horizontal_velocity = direction * walk_speed
-						if strength < 2:
-							pass
-							#animation_player_top.play("crawl incline cycle", blend)
-						else:
-							pass
-							#animation_player_top.play("walk cycle", blend)
-			else:
-				is_climbing = false
-		else:
-			is_climbing = false
-func checkWallInclination()-> void:
-	if get_slide_count() > 0:
-		var collision_info = get_slide_collision(0)
-		var normal = collision_info.normal
-		if normal.length_squared() > 0:
-			wall_incline = acos(normal.y)  # Calculate the inclination angle in radians
-			wall_incline = rad2deg(wall_incline)  # Convert inclination angle to degrees
-			if normal.x < 0:
-				wall_incline = -wall_incline
-			# Check if the wall inclination is within the specified range 
-			is_wall_in_range = (wall_incline >= -60 and wall_incline <= 60)
-		else:
-			wall_incline = 0  # Set to 0 if the normal is not valid
-			is_wall_in_range = false
-	else:
-		wall_incline = 0  # Set to 0 if there is no collision
-		is_wall_in_range = false
-
-func jump():
-	if health > 0:
-		if Input.is_action_just_pressed("jump") and is_on_floor():
-			vertical_velocity =  Vector3.UP * ((jumping_power * agility) * get_physics_process_delta_time())
-
-
-	
-var fall_damage:float = 10
-var fall_distance:float = 0
-var minimum_fall_distance:float = 0.5
-var old_vel : float = 0.0
-func fallDamage() -> void:
-	if state ==  autoload.state_list.fall and !is_climbing and !is_on_wall():
-		fall_distance += 0.02
-		if fall_distance > minimum_fall_distance: 
-			fall_damage += (2.5 +(0.01 * max_health)) / agility
-	else:
-		if fall_distance > minimum_fall_distance: 
-			takeDamage(fall_damage, 100, self, 0, "blunt")
-		fall_damage = 0
-		fall_distance = 0 
-
-
-
-
-# Physics value
-var direction : Vector3 = Vector3()
-var horizontal_velocity : Vector3 = Vector3()
-var aim_turn = float()
-var movement = Vector3()
-var vertical_velocity = Vector3()
-var movement_speed = int()
-var angular_acceleration = int()
-var acceleration = int()
-#func physicsSauce():MOVED TO AUTOLOAD
-#	movement.z = horizontal_velocity.z + vertical_velocity.z
-#	movement.x = horizontal_velocity.x + vertical_velocity.x
-#	movement.y = vertical_velocity.y
-#	move_and_slide(movement, Vector3.UP)
-#__________________________________________More action based movement_______________________________
-# Dodge
-var double_press_time: float = 0.18
-var slide_movement: float = 8.00 
-var dash_countback: int = 0
-var dash_timerback: float = 0.0
-# Dodge Left
-var dash_countleft: int = 0
-var dash_timerleft: float = 0.0
-# Dodge right
-var dash_countright: int = 0
-var dash_timerright: float = 0.0
-# Dodge forward
-var dash_countforward: int = 0
-var dash_timerforward: float = 0.0
-var dodge_animation_duration : float = 0
-var dodge_animation_max_duration : float = 3
-func dodgeIframe():#apparently combat is too shitty without iframes, more realistic but as boring as watching olympic wrestling or judo, fucking utter ridiculous shit
-	if state == autoload.state_list.slide:
-		set_collision_layer(6)  # Set to the desired collision layer
-		set_collision_mask(6)   # Set to the desired collision mask
-	else:
-		set_collision_layer(1)  # Set to the original collision layer
-		set_collision_mask(1)   # Set to the original collision mask
-func dodgeBack()-> void:#Doddge when in strafe mode
-		if dash_countback > 0:
-			dash_timerback += get_physics_process_delta_time()
-		if dash_timerback >= double_press_time:
-			dash_countback = 0
-			dash_timerback = 0.0
-		if Input.is_action_just_pressed("backward"):
-			dash_countback += 1
-		if dash_countback == 2 and dash_timerback < double_press_time:
-			animationCancelException(staggered_duration)
-			if dodge_animation_duration == 0:
-				all_skills.dodgeCD()
-		else:
-			if dodge_animation_duration > 0: 
-				dodge_animation_duration -= 0.1
-			elif dodge_animation_duration < 0: 
-					dodge_animation_duration = 0
-func dodgeFront()-> void:#Dodge when in strafe mode
-		if dash_countforward > 0:
-			dash_timerforward += get_physics_process_delta_time()
-		if dash_timerforward >= double_press_time:
-			dash_countforward = 0
-			dash_timerforward = 0.0
-		if Input.is_action_just_pressed("forward"):
-			dash_countforward += 1
-		if dash_countforward == 2 and dash_timerforward < double_press_time:
-			animationCancelException(staggered_duration)
-			if dodge_animation_duration == 0:
-				all_skills.dodgeCD()
-		else:
-			if dodge_animation_duration > 0: 
-				dodge_animation_duration -= 0.1 
-			elif dodge_animation_duration < 0: 
-					dodge_animation_duration = 0
-		#print(str("dodge_animation_duration"+ str(dodge_animation_duration)))
-func dodgeLeft()-> void:#Dodge when in strafe mode
-		if dash_countleft > 0:
-			dash_timerleft += get_physics_process_delta_time()
-		if dash_timerleft >= double_press_time:
-			dash_countleft = 0
-			dash_timerleft = 0.0
-		if Input.is_action_just_pressed("left"):
-			dash_countleft += 1
-		if dash_countleft == 2 and dash_timerleft < double_press_time:
-			animationCancelException(staggered_duration)
-			if dodge_animation_duration == 0:
-				all_skills.dodgeCD()
-		else:
-			if dodge_animation_duration > 0: 
-				dodge_animation_duration -= 0.1
-			elif dodge_animation_duration < 0: 
-					dodge_animation_duration = 0
-func dodgeRight()-> void:#Dodge when in strafe mode
-		if dash_countright > 0:
-			dash_timerright += get_physics_process_delta_time()
-		if dash_timerright >= double_press_time:
-			dash_countright = 0
-			dash_timerright = 0.0
-		if Input.is_action_just_pressed("right"):
-			dash_countright += 1
-		if dash_countright == 2 and dash_timerright < double_press_time :
-			animationCancelException(staggered_duration)
-			if dodge_animation_duration == 0:
-				all_skills.dodgeCD()
-		else:
-			if dodge_animation_duration > 0: 
-				dodge_animation_duration -= 0.1
-			elif dodge_animation_duration < 0: 
-					dodge_animation_duration = 0
-	#_____________________________________________________Camera_______________________________________
-var is_aiming: bool = false
-var camrot_h: float = 0
-var camrot_v: float = 0
-onready var parent = $".."
-export var cam_v_max: float = 200 
-export var cam_v_min: float = -125 
-onready var camera_v =$Camroot/h/v
-onready var camera_h =$Camroot/h
-onready var camera = $Camroot/h/v/Camera
-onready var minimap_camera = $UI/GUI/Portrait/MinimapHolder/Minimap/Viewport/Camera
-var minimap_rotate: bool = false
-var h_sensitivity: float = 0.1
-var v_sensitivity: float = 0.1
-var rot_speed_multiplier:float = .15 #reduce this to make the rotation radius larger
-var h_acceleration: float  = 10
-var v_acceleration: float = 10
-var touch_start_position: Vector2 = Vector2.ZERO
-var zoom_speed: float = 0.1
-var mouse_sense: float = 0.1
-
-
-var aiming_mode: String = "directional"
-onready var aim_label: Label = $UI/GUI/Menu/AimingMode/AimLabel
-func _on_AimingMode_pressed():
-		if aiming_mode == "camera":
-			aiming_mode = "directional"
-			aim_label.text = aiming_mode
-		else:
-			aiming_mode = "camera"
-			aim_label.text = aiming_mode
-func directionToCamera():#put this on attacks 
-	if aiming_mode =="camera":
-		direction = -camera.global_transform.basis.z
-
-func fieldOfView():
-	if is_sprinting:
-		if camera.fov < 110:
-			camera.fov += 1 
-	elif is_running:
-		if camera.fov < 80:
-			camera.fov += 2
-		elif camera.fov > 80:
-			camera.fov -= 1
-	else:
-		if camera.fov > 70:
-			camera.fov -= 2
-func Zoom(zoom_direction : float)-> void:
-	# Adjust the camera's position based on the zoom direction
-	camera.translation.y += zoom_direction * zoom_speed
-	camera.translation.z -= zoom_direction * (zoom_speed * 2)
-	#print("z" + str(camera.translation.z) + " y" +str(camera.translation.y) )
-func _on_Sensitivity_pressed():
-	$Minimap/sensitivity_label.text = "cam sens: " + str(h_sensitivity)
-	h_sensitivity += 0.025
-func _on_SensitivityMin_pressed():
-	h_sensitivity -= 0.025
-	$Minimap/sensitivity_label.text = "cam sens: " + str(h_sensitivity)
-func cameraRotation()-> void:
-	if not cursor_visible:#MOUSE CAMERA
-		camrot_v = clamp(camrot_v, cam_v_min, cam_v_max)
-		camera_h.rotation_degrees.y = lerp(camera_h.rotation_degrees.y, camrot_h, get_physics_process_delta_time() * h_acceleration)
-		camera_v.rotation_degrees.x = lerp(camera_v.rotation_degrees.x, camrot_v, get_physics_process_delta_time() * v_acceleration)
-func _input(event)-> void:
-	if event is InputEventMouseMotion:
-		camrot_h += -event.relative.x * h_sensitivity
-		camrot_v += event.relative.y * v_sensitivity
-		if minimap_rotate:
-			minimap_camera.rotate_y(deg2rad(-event.relative.x * mouse_sense))
-	if !skill_trees.visible:
-		#Scrollwheel zoom in and out 		
-		if event is InputEventMouseButton and event.button_index == BUTTON_WHEEL_UP:
-			# Zoom in when scrolling up
-			Zoom(-1)
-		elif event is InputEventMouseButton and event.button_index == BUTTON_WHEEL_DOWN:
-			# Zoom out when scrolling down
-			Zoom(1)
-func stiffCamera()-> void:
-	if is_aiming and !is_climbing:
-		player_mesh.rotation.y = lerp_angle(player_mesh.rotation.y, $Camroot/h.rotation.y, get_physics_process_delta_time() * angular_acceleration)
-#	elif is_climbing:
-#		if direction != Vector3.ZERO and is_climbing:
-#			player_mesh.rotation.y = -(atan2($ClimbRay.get_collision_normal().z,$ClimbRay.get_collision_normal().x) - PI/2)
-	else: # Normal turn movement mechanics
-		player_mesh.rotation.y = lerp_angle(player_mesh.rotation.y, atan2(direction.x, direction.z) - rotation.y, get_physics_process_delta_time() * angular_acceleration)
-func minimapFollow()-> void:# Update the position of the minimap camera
-	minimap_camera.translation = Vector3(translation.x, translation.y + 30,translation.z)
-onready var crosshair = $Camroot/h/v/Camera/Aim/Cross
-onready var crosshair_tween = $Camroot/h/v/Camera/Aim/Cross/Tween
-func crossHair()-> void:
-	if crosshair:
-		if ray.is_colliding():
-			var body = ray.get_collider()
-			if body == self:
-				crosshair.visible = false
-			else:
-				crosshair.visible = true
-			if body.is_in_group("Enemy"):
-				crosshair_tween.interpolate_property(crosshair, "modulate", crosshair.modulate, Color(0.85, 0, 0), 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
-				crosshair_tween.start()
-			elif body.is_in_group("Entity"):
-				if body.is_in_group("Servant"):
-					if body.summoner != null:
-						if body.summoner == self:
-							crosshair_tween.interpolate_property(crosshair, "modulate", crosshair.modulate, Color(0,0.75, 0), 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
-							crosshair_tween.start()
-				else:
-					crosshair_tween.interpolate_property(crosshair, "modulate", crosshair.modulate, Color(0.6, 0.05, 0.8), 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
-					crosshair_tween.start()
-			else:
-				crosshair_tween.interpolate_property(crosshair, "modulate", crosshair.modulate, Color(1, 1, 1), 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
-				crosshair_tween.start()
-		else:
-			crosshair_tween.interpolate_property(crosshair, "modulate", crosshair.modulate, Color(1, 1, 1), 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
-			crosshair_tween.start()
-func crossHairResize()-> void:
-	# Define the target scale based on input action
-	var target_scale = 1.0
-	if Input.is_action_pressed("rclick"):
-		target_scale = 0.6
-	# Use Tween to smoothly transition the scale change
-	crosshair_tween.interpolate_property(crosshair, "rect_scale", crosshair.rect_scale, Vector2(target_scale, target_scale), 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
-	crosshair_tween.start()
-
-onready var minimap:Control = $UI/GUI/Portrait/MinimapHolder/Minimap
-func miniMapVisibility():
-	if Input.is_action_just_pressed("minimap"):
-		minimap.visible = !minimap.visible
-	
-	
-var lifesteal_pop = preload("res://UI/lifestealandhealing.tscn")	
-func lifesteal(damage_to_take)-> void:
-	if life_steal > 0:
-		var text = lifesteal_pop.instance()
-		var life_steal_ratio = damage_to_take * life_steal
-		if health < max_health:
-			health += life_steal_ratio
-			text.amount = round(life_steal_ratio * 100)/ 100
-			take_damage_view.add_child(text)
-		elif health > max_health:
-			health = max_health
-
-
-
-var is_fullscreen :bool  = false
-func fullscreen()-> void:
-	if Input.is_action_just_pressed("fullscreen"):
-		is_fullscreen = !is_fullscreen
-		OS.set_window_fullscreen(is_fullscreen)
-		saveGame()
-
-#__________________________________Entitygraphical interface________________________________________
-onready var entity_graphic_interface = $UI/GUI/EnemyUI
-onready var entity_inspector 
-onready var enemy_ui_tween =$UI/GUI/EnemyUI/Tween
-onready var enemy_health_bar = $UI/GUI/EnemyUI/HP
-onready var enemy_health_label = $UI/GUI/EnemyUI/HP/HPlab
-onready var enemy_energy_bar = $UI/GUI/EnemyUI/EN
-onready var enemy_energy_label =$UI/GUI/EnemyUI/EN/ENlab
-onready var ray = $Camroot/h/v/Camera/Aim
-var fade_duration : float = 0.3
-func showEnemyStats()-> void:
-	if ray.is_colliding():
-		var body = ray.get_collider()
-		if body != null:
-			if body != self:
-				if body.has_method("showStatusIcon"):
-						body.showStatusIcon(
-			$UI/GUI/EnemyUI/StatusGrid/Icon1,
-			$UI/GUI/EnemyUI/StatusGrid/Icon2,
-			$UI/GUI/EnemyUI/StatusGrid/Icon3,
-			$UI/GUI/EnemyUI/StatusGrid/Icon4,
-			$UI/GUI/EnemyUI/StatusGrid/Icon5,
-			$UI/GUI/EnemyUI/StatusGrid/Icon6,
-			$UI/GUI/EnemyUI/StatusGrid/Icon7,
-			$UI/GUI/EnemyUI/StatusGrid/Icon8,
-			$UI/GUI/EnemyUI/StatusGrid/Icon9,
-			$UI/GUI/EnemyUI/StatusGrid/Icon10,
-			$UI/GUI/EnemyUI/StatusGrid/Icon11,
-			$UI/GUI/EnemyUI/StatusGrid/Icon12,
-			$UI/GUI/EnemyUI/StatusGrid/Icon13,
-			$UI/GUI/EnemyUI/StatusGrid/Icon14,
-			$UI/GUI/EnemyUI/StatusGrid/Icon15,
-			$UI/GUI/EnemyUI/StatusGrid/Icon16,
-			$UI/GUI/EnemyUI/StatusGrid/Icon17,
-			$UI/GUI/EnemyUI/StatusGrid/Icon18,
-			$UI/GUI/EnemyUI/StatusGrid/Icon19,
-			$UI/GUI/EnemyUI/StatusGrid/Icon20,
-			$UI/GUI/EnemyUI/StatusGrid/Icon21,
-			$UI/GUI/EnemyUI/StatusGrid/Icon22,
-			$UI/GUI/EnemyUI/StatusGrid/Icon23,
-			$UI/GUI/EnemyUI/StatusGrid/Icon24
-		)
-				if body.is_in_group("Entity") and body != self:
-					# Instantly turn alpha to maximum
-					entity_graphic_interface.modulate.a = 1.0
-					enemy_health_bar.value = body.health
-					enemy_health_bar.max_value = body.max_health
-					enemy_health_label.text = "HP:" + str(round(body.health* 100) / 100) + "/" + str(body.max_health)
-					enemy_energy_bar.value = body.nefis
-					enemy_energy_bar.max_value = body.max_nefis
-					enemy_energy_label.text = "EP:" + str(round(body.nefis* 100) / 100) + "/" + str(body.max_nefis)
-					var threat_label = $UI/GUI/EnemyUI/Threat
-					if body.has_method("displayThreatInfo"):
-						body.displayThreatInfo(threat_label)
-					else:
-						threat_label.text = ""
-				else:
-					# Start tween to fade out
-					enemy_ui_tween.interpolate_property(entity_graphic_interface, "modulate:a", entity_graphic_interface.modulate.a, 0.0, fade_duration, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
-					enemy_ui_tween.start()
-			else:
-				# Start tween to fade out
-				enemy_ui_tween.interpolate_property(entity_graphic_interface, "modulate:a", entity_graphic_interface.modulate.a, 0.0, fade_duration, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
-				enemy_ui_tween.start()
-		else:
-			# Start tween to fade out
-			enemy_ui_tween.interpolate_property(entity_graphic_interface, "modulate:a", entity_graphic_interface.modulate.a, 0.0,fade_duration/3, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
-			enemy_ui_tween.start()
-			#print(str(fade_duration))
-
-#______________________________________________Animations___________________________________________
+#________________________________Input-State-Animation-SkillBar System______________________________
 var animation: AnimationPlayer
-var has_died: bool = false
-
 var overhead_slash_duration:bool = false
 var overhead_slash_combo:bool = false
 #___________________________________________________________________________________________________
@@ -710,7 +133,7 @@ var whirlwind_combo:bool = false
 var staggered_duration:bool = false
 var taunt_duration:bool = false
 var state = autoload.state_list.idle
-func animationCancel()->void:
+func animationCancel()->void:#Universal stop, call this when I'm stunned, staggered, dead, knocked down and so on 
 	overhead_slash_combo = false
 	whirlwind_combo = false
 	cyclone_combo = false
@@ -732,45 +155,35 @@ func animationCancel()->void:
 	if taunt_duration == true:
 		all_skills.tauntCD()
 		taunt_duration = false
-		
-		
-func animationCancelException(exception) -> void:
+func animationCancelException(exception) -> void:#So far it seems to be useless, it works in specific scenarios, keeping it just incase i find another use for this 
 	if skill_cancelling == true:
 		if exception != overhead_slash_duration and overhead_slash_duration == true:
 			print("overhead_slash_duration true")
 			all_skills.overheadSlashCD()
 			overhead_slash_duration = false
-
 		if exception != rising_slash_duration and rising_slash_duration== true:
 			print("rising_slash_duration true")
 			rising_slash_duration = false
 			all_skills.risingSlashCD()
-
 		if exception != heart_trust_duration and heart_trust_duration== true:
 			print("heart_trust_duration true")
 			all_skills.heartTrustSlashCD()
 			heart_trust_duration = false
-
 		if exception != cyclone_duration and cyclone_duration== true:
 			print("cyclone_duration true")
 			all_skills.cycloneCD()
 			cyclone_duration = false
-
 		if exception != whirlwind_duration and whirlwind_duration== true:
 			print("whirlwind_duration true")
 			all_skills.whirlwindCD()
 			whirlwind_duration = false
-
 		if exception != taunt_duration and taunt_duration== true:
 			print("taunt_duration true")
 			all_skills.tauntCD()
 			taunt_duration = false
-
-		
 func inputOrStateToAnimation()-> void:
 	if current_race_gender == null or animation == null:
 		print("mesh not instanced or animationPlayer not found")
-	
 	if staggered_duration == true:
 		can_walk = false
 		horizontal_velocity = direction * 0
@@ -783,11 +196,8 @@ func inputOrStateToAnimation()-> void:
 		can_walk = false
 		horizontal_velocity = direction * 0
 		current_race_gender.can_move = false
-		
 	else:
-	
 		SkillQueueSystem()#DO NOT REMOVE THIS! it is neccessary to allow skill cancelling, skill cancelling doesn't work without skill queue, it has a toggle on off anyway for players that don't like it 
-		
 		if Input.is_action_pressed("rclick"):
 			state == autoload.state_list.guard
 			animationCancel()
@@ -1093,7 +503,6 @@ func inputOrStateToAnimation()-> void:
 							else:
 								health -= 0.01
 								animation.play("downed idle",0.35)
-
 onready var l_click_slot = $UI/GUI/SkillBar/GridContainer/LClickSlot
 onready var r_click_slot = $UI/GUI/SkillBar/GridContainer/RClickSlot
 func skills(slot)-> void:
@@ -1292,7 +701,6 @@ func skills(slot)-> void:
 											if taunt_duration == true:
 												all_skills.tauntCD()
 												taunt_duration = false
-
 								else:
 									returnToIdleBasedOnWeaponType()
 									cyclone_duration = false
@@ -1302,8 +710,6 @@ func skills(slot)-> void:
 						else:
 							returnToIdleBasedOnWeaponType()
 							cyclone_duration = false
-							
-							
 #__________________________________________ Whirlwind _____________________________________________
 				elif slot.texture.resource_path == autoload.whirlwind.get_path():
 						if whirlwind_icon.points >0 :
@@ -1402,10 +808,8 @@ func skills(slot)-> void:
 							button = inventory_grid.get_node("InventorySlot" + str(index))
 							if health < max_health:
 								autoload.consumeRedPotion(self,button,inventory_grid,true,slot.get_parent())				
-
-
 var skill_cancelling:bool = true#this only works with the SkillQueueSystem() and serves to interupt skills with other skills 
-var queue_skills:bool = true #this is only for people with disabilities or if the game ever goes online to help with high ping 
+var queue_skills:bool = true #this is only for people with disabilities or if the game ever goes online to help with high ping, as of now it can't be used by itself until I revamp the skill cancel system  
 func _on_SkillCancel_pressed():
 	skill_cancelling = !skill_cancelling
 	print(str(skill_cancelling)+ str(" skill canc"))
@@ -1474,10 +878,6 @@ func SkillQueueSystem()-> void:
 		if state == autoload.state_list.skillB:
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot20/Icon
 			skills(slot)
-			
-			
-			
-			
 func returnToIdleBasedOnWeaponType():
 	match weapon_type:
 			autoload.weapon_list.fist:
@@ -1498,7 +898,6 @@ func moveDuringAnimation(speed):
 		elif current_race_gender.can_move == false:
 			horizontal_velocity = direction * 0
 			movement_speed = 0
-				
 var sprint_animation_speed: float = 1
 var anim_cancel:bool = true #If true using abilities and skills interupts base attacks or other animations
 func inputToState():
@@ -1527,9 +926,6 @@ func inputToState():
 			if Input.is_action_pressed("attack") and !cursor_visible: 
 				state = autoload.state_list.base_attack
 				can_walk = false
-
-
-
 
 	#skills put these below the walk elif statment in case of keybinding bugs, as of now it works so no need
 		elif Input.is_action_pressed("1"):
@@ -1603,16 +999,12 @@ func inputToState():
 		else:
 			if health >0:
 				state =  autoload.state_list.idle
-
 #_______________________________________________Combat______________________________________________
-
 func attack():
 	if Input.is_action_pressed("attack"):
 		is_attacking = true
 	else:
 		is_attacking = false
-
-
 func pushEnemyAway(push_distance, enemy, push_speed):
 	var direction_to_enemy = enemy.global_transform.origin - global_transform.origin
 	direction_to_enemy.y = 0  # No vertical push
@@ -1636,8 +1028,6 @@ func pushEnemyAway(push_distance, enemy, push_speed):
 		tween.interpolate_property(enemy, "translation", enemy.translation, enemy.translation + motion * push_distance, acceleration_time, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
 		tween.interpolate_property(enemy, "translation", enemy.translation + motion * push_distance, enemy.translation + motion * (push_distance - deceleration_distance), acceleration_time, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT, acceleration_time)
 		tween.start()
-
-
 func isFacingSelf(enemy: Node, threshold: float) -> bool:
 	# Get the global transform of the enemy
 	var enemy_global_transform = enemy.global_transform
@@ -1659,8 +1049,6 @@ func isFacingSelf(enemy: Node, threshold: float) -> bool:
 	var dot_product = -enemy_facing_direction.dot(direction_to_enemy)
 	# If the dot product is greater than a certain threshold, consider the enemy is facing the calling object (self)
 	return dot_product >= threshold
-
-
 onready var take_damage_view  = $Mesh/TakeDamageView/Viewport
 var parry: bool =  false
 var absorbing: bool = false
@@ -1803,18 +1191,563 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
 		text.amount =round(damage_to_take * 100)/ 100
 		text.state = damage_type
 		take_damage_view.add_child(text)
-		
-		
-		
 func takeHealing(healing,healer):
 	health += healing
 	var text = autoload.floatingtext_damage.instance()
 	text.amount =round(healing * 100)/ 100
 	text.state = autoload.state_list.healing
 	take_damage_view.add_child(text)
+var lifesteal_pop = preload("res://UI/lifestealandhealing.tscn")	
+func lifesteal(damage_to_take)-> void:#This is called by the enemy's script when they take damage
+	if life_steal > 0:
+		var text = lifesteal_pop.instance()
+		var life_steal_ratio = damage_to_take * life_steal
+		if health < max_health:
+			health += life_steal_ratio
+			text.amount = round(life_steal_ratio * 100)/ 100
+			take_damage_view.add_child(text)
+		elif health > max_health:
+			health = max_health
 
-#_____________________________close buttons/inputs______________________________
+#_____________________________________DEATH AND LIFE STATE__________________________________________
+onready var revival_label:Label =  $UI/GUI/SkillBar/ReviveLabel
+onready var struggle_button:Button = $UI/GUI/SkillBar/Struggle
+onready var revive_here:Button = $UI/GUI/SkillBar/ReviveHere
+onready var revive_here_free:Button = $UI/GUI/SkillBar/ReviveHereFree
+onready var revive_in_town:Button = $UI/GUI/SkillBar/ReviveInTown
 
+var revival_wait_time:int = 300
+var struggles:int = 15
+var revival_cost:int =  500
+func deathLife(delta)->void:
+	hideShowDeath()
+	if health >0:
+		climbing()
+		fieldOfView()
+	else:
+		animationCancel()
+		if revival_wait_time >0:
+			revival_label.text = "Wait" + str(revival_wait_time) + " seconds"
+		else:
+			revival_label.text = "Free revival ready!"
+func hideShowDeath()->void:
+	if health <=0:
+		revival_label.visible = true
+		struggle_button.visible = true
+		revive_here.visible = true
+		revive_here.text = "Revive here(" + str(revival_cost/100) + "silver)"
+		revive_here_free.visible = true
+		revive_in_town.visible = true
+		$UI/GUI/SkillBar/filler.visible = true
+	else:
+		revival_label.visible = false
+		struggle_button.visible = false
+		revive_here.visible = false
+		revive_here_free.visible = false
+		revive_in_town.visible = false
+		$UI/GUI/SkillBar/filler.visible = false
+func reviveHereFree()->void:
+	if revival_wait_time <= 0:
+		state  = autoload.state_list.idle
+		health = max_health * 0.25
+		resolve = max_resolve * 0.25
+		nefis = max_nefis * 0.05
+		aefis = max_aefis * 0.05
+		breath = max_breath * 0.5
+		kilocalories = max_kilocalories * 0.1
+		water = max_water * 0.1
+		revival_wait_time = 120
+		struggles = 15
+		staggered_duration = false
+		autoload.gravity(self)
+func reviveHere()->void:#Paid option
+	if coins >= revival_cost:
+		coins-= revival_cost
+		state  = autoload.state_list.idle
+		health = max_health * 0.5
+		resolve = max_resolve * 0.5
+		nefis = max_nefis 
+		aefis = max_aefis 
+		breath = max_breath 
+		kilocalories = max_kilocalories 
+		water = max_water 
+		revival_wait_time = 120
+		struggles = 15
+		staggered_duration = false
+		autoload.gravity(self)
+func struggle()->void:
+	if struggles >0:
+		revival_wait_time -= rng.randi_range(1,6)
+		struggles -= 1 
+	struggle_button.text = "Struggle:" + str(struggles)+ " remaining"
+func reviveInTown()->void:
+	state  = autoload.state_list.idle
+	health = max_health 
+	resolve = max_resolve 
+	nefis = max_nefis 
+	aefis = max_aefis 
+	breath = max_breath
+	kilocalories = max_kilocalories 
+	water = max_water 
+	revival_wait_time = 120
+	struggles = 5
+	staggered_duration = false
+	translation = Vector3(0,5, 0)
+	can_walk = true
+	autoload.gravity(self)
+
+
+
+
+
+#_______________________________________________Basic Movement______________________________________
+var h_rot 
+var blocking = false
+var is_in_combat = false
+var enabled_climbing = false
+var is_crouching = false
+var is_sprinting = false
+var sprint_speed = 10
+const base_max_sprint_speed = 25
+var max_sprint_speed = 25
+var max_sprint_animation_speed = 2.5
+
+var can_walk:bool = true 
+func walk()->void:
+	h_rot = $Camroot/h.global_transform.basis.get_euler().y
+	movement_speed = 0
+	angular_acceleration = 3.25
+	acceleration = 15
+	if can_walk == true and health > -100:
+		if (Input.is_action_pressed("forward") ||  Input.is_action_pressed("backward") ||  Input.is_action_pressed("left") ||  Input.is_action_pressed("right")):
+			direction = Vector3(Input.get_action_strength("left") - Input.get_action_strength("right"),
+						0,
+						Input.get_action_strength("forward") - Input.get_action_strength("backward"))
+			strafe_dir = direction
+			direction = direction.rotated(Vector3.UP, h_rot).normalized()
+			is_walking = true
+		# Sprint input, state and speed
+			if (Input.is_action_pressed("sprint")) and (is_walking == true) and is_in_combat == false and  health > 0:
+				is_in_combat = false
+				if sprint_speed < max_sprint_speed:
+					sprint_speed += 0.005 * agility
+					if sprint_animation_speed < max_sprint_animation_speed:
+						sprint_animation_speed +=0.0005 * agility
+						#print("sprint_an_speed " + str(sprint_animation_speed))
+					elif sprint_animation_speed > max_sprint_animation_speed:
+						sprint_animation_speed = max_sprint_animation_speed 
+					#print(str(sprint_speed))
+				elif sprint_speed > max_sprint_speed:
+					sprint_speed = max_sprint_speed
+				movement_speed = sprint_speed
+				is_sprinting = true
+				is_running = false
+				is_aiming = false
+				is_crouching = false
+			elif Input.is_action_pressed("run")and is_in_combat == false and  health > 0:
+				is_in_combat = false
+				sprint_speed = 10
+				is_running = true 
+				is_sprinting = false
+				is_aiming = false
+				is_crouching = false
+				movement_speed = run_speed
+
+			else: # Walk State and speed
+				sprint_speed = 10
+				sprint_animation_speed = 1
+				#print(str(sprint_speed))
+				movement_speed = walk_speed 
+				is_sprinting = false
+				is_running = false
+				is_crouching = false
+		else: 
+			sprint_speed = 10
+			is_walking = false
+			is_sprinting = false
+			is_running = false
+			is_crouching = false
+	else:
+		sprint_speed = 10
+		is_walking = false
+		is_sprinting = false
+		is_running = false
+		is_crouching = false
+
+	autoload.movement(self)
+
+#climbing section
+var is_swimming:bool = false
+var wall_incline
+var is_wall_in_range:bool = false
+var is_climbing:bool = false
+onready var head_ray = $Mesh/HeadRay
+onready var climb_ray = $Mesh/ClimbRay
+func climbing()-> void:
+	if not is_swimming and strength > 0.99:
+		if climb_ray.is_colliding() and is_on_wall():
+			if Input.is_action_pressed("forward"):
+					checkWallInclination()
+					is_climbing = true
+					is_swimming = false
+					if not head_ray.is_colliding() and not is_wall_in_range:#vaulting
+						state = autoload.state_list.vault
+						vertical_velocity = Vector3.UP * 3 
+					elif not is_wall_in_range:#normal climb
+						state = autoload.state_list.climb
+						vertical_velocity = Vector3.UP * 3 
+					else:
+						vertical_velocity = Vector3.UP * (strength * 1.25 + (agility * 0.15))
+						horizontal_velocity = direction * walk_speed
+						if strength < 2:
+							pass
+							#animation_player_top.play("crawl incline cycle", blend)
+						else:
+							pass
+							#animation_player_top.play("walk cycle", blend)
+			else:
+				is_climbing = false
+		else:
+			is_climbing = false
+func checkWallInclination()-> void:
+	if get_slide_count() > 0:
+		var collision_info = get_slide_collision(0)
+		var normal = collision_info.normal
+		if normal.length_squared() > 0:
+			wall_incline = acos(normal.y)  # Calculate the inclination angle in radians
+			wall_incline = rad2deg(wall_incline)  # Convert inclination angle to degrees
+			if normal.x < 0:
+				wall_incline = -wall_incline
+			# Check if the wall inclination is within the specified range 
+			is_wall_in_range = (wall_incline >= -60 and wall_incline <= 60)
+		else:
+			wall_incline = 0  # Set to 0 if the normal is not valid
+			is_wall_in_range = false
+	else:
+		wall_incline = 0  # Set to 0 if there is no collision
+		is_wall_in_range = false
+func jump():
+	if health > 0:
+		if Input.is_action_just_pressed("jump") and is_on_floor():
+			vertical_velocity =  Vector3.UP * ((jumping_power * agility) * get_physics_process_delta_time())
+var fall_damage:float = 10
+var fall_distance:float = 0
+var minimum_fall_distance:float = 0.5
+var old_vel : float = 0.0
+func fallDamage() -> void:#This is shit, gotta change it eventually
+	if state ==  autoload.state_list.fall and !is_climbing and !is_on_wall():
+		fall_distance += 0.02
+		if fall_distance > minimum_fall_distance: 
+			fall_damage += (2.5 +(0.01 * max_health)) / agility
+	else:
+		if fall_distance > minimum_fall_distance: 
+			takeDamage(fall_damage, 100, self, 0, "blunt")
+		fall_damage = 0
+		fall_distance = 0 
+
+# Physics value
+var direction : Vector3 = Vector3()
+var horizontal_velocity : Vector3 = Vector3()
+var aim_turn = float()
+var movement = Vector3()
+var vertical_velocity = Vector3()
+var movement_speed = int()
+var angular_acceleration = int()
+var acceleration = int()
+#__________________________________________More action based movement_______________________________
+# Dodge
+var double_press_time: float = 0.18
+var slide_movement: float = 8.00 
+var dash_countback: int = 0
+var dash_timerback: float = 0.0
+# Dodge Left
+var dash_countleft: int = 0
+var dash_timerleft: float = 0.0
+# Dodge right
+var dash_countright: int = 0
+var dash_timerright: float = 0.0
+# Dodge forward
+var dash_countforward: int = 0
+var dash_timerforward: float = 0.0
+var dodge_animation_duration : float = 0
+var dodge_animation_max_duration : float = 3
+func dodgeIframe():#apparently combat is too shitty without iframes, more realistic but as boring as watching olympic wrestling or judo, fucking utter ridiculous shit
+	if state == autoload.state_list.slide:
+		set_collision_layer(6)  # Set to the desired collision layer
+		set_collision_mask(6)   # Set to the desired collision mask
+	else:
+		set_collision_layer(1)  # Set to the original collision layer
+		set_collision_mask(1)   # Set to the original collision mask
+func dodgeBack()-> void:#Doddge when in strafe mode
+		if dash_countback > 0:
+			dash_timerback += get_physics_process_delta_time()
+		if dash_timerback >= double_press_time:
+			dash_countback = 0
+			dash_timerback = 0.0
+		if Input.is_action_just_pressed("backward"):
+			dash_countback += 1
+		if dash_countback == 2 and dash_timerback < double_press_time:
+			animationCancelException(staggered_duration)
+			if dodge_animation_duration == 0:
+				all_skills.dodgeCD()
+		else:
+			if dodge_animation_duration > 0: 
+				dodge_animation_duration -= 0.1
+			elif dodge_animation_duration < 0: 
+					dodge_animation_duration = 0
+func dodgeFront()-> void:#Dodge when in strafe mode
+		if dash_countforward > 0:
+			dash_timerforward += get_physics_process_delta_time()
+		if dash_timerforward >= double_press_time:
+			dash_countforward = 0
+			dash_timerforward = 0.0
+		if Input.is_action_just_pressed("forward"):
+			dash_countforward += 1
+		if dash_countforward == 2 and dash_timerforward < double_press_time:
+			animationCancelException(staggered_duration)
+			if dodge_animation_duration == 0:
+				all_skills.dodgeCD()
+		else:
+			if dodge_animation_duration > 0: 
+				dodge_animation_duration -= 0.1 
+			elif dodge_animation_duration < 0: 
+					dodge_animation_duration = 0
+		#print(str("dodge_animation_duration"+ str(dodge_animation_duration)))
+func dodgeLeft()-> void:#Dodge when in strafe mode
+		if dash_countleft > 0:
+			dash_timerleft += get_physics_process_delta_time()
+		if dash_timerleft >= double_press_time:
+			dash_countleft = 0
+			dash_timerleft = 0.0
+		if Input.is_action_just_pressed("left"):
+			dash_countleft += 1
+		if dash_countleft == 2 and dash_timerleft < double_press_time:
+			animationCancelException(staggered_duration)
+			if dodge_animation_duration == 0:
+				all_skills.dodgeCD()
+		else:
+			if dodge_animation_duration > 0: 
+				dodge_animation_duration -= 0.1
+			elif dodge_animation_duration < 0: 
+					dodge_animation_duration = 0
+func dodgeRight()-> void:#Dodge when in strafe mode
+		if dash_countright > 0:
+			dash_timerright += get_physics_process_delta_time()
+		if dash_timerright >= double_press_time:
+			dash_countright = 0
+			dash_timerright = 0.0
+		if Input.is_action_just_pressed("right"):
+			dash_countright += 1
+		if dash_countright == 2 and dash_timerright < double_press_time :
+			animationCancelException(staggered_duration)
+			if dodge_animation_duration == 0:
+				all_skills.dodgeCD()
+		else:
+			if dodge_animation_duration > 0: 
+				dodge_animation_duration -= 0.1
+			elif dodge_animation_duration < 0: 
+					dodge_animation_duration = 0
+	#_____________________________________________________Camera_______________________________________
+var is_aiming: bool = false
+var camrot_h: float = 0
+var camrot_v: float = 0
+onready var parent = $".."
+var cam_v_max: float = 200 
+var cam_v_min: float = -125 
+onready var camera_v =$Camroot/h/v
+onready var camera_h =$Camroot/h
+onready var camera = $Camroot/h/v/Camera
+onready var minimap_camera = $UI/GUI/Portrait/MinimapHolder/Minimap/Viewport/Camera
+var minimap_rotate: bool = false
+var h_sensitivity: float = 0.1
+var v_sensitivity: float = 0.1
+var rot_speed_multiplier:float = .15 #reduce this to make the rotation radius larger
+var h_acceleration: float  = 10
+var v_acceleration: float = 10
+var touch_start_position: Vector2 = Vector2.ZERO
+var zoom_speed: float = 0.1
+var mouse_sense: float = 0.1
+var aiming_mode: String = "directional"
+onready var aim_label: Label = $UI/GUI/Menu/AimingMode/AimLabel
+func _on_AimingMode_pressed():
+		if aiming_mode == "camera":
+			aiming_mode = "directional"
+			aim_label.text = aiming_mode
+		else:
+			aiming_mode = "camera"
+			aim_label.text = aiming_mode
+func directionToCamera():#put this on attacks 
+	if aiming_mode =="camera":
+		direction = -camera.global_transform.basis.z
+func fieldOfView():
+	if is_sprinting:
+		if camera.fov < 110:
+			camera.fov += 1 
+	elif is_running:
+		if camera.fov < 80:
+			camera.fov += 2
+		elif camera.fov > 80:
+			camera.fov -= 1
+	else:
+		if camera.fov > 70:
+			camera.fov -= 2
+func Zoom(zoom_direction : float)-> void:
+	# Adjust the camera's position based on the zoom direction
+	camera.translation.y += zoom_direction * zoom_speed
+	camera.translation.z -= zoom_direction * (zoom_speed * 2)
+	#print("z" + str(camera.translation.z) + " y" +str(camera.translation.y) )
+func _on_Sensitivity_pressed():
+	$Minimap/sensitivity_label.text = "cam sens: " + str(h_sensitivity)
+	h_sensitivity += 0.025
+func _on_SensitivityMin_pressed():
+	h_sensitivity -= 0.025
+	$Minimap/sensitivity_label.text = "cam sens: " + str(h_sensitivity)
+func cameraRotation()-> void:
+	if not cursor_visible:#MOUSE CAMERA
+		camrot_v = clamp(camrot_v, cam_v_min, cam_v_max)
+		camera_h.rotation_degrees.y = lerp(camera_h.rotation_degrees.y, camrot_h, get_physics_process_delta_time() * h_acceleration)
+		camera_v.rotation_degrees.x = lerp(camera_v.rotation_degrees.x, camrot_v, get_physics_process_delta_time() * v_acceleration)
+func _input(event)-> void:
+	if event is InputEventMouseMotion:
+		camrot_h += -event.relative.x * h_sensitivity
+		camrot_v += event.relative.y * v_sensitivity
+		if minimap_rotate:
+			minimap_camera.rotate_y(deg2rad(-event.relative.x * mouse_sense))
+	if !skill_trees.visible:
+		#Scrollwheel zoom in and out 		
+		if event is InputEventMouseButton and event.button_index == BUTTON_WHEEL_UP:
+			# Zoom in when scrolling up
+			Zoom(-1)
+		elif event is InputEventMouseButton and event.button_index == BUTTON_WHEEL_DOWN:
+			# Zoom out when scrolling down
+			Zoom(1)
+func stiffCamera()-> void:
+	if is_aiming and !is_climbing:
+		player_mesh.rotation.y = lerp_angle(player_mesh.rotation.y, $Camroot/h.rotation.y, get_physics_process_delta_time() * angular_acceleration)
+#	elif is_climbing:
+#		if direction != Vector3.ZERO and is_climbing:
+#			player_mesh.rotation.y = -(atan2($ClimbRay.get_collision_normal().z,$ClimbRay.get_collision_normal().x) - PI/2)
+	else: # Normal turn movement mechanics
+		player_mesh.rotation.y = lerp_angle(player_mesh.rotation.y, atan2(direction.x, direction.z) - rotation.y, get_physics_process_delta_time() * angular_acceleration)
+func minimapFollow()-> void:# Update the position of the minimap camera
+	minimap_camera.translation = Vector3(translation.x, translation.y + 30,translation.z)
+onready var crosshair = $Camroot/h/v/Camera/Aim/Cross
+onready var crosshair_tween = $Camroot/h/v/Camera/Aim/Cross/Tween
+func crossHair()-> void:
+	if crosshair:
+		if ray.is_colliding():
+			var body = ray.get_collider()
+			if body == self:
+				crosshair.visible = false
+			else:
+				crosshair.visible = true
+			if body.is_in_group("Enemy"):
+				crosshair_tween.interpolate_property(crosshair, "modulate", crosshair.modulate, Color(0.85, 0, 0), 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
+				crosshair_tween.start()
+			elif body.is_in_group("Entity"):
+				if body.is_in_group("Servant"):
+					if body.summoner != null:
+						if body.summoner == self:
+							crosshair_tween.interpolate_property(crosshair, "modulate", crosshair.modulate, Color(0,0.75, 0), 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
+							crosshair_tween.start()
+				else:
+					crosshair_tween.interpolate_property(crosshair, "modulate", crosshair.modulate, Color(0.6, 0.05, 0.8), 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
+					crosshair_tween.start()
+			else:
+				crosshair_tween.interpolate_property(crosshair, "modulate", crosshair.modulate, Color(1, 1, 1), 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
+				crosshair_tween.start()
+		else:
+			crosshair_tween.interpolate_property(crosshair, "modulate", crosshair.modulate, Color(1, 1, 1), 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
+			crosshair_tween.start()
+func crossHairResize()-> void:
+	# Define the target scale based on input action
+	var target_scale = 1.0
+	if Input.is_action_pressed("rclick"):
+		target_scale = 0.6
+	# Use Tween to smoothly transition the scale change
+	crosshair_tween.interpolate_property(crosshair, "rect_scale", crosshair.rect_scale, Vector2(target_scale, target_scale), 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
+	crosshair_tween.start()
+onready var minimap:Control = $UI/GUI/Portrait/MinimapHolder/Minimap
+func miniMapVisibility():
+	if Input.is_action_just_pressed("minimap"):
+		minimap.visible = !minimap.visible
+var is_fullscreen :bool  = false
+func fullscreen()-> void:
+	if Input.is_action_just_pressed("fullscreen"):
+		is_fullscreen = !is_fullscreen
+		OS.set_window_fullscreen(is_fullscreen)
+		saveGame()
+#__________________________________Entitygraphical interface________________________________________
+onready var entity_graphic_interface = $UI/GUI/EnemyUI
+onready var entity_inspector 
+onready var enemy_ui_tween =$UI/GUI/EnemyUI/Tween
+onready var enemy_health_bar = $UI/GUI/EnemyUI/HP
+onready var enemy_health_label = $UI/GUI/EnemyUI/HP/HPlab
+onready var enemy_energy_bar = $UI/GUI/EnemyUI/EN
+onready var enemy_energy_label =$UI/GUI/EnemyUI/EN/ENlab
+onready var ray = $Camroot/h/v/Camera/Aim
+var fade_duration : float = 0.3
+func showEnemyStats()-> void:
+	if ray.is_colliding():
+		var body = ray.get_collider()
+		if body != null:
+			if body != self:
+				if body.has_method("showStatusIcon"):
+						body.showStatusIcon(
+			$UI/GUI/EnemyUI/StatusGrid/Icon1,
+			$UI/GUI/EnemyUI/StatusGrid/Icon2,
+			$UI/GUI/EnemyUI/StatusGrid/Icon3,
+			$UI/GUI/EnemyUI/StatusGrid/Icon4,
+			$UI/GUI/EnemyUI/StatusGrid/Icon5,
+			$UI/GUI/EnemyUI/StatusGrid/Icon6,
+			$UI/GUI/EnemyUI/StatusGrid/Icon7,
+			$UI/GUI/EnemyUI/StatusGrid/Icon8,
+			$UI/GUI/EnemyUI/StatusGrid/Icon9,
+			$UI/GUI/EnemyUI/StatusGrid/Icon10,
+			$UI/GUI/EnemyUI/StatusGrid/Icon11,
+			$UI/GUI/EnemyUI/StatusGrid/Icon12,
+			$UI/GUI/EnemyUI/StatusGrid/Icon13,
+			$UI/GUI/EnemyUI/StatusGrid/Icon14,
+			$UI/GUI/EnemyUI/StatusGrid/Icon15,
+			$UI/GUI/EnemyUI/StatusGrid/Icon16,
+			$UI/GUI/EnemyUI/StatusGrid/Icon17,
+			$UI/GUI/EnemyUI/StatusGrid/Icon18,
+			$UI/GUI/EnemyUI/StatusGrid/Icon19,
+			$UI/GUI/EnemyUI/StatusGrid/Icon20,
+			$UI/GUI/EnemyUI/StatusGrid/Icon21,
+			$UI/GUI/EnemyUI/StatusGrid/Icon22,
+			$UI/GUI/EnemyUI/StatusGrid/Icon23,
+			$UI/GUI/EnemyUI/StatusGrid/Icon24
+		)
+				if body.is_in_group("Entity") and body != self:
+					# Instantly turn alpha to maximum
+					entity_graphic_interface.modulate.a = 1.0
+					enemy_health_bar.value = body.health
+					enemy_health_bar.max_value = body.max_health
+					enemy_health_label.text = "HP:" + str(round(body.health* 100) / 100) + "/" + str(body.max_health)
+					enemy_energy_bar.value = body.nefis
+					enemy_energy_bar.max_value = body.max_nefis
+					enemy_energy_label.text = "EP:" + str(round(body.nefis* 100) / 100) + "/" + str(body.max_nefis)
+					var threat_label = $UI/GUI/EnemyUI/Threat
+					if body.has_method("displayThreatInfo"):
+						body.displayThreatInfo(threat_label)
+					else:
+						threat_label.text = ""
+				else:
+					# Start tween to fade out
+					enemy_ui_tween.interpolate_property(entity_graphic_interface, "modulate:a", entity_graphic_interface.modulate.a, 0.0, fade_duration, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
+					enemy_ui_tween.start()
+			else:
+				# Start tween to fade out
+				enemy_ui_tween.interpolate_property(entity_graphic_interface, "modulate:a", entity_graphic_interface.modulate.a, 0.0, fade_duration, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
+				enemy_ui_tween.start()
+		else:
+			# Start tween to fade out
+			enemy_ui_tween.interpolate_property(entity_graphic_interface, "modulate:a", entity_graphic_interface.modulate.a, 0.0,fade_duration/3, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
+			enemy_ui_tween.start()
+			#print(str(fade_duration))
+
+#PLAYER USER INTERFACE, BUTTONS, INVENTORY, SKILLBAR, SKILL TREES,EQUIPMENT, PORTRAIT, KEYBINDS AND WHATNOT
 var cursor_visible: bool = false
 onready var keybinds: Control = $UI/GUI/Keybinds
 onready var inventory: Control = $UI/GUI/Inventory
@@ -1822,6 +1755,11 @@ onready var crafting: Control = $UI/GUI/Crafting
 onready var skill_trees: Control = $UI/GUI/SkillTrees
 onready var character: Control = $UI/GUI/Equipment
 onready var menu: Control = $UI/GUI/Menu
+func _on_Unstuck_pressed():
+	staggered_duration = false
+	translation = Vector3(0,5, 0)
+	can_walk = true
+	autoload.gravity(self)
 func skillUserInterfaceInputs():
 	if Input.is_action_just_pressed("skills"):
 		closeSwitchOpen(skill_trees)
@@ -1877,7 +1815,6 @@ func _on_OpenAllUI_pressed():
 	closeSwitchOpen(skill_trees)
 	saveGame()
 	$UI/GUI/CharacterEditor.visible = !$UI/GUI/CharacterEditor.visible
-	
 func connectUIButtons():
 	revive_here.connect("pressed", self , "reviveHere")
 	revive_in_town.connect("pressed", self , "reviveInTown")
@@ -1898,7 +1835,6 @@ onready var atts_ui: Control = $UI/GUI/Equipment/Attributes
 var toggleCount:int  = 0
 func switchAttsStatsUI():
 	toggleCount += 1
-	
 	# Check if both UI elements are valid
 	if dmg_ui != null and atts_ui != null:
 		if toggleCount == 1:
@@ -1914,19 +1850,15 @@ func switchAttsStatsUI():
 			dmg_ui.visible = false
 			atts_ui.visible = false
 			toggleCount = 0  # Reset toggle count for next cycle
-	
-		
 func closeDamageTypes():
 	closeUI(dmg_ui)
 func closeAtts():
 	closeUI(atts_ui)
-		
 func closeUI(ui):
 	if ui != null:
 		ui.visible = false
-func closeSwitchOpen(ui):
+func closeSwitchOpen(ui):#Forgot I had this but can be neat
 	ui.visible = !ui.visible
-		
 func closeAllUI():
 		character.visible = false 
 		crafting.visible  = false
@@ -1934,7 +1866,6 @@ func closeAllUI():
 		skill_trees.visible = false
 		keybinds.visible = false
 		menu.visible = false
-
 func _on_CloseSkillsTrees_pressed():
 	skill_trees.visible = false
 func _on_CraftingCloseButton_pressed():
@@ -2017,7 +1948,6 @@ onready var overhead_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill5/Icon
 onready var rising_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill3/Icon
 onready var whirlwind_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill2/Icon
 onready var heart_trust_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill6/Icon
-
 func connectGenericSkillTee(tree):# this is called by connectSkillTree() to give the the "tree"
 	for child in tree.get_children():
 		if child.is_in_group("Skill"):
@@ -2038,20 +1968,17 @@ func skillPressed(tree,index)->void:
 	if icon_texture != null:
 		spendSkillPoints(icon_texture_rect,button)
 	saveGame()
-
 func spendSkillPoints(icon_texture_rect,button):
 	if skill_points >0:
 		icon_texture_rect.points += 1 
 		button.skillPoints()
 		skill_points -= 1
 		skill_points_spent +=  1
-
 func saveSkillTreeData():
 	for child in vanguard_skill_tree.get_children():
 		if child.is_in_group("Skill"):
 			if child.get_node("Icon").has_method("savedata"):
 				child.get_node("Icon").savedata()
-	
 func loadSkillTreeData():
 	for child in vanguard_skill_tree.get_children():
 		if child.is_in_group("Skill"):
@@ -2068,7 +1995,6 @@ func skillMouseEntered(tree, index):
 	UniversalToolTip(icon_texture)
 func skillMouseExited(index):
 	deleteTooltip()
-	
 func resetSkills(tree):
 	for child in tree.get_children():
 		if child.is_in_group("Skill"):
@@ -2076,7 +2002,6 @@ func resetSkills(tree):
 			skill_points += skill_points_spent
 			child.skillPoints()
 			skill_points_spent = 0 
-	
 func UniversalToolTip(icon_texture):
 	var instance = preload("res://tooltip.tscn").instance()
 	var instance_skills = preload("res://tooltipSkills.tscn").instance()
@@ -2212,7 +2137,7 @@ func connectInventoryButtons():
 			child.connect("mouse_exited", self, "inventoryMouseExited", [index])
 var last_pressed_index: int = -1
 var last_press_time: float = 0.0
-export var double_press_time_inv: float = 0.4
+var double_press_time_inv: float = 0.4
 func inventorySlotPressed(index):
 	var button = inventory_grid.get_node("InventorySlot" + str(index))
 	var icon_texture_rect = button.get_node("Icon")
@@ -3035,7 +2960,7 @@ func showStatusIcon():
 					icon.texture = effect["texture"]
 					icon.modulate = effect["modulation_color"]
 					break  # Exit loop after applying status to the first available icon
-#_________________________________Potion effects________________________________
+#____________________Effects and their duration, activate or deactivate them here___________________
 func potionEffects():
 	redPotion()
 	
@@ -3192,7 +3117,6 @@ func _on_Toilet1_pressed():
 
 
 #Stats__________________________________________________________________________
-var level: int = 100
 
 
 const base_weight = 60
@@ -3206,8 +3130,6 @@ var crouch_speed = 2
 const base_jumping_power = 100
 var jumping_power = 100
 const base_dash_power = 20
-var dash_power = 20
-var attribute = 1000
 
 var defense =  10
 const base_defense = 0
@@ -3244,8 +3166,6 @@ var breath = 100
 
 var scale_factor = 1
 #attributes 
-#leveling
-var skill_points = 100
 
 var sanity: float  = 1
 var wisdom: float = 1
@@ -4848,12 +4768,15 @@ var slot: String = "1"
 var save_directory: String
 var save_path: String 
 func savePlayerData():
-	
 	current_race_gender.savePlayerData()
 	var data = {
 		"aiming_mode":aiming_mode,
 		"sex": sex,
 		"species":species,
+		"experience_points":experience_points,
+		"level":level,
+		
+		
 		
 		"position": translation,
 		"camera.translation.y" : camera.translation.y,
@@ -4984,6 +4907,12 @@ func loadPlayerData():
 			if "species" in player_data:
 				species = player_data["species"]
 				
+			if "experience_points" in player_data:
+				experience_points = player_data["experience_points"]
+			if "level" in player_data:
+				level = player_data["level"]
+
+
 			if "position" in player_data:
 				translation = player_data["position"]
 			if "camera.translation.y" in player_data:
@@ -5183,21 +5112,8 @@ func loadPlayerData():
 			if "left_eye_color" in player_data:
 				left_eye_color = player_data["left_eye_color"]
 
-func _on_pressme2_pressed():
-	slash_resistance = rng.randi_range(-125, 125)
-	pierce_resistance = rng.randi_range(-125, 125)
-	blunt_resistance= rng.randi_range(-125, 125)
-	sonic_resistance= rng.randi_range(-125, 125)
-	heat_resistance= rng.randi_range(-125, 125)
-	cold_resistance= rng.randi_range(-125, 125)
-	jolt_resistance= rng.randi_range(-125, 125)
-	toxic_resistance= rng.randi_range(-125, 125)
-	acid_resistance= rng.randi_range(-125, 125)
-	bleed_resistance= rng.randi_range(-125, 125)
-	neuro_resistance= rng.randi_range(-125, 125)
-	radiant_resistance= rng.randi_range(-125, 125)
 
-
+#_____________CHARACTER EDITING, SPECIES, SEX, BLEND SHAPES AND BONE EDITOR IN ANOTHER SCRIPT 
 var species: String = "human"
 var sex: String = "xx"
 var current_race_gender: Node = null 
@@ -5205,7 +5121,6 @@ var current_race_gender: Node = null
 func switchSexRace():
 	main_weapon = "null"
 	secondary_weapon = "null"
-
 	match sex:
 		"xy":
 			match species:
@@ -5305,17 +5220,13 @@ func switchSexRace():
 		right_hip = current_race_gender.left_hip
 		left_hip = current_race_gender.right_hip
 		var current_face_set = current_race_gender.face_set
-
-
 func raceInstacePreparations():
 	current_race_gender.player = self 
 	current_race_gender.save_directory = save_directory
 	current_race_gender.save_path = save_path + "colors.dat"
 func InstanceRace():
 	player_mesh.add_child(current_race_gender)
-
 func _on_switchGender_pressed():
-	
 	current_race_gender.player = self 
 	if sex == "xy":
 		sex = "xx"
@@ -5323,8 +5234,6 @@ func _on_switchGender_pressed():
 		sex = "xy"
 	switchSexRace() # Call the function to change gender and update scene
 	current_race_gender.EquipmentSwitch()
-
-
 var species_list = ["sepris", "human","skeleton","panthera","bireas","saurus","kadosiel"]# Define the list of available species
 var current_species_index = 0# Initialize the index of the current species
 func _on_switchRace_pressed():
@@ -5336,10 +5245,8 @@ func _on_switchRace_pressed():
 	current_race_gender.EquipmentSwitch()
 	hairstyle = hair_list[current_hair_index]
 	current_race_gender.face_set = face_list[current_face_index]
-
 var hair_list = ["1", "2", "3","4","5"]
 var current_hair_index = 0
-
 func _on_switchhair_pressed():
 	current_hair_index += 1  # Increment the index to move to the next hairstyle
 	if current_hair_index >= hair_list.size():  # Wrap around to the beginning if reached the end of the list
@@ -5412,12 +5319,24 @@ func _on_BlendshapeTest_pressed():
 
 
 
-
-
-
-
-func _on_Unstuck_pressed():
-	staggered_duration = false
-	translation = Vector3(0,5, 0)
-	can_walk = true
-	autoload.gravity(self)
+#________________________________________LEVELING SYSTEM____________________________________________
+var experience_points: int = 0
+var level: int = 1
+var experience_to_next_level: int = 100  # Initial experience required to level up
+onready var exper_label: Label = $UI/GUI/Portrait/MinimapHolder/XPS
+var skill_points = 1
+var attribute = 1
+func takeExperience(points)->void:
+	experience_points += points
+	
+func experienceSystem():
+	while experience_points >= experience_to_next_level:
+		experience_points -= experience_to_next_level
+		level += 1
+		skill_points += 1
+		attribute += 1
+		experience_to_next_level = int(experience_to_next_level * 1.2)
+	
+# Calculate the percentage of experience points
+	var percentage: float = (float(experience_points) / float(experience_to_next_level)) * 100.0
+	exper_label.text = "Level " + str(level) + "\nXP: " + str(experience_points) + "/" + str(experience_to_next_level) + " (" + str(round((percentage* 1)/1)) + "%)"

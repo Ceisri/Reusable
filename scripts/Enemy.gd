@@ -317,6 +317,8 @@ func takeStagger(stagger_chance: float) -> void:
 var parry: bool =  false
 var absorbing: bool = false
 func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type)->void:
+	if instigator.has_method("takeExperience"):
+		instigator.takeExperience(damage)
 	var random_range = rand_range(0,1)
 	var text = autoload.floatingtext_damage.instance()
 	lookTarget(turn_speed*3)

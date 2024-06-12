@@ -30,8 +30,8 @@ func loadAnimations()->void:
 	animation.add_animation("fall", load("res://player/universal animations/Animations Movement General/fall.anim"))
 	animation.add_animation("idle fist", load("res://player/universal animations/Animations Fist/idle fist.anim"))
 	animation.add_animation("idle bow", load("res://player/universal animations/Animations Bow/idle  bow.anim"))#placeholder
-	animation.add_animation("idle sword", load("res://player/universal animations/dump2/idle sword.anim"))
-	animation.add_animation("idle shield", load("res://player/universal animations/dump2/idle sword.anim"))
+	animation.add_animation("idle sword", load("res://player/universal animations/Animations Sword Light/idle sword.anim"))
+	animation.add_animation("idle shield", load("res://player/universal animations/Animations Sword Light/idle sword.anim"))
 	animation.add_animation("idle heavy", load("res://player/universal animations/Animations Sword Heavy/idle heavy.anim"))
 	animation.add_animation("downed idle", load("res://player/universal animations/Animations Idle General/downed idle.anim"))
 	
