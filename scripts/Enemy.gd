@@ -677,7 +677,9 @@ func dealDMG(enemy_detector1,critical_damage,aggro_power,damage_type,critical_fl
 		if victim.is_in_group("Player"):
 			if victim != self:
 				victim.stored_instigator = self 
-				victim.stunned_duration = 10
+				var rand = rand_range(0,1)
+				if rand > 0.5:
+					victim.stunned_duration = 1
 				if victim.state != autoload.state_list.dead:
 						if randf() <= critical_chance:#critical hit
 							if victim.absorbing == true: #victim is guarding

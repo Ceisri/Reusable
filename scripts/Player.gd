@@ -112,6 +112,7 @@ func _physics_process(delta: float) -> void:
 	SecWeapon()
 	jump()
 	deathLife(delta)#Main function
+	walk() 
 	
 
 		
@@ -127,8 +128,6 @@ var struggles:int = 15
 var revival_cost:int =  500
 func deathLife(delta)->void:
 	hideShowDeath()
-	if death_duration == false:
-		walk() 
 	if health >0:
 		climbing()
 		fieldOfView()
@@ -170,9 +169,7 @@ func reviveHereFree()->void:
 		water = max_water * 0.1
 		revival_wait_time = 120
 		struggles = 15
-		death_duration = false
 		staggered_duration = false
-		can_walk = true
 		autoload.gravity(self)
 		
 func reviveHere()->void:#Paid option
@@ -188,9 +185,7 @@ func reviveHere()->void:#Paid option
 		water = max_water 
 		revival_wait_time = 120
 		struggles = 15
-		death_duration = false
 		staggered_duration = false
-		can_walk = true
 		autoload.gravity(self)
 
 func struggle()->void:
@@ -211,7 +206,6 @@ func reviveInTown()->void:
 	water = max_water 
 	revival_wait_time = 120
 	struggles = 5
-	death_duration = false
 	staggered_duration = false
 	translation = Vector3(0,5, 0)
 	can_walk = true
@@ -235,7 +229,7 @@ func walk()->void:
 	movement_speed = 0
 	angular_acceleration = 3.25
 	acceleration = 15
-	if can_walk == true:
+	if can_walk == true and health > -100:
 		if (Input.is_action_pressed("forward") ||  Input.is_action_pressed("backward") ||  Input.is_action_pressed("left") ||  Input.is_action_pressed("right")):
 			direction = Vector3(Input.get_action_strength("left") - Input.get_action_strength("right"),
 						0,
@@ -243,7 +237,6 @@ func walk()->void:
 			strafe_dir = direction
 			direction = direction.rotated(Vector3.UP, h_rot).normalized()
 			is_walking = true
-	#		if is_instance_valid(current_race_gender) and current_race_gender.can_move == true:
 		# Sprint input, state and speed
 			if (Input.is_action_pressed("sprint")) and (is_walking == true) and is_in_combat == false and  health > 0:
 				is_in_combat = false
@@ -291,11 +284,7 @@ func walk()->void:
 		is_sprinting = false
 		is_running = false
 		is_crouching = false
-		if (Input.is_action_pressed("forward") ||  Input.is_action_pressed("backward") ||  Input.is_action_pressed("left") ||  Input.is_action_pressed("right")):
-			direction = Vector3(Input.get_action_strength("left") - Input.get_action_strength("right"),
-						0,
-						Input.get_action_strength("forward") - Input.get_action_strength("backward"))
-			direction = direction.rotated(Vector3.UP, h_rot).normalized()
+
 	autoload.movement(self)
 
 #climbing section
@@ -391,7 +380,7 @@ var acceleration = int()
 #__________________________________________More action based movement_______________________________
 # Dodge
 var double_press_time: float = 0.18
-var slide_movement: float = 5.00 
+var slide_movement: float = 8.00 
 var dash_countback: int = 0
 var dash_timerback: float = 0.0
 # Dodge Left
@@ -704,7 +693,6 @@ func showEnemyStats()-> void:
 
 #______________________________________________Animations___________________________________________
 var animation: AnimationPlayer
-var death_duration: bool = false
 var has_died: bool = false
 
 var overhead_slash_duration:bool = false
@@ -789,9 +777,16 @@ func inputOrStateToAnimation()-> void:
 		current_race_gender.can_move = false
 		animation.play("staggered",blend)
 		animationCancel()
+	elif stunned_duration > 0 and health >0:
+		animationCancel()
+		animation.play("staggered",blend)
+		can_walk = false
+		horizontal_velocity = direction * 0
+		current_race_gender.can_move = false
+		
 	else:
 	
-		SkillQueueSystem()#this is only for people with disabilities or if the game ever goes online to help with high ping 
+		SkillQueueSystem()#DO NOT REMOVE THIS! it is neccessary to allow skill cancelling, skill cancelling doesn't work without skill queue, it has a toggle on off anyway for players that don't like it 
 		
 		if Input.is_action_pressed("rclick"):
 			state == autoload.state_list.guard
@@ -799,7 +794,7 @@ func inputOrStateToAnimation()-> void:
 
 	#Overhead Slash_____________________________________________________________________________________
 		if overhead_slash_duration == true:
-			animationCancelException(overhead_slash_duration)
+
 			directionToCamera()
 			is_in_combat = true
 			clearParryAbsorb()
@@ -828,7 +823,7 @@ func inputOrStateToAnimation()-> void:
 
 	#Whirlwind__________________________________________________________________________________________
 		elif whirlwind_duration == true :
-			animationCancelException(whirlwind_duration)
+
 			directionToCamera()
 			is_in_combat = true
 			clearParryAbsorb()
@@ -856,7 +851,7 @@ func inputOrStateToAnimation()-> void:
 			
 	#Rising slash____________________________________________________________________________________
 		elif rising_slash_duration == true:
-			animationCancelException(rising_slash_duration)
+
 			directionToCamera()
 			is_in_combat = true
 			clearParryAbsorb()
@@ -872,24 +867,6 @@ func inputOrStateToAnimation()-> void:
 							animation.play("rising slash heavy",blend,melee_atk_speed + 0.35)
 	#Cyclone____________________________________________________________________________________________
 		elif cyclone_duration == true:
-#			animationCancelException(cyclone_duration)
-#			if overhead_slash_duration == true:
-#				all_skills.overheadSlashCD()
-#				overhead_slash_duration = false
-#			if rising_slash_duration == true:
-#				rising_slash_duration = false
-#				all_skills.risingSlashCD()
-#			if heart_trust_duration == true:
-#				all_skills.heartTrustSlashCD()
-#				heart_trust_duration = false
-#
-#				cyclone_duration = false
-#			if whirlwind_duration == true:
-#				all_skills.whirlwindCD()
-#				whirlwind_duration = false
-#			if taunt_duration == true:
-#				all_skills.tauntCD()
-#				taunt_duration = false
 			directionToCamera()
 			is_in_combat = true
 			clearParryAbsorb()
@@ -946,9 +923,6 @@ func inputOrStateToAnimation()-> void:
 			else:
 				heart_trust_duration = false
 				returnToIdleBasedOnWeaponType()
-				
-				
-				
 	#___________________________________________________________________________________________________
 		elif taunt_duration == true:
 			animationCancelException(taunt_duration)
@@ -972,6 +946,7 @@ func inputOrStateToAnimation()-> void:
 						if !is_on_wall():
 							if is_sprinting == false:
 								horizontal_velocity = direction * slide_movement * agility
+								animationCancel()
 								#horizontal_velocity = direction * 200 * get_physics_process_delta_time()
 							else:
 								moveDuringAnimation(sprint_speed)
@@ -1102,15 +1077,22 @@ func inputOrStateToAnimation()-> void:
 					autoload.state_list.fall:
 						animation.play("fall",blend)
 					autoload.state_list.dead:
-						if death_duration == true:
-							animation.play("death",blend)
+						staggered_duration = false
+						if health <= -100:
+							can_walk = true
+							current_race_gender.can_move = true 
+							horizontal_velocity * direction * 0
+							animation.play("dead",0.35)
 						else:
+							can_walk = true
+							current_race_gender.can_move = true 
 							if is_walking == true:
 								is_in_combat = false
-								switchMainFromHipToHand()
-								animation.play("crawl",blend)
+								animation.play("downed walk",0.4)
+								health -= 0.1
 							else:
-								animation.play("dead",blend)
+								health -= 0.01
+								animation.play("downed idle",0.35)
 
 onready var l_click_slot = $UI/GUI/SkillBar/GridContainer/LClickSlot
 onready var r_click_slot = $UI/GUI/SkillBar/GridContainer/RClickSlot
@@ -1120,7 +1102,9 @@ func skills(slot)-> void:
 				if slot.texture.resource_path == autoload.dodge.get_path():
 					if dodge_animation_duration ==0:
 						if all_skills.can_dodge == true:
-							all_skills.dodgeCD()
+							if resolve > all_skills.dodge_cost:
+								all_skills.dodgeCD()
+								animationCancel()
 						else:
 							returnToIdleBasedOnWeaponType()
 					else:
@@ -1270,6 +1254,8 @@ func skills(slot)-> void:
 											if taunt_duration == true:
 												all_skills.tauntCD()
 												taunt_duration = false
+										else:
+											pass
 								else:
 									returnToIdleBasedOnWeaponType()
 									rising_slash_duration = false
@@ -1367,12 +1353,13 @@ func skills(slot)-> void:
 												all_skills.overheadSlashCD()
 												overhead_slash_duration = false
 											if rising_slash_duration == true:
-												rising_slash_duration = false
 												all_skills.risingSlashCD()
+												rising_slash_duration = false
 #											if heart_trust_duration == true:
 #												all_skills.heartTrustSlashCD()
 											if cyclone_duration == true:
 												all_skills.cycloneCD()
+												cyclone_duration = false
 											if whirlwind_duration == true:
 												all_skills.whirlwindCD()
 												whirlwind_duration = false
@@ -1417,72 +1404,74 @@ func skills(slot)-> void:
 								autoload.consumeRedPotion(self,button,inventory_grid,true,slot.get_parent())				
 
 
-var skill_cancelling:bool = false#this only works with the SkillQueueSystem() and serves to interupt skills with other skills 
-var queue_skills:bool = false #this is only for people with disabilities or if the game ever goes online to help with high ping 
+var skill_cancelling:bool = true#this only works with the SkillQueueSystem() and serves to interupt skills with other skills 
+var queue_skills:bool = true #this is only for people with disabilities or if the game ever goes online to help with high ping 
 func _on_SkillCancel_pressed():
 	skill_cancelling = !skill_cancelling
+	print(str(skill_cancelling)+ str(" skill canc"))
 func _on_SkillQueue_pressed():
 	queue_skills = !queue_skills
+	print(str(queue_skills)+ str(" skill que"))
 func SkillQueueSystem()-> void:
 	if queue_skills == true:
 		if state == autoload.state_list.skill1:
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot1/Icon
 			skills(slot)
-		elif state == autoload.state_list.skill2:
+		if state == autoload.state_list.skill2:
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot2/Icon
 			skills(slot)
-		elif state == autoload.state_list.skill3:
+		if state == autoload.state_list.skill3:
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot3/Icon
 			skills(slot)
-		elif state == autoload.state_list.skill4:
+		if state == autoload.state_list.skill4:
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot4/Icon
 			skills(slot)
-		elif state == autoload.state_list.skill5:
+		if state == autoload.state_list.skill5:
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot5/Icon
 			skills(slot)
-		elif state == autoload.state_list.skill6:
+		if state == autoload.state_list.skill6:
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot6/Icon
 			skills(slot)
-		elif state == autoload.state_list.skill7:
+		if state == autoload.state_list.skill7:
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot7/Icon
 			skills(slot)
-		elif state == autoload.state_list.skill8:
+		if state == autoload.state_list.skill8:
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot8/Icon
 			skills(slot)
-		elif state == autoload.state_list.skill9:
+		if state == autoload.state_list.skill9:
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot9/Icon
 			skills(slot)
-		elif state == autoload.state_list.skill0:
+		if state == autoload.state_list.skill0:
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot10/Icon
 			skills(slot)
-		elif state == autoload.state_list.skillQ:
+		if state == autoload.state_list.skillQ:
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot11/Icon
 			skills(slot)
 		elif state == autoload.state_list.skillE:
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot12/Icon
 			skills(slot)
-		elif state == autoload.state_list.skillR:
+		if state == autoload.state_list.skillR:
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot13/Icon
 			skills(slot)
-		elif state == autoload.state_list.skillT:
+		if state == autoload.state_list.skillT:
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot14/Icon
 			skills(slot)
-		elif state == autoload.state_list.skillF:
+		if state == autoload.state_list.skillF:
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot15/Icon
 			skills(slot)
-		elif state == autoload.state_list.skillG:
+		if state == autoload.state_list.skillG:
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot16/Icon
 			skills(slot)
-		elif state == autoload.state_list.skillY:
+		if state == autoload.state_list.skillY:
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot17/Icon
 			skills(slot)
-		elif state == autoload.state_list.skillH:
+		if state == autoload.state_list.skillH:
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot18/Icon
 			skills(slot)
-		elif state == autoload.state_list.skillV:
+		if state == autoload.state_list.skillV:
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot19/Icon
 			skills(slot)
-		elif state == autoload.state_list.skillB:
+		if state == autoload.state_list.skillB:
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot20/Icon
 			skills(slot)
 			
@@ -1515,8 +1504,6 @@ var anim_cancel:bool = true #If true using abilities and skills interupts base a
 func inputToState():
 	if health <= 0:
 		state = autoload.state_list.dead
-		if has_died == false:
-			death_duration = true
 	else:
 #on water
 		if is_swimming:
@@ -5430,7 +5417,6 @@ func _on_BlendshapeTest_pressed():
 
 
 func _on_Unstuck_pressed():
-	death_duration = false
 	staggered_duration = false
 	translation = Vector3(0,5, 0)
 	can_walk = true

@@ -22,7 +22,6 @@ func _ready():
 	applyBlendShapes()
 
 func loadAnimations()->void:
-	animation.add_animation("death", load("res://player/universal animations/Animations Movement General/deathPlayer.anim"))
 	animation.add_animation("dead", load("res://player/universal animations/Animations Idle General/dead.anim"))
 	animation.add_animation("idle", load("res://player/universal animations/Animations Idle General/idle.anim"))
 	animation.add_animation("staggered", load("res://player/universal animations/Animations Idle General/staggeredPlayer.anim"))
@@ -34,12 +33,19 @@ func loadAnimations()->void:
 	animation.add_animation("idle sword", load("res://player/universal animations/dump2/idle sword.anim"))
 	animation.add_animation("idle shield", load("res://player/universal animations/dump2/idle sword.anim"))
 	animation.add_animation("idle heavy", load("res://player/universal animations/Animations Sword Heavy/idle heavy.anim"))
+	animation.add_animation("downed idle", load("res://player/universal animations/Animations Idle General/downed idle.anim"))
+	
+	
+	animation.add_animation("slide", load("res://player/universal animations/Animations Movement General/slide.anim"))
+	
 	
 	animation.add_animation("walk", load("res://player/universal animations/Animations Movement General/walk.tres"))
 	animation.add_animation("walk bow", load("res://player/universal animations/Animations Bow/walk bow.anim"))
 	animation.add_animation("walk sword", load("res://player/universal animations/Animations Sword Light/walk sword.anim"))#placeholder
 	animation.add_animation("walk heavy", load("res://player/universal animations/Animations Sword Heavy/walk heavy.anim"))
 	animation.add_animation("walk shield", load("res://player/universal animations/Animations Shield/walk shield.anim"))
+	animation.add_animation("downed walk", load("res://player/universal animations/Animations Movement General/downed walk.anim"))
+	
 	
 	animation.add_animation("run", load("res://player/universal animations/Animations Movement General/run cycle.anim"))
 	animation.add_animation("climb cycle", load("res://player/universal animations/Animations Movement General/climb cycle.anim"))
