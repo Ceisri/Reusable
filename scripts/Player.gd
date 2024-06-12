@@ -4774,6 +4774,7 @@ func savePlayerData():
 		"sex": sex,
 		"species":species,
 		"experience_points":experience_points,
+		"experience_to_next_level":experience_to_next_level,
 		"level":level,
 		
 		
@@ -4909,6 +4910,10 @@ func loadPlayerData():
 				
 			if "experience_points" in player_data:
 				experience_points = player_data["experience_points"]
+			if "experience_to_next_level" in player_data:
+				experience_to_next_level = player_data["experience_to_next_level"]
+
+
 			if "level" in player_data:
 				level = player_data["level"]
 
