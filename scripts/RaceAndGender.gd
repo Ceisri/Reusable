@@ -25,6 +25,7 @@ func loadAnimations()->void:
 	animation.add_animation("death", load("res://player/universal animations/Animations Movement General/deathPlayer.anim"))
 	animation.add_animation("dead", load("res://player/universal animations/Animations Idle General/dead.anim"))
 	animation.add_animation("idle", load("res://player/universal animations/Animations Idle General/idle.anim"))
+	animation.add_animation("staggered", load("res://player/universal animations/Animations Idle General/staggeredPlayer.anim"))
 	animation.add_animation("jump", load("res://player/universal animations/Animations Movement General/jump.anim"))
 	animation.add_animation("jump run", load("res://player/universal animations/Animations Movement General/jump run.anim"))
 	animation.add_animation("fall", load("res://player/universal animations/Animations Movement General/fall.anim"))

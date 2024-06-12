@@ -872,7 +872,24 @@ func inputOrStateToAnimation()-> void:
 							animation.play("rising slash heavy",blend,melee_atk_speed + 0.35)
 	#Cyclone____________________________________________________________________________________________
 		elif cyclone_duration == true:
-			animationCancelException(cyclone_duration)
+#			animationCancelException(cyclone_duration)
+#			if overhead_slash_duration == true:
+#				all_skills.overheadSlashCD()
+#				overhead_slash_duration = false
+#			if rising_slash_duration == true:
+#				rising_slash_duration = false
+#				all_skills.risingSlashCD()
+#			if heart_trust_duration == true:
+#				all_skills.heartTrustSlashCD()
+#				heart_trust_duration = false
+#
+#				cyclone_duration = false
+#			if whirlwind_duration == true:
+#				all_skills.whirlwindCD()
+#				whirlwind_duration = false
+#			if taunt_duration == true:
+#				all_skills.tauntCD()
+#				taunt_duration = false
 			directionToCamera()
 			is_in_combat = true
 			clearParryAbsorb()
@@ -1157,9 +1174,28 @@ func skills(slot)-> void:
 							if all_skills.can_overhead_slash == true:
 								if resolve > all_skills.overhead_slash_cost:
 									if weapon_type != autoload.weapon_list.fist:
-										animationCancelException(overhead_slash_duration)
 										is_in_combat = true
 										overhead_slash_duration = true
+										animationCancelException(overhead_slash_duration)
+										if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
+#											if overhead_slash_duration == true:
+#												all_skills.overheadSlashCD()
+#												overhead_slash_duration = false
+											if rising_slash_duration == true:
+												rising_slash_duration = false
+												all_skills.risingSlashCD()
+											if heart_trust_duration == true:
+												all_skills.heartTrustSlashCD()
+												heart_trust_duration = false
+											if cyclone_duration == true:
+												all_skills.cycloneCD()
+												cyclone_duration = false
+											if whirlwind_duration == true:
+												all_skills.whirlwindCD()
+												whirlwind_duration = false
+											if taunt_duration == true:
+												all_skills.tauntCD()
+												taunt_duration = false
 								else:
 									returnToIdleBasedOnWeaponType()
 									overhead_slash_duration = false
@@ -1169,7 +1205,7 @@ func skills(slot)-> void:
 						else:
 							returnToIdleBasedOnWeaponType()
 							overhead_slash_duration = false
-#__________________________________________  overhead slash    _____________________________________
+#___________________________________________________________________________________________________
 				elif slot.texture.resource_path == autoload.taunt.get_path():
 						if taunt_icon.points >0:
 							if all_skills.can_taunt == true:
@@ -1178,6 +1214,25 @@ func skills(slot)-> void:
 									taunt_duration = true
 									is_walking = false
 									can_walk = false
+									if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
+											if overhead_slash_duration == true:
+												all_skills.overheadSlashCD()
+												overhead_slash_duration = false
+											if rising_slash_duration == true:
+												rising_slash_duration = false
+												all_skills.risingSlashCD()
+											if heart_trust_duration == true:
+												all_skills.heartTrustSlashCD()
+												heart_trust_duration = false
+											if cyclone_duration == true:
+												all_skills.cycloneCD()
+												cyclone_duration = false
+											if whirlwind_duration == true:
+												all_skills.whirlwindCD()
+												whirlwind_duration = false
+#											if taunt_duration == true:
+#												all_skills.tauntCD()
+#												taunt_duration = false
 								else:
 									returnToIdleBasedOnWeaponType()
 									taunt_duration = false
@@ -1196,6 +1251,25 @@ func skills(slot)-> void:
 										is_in_combat = true
 										rising_slash_duration = true
 										animationCancelException(rising_slash_duration)
+										if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
+											if overhead_slash_duration == true:
+												all_skills.overheadSlashCD()
+												overhead_slash_duration = false
+#											if rising_slash_duration == true:
+#												rising_slash_duration = false
+#												all_skills.risingSlashCD()
+											if heart_trust_duration == true:
+												all_skills.heartTrustSlashCD()
+												heart_trust_duration = false
+											if cyclone_duration == true:
+												all_skills.cycloneCD()
+												cyclone_duration = false
+											if whirlwind_duration == true:
+												all_skills.whirlwindCD()
+												whirlwind_duration = false
+											if taunt_duration == true:
+												all_skills.tauntCD()
+												taunt_duration = false
 								else:
 									returnToIdleBasedOnWeaponType()
 									rising_slash_duration = false
@@ -1213,6 +1287,26 @@ func skills(slot)-> void:
 									if weapon_type != autoload.weapon_list.fist:
 										cyclone_duration = true
 										animationCancelException(cyclone_duration)
+										if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
+											if overhead_slash_duration == true:
+												all_skills.overheadSlashCD()
+												overhead_slash_duration = false
+											if rising_slash_duration == true:
+												all_skills.risingSlashCD()
+												rising_slash_duration = false
+											if heart_trust_duration == true:
+												all_skills.heartTrustSlashCD()
+												heart_trust_duration = false
+#											if cyclone_duration == true:
+#												all_skills.cycloneCD()
+#												cyclone_duration = false
+											if whirlwind_duration == true:
+												all_skills.whirlwindCD()
+												whirlwind_duration = false
+											if taunt_duration == true:
+												all_skills.tauntCD()
+												taunt_duration = false
+
 								else:
 									returnToIdleBasedOnWeaponType()
 									cyclone_duration = false
@@ -1222,6 +1316,8 @@ func skills(slot)-> void:
 						else:
 							returnToIdleBasedOnWeaponType()
 							cyclone_duration = false
+							
+							
 #__________________________________________ Whirlwind _____________________________________________
 				elif slot.texture.resource_path == autoload.whirlwind.get_path():
 						if whirlwind_icon.points >0 :
@@ -1230,6 +1326,25 @@ func skills(slot)-> void:
 									if weapon_type != autoload.weapon_list.fist:
 										whirlwind_duration = true
 										animationCancelException(whirlwind_duration)
+										if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
+											if overhead_slash_duration == true:
+												all_skills.overheadSlashCD()
+												overhead_slash_duration = false
+											if rising_slash_duration == true:
+												all_skills.risingSlashCD()
+												rising_slash_duration = false
+											if heart_trust_duration == true:
+												all_skills.heartTrustSlashCD()
+												heart_trust_duration = false
+											if cyclone_duration == true:
+												all_skills.cycloneCD()
+												cyclone_duration = false
+#											if whirlwind_duration == true:
+#												all_skills.whirlwindCD()
+#												whirlwind_duration = false
+											if taunt_duration == true:
+												all_skills.tauntCD()
+												taunt_duration = false
 								else:
 									returnToIdleBasedOnWeaponType()
 									whirlwind_duration = false
@@ -1239,7 +1354,7 @@ func skills(slot)-> void:
 						else:
 							returnToIdleBasedOnWeaponType()
 							whirlwind_duration = false
-#__________________________________________ Whirlwind _____________________________________________
+#__________________________________________ Heart Trust ____________________________________________
 				elif slot.texture.resource_path == autoload.heart_trust.get_path():
 						if heart_trust_icon.points >0 :
 							if all_skills.can_heart_trust == true:
@@ -1247,6 +1362,23 @@ func skills(slot)-> void:
 									if weapon_type != autoload.weapon_list.fist:
 										heart_trust_duration = true
 										animationCancelException(heart_trust_duration)
+										if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
+											if overhead_slash_duration == true:
+												all_skills.overheadSlashCD()
+												overhead_slash_duration = false
+											if rising_slash_duration == true:
+												rising_slash_duration = false
+												all_skills.risingSlashCD()
+#											if heart_trust_duration == true:
+#												all_skills.heartTrustSlashCD()
+											if cyclone_duration == true:
+												all_skills.cycloneCD()
+											if whirlwind_duration == true:
+												all_skills.whirlwindCD()
+												whirlwind_duration = false
+											if taunt_duration == true:
+												all_skills.tauntCD()
+												taunt_duration = false
 								else:
 									returnToIdleBasedOnWeaponType()
 									heart_trust_duration = false
