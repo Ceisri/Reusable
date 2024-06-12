@@ -13,7 +13,7 @@ var is_attacking = bool()
 var is_walking = bool()
 var is_running = bool()
 
-
+var duration = 200
 
 func _ready()->void:
 	loadPlayerData()
@@ -79,6 +79,7 @@ func _on_3FPS_timeout()->void:
 		updateAllStats()
 
 func _physics_process(delta: float) -> void:
+	
 	all_skills.updateCooldownLabel()
 	var state_enum = autoload.state_list  # Access the enum from the singleton
 	var state_value = state  # Get the current state value
@@ -377,7 +378,8 @@ var acceleration = int()
 #	move_and_slide(movement, Vector3.UP)
 #__________________________________________More action based movement_______________________________
 # Dodge
-export var double_press_time: float = 0.18
+var double_press_time: float = 0.18
+var slide_movement: float = 5.00 
 var dash_countback: int = 0
 var dash_timerback: float = 0.0
 # Dodge Left
@@ -407,6 +409,7 @@ func dodgeBack()-> void:#Doddge when in strafe mode
 		if Input.is_action_just_pressed("backward"):
 			dash_countback += 1
 		if dash_countback == 2 and dash_timerback < double_press_time:
+			animationCancelException(staggered_duration)
 			if dodge_animation_duration == 0:
 				all_skills.dodgeCD()
 		else:
@@ -423,6 +426,7 @@ func dodgeFront()-> void:#Dodge when in strafe mode
 		if Input.is_action_just_pressed("forward"):
 			dash_countforward += 1
 		if dash_countforward == 2 and dash_timerforward < double_press_time:
+			animationCancelException(staggered_duration)
 			if dodge_animation_duration == 0:
 				all_skills.dodgeCD()
 		else:
@@ -440,6 +444,7 @@ func dodgeLeft()-> void:#Dodge when in strafe mode
 		if Input.is_action_just_pressed("left"):
 			dash_countleft += 1
 		if dash_countleft == 2 and dash_timerleft < double_press_time:
+			animationCancelException(staggered_duration)
 			if dodge_animation_duration == 0:
 				all_skills.dodgeCD()
 		else:
@@ -456,6 +461,7 @@ func dodgeRight()-> void:#Dodge when in strafe mode
 		if Input.is_action_just_pressed("right"):
 			dash_countright += 1
 		if dash_countright == 2 and dash_timerright < double_press_time :
+			animationCancelException(staggered_duration)
 			if dodge_animation_duration == 0:
 				all_skills.dodgeCD()
 		else:
@@ -688,6 +694,7 @@ func showEnemyStats()-> void:
 var animation: AnimationPlayer
 var death_duration: bool = false
 var has_died: bool = false
+
 var overhead_slash_duration:bool = false
 var overhead_slash_combo:bool = false
 #___________________________________________________________________________________________________
@@ -725,302 +732,356 @@ func animationCancel()->void:
 	if taunt_duration == true:
 		all_skills.tauntCD()
 		taunt_duration = false
+		
+		
+func animationCancelException(exception) -> void:
+	if skill_cancelling == true:
+		if exception != overhead_slash_duration and overhead_slash_duration == true:
+			print("overhead_slash_duration true")
+			all_skills.overheadSlashCD()
+			overhead_slash_duration = false
+
+		if exception != rising_slash_duration and rising_slash_duration== true:
+			print("rising_slash_duration true")
+			rising_slash_duration = false
+			all_skills.risingSlashCD()
+
+		if exception != heart_trust_duration and heart_trust_duration== true:
+			print("heart_trust_duration true")
+			all_skills.heartTrustSlashCD()
+			heart_trust_duration = false
+
+		if exception != cyclone_duration and cyclone_duration== true:
+			print("cyclone_duration true")
+			all_skills.cycloneCD()
+			cyclone_duration = false
+
+		if exception != whirlwind_duration and whirlwind_duration== true:
+			print("whirlwind_duration true")
+			all_skills.whirlwindCD()
+			whirlwind_duration = false
+
+		if exception != taunt_duration and taunt_duration== true:
+			print("taunt_duration true")
+			all_skills.tauntCD()
+			taunt_duration = false
+
+		
 func inputOrStateToAnimation()-> void:
 	if current_race_gender == null or animation == null:
 		print("mesh not instanced or animationPlayer not found")
-	#this is only for people with disabilities or if the game ever goes online to help with high ping 
-	SkillQueueSystem()
-	if Input.is_action_pressed("rclick"):
-		state == autoload.state_list.guard
-		animationCancel()
-#_______________________________________Overhead Slash______________________________________________
+	
 	if staggered_duration == true:
+		can_walk = false
+		horizontal_velocity = direction * 0
+		current_race_gender.can_move = false
 		animation.play("staggered",blend)
 		animationCancel()
-	if overhead_slash_duration == true:
-		directionToCamera()
-		is_in_combat = true
-		clearParryAbsorb()
-		moveDuringAnimation(4)
-		match weapon_type:
-					autoload.weapon_list.sword:
-						if overhead_slash_combo == false:
-							animation.play("overhead slash sword",blend, melee_atk_speed - 0.15)
-						else:
-							animation.play("overhead slash sword",blend, melee_atk_speed + 0.9)
-					autoload.weapon_list.sword_shield:
-						if overhead_slash_combo == false:
-							animation.play("overhead slash sword",blend, melee_atk_speed- 0.15)
-						else:
-							animation.play("overhead slash sword",blend, melee_atk_speed + 0.9)
-					autoload.weapon_list.dual_swords:
-						if overhead_slash_combo == false:
-							animation.play("overhead slash sword",blend, melee_atk_speed- 0.15)
-						else:
-							animation.play("overhead slash sword",blend, melee_atk_speed + 1)
-					autoload.weapon_list.heavy:
-						if overhead_slash_combo == false:
-							animation.play("overhead slash heavy",blend, melee_atk_speed- 0.25)
-						else:
-							animation.play("overhead slash heavy",blend, melee_atk_speed + 0.6)	
-#___________________________________________________________________________________________________
-	elif taunt_duration == true:
-		directionToCamera()
-		can_walk = false
-		is_in_combat = true
-		is_walking = false
-		clearParryAbsorb()
-		if weapon_type == autoload.weapon_list.heavy:
-			animation.play("taunt heavy",blend + 0.1,ferocity)
-		else:
-			animation.play("taunt",blend+ 0.1,ferocity)
+	else:
+	
+		SkillQueueSystem()#this is only for people with disabilities or if the game ever goes online to help with high ping 
+		
+		if Input.is_action_pressed("rclick"):
+			state == autoload.state_list.guard
+			animationCancel()
 
+	#Overhead Slash_____________________________________________________________________________________
+		if overhead_slash_duration == true:
+			animationCancelException(overhead_slash_duration)
+			directionToCamera()
+			is_in_combat = true
+			clearParryAbsorb()
+			moveDuringAnimation(4)
+			match weapon_type:
+						autoload.weapon_list.sword:
+							if overhead_slash_combo == false:
+								animation.play("overhead slash sword",blend, melee_atk_speed - 0.15)
+							else:
+								animation.play("overhead slash sword",blend, melee_atk_speed + 0.9)
+						autoload.weapon_list.sword_shield:
+							if overhead_slash_combo == false:
+								animation.play("overhead slash sword",blend, melee_atk_speed- 0.15)
+							else:
+								animation.play("overhead slash sword",blend, melee_atk_speed + 0.9)
+						autoload.weapon_list.dual_swords:
+							if overhead_slash_combo == false:
+								animation.play("overhead slash sword",blend, melee_atk_speed- 0.15)
+							else:
+								animation.play("overhead slash sword",blend, melee_atk_speed + 1)
+						autoload.weapon_list.heavy:
+							if overhead_slash_combo == false:
+								animation.play("overhead slash heavy",blend, melee_atk_speed- 0.25)
+							else:
+								animation.play("overhead slash heavy",blend, melee_atk_speed + 0.6)	
 
-#Rising slash____________________________________________________________________________________
-	elif rising_slash_duration == true:
-		directionToCamera()
-		is_in_combat = true
-		clearParryAbsorb()
-		moveDuringAnimation(6)
-		match weapon_type:
-					autoload.weapon_list.sword:
-						animation.play("rising slash shield",blend, melee_atk_speed + 0.35)
-					autoload.weapon_list.sword_shield:
-						animation.play("rising slash shield",blend,melee_atk_speed + 0.35)
-					autoload.weapon_list.dual_swords:
-						animation.play("rising slash shield",blend, melee_atk_speed + 0.33)
-					autoload.weapon_list.heavy:
-						animation.play("rising slash heavy",blend,melee_atk_speed + 0.35)
-#Cyclone____________________________________________________________________________________________
-	elif cyclone_duration == true:
-		directionToCamera()
-		is_in_combat = true
-		clearParryAbsorb()
-		if all_skills.can_cyclone == true:
-			if resolve > all_skills.cyclone_cost:
-				moveDuringAnimation(all_skills.cyclone_motion)
-				match weapon_type:
-					autoload.weapon_list.sword:
-						if cyclone_combo == false:
-							animation.play("cyclone sword",blend,melee_atk_speed+ 0.25)
-						else:
-							animation.play("cyclone sword",blend,melee_atk_speed+ 1)
-					autoload.weapon_list.sword_shield:
-						if cyclone_combo == false:
-							animation.play("cyclone sword",blend,melee_atk_speed+ 0.25)
-						else:
-							animation.play("cyclone sword",blend,melee_atk_speed+ 1)
-					autoload.weapon_list.dual_swords:
-						if cyclone_combo == false:
-							animation.play("cyclone sword",blend,melee_atk_speed+ 0.25)
-						else:
-							animation.play("cyclone sword",blend,melee_atk_speed+ 1)
-					autoload.weapon_list.heavy:
-						if cyclone_combo == false:
-							animation.play("cyclone heavy",blend,melee_atk_speed+ 0.15)
-						else:
-							animation.play("cyclone heavy",blend,melee_atk_speed+ 0.95)
-			else:
-				cyclone_duration = false
-				returnToIdleBasedOnWeaponType()
-		else:
-			cyclone_duration = false
-			returnToIdleBasedOnWeaponType()
-#Whirlwind__________________________________________________________________________________________
-	elif whirlwind_duration == true :
-		directionToCamera()
-		is_in_combat = true
-		clearParryAbsorb()
-		if all_skills.can_whirlwind == true:
-			if resolve > all_skills.whirlwind_cost:
-				match weapon_type:
-					autoload.weapon_list.sword:
-						animation.play("whirlwind sword",blend*1.5,melee_atk_speed+ 0.15)
-						moveDuringAnimation(6)
-					autoload.weapon_list.sword_shield:
-						animation.play("whirlwind sword",blend*1.5,melee_atk_speed+ 0.15)
-						moveDuringAnimation(5)
-					autoload.weapon_list.dual_swords:
-						animation.play("whirlwind sword",blend*1.5,melee_atk_speed + 0.1)
-						moveDuringAnimation(6.6)
-					autoload.weapon_list.heavy:
-						animation.play("whirlwind heavy",blend*1.5,melee_atk_speed+ 0.15)
-						moveDuringAnimation(5)
+	#Whirlwind__________________________________________________________________________________________
+		elif whirlwind_duration == true :
+			animationCancelException(whirlwind_duration)
+			directionToCamera()
+			is_in_combat = true
+			clearParryAbsorb()
+			if all_skills.can_whirlwind == true:
+				if resolve > all_skills.whirlwind_cost:
+					match weapon_type:
+						autoload.weapon_list.sword:
+							animation.play("whirlwind sword",blend*1.5,melee_atk_speed+ 0.15)
+							moveDuringAnimation(6)
+						autoload.weapon_list.sword_shield:
+							animation.play("whirlwind sword",blend*1.5,melee_atk_speed+ 0.15)
+							moveDuringAnimation(5)
+						autoload.weapon_list.dual_swords:
+							animation.play("whirlwind sword",blend*1.5,melee_atk_speed + 0.1)
+							moveDuringAnimation(6.6)
+						autoload.weapon_list.heavy:
+							animation.play("whirlwind heavy",blend*1.5,melee_atk_speed+ 0.15)
+							moveDuringAnimation(5)
+				else:
+					whirlwind_duration = false
+					returnToIdleBasedOnWeaponType()
 			else:
 				whirlwind_duration = false
 				returnToIdleBasedOnWeaponType()
+			
+	#Rising slash____________________________________________________________________________________
+		elif rising_slash_duration == true:
+			animationCancelException(rising_slash_duration)
+			directionToCamera()
+			is_in_combat = true
+			clearParryAbsorb()
+			moveDuringAnimation(6)
+			match weapon_type:
+						autoload.weapon_list.sword:
+							animation.play("rising slash shield",blend, melee_atk_speed + 0.35)
+						autoload.weapon_list.sword_shield:
+							animation.play("rising slash shield",blend,melee_atk_speed + 0.35)
+						autoload.weapon_list.dual_swords:
+							animation.play("rising slash shield",blend, melee_atk_speed + 0.33)
+						autoload.weapon_list.heavy:
+							animation.play("rising slash heavy",blend,melee_atk_speed + 0.35)
+	#Cyclone____________________________________________________________________________________________
+		elif cyclone_duration == true:
+			animationCancelException(cyclone_duration)
+			directionToCamera()
+			is_in_combat = true
+			clearParryAbsorb()
+			if all_skills.can_cyclone == true:
+				if resolve > all_skills.cyclone_cost:
+					moveDuringAnimation(all_skills.cyclone_motion)
+					match weapon_type:
+						autoload.weapon_list.sword:
+							if cyclone_combo == false:
+								animation.play("cyclone sword",blend,melee_atk_speed+ 0.25)
+							else:
+								animation.play("cyclone sword",blend,melee_atk_speed+ 1)
+						autoload.weapon_list.sword_shield:
+							if cyclone_combo == false:
+								animation.play("cyclone sword",blend,melee_atk_speed+ 0.25)
+							else:
+								animation.play("cyclone sword",blend,melee_atk_speed+ 1)
+						autoload.weapon_list.dual_swords:
+							if cyclone_combo == false:
+								animation.play("cyclone sword",blend,melee_atk_speed+ 0.25)
+							else:
+								animation.play("cyclone sword",blend,melee_atk_speed+ 1)
+						autoload.weapon_list.heavy:
+							if cyclone_combo == false:
+								animation.play("cyclone heavy",blend,melee_atk_speed+ 0.15)
+							else:
+								animation.play("cyclone heavy",blend,melee_atk_speed+ 0.95)
+				else:
+					cyclone_duration = false
+					returnToIdleBasedOnWeaponType()
+			else:
+				cyclone_duration = false
+				returnToIdleBasedOnWeaponType()
+				
+		elif heart_trust_duration == true:
+			animationCancelException(heart_trust_duration)
+			directionToCamera()
+			is_in_combat = true
+			clearParryAbsorb()
+			if all_skills.can_heart_trust == true:
+					match weapon_type:
+						autoload.weapon_list.sword:
+							animation.play("heart trust sword",blend*1.5,melee_atk_speed+ 0.55)
+							moveDuringAnimation(4)
+						autoload.weapon_list.sword_shield:
+							animation.play("heart trust sword",blend*1.5,melee_atk_speed+ 0.35)
+							moveDuringAnimation(3)
+						autoload.weapon_list.dual_swords:
+							animation.play("heart trust sword",blend*1.5,melee_atk_speed + 0.1)
+							moveDuringAnimation(3.3)
+						autoload.weapon_list.heavy:
+							animation.play("heart trust sword",blend*1.5,melee_atk_speed + 0.15)
+							moveDuringAnimation(6)
+			else:
+				heart_trust_duration = false
+				returnToIdleBasedOnWeaponType()
+				
+				
+				
+	#___________________________________________________________________________________________________
+		elif taunt_duration == true:
+			animationCancelException(taunt_duration)
+			directionToCamera()
+			can_walk = false
+			is_in_combat = true
+			is_walking = false
+			clearParryAbsorb()
+			if weapon_type == autoload.weapon_list.heavy:
+				animation.play("taunt heavy",blend + 0.1,ferocity)
+			else:
+				animation.play("taunt",blend+ 0.1,ferocity)
+	#___________________________________________________________________________________________________
+	#___________________________________________________________________________________________________
 		else:
-			whirlwind_duration = false
-			returnToIdleBasedOnWeaponType()
-	elif heart_trust_duration == true :
-		directionToCamera()
-		is_in_combat = true
-		clearParryAbsorb()
-		if all_skills.can_heart_trust == true:
-				match weapon_type:
-					autoload.weapon_list.sword:
-						animation.play("heart trust sword",blend*1.5,melee_atk_speed+ 0.55)
-						moveDuringAnimation(4)
-					autoload.weapon_list.sword_shield:
-						animation.play("heart trust sword",blend*1.5,melee_atk_speed+ 0.35)
-						moveDuringAnimation(3)
-					autoload.weapon_list.dual_swords:
-						animation.play("heart trust sword",blend*1.5,melee_atk_speed + 0.1)
-						moveDuringAnimation(3.3)
-					autoload.weapon_list.heavy:
-						animation.play("heart trust sword",blend*1.5,melee_atk_speed + 0.15)
-						moveDuringAnimation(6)
-		else:
-			heart_trust_duration = false
-			returnToIdleBasedOnWeaponType()
-#___________________________________________________________________________________________________
-#___________________________________________________________________________________________________
-	else:#_____________________________ Matching States ____________________________________________
-			match state:
-				autoload.state_list.slide:
-					clearParryAbsorb()
-					animation.play_backwards("slide",blend)
-					if !is_on_wall():
-						if is_sprinting == false:
-							horizontal_velocity = direction * 200 * get_physics_process_delta_time()
-						else:
-							moveDuringAnimation(sprint_speed)
-					can_walk = true
-				autoload.state_list.base_attack:
-					directionToCamera()
-					is_in_combat = true
-					if weapon_type == autoload.weapon_list.bow:
-						can_walk = false
-					else:
+				match state:
+					autoload.state_list.slide:
+						clearParryAbsorb()
+						animationCancelException(staggered_duration)
+						animation.play("slide",blend)
+						if !is_on_wall():
+							if is_sprinting == false:
+								horizontal_velocity = direction * slide_movement * agility
+								#horizontal_velocity = direction * 200 * get_physics_process_delta_time()
+							else:
+								moveDuringAnimation(sprint_speed)
 						can_walk = true
-					var slot = $UI/GUI/SkillBar/GridContainer/LClickSlot/Icon
-					skills(slot)
-				autoload.state_list.guard:
-					is_in_combat = true
-					var slot = $UI/GUI/SkillBar/GridContainer/RClickSlot/Icon
-					skills(slot)
-#________________________________________movement states____________________________________________
-				autoload.state_list.walk:
-					clearParryAbsorb()
-					if is_in_combat:
-						match weapon_type:
-							autoload.weapon_list.fist:
-								animation.play("walk",0,1)
-							autoload.weapon_list.bow: 
-								animation.play("walk bow",0,1)	
-							autoload.weapon_list.sword:
-								animation.play("walk sword",0,1)
-							autoload.weapon_list.sword_shield:
-								animation.play("walk shield")
-							autoload.weapon_list.dual_swords:
-								animation.play("walk sword",0,1)
-							autoload.weapon_list.heavy:
-								animation.play("walk heavy",0,1)
-							
-					else:
-						animation.play("walk",0,1)
-				autoload.state_list.sprint:
-					clearParryAbsorb()
-					animation.play("run", 0,agility)
-				autoload.state_list.run:
-					clearParryAbsorb()
-					animation.play("run",0,agility)
-				autoload.state_list.climb:
-					clearParryAbsorb()
-					animation.play("climb cycle",blend, strength)
-				autoload.state_list.idle:
-					clearParryAbsorb()
-					if is_in_combat:
-						match weapon_type:
-							autoload.weapon_list.fist:
-								animation.play("idle fist",blend)
-							autoload.weapon_list.sword:
-								animation.play("idle sword",blend)
-							autoload.weapon_list.sword_shield:
-								animation.play("idle shield",blend)
-							autoload.weapon_list.dual_swords:
-								animation.play("idle sword",blend)
-							autoload.weapon_list.bow:
-								animation.play("idle bow",blend)
-							autoload.weapon_list.heavy:
-								animation.play("idle heavy",blend)
-					else:
-						animation.play("idle",0.2,1)
-#skillbar stuff_____________________________________________________________________________________
-				autoload.state_list.skill1:
-					var slot = $UI/GUI/SkillBar/GridContainer/Slot1/Icon
-					skills(slot)
-				autoload.state_list.skill2:
-					var slot = $UI/GUI/SkillBar/GridContainer/Slot2/Icon
-					skills(slot)
-				autoload.state_list.skill3:
-					var slot = $UI/GUI/SkillBar/GridContainer/Slot3/Icon
-					skills(slot)
-				autoload.state_list.skill4:
-					var slot = $UI/GUI/SkillBar/GridContainer/Slot4/Icon
-					skills(slot)
-				autoload.state_list.skill5:
-					var slot = $UI/GUI/SkillBar/GridContainer/Slot5/Icon
-					skills(slot)
-				autoload.state_list.skill6:
-					var slot = $UI/GUI/SkillBar/GridContainer/Slot6/Icon
-					skills(slot)
-				autoload.state_list.skill7:
-					var slot = $UI/GUI/SkillBar/GridContainer/Slot7/Icon
-					skills(slot)
-				autoload.state_list.skill8:
-					var slot = $UI/GUI/SkillBar/GridContainer/Slot8/Icon
-					skills(slot)
-				autoload.state_list.skill9:
-					var slot = $UI/GUI/SkillBar/GridContainer/Slot9/Icon
-					skills(slot)
-				autoload.state_list.skill0:
-					var slot = $UI/GUI/SkillBar/GridContainer/Slot10/Icon
-					skills(slot)
-				autoload.state_list.skillQ:
-					var slot = $UI/GUI/SkillBar/GridContainer/Slot11/Icon
-					skills(slot)
-				autoload.state_list.skillE:
-					var slot = $UI/GUI/SkillBar/GridContainer/Slot12/Icon
-					skills(slot)
-				autoload.state_list.skillR:
-					var slot = $UI/GUI/SkillBar/GridContainer/Slot13/Icon
-					skills(slot)
-				autoload.state_list.skillT:
-					var slot = $UI/GUI/SkillBar/GridContainer/Slot14/Icon
-					skills(slot)
-				autoload.state_list.skillF:
-					var slot = $UI/GUI/SkillBar/GridContainer/Slot15/Icon
-					skills(slot)
-				autoload.state_list.skillG:
-					var slot = $UI/GUI/SkillBar/GridContainer/Slot16/Icon
-					skills(slot)
-				autoload.state_list.skillY:
-					var slot = $UI/GUI/SkillBar/GridContainer/Slot17/Icon
-					skills(slot)
-				autoload.state_list.skillH:
-					var slot = $UI/GUI/SkillBar/GridContainer/Slot18/Icon
-					skills(slot)
-				autoload.state_list.skillV:
-					var slot = $UI/GUI/SkillBar/GridContainer/Slot19/Icon
-					skills(slot)
-				autoload.state_list.skillB:
-					var slot = $UI/GUI/SkillBar/GridContainer/Slot20/Icon
-					skills(slot)
-				autoload.state_list.jump:
-					animation.play("jump",blend)
-				autoload.state_list.fall:
-					animation.play("fall",blend)
-				autoload.state_list.dead:
-					if death_duration == true:
-						animation.play("death",blend)
-					else:
-						if is_walking == true:
-							is_in_combat = false
-							switchMainFromHipToHand()
-							animation.play("crawl",blend)
+					autoload.state_list.base_attack:
+						directionToCamera()
+						is_in_combat = true
+						if weapon_type == autoload.weapon_list.bow:
+							can_walk = false
 						else:
-							animation.play("dead",blend)
+							can_walk = true
+						var slot = $UI/GUI/SkillBar/GridContainer/LClickSlot/Icon
+						skills(slot)
+					autoload.state_list.guard:
+						is_in_combat = true
+						var slot = $UI/GUI/SkillBar/GridContainer/RClickSlot/Icon
+						skills(slot)
+	#________________________________________movement states____________________________________________
+					autoload.state_list.walk:
+						clearParryAbsorb()
+						if is_in_combat:
+							match weapon_type:
+								autoload.weapon_list.fist:
+									animation.play("walk",0,1)
+								autoload.weapon_list.bow: 
+									animation.play("walk bow",0,1)	
+								autoload.weapon_list.sword:
+									animation.play("walk sword",0,1)
+								autoload.weapon_list.sword_shield:
+									animation.play("walk shield")
+								autoload.weapon_list.dual_swords:
+									animation.play("walk sword",0,1)
+								autoload.weapon_list.heavy:
+									animation.play("walk heavy",0,1)
+								
+						else:
+							animation.play("walk",0,1)
+					autoload.state_list.sprint:
+						clearParryAbsorb()
+						animation.play("run", 0,agility)
+					autoload.state_list.run:
+						clearParryAbsorb()
+						animation.play("run",0,agility)
+					autoload.state_list.climb:
+						clearParryAbsorb()
+						animation.play("climb cycle",blend, strength)
+					autoload.state_list.idle:
+						clearParryAbsorb()
+						if is_in_combat:
+							match weapon_type:
+								autoload.weapon_list.fist:
+									animation.play("idle fist",blend)
+								autoload.weapon_list.sword:
+									animation.play("idle sword",blend)
+								autoload.weapon_list.sword_shield:
+									animation.play("idle shield",blend)
+								autoload.weapon_list.dual_swords:
+									animation.play("idle sword",blend)
+								autoload.weapon_list.bow:
+									animation.play("idle bow",blend)
+								autoload.weapon_list.heavy:
+									animation.play("idle heavy",blend)
+						else:
+							animation.play("idle",0.2,1)
+	#skillbar stuff_____________________________________________________________________________________
+					autoload.state_list.skill1:
+						var slot = $UI/GUI/SkillBar/GridContainer/Slot1/Icon
+						skills(slot)
+					autoload.state_list.skill2:
+						var slot = $UI/GUI/SkillBar/GridContainer/Slot2/Icon
+						skills(slot)
+					autoload.state_list.skill3:
+						var slot = $UI/GUI/SkillBar/GridContainer/Slot3/Icon
+						skills(slot)
+					autoload.state_list.skill4:
+						var slot = $UI/GUI/SkillBar/GridContainer/Slot4/Icon
+						skills(slot)
+					autoload.state_list.skill5:
+						var slot = $UI/GUI/SkillBar/GridContainer/Slot5/Icon
+						skills(slot)
+					autoload.state_list.skill6:
+						var slot = $UI/GUI/SkillBar/GridContainer/Slot6/Icon
+						skills(slot)
+					autoload.state_list.skill7:
+						var slot = $UI/GUI/SkillBar/GridContainer/Slot7/Icon
+						skills(slot)
+					autoload.state_list.skill8:
+						var slot = $UI/GUI/SkillBar/GridContainer/Slot8/Icon
+						skills(slot)
+					autoload.state_list.skill9:
+						var slot = $UI/GUI/SkillBar/GridContainer/Slot9/Icon
+						skills(slot)
+					autoload.state_list.skill0:
+						var slot = $UI/GUI/SkillBar/GridContainer/Slot10/Icon
+						skills(slot)
+					autoload.state_list.skillQ:
+						var slot = $UI/GUI/SkillBar/GridContainer/Slot11/Icon
+						skills(slot)
+					autoload.state_list.skillE:
+						var slot = $UI/GUI/SkillBar/GridContainer/Slot12/Icon
+						skills(slot)
+					autoload.state_list.skillR:
+						var slot = $UI/GUI/SkillBar/GridContainer/Slot13/Icon
+						skills(slot)
+					autoload.state_list.skillT:
+						var slot = $UI/GUI/SkillBar/GridContainer/Slot14/Icon
+						skills(slot)
+					autoload.state_list.skillF:
+						var slot = $UI/GUI/SkillBar/GridContainer/Slot15/Icon
+						skills(slot)
+					autoload.state_list.skillG:
+						var slot = $UI/GUI/SkillBar/GridContainer/Slot16/Icon
+						skills(slot)
+					autoload.state_list.skillY:
+						var slot = $UI/GUI/SkillBar/GridContainer/Slot17/Icon
+						skills(slot)
+					autoload.state_list.skillH:
+						var slot = $UI/GUI/SkillBar/GridContainer/Slot18/Icon
+						skills(slot)
+					autoload.state_list.skillV:
+						var slot = $UI/GUI/SkillBar/GridContainer/Slot19/Icon
+						skills(slot)
+					autoload.state_list.skillB:
+						var slot = $UI/GUI/SkillBar/GridContainer/Slot20/Icon
+						skills(slot)
+					autoload.state_list.jump:
+						animation.play("jump",blend)
+					autoload.state_list.fall:
+						animation.play("fall",blend)
+					autoload.state_list.dead:
+						if death_duration == true:
+							animation.play("death",blend)
+						else:
+							if is_walking == true:
+								is_in_combat = false
+								switchMainFromHipToHand()
+								animation.play("crawl",blend)
+							else:
+								animation.play("dead",blend)
 
 onready var l_click_slot = $UI/GUI/SkillBar/GridContainer/LClickSlot
 onready var r_click_slot = $UI/GUI/SkillBar/GridContainer/RClickSlot
@@ -1035,20 +1096,6 @@ func skills(slot)-> void:
 							returnToIdleBasedOnWeaponType()
 					else:
 						returnToIdleBasedOnWeaponType()
-				elif slot.texture.resource_path == "res://UI/graphics/SkillIcons/selfheal.png":
-					pass
-				elif slot.texture.resource_path == autoload.summon_shadow.get_path():
-					all_skills.summonDemon()
-				elif slot.texture.resource_path == autoload.dominion.get_path():	
-					all_skills.commandSwitch()
-				elif slot.texture.resource_path == autoload.tribute.get_path():	
-					all_skills.tribute()
-				elif slot.texture.resource_path == autoload.servitude.get_path():	
-					all_skills.areaSpell()
-				elif slot.texture.resource_path == autoload.arcane_blast.get_path():	
-					all_skills.arcaneBlast()
-					
-					
 #Lclick and Rclick__________________________________________________________________________________
 #fist
 				elif slot.texture.resource_path == autoload.punch.get_path():
@@ -1098,6 +1145,7 @@ func skills(slot)-> void:
 							if all_skills.can_overhead_slash == true:
 								if resolve > all_skills.overhead_slash_cost:
 									if weapon_type != autoload.weapon_list.fist:
+										animationCancelException(overhead_slash_duration)
 										is_in_combat = true
 										overhead_slash_duration = true
 								else:
@@ -1135,6 +1183,7 @@ func skills(slot)-> void:
 									if weapon_type != autoload.weapon_list.fist:
 										is_in_combat = true
 										rising_slash_duration = true
+										animationCancelException(rising_slash_duration)
 								else:
 									returnToIdleBasedOnWeaponType()
 									rising_slash_duration = false
@@ -1151,6 +1200,7 @@ func skills(slot)-> void:
 								if resolve > all_skills.cyclone_cost:
 									if weapon_type != autoload.weapon_list.fist:
 										cyclone_duration = true
+										animationCancelException(cyclone_duration)
 								else:
 									returnToIdleBasedOnWeaponType()
 									cyclone_duration = false
@@ -1167,6 +1217,7 @@ func skills(slot)-> void:
 								if resolve > all_skills.whirlwind_cost:
 									if weapon_type != autoload.weapon_list.fist:
 										whirlwind_duration = true
+										animationCancelException(whirlwind_duration)
 								else:
 									returnToIdleBasedOnWeaponType()
 									whirlwind_duration = false
@@ -1183,6 +1234,7 @@ func skills(slot)-> void:
 								if resolve > all_skills.heart_trust_cost:
 									if weapon_type != autoload.weapon_list.fist:
 										heart_trust_duration = true
+										animationCancelException(heart_trust_duration)
 								else:
 									returnToIdleBasedOnWeaponType()
 									heart_trust_duration = false
@@ -1192,6 +1244,7 @@ func skills(slot)-> void:
 						else:
 							returnToIdleBasedOnWeaponType()
 							heart_trust_duration = false
+
 #ranged bow skills
 				elif slot.texture.resource_path == autoload.full_draw.get_path():
 					if weapon_type == autoload.weapon_list.bow:
@@ -1220,8 +1273,10 @@ func skills(slot)-> void:
 								autoload.consumeRedPotion(self,button,inventory_grid,true,slot.get_parent())				
 
 
-
+var skill_cancelling:bool = false#this only works with the SkillQueueSystem() and serves to interupt skills with other skills 
 var queue_skills:bool = false #this is only for people with disabilities or if the game ever goes online to help with high ping 
+func _on_SkillCancel_pressed():
+	skill_cancelling = !skill_cancelling
 func _on_SkillQueue_pressed():
 	queue_skills = !queue_skills
 func SkillQueueSystem()-> void:
@@ -1286,6 +1341,10 @@ func SkillQueueSystem()-> void:
 		elif state == autoload.state_list.skillB:
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot20/Icon
 			skills(slot)
+			
+			
+			
+			
 func returnToIdleBasedOnWeaponType():
 	match weapon_type:
 			autoload.weapon_list.fist:
@@ -1481,7 +1540,7 @@ func clearParryAbsorb():
 func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
 		allResourcesBarsAndLabels()
 		var text = autoload.floatingtext_damage.instance()
-		var random = randf()
+		var random_range = rand_range(0,100)
 		var damage_to_take = damage
 		if damage_type == "slash":
 			var mitigation: float
@@ -1604,7 +1663,7 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
 			if instigator.has_method("lifesteal"):
 				instigator.lifesteal(damage_to_take)
 				
-		if random < stagger_chance - stagger_resistance:
+		if random_range < stagger_chance- stagger_resistance:
 				state = autoload.state_list.staggered
 				staggered_duration = true
 				text.status = "Staggered"
@@ -1982,7 +2041,7 @@ func UniversalToolTip(icon_texture):
 		
 		
 		elif icon_texture.get_path() == autoload.heart_trust.get_path():
-			var base_damage: float = all_skills.heart_trust_damage 
+			var base_damage: float = all_skills.heart_trust_dmg
 			var points: int = heart_trust_icon.points
 			var damage_multiplier: float = 1.0
 			var total_damage: float
@@ -3104,7 +3163,7 @@ var ranged_atk_speed: float = 1
 const base_casting_speed: int  = 1 
 var critical_chance: float = 0.00
 var critical_strength: float = 2.0
-var stagger_chance: float = 0.00
+var stagger_chance: int = 1000 #0 to 100 in percentage
 var life_steal: float = 0
 #resistances
 var slash_resistance: int = 0 #50 equals 33.333% damage reduction 100 equals 50% damage reduction, 200 equals 66.666% damage reduction
@@ -3121,7 +3180,7 @@ var neuro_resistance: int = 0
 var radiant_resistance: int = 0
 
 
-var stagger_resistance: float = 0.5
+var stagger_resistance: float = 0.5 #0 to 100 in percentage, this is directly detracted to instigator.stagger_chance 
 var deflection_chance : float = 0.33
 
 
@@ -5219,5 +5278,8 @@ func colorBodyParts() -> void:
 func _on_BlendshapeTest_pressed():
 	current_race_gender.smile = rand_range(-2,+2)
 	current_race_gender.applyBlendShapes()
+
+
+
 
 

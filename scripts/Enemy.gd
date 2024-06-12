@@ -447,9 +447,10 @@ var scale_factor = 1
 
 var critical_chance: float = 0
 var critical_strength: float = 2.0
-var stagger_chance: float = 0.00
+var stagger_chance: float = 15 #0 to 100 in percentage
 var life_steal: float = 0
 #resistances
+var stagger_resistance: float = 0.0 #0 to 100 in percentage, this is directly detracted to instigator.stagger_chance 
 var slash_resistance: int = 0 #50 equals 33.333% damage reduction 100 equals 50% damage reduction, 200 equals 66.666% damage reduction
 var pierce_resistance: int = 0
 var blunt_resistance: int = 0
