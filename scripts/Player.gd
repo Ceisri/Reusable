@@ -40,6 +40,10 @@ func _ready()->void:
 	l_click_slot.switchAttackIcon()
 	colorBodyParts()
 func _on_SlowTimer_timeout()->void:
+	if base_atk_duration == false:
+		$UI/GUI/Menu/BaseAtkMode/base_atk_label.text = str("click once")
+	else:
+		$UI/GUI/Menu/BaseAtkMode/base_atk_label.text = str("hold click")
 
 	experienceSystem()
 	damage_effects_manager.effectDurations()
@@ -118,6 +122,23 @@ func _physics_process(delta: float) -> void:
 
 #________________________________Input-State-Animation-SkillBar System______________________________
 var animation: AnimationPlayer
+
+var hold_to_base_atk:bool = false #if true holding the base attack buttons continues a combo of attacks, releasing the button stops the attacks midway, if false it will just play the attack animation as if it was a normal skill
+var base_atk_duration:bool = false
+var base_atk2_duration:bool = false
+
+
+func _on_BaseAtkMode_pressed():
+	hold_to_base_atk = !hold_to_base_atk
+	if base_atk_duration == false:
+		$UI/GUI/Menu/BaseAtkMode/base_atk_label.text = str("click once")
+	else:
+		$UI/GUI/Menu/BaseAtkMode/base_atk_label.text = str("hold click")
+
+
+
+
+
 var overhead_slash_duration:bool = false
 var overhead_slash_combo:bool = false
 #___________________________________________________________________________________________________
@@ -137,6 +158,8 @@ func animationCancel()->void:#Universal stop, call this when I'm stunned, stagge
 	overhead_slash_combo = false
 	whirlwind_combo = false
 	cyclone_combo = false
+	base_atk_duration = false
+	base_atk2_duration = false
 	if overhead_slash_duration == true:
 		all_skills.overheadSlashCD()
 		overhead_slash_duration = false
@@ -156,6 +179,7 @@ func animationCancel()->void:#Universal stop, call this when I'm stunned, stagge
 		all_skills.tauntCD()
 		taunt_duration = false
 func animationCancelException(exception) -> void:#So far it seems to be useless, it works in specific scenarios, keeping it just incase i find another use for this 
+	base_atk_duration = false
 	if skill_cancelling == true:
 		if exception != overhead_slash_duration and overhead_slash_duration == true:
 			print("overhead_slash_duration true")
@@ -201,36 +225,43 @@ func inputOrStateToAnimation()-> void:
 		if Input.is_action_pressed("rclick"):
 			state == autoload.state_list.guard
 			animationCancel()
-
+					
+					
 	#Overhead Slash_____________________________________________________________________________________
 		if overhead_slash_duration == true:
-
-			directionToCamera()
-			is_in_combat = true
-			clearParryAbsorb()
-			moveDuringAnimation(4)
-			match weapon_type:
-						autoload.weapon_list.sword:
-							if overhead_slash_combo == false:
-								animation.play("overhead slash sword",blend, melee_atk_speed - 0.15)
-							else:
-								animation.play("overhead slash sword",blend, melee_atk_speed + 0.9)
-						autoload.weapon_list.sword_shield:
-							if overhead_slash_combo == false:
-								animation.play("overhead slash sword",blend, melee_atk_speed- 0.15)
-							else:
-								animation.play("overhead slash sword",blend, melee_atk_speed + 0.9)
-						autoload.weapon_list.dual_swords:
-							if overhead_slash_combo == false:
-								animation.play("overhead slash sword",blend, melee_atk_speed- 0.15)
-							else:
-								animation.play("overhead slash sword",blend, melee_atk_speed + 1)
-						autoload.weapon_list.heavy:
-							if overhead_slash_combo == false:
-								animation.play("overhead slash heavy",blend, melee_atk_speed- 0.25)
-							else:
-								animation.play("overhead slash heavy",blend, melee_atk_speed + 0.6)	
-
+			if all_skills.can_overhead_slash == true:#GOTTA FIX THIS ANIMATION, THW FIRST ONE IS SHIT THE SECOND IS GLITCHY, THIS IS A CORE SKILL SO IT NEEDS FIXING ASAP
+				if resolve > all_skills.overhead_slash_cost:
+					directionToCamera()
+					is_in_combat = true
+					clearParryAbsorb()
+					moveDuringAnimation(4)
+					match weapon_type:
+								autoload.weapon_list.sword:
+									if overhead_slash_combo == false:
+										animation.play("overhead slash sword",blend, melee_atk_speed - 0.15)
+									else:
+										animation.play("overhead slash sword",blend, melee_atk_speed + 0.9)
+								autoload.weapon_list.sword_shield:
+									if overhead_slash_combo == false:
+										animation.play("overhead slash sword",blend, melee_atk_speed- 0.15)
+									else:
+										animation.play("overhead slash sword",blend, melee_atk_speed + 0.9)
+								autoload.weapon_list.dual_swords:
+									if overhead_slash_combo == false:
+										animation.play("overhead slash sword",blend, melee_atk_speed- 0.15)
+									else:
+										animation.play("overhead slash sword",blend, melee_atk_speed + 1)
+								autoload.weapon_list.heavy:
+									if overhead_slash_combo == false:
+										animation.play("overhead slash heavy",blend, melee_atk_speed- 0.25)
+									else:
+										animation.play("overhead slash heavy",blend, melee_atk_speed + 0.6)
+				else:
+					overhead_slash_duration = false
+					returnToIdleBasedOnWeaponType()
+			else:
+				overhead_slash_duration = false
+				returnToIdleBasedOnWeaponType()
 	#Whirlwind__________________________________________________________________________________________
 		elif whirlwind_duration == true :
 
@@ -345,8 +376,29 @@ func inputOrStateToAnimation()-> void:
 				animation.play("taunt heavy",blend + 0.1,ferocity)
 			else:
 				animation.play("taunt",blend+ 0.1,ferocity)
+				
+#__________________IF THE PLAYER DECIDED TO PLAY WITH HOLD OF, SO 1 CLICK = 1 BASE ATTTACK__________
+		elif base_atk_duration == true:
+			var compensation_speed = 0.1 #extra attack seed to compensate having to click multiple times 
+			moveDuringAnimation(2)
+			animation.play("base atk",blend +0.1, melee_atk_speed +compensation_speed)
+			
+		elif base_atk2_duration == true:
+			var compensation_speed = 0.1 #extra attack seed to compensate having to click multiple times 
+			moveDuringAnimation(0)
+			animation.play("base atk2",blend +0.1, melee_atk_speed + compensation_speed )
+			
+			
+			
+#################################################################################################################################################################
+	#_____________________________________MATCH STATE BEGINS HERE ___________________________________
 	#___________________________________________________________________________________________________
-	#___________________________________________________________________________________________________
+#################################################################################################################################################################
+#################################################################################################################################################################
+##################################################################################################################################################################################################################################################################################################################################
+#################################################################################################################################################################
+#################################################################################################################################################################	
+	
 		else:
 				match state:
 					autoload.state_list.slide:
@@ -526,16 +578,26 @@ func skills(slot)-> void:
 #sword
 				elif slot.texture.resource_path == autoload.slash_sword.get_path():
 					is_in_combat = true
-					match weapon_type:
-						autoload.weapon_list.sword:
-							animation.play("combo sword",blend,melee_atk_speed+ 0.15)
-							moveDuringAnimation(2.7)
-						autoload.weapon_list.sword_shield:
-							animation.play("combo shield",blend,melee_atk_speed+ 0.2)
-							moveDuringAnimation(2.7)
-						autoload.weapon_list.dual_swords:
-							animation.play("combo dual swords",blend,melee_atk_speed+ 0.3)
-							moveDuringAnimation(2.7)
+					if hold_to_base_atk == true:
+						match weapon_type:
+							autoload.weapon_list.sword:
+								animation.play("combo sword",blend,melee_atk_speed+ 0.15)
+								moveDuringAnimation(2.7)
+							autoload.weapon_list.sword_shield:
+								animation.play("base atk continue",blend,melee_atk_speed)
+								moveDuringAnimation(2)
+							autoload.weapon_list.dual_swords:
+								animation.play("combo dual swords",blend,melee_atk_speed+ 0.3)
+								moveDuringAnimation(2.7)
+					else:
+						base_atk_duration = true
+				elif slot.texture.resource_path == autoload.slash_sword2.get_path():
+					is_in_combat = true
+					if hold_to_base_atk == false:
+						base_atk2_duration = true
+
+						
+			
 				elif slot.texture.resource_path == autoload.block_shield.get_path():
 					if resolve > 0:
 						is_walking = false
@@ -4632,6 +4694,10 @@ func savePlayerData():
 	current_race_gender.savePlayerData()
 	var data = {
 		"aiming_mode":aiming_mode,
+		"hold_to_base_atk":hold_to_base_atk,
+		
+		
+		
 		"sex": sex,
 		"species":species,
 		"experience_points":experience_points,
@@ -4764,6 +4830,10 @@ func loadPlayerData():
 			file.close()
 			if "aiming_mode" in player_data:
 				aiming_mode = player_data["aiming_mode"]
+			if "hold_to_base_atk" in player_data:
+				hold_to_base_atk = player_data["hold_to_base_atk"]
+
+
 			if "sex" in player_data:
 				sex = player_data["sex"]
 			if "species" in player_data:
@@ -5211,3 +5281,5 @@ func experienceSystem():
 # Calculate the percentage of experience points
 	var percentage: float = (float(experience_points) / float(experience_to_next_level)) * 100.0
 	exper_label.text = "Level " + str(level) + "\nXP: " + str(experience_points) + "/" + str(experience_to_next_level) + " (" + str(round((percentage* 1)/1)) + "%)"
+
+

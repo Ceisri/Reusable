@@ -17,7 +17,10 @@ func switchAttackIcon() -> void:
 			autoload.weapon_list.dual_swords:
 				icon.texture = autoload.slash_sword
 			autoload.weapon_list.sword_shield:
-				icon.texture = autoload.slash_sword
+				if player.base_atk_duration == false:
+					icon.texture = autoload.slash_sword
+				else:
+					icon.texture = autoload.slash_sword2
 			autoload.weapon_list.bow:
 				icon.texture = autoload.quick_shot
 			autoload.weapon_list.heavy:

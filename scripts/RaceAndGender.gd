@@ -50,6 +50,10 @@ func loadAnimations()->void:
 	animation.add_animation("run", load("res://player/universal animations/Animations Movement General/run cycle.anim"))
 	animation.add_animation("climb cycle", load("res://player/universal animations/Animations Movement General/climb cycle.anim"))
 	
+	
+	#L-click animatins with hold turned off 
+	animation.add_animation("base atk", load("res://player/universal animations/Animations Sword Light/base atk_test.anim"))
+	
 	#L-click animations
 	animation.add_animation("combo fist", load("res://player/universal animations/Animations Fist/combo fist.tres"))
 	animation.add_animation("shoot", load("res://player/universal animations/Animations Bow/shoot.anim"))
@@ -342,6 +346,18 @@ func  applyBlendShapes():
 
 #___________________________________________Combat System___________________________________________
 
+
+func basAtkCD()->void:
+	player.base_atk_duration = false
+	player.animationCancel()
+	
+func basAtk2CD()->void:
+	player.base_atk2_duration = false
+	player.animationCancel()
+
+
+
+
 var stagger_chance: float 
 func slideDMG()->void:#fist
 	var aggro_power:float = player.threat_power + 1
@@ -493,11 +509,12 @@ func cleaveDMG()->void:#Heavy
 
 #Overhead Slash section
 #This skill is viable for all melee weapon types EXCEPT FIST WEAPONS
-func overhandSlashCD()-> void:
+func overheadSlashCD()-> void:
+	player.all_skills.overheadSlashCD()
 	player.overhead_slash_duration = false
 	player.overhead_slash_combo = false
 	player.all_skills.overheadSlashCD()
-func overhandSlashDMG()->void:
+func overheadSlashDMG()->void:
 	var damage_type:String = "slash"
 	var base_damage: float = player.all_skills.overhead_slash_damage
 	var points: int = player.overhead_icon.points
