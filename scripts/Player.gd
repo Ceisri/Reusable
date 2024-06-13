@@ -39,12 +39,8 @@ func _ready()->void:
 	current_race_gender.EquipmentSwitch()
 	l_click_slot.switchAttackIcon()
 	colorBodyParts()
+	switchButtonTextures()
 func _on_SlowTimer_timeout()->void:
-	if base_atk_duration == false:
-		$UI/GUI/Menu/BaseAtkMode/base_atk_label.text = str("click once")
-	else:
-		$UI/GUI/Menu/BaseAtkMode/base_atk_label.text = str("hold click")
-
 	experienceSystem()
 	damage_effects_manager.effectDurations()
 	allResourcesBarsAndLabels()
@@ -128,12 +124,12 @@ var base_atk_duration:bool = false
 var base_atk2_duration:bool = false
 
 
+# Toggle the hold_to_base_atk variable and change the color of BaseAtkMode accordingly
 func _on_BaseAtkMode_pressed():
 	hold_to_base_atk = !hold_to_base_atk
-	if base_atk_duration == false:
-		$UI/GUI/Menu/BaseAtkMode/base_atk_label.text = str("click once")
-	else:
-		$UI/GUI/Menu/BaseAtkMode/base_atk_label.text = str("hold click")
+	switchButtonTextures()
+
+
 
 
 
@@ -381,12 +377,12 @@ func inputOrStateToAnimation()-> void:
 		elif base_atk_duration == true:
 			var compensation_speed = 0.1 #extra attack seed to compensate having to click multiple times 
 			moveDuringAnimation(2)
-			animation.play("base atk",blend +0.1, melee_atk_speed +compensation_speed)
+			animation.play("base atk",blend, melee_atk_speed +compensation_speed)
 			
 		elif base_atk2_duration == true:
-			var compensation_speed = 0.1 #extra attack seed to compensate having to click multiple times 
+			var compensation_speed = 0.15 #extra attack seed to compensate having to click multiple times 
 			moveDuringAnimation(0)
-			animation.play("base atk2",blend +0.1, melee_atk_speed + compensation_speed )
+			animation.play("base atk2",blend, melee_atk_speed + compensation_speed )
 			
 			
 			
@@ -872,12 +868,13 @@ func skills(slot)-> void:
 								autoload.consumeRedPotion(self,button,inventory_grid,true,slot.get_parent())				
 var skill_cancelling:bool = true#this only works with the SkillQueueSystem() and serves to interupt skills with other skills 
 var queue_skills:bool = true #this is only for people with disabilities or if the game ever goes online to help with high ping, as of now it can't be used by itself until I revamp the skill cancel system  
-func _on_SkillCancel_pressed():
-	skill_cancelling = !skill_cancelling
-	print(str(skill_cancelling)+ str(" skill canc"))
+
+
 func _on_SkillQueue_pressed():
 	queue_skills = !queue_skills
-	print(str(queue_skills)+ str(" skill que"))
+	switchButtonTextures()
+	
+	
 func SkillQueueSystem()-> void:
 	if queue_skills == true:
 		if state == autoload.state_list.skill1:
@@ -1120,7 +1117,8 @@ func clearParryAbsorb():
 	
 func takeStagger(stagger_chance: float) -> void:
 	damage_effects_manager.takeStagger(stagger_chance)
-	
+
+
 func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
 		allResourcesBarsAndLabels()
 		damage_effects_manager.takeDamagePlayer(damage, aggro_power, instigator, stagger_chance, damage_type)
@@ -1731,6 +1729,11 @@ func _on_Skills_pressed():
 func _on_Menu_pressed():
 	closeSwitchOpen(menu)
 	saveGame()
+	closeUI(character)
+	closeUI(skill_trees)
+	closeUI(inventory)
+	closeUI($UI/GUI/Crafting)
+	closeUI($UI/GUI/CharacterEditor)
 func _on_OpenAllUI_pressed():
 	closeSwitchOpen(character)
 	closeSwitchOpen(crafting)
@@ -1738,6 +1741,11 @@ func _on_OpenAllUI_pressed():
 	closeSwitchOpen(skill_trees)
 	saveGame()
 	$UI/GUI/CharacterEditor.visible = !$UI/GUI/CharacterEditor.visible
+	
+	
+
+	
+	
 func connectUIButtons():
 	revive_here.connect("pressed", self , "reviveHere")
 	revive_in_town.connect("pressed", self , "reviveInTown")
@@ -1798,7 +1806,7 @@ func _on_InventoryCloseButton_pressed():
 	inventory.visible = false
 	savePlayerData()
 func _on_InventoryOpenCraftingSystemButton_pressed():
-	crafting.visible = !$UI/GUI/Crafting.visible
+	crafting.visible = !crafting.visible
 	saveSkillBarData()
 	savePlayerData()
 func _on_SkillTreeCloseButton_pressed():
@@ -1860,6 +1868,8 @@ func saveSkillBarData():
 	$UI/GUI/SkillBar/GridContainer/Slot18/Icon.savedata()
 	$UI/GUI/SkillBar/GridContainer/Slot19/Icon.savedata()
 	$UI/GUI/SkillBar/GridContainer/Slot20/Icon.savedata()
+
+
 
 #______________________________________skill tree system____________________________________________
 onready var vanguard_skill_tree: Control = $UI/GUI/SkillTrees/Background/Vanguard
@@ -2178,6 +2188,84 @@ func skillBarMouseExited(index):
 	deleteTooltip()
 	
 
+
+func _on_BaseAtkMode_mouse_entered():
+	var title:String = "Chain/Mechanical"
+	var text:String = "Click to switch between modes:\nChain Mode: hold the click button to base attack\nMechanical mode:  tap the click button to base attack"
+	var instance = preload("res://tooltipSkillbar.tscn").instance()
+	callToolTip(instance,title,text)
+func _on_BaseAtkMode_mouse_exited():
+	deleteTooltip()
+	
+func _on_SkillQueue_mouse_entered():
+	var title:String = "Skill Cancel System"
+	var text:String = "Click to switch between ON/OFF:\nWhen ON  you can interrupt your skills by activating other skills, the ones that get interrupted go on cooldown\nWhen OFF pressing other skills won't interrupt you, but external factors such as stuns, staggers, knockdowns or other effects might."
+	var instance = preload("res://tooltipSkillbar.tscn").instance()
+	callToolTip(instance,title,text)
+func _on_SkillQueue_mouse_exited():
+	deleteTooltip()
+	
+
+
+func _on_OpenAllUI_mouse_entered():
+	var title:String = "Open All Screens"
+	var text:String = "Click to open:\nInventory,Character Sheet, Skill Trees,Crafting"
+	var instance = preload("res://tooltipSkillbar.tscn").instance()
+	callToolTip(instance,title,text)
+func _on_OpenAllUI_mouse_exited():
+	deleteTooltip()
+	
+	
+func _on_Edit_mouse_entered():
+	var title:String = "Edit Skillbar Keybinds"
+	var text:String = "Click to switch ON/OFF:\nWhen ON, clickin any skillbar slot will let you change the keybind for that slot,just click the slot you want once and then press any key\nMake sure to turn this OFF or you might change your keybinds by mistake"
+	var instance = preload("res://tooltipSkillbar.tscn").instance()
+	callToolTip(instance,title,text)
+func _on_Edit_mouse_exited():
+	deleteTooltip()
+
+	
+func _on_Character_mouse_entered():
+	var title:String = "Character Sheet"
+	var text:String = "Click to open:\nYour character sheet with your equipment, stats and attributes"
+	var instance = preload("res://tooltipSkillbar.tscn").instance()
+	callToolTip(instance,title,text)
+func _on_Character_mouse_exited():
+	deleteTooltip()
+	
+func _on_Menu_mouse_entered():
+	var title:String = "Menu"
+	var text:String = "Opens Settins menu and Quitting interface"
+	var instance = preload("res://tooltipSkillbar.tscn").instance()
+	callToolTip(instance,title,text)
+func _on_Menu_mouse_exited():
+	deleteTooltip()
+
+func _on_Skills_mouse_entered():
+	var title:String = "Skill Trees"
+	var text:String = "Click to open skill trees, and pick any skill from any skill tree to create your unique class archetype"
+	var instance = preload("res://tooltipSkillbar.tscn").instance()
+	callToolTip(instance,title,text)
+func _on_Skills_mouse_exited():
+	deleteTooltip()
+
+func _on_InventoryOpenCraftingSystemButton_mouse_entered():
+	var title:String = "Crafting"
+	var text:String = "Click to open crafting menu\nDrag and drop items from acrosss your inventory into the crafting menu's slot in specific combinations to create new items"
+	var instance = preload("res://tooltipSkillbar.tscn").instance()
+	callToolTip(instance,title,text)
+func _on_InventoryOpenCraftingSystemButton_mouse_exited():
+	deleteTooltip()
+
+func _on_Inventory_mouse_entered():
+	var title:String = "Inventory"
+	var text:String = "Click to open Inventory\nThe inventory has many slots containing items which you can move around, or click to activate, items might be placed in the skillbar and can be consumed or activated from there using the specific keybinds.Use the Inventory buttons to delete items you don't need by  dragging them in the trash can, or click the split item's button to split in half the quantity of the items in the first slot, or press the combine button to merge all items similar items into a single stack"
+	var instance = preload("res://tooltipSkillbar.tscn").instance()
+	callToolTip(instance,title,text)
+func _on_Inventory_mouse_exited():
+	deleteTooltip()
+
+
 #______________________________________Crafting_________________________________
 
 onready var crafting_slot1 = $UI/GUI/Crafting/CraftingGrid/craftingSlot1/Icon
@@ -2267,7 +2355,24 @@ func money():
 	
 	
 	
-#_____________________________________more GUI stuff________________________________________________
+#____________________________________GRAPHICAL INTERFACE AND SETTINGS_______________________________
+
+func switchButtonTextures():
+	var button= $UI/GUI/SkillBar/BaseAtkMode
+	var new_texture_path = "res://Game button icons/hold_to_atk.png" if hold_to_base_atk else "res://Game button icons/click_to_atk.png"
+	var new_texture = load(new_texture_path)
+	button.texture_normal = new_texture
+	
+	var button1= $UI/GUI/SkillBar/SkillQueue
+	var new_texture_path1 = "res://Game button icons/start_skill_queue.png" if queue_skills else "res://Game button icons/stop_skil_queue.png"
+	var new_texture1 = load(new_texture_path1)
+	button1.texture_normal = new_texture1
+	
+	
+	
+	
+
+
 onready var fps_label: Label = $UI/GUI/Portrait/MinimapHolder/FPS
 func frameRate():
 	var current_fps = Engine.get_frames_per_second()
@@ -2765,28 +2870,7 @@ var bleeding_duration:float = 0
 var stunned_duration:float = 0
 var berserk_duration:float = 0 
 
-func effectDurations():
-	if bleeding_duration > 0:
-		if stored_instigator == null:
-			pass
-		else:
-			var damage: float = autoload.bleed_dmg 
-			takeDamage(damage,damage,stored_instigator,0,"bleed")
-		applyEffect("bleeding",true)
-		bleeding_duration -= 1
-	else:
-		applyEffect("bleeding",false)
-	if stunned_duration > 0:
-		state = autoload.state_list.stunned
-		applyEffect("stunned",true)
-		stunned_duration -= 1
-	else:
-		applyEffect("stunned",false)
-	if berserk_duration > 0:
-		berserk_duration -= 1
-		applyEffect("berserk",true)
-	else:
-		applyEffect("berserk",false)
+
 
 
 func showStatusIcon():
@@ -5281,5 +5365,4 @@ func experienceSystem():
 # Calculate the percentage of experience points
 	var percentage: float = (float(experience_points) / float(experience_to_next_level)) * 100.0
 	exper_label.text = "Level " + str(level) + "\nXP: " + str(experience_points) + "/" + str(experience_to_next_level) + " (" + str(round((percentage* 1)/1)) + "%)"
-
 
