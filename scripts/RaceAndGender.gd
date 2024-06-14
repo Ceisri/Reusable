@@ -38,7 +38,6 @@ func loadAnimations()->void:
 	
 	animation.add_animation("slide", load("res://player/universal animations/Animations Movement General/slide.anim"))
 	
-	
 	animation.add_animation("walk", load("res://player/universal animations/Animations Movement General/walk.tres"))
 	animation.add_animation("walk bow", load("res://player/universal animations/Animations Bow/walk bow.anim"))
 	animation.add_animation("walk sword", load("res://player/universal animations/Animations Sword Light/walk sword.anim"))#placeholder
@@ -46,10 +45,8 @@ func loadAnimations()->void:
 	animation.add_animation("walk shield", load("res://player/universal animations/Animations Shield/walk shield.anim"))
 	animation.add_animation("downed walk", load("res://player/universal animations/Animations Movement General/downed walk.anim"))
 	
-	
 	animation.add_animation("run", load("res://player/universal animations/Animations Movement General/run cycle.anim"))
 	animation.add_animation("climb cycle", load("res://player/universal animations/Animations Movement General/climb cycle.anim"))
-	
 	
 	#L-click animatins with hold turned off 
 	animation.add_animation("fist click1", load("res://player/universal animations/Animations Fist/fist click1.anim"))
@@ -57,30 +54,23 @@ func loadAnimations()->void:
 	
 	animation.add_animation("sword click1", load("res://player/universal animations/Animations Sword Light/sword click1.anim"))
 	animation.add_animation("sword click2", load("res://player/universal animations/Animations Sword Light/sword click2.anim"))
+
+	animation.add_animation("dual click1", load("res://player/universal animations/Animations Sword Dual Wield/dual click1.anim"))
+	animation.add_animation("dual click2", load("res://player/universal animations/Animations Sword Dual Wield/dual click2.anim"))
+	
 	
 	animation.add_animation("heavy click1", load("res://player/universal animations/Animations Sword Heavy/heavy click1.anim"))
 	animation.add_animation("heavy click2", load("res://player/universal animations/Animations Sword Heavy/heavy click2.anim"))
-	
-	
-	
-	
-	animation.add_animation("base atk", load("res://player/universal animations/Animations Sword Light/base atk_test.anim"))
-	
-	
-	
-	
 	
 	#L-click animations
 	animation.add_animation("combo fist", load("res://player/universal animations/Animations Fist/combo fist.tres"))
 	animation.add_animation("shoot", load("res://player/universal animations/Animations Bow/shoot.anim"))
 	animation.add_animation("sword hold", load("res://player/universal animations/Animations Sword Light/sword hold.anim"))
-	animation.add_animation("combo shield", load("res://player/universal animations/Animations Shield/combo shield.anim"))
-	animation.add_animation("combo dual swords", load("res://player/universal animations/Animations Sword Dual Wield/combo dual swords.anim"))
+	animation.add_animation("dual hold", load("res://player/universal animations/Animations Sword Dual Wield/dual hold.anim"))
 	animation.add_animation("heavy hold", load("res://player/universal animations/Animations Sword Heavy/heavy hold.anim"))
 	
 	#R-click animations
 	animation.add_animation("full draw", load("res://player/universal animations/Animations Bow/full draw.anim"))
-	#animation.add_animation("parry", load("res://player/universal animations/sword animations/parry.anim"))
 	animation.add_animation("shield block", load("res://player/universal animations/Animations Shield/shield block.anim"))
 	animation.add_animation("cleave", load("res://player/universal animations/Animations Sword Heavy/cleave.anim"))
 	
@@ -357,8 +347,6 @@ func  applyBlendShapes():
 	for child in $Armature/Skeleton.get_children():
 		if child.is_in_group("face"):
 			child.set("blend_shapes/Smile",smile)
-			
-			
 
 #___________________________________________Combat System___________________________________________
 
@@ -384,7 +372,7 @@ func slideDMG()->void:#fist
 
 func punch()->void:#fist
 	var damage_type:String = "blunt"
-	var damage:float = player.strength + ((player.agility + player.dexterity + player.ferocity)*0.5)
+	var damage:float = player.total_dmg
 	var damage_flank:float = damage + player.flank_dmg 
 	var critical_damage : float  = damage * player.critical_strength
 	var critical_flank_damage : float  = damage_flank * player.critical_strength
@@ -405,8 +393,8 @@ func punch()->void:#fist
 
 onready var area_melee_front:Area = $MeleeFront
 func ComboHeavy1()->void:#Heavy
-	var damage_type:String = right_hand.get_child(0).damage_type
-	var damage:float = 5 * player.agility
+	var damage_type:String = player.base_dmg_type
+	var damage:float = player.total_dmg * 1.5
 	var damage_flank:float = damage + player.flank_dmg 
 	var critical_damage : float  = damage * player.critical_strength
 	var critical_flank_damage : float  = damage_flank * player.critical_strength
@@ -423,8 +411,8 @@ func ComboHeavy1()->void:#Heavy
 					player.pushEnemyAway(push_distance, victim,0.25)
 		dealDMG(victim,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,player.stagger_chance)
 func ComboHeavy2()->void:#Heavy
-	var damage_type:String = right_hand.get_child(0).damage_type
-	var damage:float = 8 
+	var damage_type:String = player.base_dmg_type
+	var damage:float = player.total_dmg * 2
 	var damage_flank:float = damage + player.flank_dmg 
 	var critical_damage : float  = damage * player.critical_strength
 	var critical_flank_damage : float  = damage_flank * player.critical_strength
@@ -441,8 +429,8 @@ func ComboHeavy2()->void:#Heavy
 					player.pushEnemyAway(push_distance, victim,0.25)
 		dealDMG(victim,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,player.stagger_chance)
 func ComboHeavy3()->void:#Heavy
-	var damage_type:String = right_hand.get_child(0).damage_type
-	var damage:float = 5 
+	var damage_type:String = player.base_dmg_type
+	var damage:float = player.total_dmg * 2.5
 	var damage_flank:float = damage + player.flank_dmg 
 	var critical_damage : float  = damage * player.critical_strength
 	var critical_flank_damage : float  = damage_flank * player.critical_strength
@@ -460,8 +448,10 @@ func ComboHeavy3()->void:#Heavy
 		dealDMG(victim,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,player.stagger_chance)
 func ComboHeavy4()->void:#Heavy
 	player.all_skills.activateComboCyclone()
-	var damage_type:String = right_hand.get_child(0).damage_type
-	var damage:float = 5 
+	player.all_skills.activateComboOverheadslash()
+	player.all_skills.activateComboWhirlwind()
+	var damage_type:String = player.base_dmg_type
+	var damage:float = player.total_dmg * 4
 	var damage_flank = damage + player.flank_dmg 
 	var critical_damage : float  = damage * player.critical_strength
 	var critical_flank_damage : float  = damage_flank * player.critical_strength
@@ -478,8 +468,8 @@ func ComboHeavy4()->void:#Heavy
 					player.pushEnemyAway(push_distance, victim,0.25)
 		dealDMG(victim,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,player.stagger_chance)
 func ComboLight():
-	var damage_type:String = right_hand.get_child(0).damage_type
-	var damage:float =2 
+	var damage_type:String = player.base_dmg_type
+	var damage:float = player.total_dmg * 1.1
 	var damage_flank:float = damage + player.flank_dmg 
 	var critical_damage : float  = damage * player.critical_strength
 	var critical_flank_damage : float  = damage_flank * player.critical_strength
@@ -497,15 +487,10 @@ func ComboLight():
 		dealDMG(victim,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,player.stagger_chance)
 
 
-
-
-
-
-
 #Cleave
 func cleaveDMG()->void:#Heavy
-	var damage_type:String = right_hand.get_child(0).damage_type
-	var damage:float = 3 
+	var damage_type:String = player.base_dmg_type
+	var damage:float = player.total_dmg * 1.8
 	var damage_flank = damage + player.flank_dmg 
 	var critical_damage : float  = damage * player.critical_strength
 	var critical_flank_damage : float  = damage_flank * player.critical_strength
@@ -531,8 +516,8 @@ func overheadSlashCD()-> void:
 	player.overhead_slash_combo = false
 	player.all_skills.overheadSlashCD()
 func overheadSlashDMG()->void:
-	var damage_type:String = "slash"
-	var base_damage: float = player.all_skills.overhead_slash_damage
+	var damage_type:String = player.base_dmg_type
+	var base_damage: float = player.all_skills.overhead_slash_damage + player.total_dmg
 	var points: int = player.overhead_icon.points
 	var damage_multiplier: float = 1.0
 	if points > 1:
@@ -560,8 +545,8 @@ func risingSlashCD()-> void:
 	player.all_skills.risingSlashCD()
 	player.rising_slash_duration = false
 func risingSlashDMG()-> void:
-	var damage_type:String = right_hand.get_child(0).damage_type
-	var base_damage:float = player.all_skills.rising_slash_damage 
+	var damage_type:String = player.base_dmg_type
+	var base_damage:float = player.all_skills.rising_slash_damage + player.total_dmg
 	var points: int = player.rising_icon.points
 	var damage_multiplier: float = 1.0
 	var total_damage: float
@@ -592,8 +577,8 @@ func cycloneCD()-> void:
 	player.cyclone_duration = false
 	player.cyclone_combo = false
 func cycloneDMG() -> void:
-	var damage_type: String = "slash"
-	var base_damage: float = player.all_skills.cyclone_damage 
+	var damage_type:String = player.base_dmg_type
+	var base_damage: float = player.all_skills.cyclone_damage + player.total_dmg
 	var points: int = player.cyclone_icon.points
 	var damage_multiplier: float = 1.0
 	if points > 1:
@@ -627,8 +612,8 @@ func whirlwindCD()-> void:
 	player.whirlwind_duration = false
 	player.whirlwind_combo = false
 func whirlwindDMG() -> void:
-	var damage_type: String = "slash"
-	var base_damage: float = player.all_skills.whirlwind_damage 
+	var damage_type:String = player.base_dmg_type
+	var base_damage: float = player.all_skills.whirlwind_damage + player.total_dmg
 	var points: int = player.whirlwind_icon.points
 	var damage_multiplier: float = 1.0
 	var health_ratio: float = float(player.health) / float(player.max_health)
@@ -661,9 +646,8 @@ func HeartTrustCD()->void:
 	player.all_skills.heartTrustSlashCD()
 	player.heart_trust_duration = false
 func HeartTrustDMG()->void:
-
 	var damage_type:String = "pierce"
-	var base_damage: float = player.all_skills.heart_trust_dmg 
+	var base_damage: float = player.all_skills.heart_trust_dmg + player.total_dmg
 	var points: int = player.heart_trust_icon.points
 	var damage_multiplier: float = 1.0
 	if points > 1:
@@ -757,8 +741,6 @@ func dealDMG(victim,critical_damage,aggro_power,damage_type,critical_flank_damag
 							victim.takeDamage(damage,aggro_power,player,stagger_chance,damage_type)
 						else: #appareantly the victim is showing his back or flanks, extra damage
 							victim.takeDamage(damage_flank,aggro_power,player,stagger_chance,damage_type)
-
-
 
 func slideImpact(enemy_detector1,aggro_power,push_distance)-> void:
 	for victim in enemy_detector1:

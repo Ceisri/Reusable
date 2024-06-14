@@ -217,13 +217,15 @@ func inputOrStateToAnimation()-> void:
 		horizontal_velocity = direction * 0
 		current_race_gender.can_move = false
 	else:
+		
+#_______________________________________________ACTIVE ACTIONS______________________________________
 		SkillQueueSystem()#DO NOT REMOVE THIS! it is neccessary to allow skill cancelling, skill cancelling doesn't work without skill queue, it has a toggle on off anyway for players that don't like it 
 		if Input.is_action_pressed("rclick"):
 			state == autoload.state_list.guard
 			animationCancel()
 					
 					
-	#Overhead Slash_____________________________________________________________________________________
+	#Overhead Slash_________________________________________________________________________________
 		if overhead_slash_duration == true:
 			if all_skills.can_overhead_slash == true:#GOTTA FIX THIS ANIMATION, THW FIRST ONE IS SHIT THE SECOND IS GLITCHY, THIS IS A CORE SKILL SO IT NEEDS FIXING ASAP
 				if resolve > all_skills.overhead_slash_cost:
@@ -236,22 +238,22 @@ func inputOrStateToAnimation()-> void:
 									if overhead_slash_combo == false:
 										animation.play("overhead slash sword",blend, melee_atk_speed - 0.15)
 									else:
-										animation.play("overhead slash sword",blend, melee_atk_speed + 0.9)
+										animation.play("overhead slash sword",blend, melee_atk_speed + all_skills.overhead_slash_combo_speed_bonus)
 								autoload.weapon_list.sword_shield:
 									if overhead_slash_combo == false:
 										animation.play("overhead slash sword",blend, melee_atk_speed- 0.15)
 									else:
-										animation.play("overhead slash sword",blend, melee_atk_speed + 0.9)
+										animation.play("overhead slash sword",blend, melee_atk_speed + all_skills.overhead_slash_combo_speed_bonus)
 								autoload.weapon_list.dual_swords:
 									if overhead_slash_combo == false:
 										animation.play("overhead slash sword",blend, melee_atk_speed- 0.15)
 									else:
-										animation.play("overhead slash sword",blend, melee_atk_speed + 1)
+										animation.play("overhead slash sword",blend, melee_atk_speed + all_skills.overhead_slash_combo_speed_bonus)
 								autoload.weapon_list.heavy:
 									if overhead_slash_combo == false:
 										animation.play("overhead slash heavy",blend, melee_atk_speed- 0.25)
 									else:
-										animation.play("overhead slash heavy",blend, melee_atk_speed + 0.6)
+										animation.play("overhead slash heavy",blend, melee_atk_speed + all_skills.overhead_slash_combo_speed_bonus)
 				else:
 					overhead_slash_duration = false
 					returnToIdleBasedOnWeaponType()
@@ -260,7 +262,6 @@ func inputOrStateToAnimation()-> void:
 				returnToIdleBasedOnWeaponType()
 	#Whirlwind__________________________________________________________________________________________
 		elif whirlwind_duration == true :
-
 			directionToCamera()
 			is_in_combat = true
 			clearParryAbsorb()
@@ -288,7 +289,6 @@ func inputOrStateToAnimation()-> void:
 			
 	#Rising slash____________________________________________________________________________________
 		elif rising_slash_duration == true:
-
 			directionToCamera()
 			is_in_combat = true
 			clearParryAbsorb()
@@ -337,7 +337,7 @@ func inputOrStateToAnimation()-> void:
 			else:
 				cyclone_duration = false
 				returnToIdleBasedOnWeaponType()
-				
+	#Heart trust____________________________________________________________________________________________
 		elif heart_trust_duration == true:
 			animationCancelException(heart_trust_duration)
 			directionToCamera()
@@ -389,7 +389,8 @@ func inputOrStateToAnimation()-> void:
 					animation.play("sword click1",blend, melee_atk_speed +compensation_speed)
 					moveDuringAnimation(2.5)
 				autoload.weapon_list.dual_swords:
-					pass
+					animation.play("dual click1",0, melee_atk_speed +compensation_speed)
+					moveDuringAnimation(2.7)
 				autoload.weapon_list.heavy:
 					animation.play("heavy click1",0, melee_atk_speed +compensation_speed)
 					moveDuringAnimation(1.75)
@@ -409,7 +410,8 @@ func inputOrStateToAnimation()-> void:
 					animation.play("sword click2",0, melee_atk_speed +compensation_speed)
 					moveDuringAnimation(2)
 				autoload.weapon_list.dual_swords:
-					pass
+					animation.play("dual click2",0, melee_atk_speed +compensation_speed)
+					moveDuringAnimation(2.7)
 				autoload.weapon_list.heavy:
 					animation.play("heavy click2",0, melee_atk_speed +compensation_speed)
 					moveDuringAnimation(1.75)
@@ -619,7 +621,7 @@ func skills(slot)-> void:
 								animation.play("sword hold",blend,melee_atk_speed)
 								moveDuringAnimation(2.5)
 							autoload.weapon_list.dual_swords:
-								animation.play("combo dual swords",blend,melee_atk_speed+ 0.3)
+								animation.play("dual hold",blend,melee_atk_speed+ 0.3)
 								moveDuringAnimation(2.7)
 							autoload.weapon_list.heavy:
 								animation.play("heavy hold",blend,melee_atk_speed)
@@ -630,9 +632,18 @@ func skills(slot)-> void:
 					is_in_combat = true
 					if hold_to_base_atk == false:
 						base_atk2_duration = true
-
-						
-			
+				elif slot.texture.resource_path == autoload.guard_sword.get_path():
+					if resolve > 0:
+						is_walking = false
+						can_walk = false
+						is_in_combat = true
+						resolve -= 1 * get_physics_process_delta_time()
+						if weapon_type == autoload.weapon_list.dual_swords:
+							animation.play("dual block",blend)
+						else:
+							animation.play("sword block",blend)
+					else:
+						returnToIdleBasedOnWeaponType()
 				elif slot.texture.resource_path == autoload.block_shield.get_path():
 					if resolve > 0:
 						is_walking = false
@@ -1975,8 +1986,8 @@ func resetSkills(tree):
 			child.skillPoints()
 			skill_points_spent = 0 
 func UniversalToolTip(icon_texture):
-	var instance = preload("res://tooltip.tscn").instance()
-	var instance_skills = preload("res://tooltipSkills.tscn").instance()
+	var instance = preload("res://Tooltips/tooltip.tscn").instance()
+	var instance_skills = preload("res://Tooltips/tooltipSkills.tscn").instance()
 	if icon_texture != null:
 		#consumablaes
 		if icon_texture.get_path() == autoload.red_potion.get_path():
@@ -2003,7 +2014,7 @@ func UniversalToolTip(icon_texture):
 			callToolTip(instance,"Farmer Shoe","+1 slash resistance.\n +1 blunt resistance.\n +3 pierce resistance.\n +1 heat resistance.\n +6 cold resistance.\n +15 jolt resistance.\n")
 
 		elif icon_texture.get_path() == autoload.cyclone.get_path():
-			var base_damage: float = all_skills.cyclone_damage 
+			var base_damage: float = all_skills.cyclone_damage + total_dmg
 			var points: int = cyclone_icon.points
 			var damage_multiplier: float = 1.0
 			var total_damage: float
@@ -2017,7 +2028,7 @@ func UniversalToolTip(icon_texture):
 			var extra:String = "AOE, Stagger, Movement"
 			callToolTipSkill(instance_skills,"cyclone",total_value,cost,extra,cooldown,description)
 		elif icon_texture.get_path() == autoload.whirlwind.get_path():
-			var base_damage: float = all_skills.whirlwind_damage 
+			var base_damage: float = all_skills.whirlwind_damage + total_dmg
 			var points: int =  whirlwind_icon.points
 			var health_ratio: float = float(health) / float(max_health)
 			var missing_health_percentage: float = 1.0 - (float(health) / float(max_health))  # Missing health as a percentage
@@ -2038,7 +2049,7 @@ func UniversalToolTip(icon_texture):
 		
 
 		elif icon_texture.get_path() == autoload.overhead_slash.get_path():
-			var base_damage: float = all_skills.overhead_slash_damage 
+			var base_damage: float = all_skills.overhead_slash_damage + total_dmg
 			var points: int = overhead_icon.points
 			var damage_multiplier: float = 1.0
 			var total_damage: float
@@ -2053,7 +2064,7 @@ func UniversalToolTip(icon_texture):
 			callToolTipSkill(instance_skills,"Overhead Slash",total_value,cost,extra,cooldown,description)
 		
 		elif icon_texture.get_path() == autoload.rising_slash.get_path():
-			var base_damage: float = all_skills.rising_slash_damage 
+			var base_damage: float = all_skills.rising_slash_damage + total_dmg
 			var points: int = rising_icon.points
 			var damage_multiplier: float = 1.0
 			var total_damage: float
@@ -2069,7 +2080,7 @@ func UniversalToolTip(icon_texture):
 		
 		
 		elif icon_texture.get_path() == autoload.heart_trust.get_path():
-			var base_damage: float = all_skills.heart_trust_dmg
+			var base_damage: float = all_skills.heart_trust_dmg + total_dmg
 			var points: int = heart_trust_icon.points
 			var damage_multiplier: float = 1.0
 			var total_damage: float
@@ -2148,8 +2159,8 @@ func inventorySlotPressed(index):
 func inventoryMouseEntered(index):
 	var button = inventory_grid.get_node("InventorySlot" + str(index))
 	var icon_texture = button.get_node("Icon").texture
-	var instance = preload("res://tooltip.tscn").instance()
-	var instance2 = preload("res://tooltip.tscn").instance()
+	var instance = preload("res://Tooltips/tooltip.tscn").instance()
+
 	UniversalToolTip(icon_texture)
 
 func inventoryMouseExited(index):
@@ -2220,7 +2231,7 @@ func connectSkillBarButtons():
 func skillBarMouseEntered(index):
 	var button = skill_bar_grid.get_node("Slot" + str(index))
 	var icon_texture = button.get_node("Icon").texture
-	var instance = preload("res://tooltip.tscn").instance()
+	var instance = preload("res://Tooltips/tooltip.tscn").instance()
 	UniversalToolTip(icon_texture)
 	
 func skillBarMouseExited(index):
@@ -2231,7 +2242,7 @@ func skillBarMouseExited(index):
 func _on_BaseAtkMode_mouse_entered():
 	var title:String = "Chain/Mechanical"
 	var text:String = "Click to switch between modes:\nChain Mode: hold the click button to base attack\nMechanical mode:  tap the click button to base attack"
-	var instance = preload("res://tooltipSkillbar.tscn").instance()
+	var instance = preload("res://Tooltips/tooltip.tscn").instance()
 	callToolTip(instance,title,text)
 func _on_BaseAtkMode_mouse_exited():
 	deleteTooltip()
@@ -2239,7 +2250,7 @@ func _on_BaseAtkMode_mouse_exited():
 func _on_SkillQueue_mouse_entered():
 	var title:String = "Skill Cancel System"
 	var text:String = "Click to switch between ON/OFF:\nWhen ON  you can interrupt your skills by activating other skills, the ones that get interrupted go on cooldown\nWhen OFF pressing other skills won't interrupt you, but external factors such as stuns, staggers, knockdowns or other effects might."
-	var instance = preload("res://tooltipSkillbar.tscn").instance()
+	var instance = preload("res://Tooltips/tooltip.tscn").instance()
 	callToolTip(instance,title,text)
 func _on_SkillQueue_mouse_exited():
 	deleteTooltip()
@@ -2249,7 +2260,7 @@ func _on_SkillQueue_mouse_exited():
 func _on_OpenAllUI_mouse_entered():
 	var title:String = "Open All Screens"
 	var text:String = "Click to open:\nInventory,Character Sheet, Skill Trees,Crafting"
-	var instance = preload("res://tooltipSkillbar.tscn").instance()
+	var instance = preload("res://Tooltips/tooltipSkillbar.tscn").instance()
 	callToolTip(instance,title,text)
 func _on_OpenAllUI_mouse_exited():
 	deleteTooltip()
@@ -2258,7 +2269,7 @@ func _on_OpenAllUI_mouse_exited():
 func _on_Edit_mouse_entered():
 	var title:String = "Edit Skillbar Keybinds"
 	var text:String = "Click to switch ON/OFF:\nWhen ON, clickin any skillbar slot will let you change the keybind for that slot,just click the slot you want once and then press any key\nMake sure to turn this OFF or you might change your keybinds by mistake"
-	var instance = preload("res://tooltipSkillbar.tscn").instance()
+	var instance = preload("res://Tooltips/tooltipSkillbar.tscn").instance()
 	callToolTip(instance,title,text)
 func _on_Edit_mouse_exited():
 	deleteTooltip()
@@ -2267,7 +2278,7 @@ func _on_Edit_mouse_exited():
 func _on_Character_mouse_entered():
 	var title:String = "Character Sheet"
 	var text:String = "Click to open:\nYour character sheet with your equipment, stats and attributes"
-	var instance = preload("res://tooltipSkillbar.tscn").instance()
+	var instance = preload("res://Tooltips/tooltipSkillbar.tscn").instance()
 	callToolTip(instance,title,text)
 func _on_Character_mouse_exited():
 	deleteTooltip()
@@ -2275,7 +2286,7 @@ func _on_Character_mouse_exited():
 func _on_Menu_mouse_entered():
 	var title:String = "Menu"
 	var text:String = "Opens Settins menu and Quitting interface"
-	var instance = preload("res://tooltipSkillbar.tscn").instance()
+	var instance = preload("res://Tooltips/tooltipSkillbar.tscn").instance()
 	callToolTip(instance,title,text)
 func _on_Menu_mouse_exited():
 	deleteTooltip()
@@ -2283,7 +2294,7 @@ func _on_Menu_mouse_exited():
 func _on_Skills_mouse_entered():
 	var title:String = "Skill Trees"
 	var text:String = "Click to open skill trees, and pick any skill from any skill tree to create your unique class archetype"
-	var instance = preload("res://tooltipSkillbar.tscn").instance()
+	var instance = preload("res://Tooltips/tooltipSkillbar.tscn").instance()
 	callToolTip(instance,title,text)
 func _on_Skills_mouse_exited():
 	deleteTooltip()
@@ -2291,7 +2302,7 @@ func _on_Skills_mouse_exited():
 func _on_InventoryOpenCraftingSystemButton_mouse_entered():
 	var title:String = "Crafting"
 	var text:String = "Click to open crafting menu\nDrag and drop items from acrosss your inventory into the crafting menu's slot in specific combinations to create new items"
-	var instance = preload("res://tooltipSkillbar.tscn").instance()
+	var instance = preload("res://Tooltips/tooltipSkillbar.tscn").instance()
 	callToolTip(instance,title,text)
 func _on_InventoryOpenCraftingSystemButton_mouse_exited():
 	deleteTooltip()
@@ -2299,7 +2310,7 @@ func _on_InventoryOpenCraftingSystemButton_mouse_exited():
 func _on_Inventory_mouse_entered():
 	var title:String = "Inventory"
 	var text:String = "Click to open Inventory\nThe inventory has many slots containing items which you can move around, or click to activate.\nItems might be placed in the skillbar and can be consumed or activated from there using the specific keybinds.Use the Inventory buttons to delete items you don't need by  dragging them in the trash can, or click the split item's button to split in half the quantity of the items in the first slot, or press the combine button to merge all items similar items into a single stack"
-	var instance = preload("res://tooltipSkillbar.tscn").instance()
+	var instance = preload("res://Tooltips/tooltipSkillbar.tscn").instance()
 	callToolTip(instance,title,text)
 func _on_Inventory_mouse_exited():
 	deleteTooltip()
@@ -2456,7 +2467,6 @@ onready var time_label = $UI/GUI/SkillBar/Time
 func displayClock():
 	# Get the current date and time
 	var datetime = OS.get_datetime()
-	# Display hour and minute in the label
 	time_label.text = "Time: %02d:%02d" % [datetime.hour, datetime.minute]
 onready var coordinates = $UI/GUI/Portrait/MinimapHolder/Coordinates
 func positionCoordinates():
@@ -2742,9 +2752,10 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 		if helm_icon.texture != null:
 			if helm_icon.texture.get_path() == autoload.hat1.get_path():
 				head = "garment1"
+				applyEffect("helm1", true)
 		elif helm_icon.texture == null:
 			head = "naked"
-
+			applyEffect("helm1", false)
 #_______________________________chest___________________________________________
 	var chest_icon = $UI/GUI/Equipment/EquipmentBG/BreastPlate/Icon
 	if chest_icon != null: #check if the icon and texture are null just to avoid crashes
@@ -3253,15 +3264,14 @@ var courage: float = 1
 
 
 var threat_power:float = 0
-const base_melee_atk_speed: int = 1 
-var melee_atk_speed: float = 1 
-const base_ranged_atk_speed: int = 1 
-var ranged_atk_speed: float = 1 
-const base_casting_speed: int  = 1 
+
 var critical_chance: float = 0.00
 var critical_strength: float = 2.0
 var stagger_chance: float  = 0.25
-var life_steal: float = 0.5
+
+
+var life_steal: float = 0.0
+var exra_life_steal: float = 0.0
 #resistances
 var slash_resistance: int = 0 #50 equals 33.333% damage reduction 100 equals 50% damage reduction, 200 equals 66.666% damage reduction
 var pierce_resistance: int = 0
@@ -3281,23 +3291,32 @@ var stagger_resistance: float = 0.5 #0 to 100 in percentage, this is directly de
 var deflection_chance : float = 0.33
 
 
-var guard_dmg_absorbition: float = 50 #total damage taken will be divided by this when guarding
+var guard_dmg_absorbition: float = 3 #total damage taken will be divided by this when guarding
 var extra_guard_dmg_absorbition:float
 var total_guard_dmg_absorbition:float
 
 
 var staggered = 0 
-var base_flank_dmg : float = 5.0
-var flank_dmg: float =5.0 #extra damage to add to backstabs 
+var base_flank_dmg : float = 3.0
+var flank_dmg: float =3.0 #extra damage to add to backstabs 
+
+var base_dmg: float = 100
+var extra_dmg:float = 0
+var total_dmg:float = 1
+
+const base_melee_atk_speed: int = 1 
+var melee_atk_speed: float = 1 
+const base_ranged_atk_speed: int = 1 
+var ranged_atk_speed: float = 1 
+const base_casting_speed: int  = 1 
+var casting_speed: float = 1 
+
 
 var extra_melee_atk_speed : float = 0
 var extra_range_atk_speed : float = 0
 var extra_cast_atk_speed : float = 0
 
 
-
-
-var casting_speed: float = 1 
 
 #equipment variables
 var extra_sanity: float  = 0
@@ -3380,13 +3399,14 @@ func regenStats():
 				
 
 func regenAefisNefis():
-	aefis = min(aefis + intelligence + wisdom, max_aefis)
-	nefis = min(nefis + instinct, max_nefis)
-	
-	if water >= 0.75 * max_water and kilocalories >= 0.75 * max_kilocalories:
-		breath = min(breath + 0.05, max_breath)
-		resolve = min(resolve + 0.05, max_resolve)
-		health = min(health + 0.05, max_health)
+	if health >0:
+		aefis = min(aefis + intelligence + wisdom, max_aefis)
+		nefis = min(nefis + instinct, max_nefis)
+		
+		if water >= 0.75 * max_water and kilocalories >= 0.75 * max_kilocalories:
+			breath = min(breath + 0.05, max_breath)
+			resolve = min(resolve + 0.05, max_resolve)
+			health = min(health + 0.05, max_health)
 
 
 
@@ -3401,7 +3421,10 @@ func convertStats():
 	resistanceMath()
 	attackSpeedMath()
 	flankDamageMath()
+	baseDamageMath()
 	updateCritical()
+
+	
 	total_sanity = extra_sanity + sanity
 	total_wisdom = extra_wisdom + wisdom
 	total_memory = extra_memory + memory
@@ -3449,10 +3472,36 @@ func convertStats():
 	run_speed = base_run_speed * total_agility
 	total_guard_dmg_absorbition = extra_guard_dmg_absorbition + guard_dmg_absorbition
 	
-	stagger_chance = max(0, (total_impact - 1.00) * 0.45) +  max(0, (total_ferocity - 1.00) * 0.005) + 50
+	
+	stagger_chance = max(0, (total_impact - 1.00) * 45) +  max(0, (total_ferocity - 1.00) * 0.5) 
+	
+	
+func _on_FlankDMG_mouse_entered():
+	var title:String = "Flank Damage"
+	var text:String = "Non-Frontal attacks towards enemies deal extra flat flank damage\n. gain more flank damage by  from your ferocity attribute, accuracy attribute, from skills or equipment" 
+	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
+	callToolTip(instance,title,text)
+func _on_FlankDMG_mouse_exited():
+	deleteTooltip()
+	
 	
 func flankDamageMath():
 	flank_dmg = (base_flank_dmg * (total_ferocity + total_accuracy)) 
+
+
+
+var base_dmg_type :String = "blunt" #this changes based on the weapon that is being used
+func _on_BaseDMG_mouse_entered():
+	var title:String = "Base Damage"
+	var text:String = "This is the base damage you do with physical attacks, wether melee or ranged by using throwables or bows, no effect on crossbows or other mechanical weapons, no effect on attacks which are purely based on Aefis or Nefis" 
+	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
+	callToolTip(instance,title,text)
+func _on_BaseDMG_mouse_exited():
+	deleteTooltip()
+func baseDamageMath():
+	total_dmg = (extra_dmg + base_dmg) * total_strength
+	
+
 
 func attackSpeedMath():
 	var bonus_universal_speed = (total_celerity -1) * 0.15
@@ -3465,6 +3514,27 @@ func attackSpeedMath():
 	var atk_speed_formula_casting = (total_instinct -1) * 0.35 + ((total_memory-1) * 0.05) + bonus_universal_speed
 	casting_speed = base_casting_speed + atk_speed_formula_casting	+ extra_cast_atk_speed
 
+
+
+
+
+
+func _on_ReLabel_mouse_entered():
+	var title:String = "Resolve"
+	var text:String = "Gain Resolve at a ratio of 100% your tenacity and 50% your resistance\n.Consume resolve to dodge, block and to use melee attacks" 
+	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
+	callToolTip(instance,title,text)
+func _on_ReLabel_mouse_exited():
+	deleteTooltip()
+func _on_LifeBar_mouse_entered():
+	var title:String = "Life points"
+	var text:String = "Gain life at a ratio of 100% your vitality and 50% your resistance and 100% of your height\n.Reaching 0 life points makes downed you lose all threat from neutral enemies when downed and can't do anything but crawl around,when downed you bleed every second losing more life points, reaching -100 results in death" 
+	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
+	callToolTip(instance,title,text)
+func _on_LifeBar_mouse_exited():
+	deleteTooltip()
+	
+	
 func resistanceMath():
 	var additional_resistance: float  = 0
 	var res_multiplier : float  = 0.5
@@ -3489,12 +3559,33 @@ func updateScaleRelatedAttributes():
 	scale_multiplication = base_charisma * (charisma_multiplier * 0.8699 * (scale_factor * 1.15))
 	charisma = scale_multiplication 
 
+
+
+
+func _on_AeBar_mouse_entered():
+	var title:String = "Aefis"
+	var text:String = "Gain Aefis at a ratio of 50% your intelligence, 25% your wisdom and  25% your sanity\nYour body can harvest the free-flowing Aefis in the universe, a form of energy used for creation. This ethereal force can be channeled to shape reality, manifesting your deepest desires and forging powerful artifacts. Mastery of Aefis allows you to tap into limitless potential, altering the fabric of existence itself." 
+	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
+	callToolTip(instance,title,text)
+func _on_AeBar_mouse_exited():
+	deleteTooltip()
+func _on_NeBar_mouse_entered():
+	var title:String = "Nefis"
+	var text:String = "Gain Nefis at a ratio of 50% your instinct, 25% your fury and  25% your force\nYour body produces the free-flowing Nefis, a form of energy used for destruction and corruption. This dark force can be channeled to unravel reality, spreading chaos and forging weapons of immense power. Mastery of Nefis allows you to tap into its malevolent potential, altering the fabric of existence with devastating effects."
+	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
+	callToolTip(instance,title,text)
+func _on_NeBar_mouse_exited():
+	deleteTooltip()
+
 func updateAefisNefis():
 	var intelligence_portion = total_intelligence * 0.5
-	var wisdom_portion = total_wisdom * 0.5
-
-	max_aefis = base_max_aefis * (wisdom_portion + intelligence_portion)
-	max_nefis = base_max_nefis * total_instinct
+	var instinct_portion = total_instinct * 0.25
+	var wisdom_portion = total_wisdom * 0.25
+	var sanity_portion = total_sanity * 0.25
+	var fury_portion = total_fury * 0.25 
+	var force_portion = total_force * 0.25
+	max_aefis = base_max_aefis * (wisdom_portion + intelligence_portion+ sanity_portion)
+	max_nefis = base_max_nefis * (instinct_portion + force_portion + fury_portion)
 
 onready var hp_bar = $UI/GUI/Portrait/LifeBar
 onready var hp_label = $UI/GUI/Portrait/LifeLabel
@@ -3518,6 +3609,8 @@ func allResourcesBarsAndLabels():
 	displayResourcesRound(ae_bar,ae_label,aefis,max_aefis,"AE : ")
 	displayResourcesRound(re_bar,re_label,resolve,max_resolve,"RE : ")
 	displayResourcesRound(br_bar,br_label,breath,max_breath,"BH : ")
+	
+	
 func displayResources(bar,label,value,max_value,acronim):
 	label.text =  acronim + ": %.2f / %.2f" % [value,max_value]
 	bar.value = value 
@@ -3579,6 +3672,9 @@ func displayLabels():
 	var stagger_chance_label: Label = $UI/GUI/Equipment/EquipmentBG/CombatStats/GridContainer/StaggerChanceValue
 	displayStats(stagger_chance_label,stagger_chance)
 	
+	
+	var dmg_label = $UI/GUI/Equipment/EquipmentBG/CombatStats/GridContainer/BaseDMGValue
+	displayStats(dmg_label,total_dmg)
 	
 	var flank_dmg_label = $UI/GUI/Equipment/EquipmentBG/CombatStats/GridContainer/FlankDMGValue
 	displayStats(flank_dmg_label,flank_dmg)
@@ -3719,8 +3815,6 @@ func connectAttributeHovering():
 	var authority_label = $UI/GUI/Equipment/Attributes/Authority
 
 	var courage_label = $UI/GUI/Equipment/Attributes/Courage	
-	
-	
 	# Set mouse_filter for each label to stop mouse events
 	int_label.mouse_filter = Control.MOUSE_FILTER_STOP
 	ins_label.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -3853,163 +3947,163 @@ func connectAttributeHovering():
 	# Connect mouse entered and exited signals for Loyalty label
 	loyalty_label.connect("mouse_entered", self, "loHovered")
 	loyalty_label.connect("mouse_exited", self, "loyExited")
-	
-	
-
 # Functions to handle mouse entering and exiting each label
+
+
+
 func intHovered():
-	var instance = preload("res://tooltip.tscn").instance()
-	callToolTip(instance,"placeholder","holder placer")
+	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
+	callToolTip(instance,"Intelligence","Increases the  rate at which you gain experience.\nIncreases your Aefis")
 func intExited():
 	deleteTooltip()
 func insHovered():
-	var instance = preload("res://tooltip.tscn").instance()
-	callToolTip(instance,"placeholder","holder placer")
+	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
+	callToolTip(instance,"Instinct","Increases your Nefis")
 func insExited():
 	deleteTooltip()
 func wisHovered():
-	var instance = preload("res://tooltip.tscn").instance()
+	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func wisExited():
 	deleteTooltip()
 func memHovered():
-	var instance = preload("res://tooltip.tscn").instance()
+	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func memExited():
 	deleteTooltip()
 func sanHovered():
-	var instance = preload("res://tooltip.tscn").instance()
-	callToolTip(instance,"placeholder","holder placer")
+	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
+	callToolTip(instance,"Sanity","Makes you more resistant to certain debuffs\nIncreases your Aefis")
 func sanExited():
 	deleteTooltip()
 
 func strHovered():
-	var instance = preload("res://tooltip.tscn").instance()
+	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func strExited():
 	deleteTooltip()
 func forceHovered():
-	var instance = preload("res://tooltip.tscn").instance()
-	callToolTip(instance,"placeholder","holder placer")
+	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
+	callToolTip(instance,"placeholder","Increases your Nefis")
 func forceExited():
 	deleteTooltip()
 func impHovered():
-	var instance = preload("res://tooltip.tscn").instance()
+	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func impExited():
 	deleteTooltip()
 func ferHovered():
-	var instance = preload("res://tooltip.tscn").instance()
+	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func ferExited():
 	deleteTooltip()
 func furHovered():
-	var instance = preload("res://tooltip.tscn").instance()
+	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func furExited():
 	deleteTooltip()
 
 
 func vitHovered():
-	var instance = preload("res://tooltip.tscn").instance()
+	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func vitExited():
 	deleteTooltip()
 func staHovered():
-	var instance = preload("res://tooltip.tscn").instance()
+	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func staExited():
 	deleteTooltip()
 func endHovered():
-	var instance = preload("res://tooltip.tscn").instance()
+	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func endExited():
 	deleteTooltip()
 func resHovered():
-	var instance = preload("res://tooltip.tscn").instance()
+	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func resExited():
 	deleteTooltip()
 func tenHovered():
-	var instance = preload("res://tooltip.tscn").instance()
+	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func tenExited():
 	deleteTooltip()
 
 func agiHovered():
-	var instance = preload("res://tooltip.tscn").instance()
+	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func agiExited():
 	deleteTooltip()
 func hasHovered():
-	var instance = preload("res://tooltip.tscn").instance()
+	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func hasExited():
 	deleteTooltip()
 func celHovered():
-	var instance = preload("res://tooltip.tscn").instance()
+	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func celExited():
 	deleteTooltip()
 func fleHovered():
-	var instance = preload("res://tooltip.tscn").instance()
+	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func fleExited():
 	deleteTooltip()
 
 func defHovered():
-	var instance = preload("res://tooltip.tscn").instance()
+	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func defExited():
 	deleteTooltip()
 func dexHovered():
-	var instance = preload("res://tooltip.tscn").instance()
+	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func dexExited():
 	deleteTooltip()
 func accHovered():
-	var instance = preload("res://tooltip.tscn").instance()
+	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func accExited():
 	deleteTooltip()
 func focHovered():
-	var instance = preload("res://tooltip.tscn").instance()
+	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func focExited():
 	deleteTooltip()
 func poiHovered():
-	var instance = preload("res://tooltip.tscn").instance()
+	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func poiExited():
 	deleteTooltip()
 func balHovered():
-	var instance = preload("res://tooltip.tscn").instance()
+	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func balExited():
 	deleteTooltip()
 	
 func chaHovered():
-	var instance = preload("res://tooltip.tscn").instance()
+	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func chaExited():
 	deleteTooltip()
 func dipHovered():
-	var instance = preload("res://tooltip.tscn").instance()
+	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func dipExited():
 	deleteTooltip()
 func autHovered():
-	var instance = preload("res://tooltip.tscn").instance()
+	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func autExited():
 	deleteTooltip()
 func couHovered():
-	var instance = preload("res://tooltip.tscn").instance()
+	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func couExited():
 	deleteTooltip()
 func loyHovered():
-	var instance = preload("res://tooltip.tscn").instance()
+	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func loyExited():
 	deleteTooltip()
@@ -4067,7 +4161,7 @@ func connectHoveredResistanceLabels():
 
 
 func slashResHovered():
-	var instance = preload("res://tooltip.tscn").instance()
+	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	# Calculate the mitigation
 	var mitigation: float
 	if slash_resistance >= 0:
@@ -4088,7 +4182,7 @@ func slashResExited():
 	deleteTooltip()
 	
 func bluntResHovered():
-	var instance = preload("res://tooltip.tscn").instance()
+	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	var mitigation: float
 	if blunt_resistance >= 0:
 		mitigation = blunt_resistance / (blunt_resistance + 100.0)
@@ -4105,7 +4199,7 @@ func bluntResExited():
 	deleteTooltip()
 
 func pierceResHovered():
-	var instance = preload("res://tooltip.tscn").instance()
+	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	var mitigation: float
 	if pierce_resistance >= 0:
 		mitigation = pierce_resistance / (pierce_resistance + 100.0)
@@ -4122,7 +4216,7 @@ func pierceResExited():
 	deleteTooltip()
 
 func sonicResHovered():
-	var instance = preload("res://tooltip.tscn").instance()
+	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	var mitigation: float
 	if sonic_resistance >= 0:
 		mitigation = sonic_resistance / (sonic_resistance + 100.0)
@@ -4139,7 +4233,7 @@ func sonicResExited():
 	deleteTooltip()
 
 func heatResHovered():
-	var instance = preload("res://tooltip.tscn").instance()
+	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	var mitigation: float
 	if heat_resistance >= 0:
 		mitigation = heat_resistance / (heat_resistance + 100.0)
@@ -4156,7 +4250,7 @@ func heatResExited():
 	deleteTooltip()
 
 func coldResHovered():
-	var instance = preload("res://tooltip.tscn").instance()
+	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	var mitigation: float
 	if cold_resistance >= 0:
 		mitigation = cold_resistance / (cold_resistance + 100.0)
@@ -4173,7 +4267,7 @@ func coldResExited():
 	deleteTooltip()
 
 func joltResHovered():
-	var instance = preload("res://tooltip.tscn").instance()
+	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	var mitigation: float
 	if jolt_resistance >= 0:
 		mitigation = jolt_resistance / (jolt_resistance + 100.0)
@@ -4190,7 +4284,7 @@ func joltResExited():
 	deleteTooltip()
 	
 func toxicResHovered():
-	var instance = preload("res://tooltip.tscn").instance()
+	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	var mitigation: float
 	if toxic_resistance >= 0:
 		mitigation = toxic_resistance / (toxic_resistance + 100.0)
@@ -4207,7 +4301,7 @@ func toxicResExited():
 	deleteTooltip()
 	
 func acidResHovered():
-	var instance = preload("res://tooltip.tscn").instance()
+	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	var mitigation: float
 	if acid_resistance >= 0:
 		mitigation = acid_resistance / (acid_resistance + 100.0)
@@ -4225,7 +4319,7 @@ func acidResExited():
 
 
 func bleedResHovered():
-	var instance = preload("res://tooltip.tscn").instance()
+	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	var mitigation: float
 	if bleed_resistance >= 0:
 		mitigation = bleed_resistance / (bleed_resistance + 100.0)
@@ -4242,7 +4336,7 @@ func bleedResExited():
 	deleteTooltip()
 
 func neuroResHovered():
-	var instance = preload("res://tooltip.tscn").instance()
+	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	var mitigation: float
 	if neuro_resistance >= 0:
 		mitigation = neuro_resistance / (neuro_resistance + 100.0)
@@ -4259,7 +4353,7 @@ func neuroResExited():
 	deleteTooltip()
 
 func radiantResHovered():
-	var instance = preload("res://tooltip.tscn").instance()
+	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	var mitigation: float
 	if radiant_resistance >= 0:
 		mitigation = radiant_resistance / (radiant_resistance + 100.0)
@@ -4794,8 +4888,7 @@ onready var critical_str_val = $UI/GUI/Equipment/EquipmentBG/CombatStats/GridCon
 
 
 func updateAllStats():
-	updateAefisNefis()
-
+	updateAefisNefis()	
 	updateScaleRelatedAttributes()
 	updateCritical()
 
@@ -5390,7 +5483,7 @@ var exp_pop = preload("res://UI/experience_points_floater.tscn")
 func takeExperience(points)->void:
 	var text = exp_pop.instance()
 	text.amount = points
-	experience_points += points
+	experience_points += points * intelligence
 	$"Damage&Effects/Viewport".add_child(text)
 	
 func experienceSystem():
@@ -5404,4 +5497,5 @@ func experienceSystem():
 # Calculate the percentage of experience points
 	var percentage: float = (float(experience_points) / float(experience_to_next_level)) * 100.0
 	exper_label.text = "Level " + str(level) + "\nXP: " + str(experience_points) + "/" + str(experience_to_next_level) + " (" + str(round((percentage* 1)/1)) + "%)"
+
 

@@ -42,9 +42,12 @@ func _ready():
 		"healing":
 			label.add_color_override("font_color", Color("a9f08f")) 
 			label.add_color_override("font_outline", Color("000000")) 
-	label.text = str(amount)
+	if amount >0:
+		label.text = str(amount)
+	else:
+		label.visible = false
 	status_label.text = status + "  "
-	
+		
 	var screen_center = get_viewport_rect().size / 2
 	self.position = calculateRandomPosition(screen_center)
 	tween.interpolate_property(self, 'scale', scale, Vector2(1, 1), 0.2, Tween.TRANS_LINEAR, Tween.EASE_OUT)

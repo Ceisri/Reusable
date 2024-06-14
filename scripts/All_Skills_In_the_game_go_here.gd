@@ -464,6 +464,7 @@ func updateOverheadSlash(label: Label, cooldown: float, current_time: float, las
 	else:
 		label.text = ""
 		can_overhead_slash = true
+var overhead_slash_combo_speed_bonus = 1.5 #1 = 100% extra speed
 func activateComboOverheadslash():
 	player.overhead_slash_combo = true
 	overhead_slash_start_time = OS.get_ticks_msec() / 1000.0
@@ -563,6 +564,7 @@ func updateLabelCyclone(label: Label, cooldown: float, current_time: float, last
 func activateComboCyclone():
 	player.cyclone_combo = true
 	cyclone_combo_start_time = OS.get_ticks_msec() / 1000.0
+	print("Active")
 #___________________________________________________________________________________________________
 var whirlwind_cooldown: float = 3.0
 var whirlwind_cost:float = 6.0
