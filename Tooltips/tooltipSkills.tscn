@@ -1,0 +1,74 @@
+[gd_scene load_steps=5 format=2]
+
+[ext_resource path="res://scripts/tooltipSkill.gd" type="Script" id=1]
+[ext_resource path="res://UI/fonts/base.tres" type="DynamicFont" id=2]
+[ext_resource path="res://UI/fonts/percentage.tres" type="DynamicFont" id=3]
+[ext_resource path="res://InterfaceGraphics/banner.png" type="Texture" id=4]
+
+[node name="Node2D" type="Node2D" groups=["ToolTip", "Tooltip", "tooltip"]]
+scale = Vector2( 0.586748, 0.521626 )
+z_index = 658
+script = ExtResource( 1 )
+
+[node name="BG" type="TextureRect" parent="." groups=["Tooltip"]]
+modulate = Color( 1, 1, 1, 0.792157 )
+margin_left = 10.2259
+margin_top = -724.657
+margin_right = 910.226
+margin_bottom = -174.657
+rect_scale = Vector2( 0.717536, 1.40027 )
+texture = ExtResource( 4 )
+
+[node name="Title" type="Label" parent="."]
+margin_left = 23.8603
+margin_top = -663.311
+margin_right = 71.8603
+margin_bottom = -630.311
+rect_scale = Vector2( 2.24132, 1.61791 )
+custom_fonts/font = ExtResource( 2 )
+text = "Title"
+
+[node name="Total" type="RichTextLabel" parent="."]
+margin_left = 34.0862
+margin_top = -607.715
+margin_right = 634.086
+margin_bottom = -567.715
+rect_min_size = Vector2( 600, 40 )
+custom_fonts/normal_font = ExtResource( 3 )
+text = "Total value: 1000"
+
+[node name="Extra" type="RichTextLabel" parent="."]
+margin_left = 34.0862
+margin_top = -485.022
+margin_right = 634.086
+margin_bottom = -445.022
+rect_min_size = Vector2( 600, 40 )
+custom_fonts/normal_font = ExtResource( 3 )
+text = "Extra"
+
+[node name="Cost" type="RichTextLabel" parent="."]
+margin_left = 34.0862
+margin_top = -527.198
+margin_right = 634.086
+margin_bottom = -487.198
+rect_min_size = Vector2( 600, 40 )
+custom_fonts/normal_font = ExtResource( 3 )
+text = "cost value: 1000"
+
+[node name="Cooldown" type="RichTextLabel" parent="."]
+margin_left = 34.0862
+margin_top = -571.291
+margin_right = 634.086
+margin_bottom = -531.291
+rect_min_size = Vector2( 600, 40 )
+custom_fonts/normal_font = ExtResource( 3 )
+text = "Cooldown: 1000"
+
+[node name="Description" type="RichTextLabel" parent="."]
+margin_left = 34.0862
+margin_top = -439.012
+margin_right = 634.086
+margin_bottom = -79.0118
+rect_min_size = Vector2( 600, 360 )
+custom_fonts/normal_font = ExtResource( 3 )
+text = "+5% compounding extra damage per skill level                +SLASH DAMAGE                                                               'spin and slash foes around you in an area attack, each foe can be hit up to 3 times"

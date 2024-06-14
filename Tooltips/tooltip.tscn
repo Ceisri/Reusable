@@ -1,0 +1,37 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://scripts/tooltip.gd" type="Script" id=1]
+[ext_resource path="res://UI/fonts/percentage.tres" type="DynamicFont" id=2]
+[ext_resource path="res://InterfaceGraphics/banner.png" type="Texture" id=3]
+
+[node name="Node2D" type="Node2D" groups=["ToolTip", "Tooltip", "tooltip"]]
+scale = Vector2( 0.586748, 0.521626 )
+script = ExtResource( 1 )
+
+[node name="BG" type="TextureRect" parent="." groups=["Tooltip"]]
+modulate = Color( 1, 1, 1, 0.792157 )
+margin_left = 25.5646
+margin_top = -730.408
+margin_right = 925.565
+margin_bottom = -180.408
+rect_scale = Vector2( 0.508713, 1.37565 )
+texture = ExtResource( 3 )
+
+[node name="Label2" type="RichTextLabel" parent="."]
+margin_left = 44.3119
+margin_top = -617.3
+margin_right = 494.312
+margin_bottom = -37.3
+rect_min_size = Vector2( 450, 580 )
+custom_fonts/normal_font = ExtResource( 2 )
+text = "lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsumlorem ipsum lorem ipsum lorem ipsum lorem ipsum w loremlorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum  ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum "
+
+[node name="Label" type="RichTextLabel" parent="."]
+margin_left = 39.1988
+margin_top = -682.481
+margin_right = 489.199
+margin_bottom = -632.481
+rect_min_size = Vector2( 450, 50 )
+rect_scale = Vector2( 0.961269, 1.36576 )
+custom_fonts/normal_font = ExtResource( 2 )
+text = "Title"
