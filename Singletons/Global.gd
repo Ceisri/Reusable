@@ -17,13 +17,14 @@ enum state_list{
 	jump,#11
 	guard,#12
 	healing,#13
-	base_attack,
-	curious,# for AI
+	base_attack, #14
+	curious,#15 for AI
 	engage, # for AI
 	orbit,# for AI
 	decimate,# for AI
 	wander,# for AI
 	staggered,
+	stunned,
 	dead,
 	skill1,
 	skill2,
@@ -45,6 +46,9 @@ enum state_list{
 	skillH,
 	skillV,
 	skillB}
+
+
+
 
 enum weapon_list {
 	fist,
@@ -118,12 +122,16 @@ onready var arcane_blast =  preload("res://Classes/Ability Icons/Magic Icons1/5.
 
 
 #base attacks
-onready var punch = preload("res://UI/graphics/SkillIcons/fist.png")
+onready var punch = preload("res://Classes/handcombat/punch.png")
+onready var punch2 = preload("res://Classes/handcombat/punch2.png")
 onready var guard = preload("res://Classes/handcombat/guard.png")
 onready var dodge = preload("res://Classes/handcombat/dodge.png")
 var dodge_description: String = "Slide in the chosen direction to evade attacks, becoming invincible for the duration and pushing back foes you collide with.\n Sliding between their legs allows you to maneuver and get behind them.\n\n Double press DIRECTIONAL KEYS alternatively, drag and drop it onto the skill bar, then use your keyboard to activate."
 #sword______________________________________________________________________________________________
 onready var slash_sword =  preload("res://Classes/Swordsmen/slash.png")
+onready var slash_sword2 =  preload("res://Classes/Swordsmen/slash2.png")
+
+
 onready var guard_sword =  preload("res://Classes/Swordsmen/cross parry.png")
 onready var block_shield =  preload("res://Classes/Swordsmen/block.png")
 #greatsword/heavy
@@ -388,12 +396,12 @@ func gravity(user):#for seamless climbing first check if is_climbing
 	if user.is_in_combat == false:
 		if user.is_climbing == false: #this way just walking into a wall starts climbing but only out of combat
 			if not user.is_on_floor():
-					user.vertical_velocity += Vector3.DOWN * gravity_force * get_physics_process_delta_time()
+					user.vertical_velocity += Vector3.DOWN * gravity_force  * get_physics_process_delta_time()
 			else: 
 				user.vertical_velocity = -user.get_floor_normal() * gravity_force / 2.5
 	else:#inside of combat situations,to avoid climbing on enemies by mistake, now you have to jump on the enemy first to start climbing
 		if not user.is_on_floor():
-			user.vertical_velocity += Vector3.DOWN * gravity_force  * get_physics_process_delta_time()
+			user.vertical_velocity += Vector3.DOWN * gravity_force * get_physics_process_delta_time()
 		else: 
 			user.vertical_velocity = -user.get_floor_normal() * gravity_force / 2.5
 			
