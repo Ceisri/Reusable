@@ -373,18 +373,46 @@ func inputOrStateToAnimation()-> void:
 			else:
 				animation.play("taunt",blend+ 0.1,ferocity)
 				
-#__________________IF THE PLAYER DECIDED TO PLAY WITH HOLD OF, SO 1 CLICK = 1 BASE ATTTACK__________
+#__________________IF THE PLAYER DECIDED TO PLAY WITH HOLD OFF, SO 1 CLICK = 1 BASE ATTTACK__________
 		elif base_atk_duration == true:
-			var compensation_speed = 0.1 #extra attack seed to compensate having to click multiple times 
-			moveDuringAnimation(2)
-			animation.play("base atk",blend, melee_atk_speed +compensation_speed)
-			
+			var compensation_speed = 0.05 #extra attack seed to compensate having to click multiple times 
+			match weapon_type:
+				autoload.weapon_list.fist:
+					animation.play("fist click1",blend,melee_atk_speed+compensation_speed)
+					moveDuringAnimation(2.5)
+				autoload.weapon_list.bow: 
+					pass
+				autoload.weapon_list.sword:
+					animation.play("sword click1",blend, melee_atk_speed +compensation_speed)
+					moveDuringAnimation(2.5)
+				autoload.weapon_list.sword_shield:
+					animation.play("sword click1",blend, melee_atk_speed +compensation_speed)
+					moveDuringAnimation(2.5)
+				autoload.weapon_list.dual_swords:
+					pass
+				autoload.weapon_list.heavy:
+					animation.play("heavy click1",0, melee_atk_speed +compensation_speed)
+					moveDuringAnimation(1.75)
+
 		elif base_atk2_duration == true:
-			var compensation_speed = 0.15 #extra attack seed to compensate having to click multiple times 
-			moveDuringAnimation(0)
-			animation.play("base atk2",blend, melee_atk_speed + compensation_speed )
-			
-			
+			var compensation_speed = 0.05 #extra attack seed to compensate having to click multiple times 
+			match weapon_type:
+				autoload.weapon_list.fist:
+					animation.play("fist click2",0,melee_atk_speed+compensation_speed)
+					moveDuringAnimation(2)
+				autoload.weapon_list.bow: 
+					pass
+				autoload.weapon_list.sword:
+					animation.play("sword click2",0, melee_atk_speed + compensation_speed)
+					moveDuringAnimation(2)
+				autoload.weapon_list.sword_shield:
+					animation.play("sword click2",0, melee_atk_speed +compensation_speed)
+					moveDuringAnimation(2)
+				autoload.weapon_list.dual_swords:
+					pass
+				autoload.weapon_list.heavy:
+					animation.play("heavy click2",0, melee_atk_speed +compensation_speed)
+					moveDuringAnimation(1.75)
 			
 #################################################################################################################################################################
 	#_____________________________________MATCH STATE BEGINS HERE ___________________________________
@@ -569,22 +597,33 @@ func skills(slot)-> void:
 #Lclick and Rclick__________________________________________________________________________________
 #fist
 				elif slot.texture.resource_path == autoload.punch.get_path():
-					animation.play("combo fist",blend,melee_atk_speed + 0.15)
-					moveDuringAnimation(2)
+					is_in_combat = true
+					if hold_to_base_atk == true:
+						animation.play("combo fist",blend,melee_atk_speed + 0.15)
+						moveDuringAnimation(2.5)
+					else:
+						base_atk_duration = true	
+				elif slot.texture.resource_path == autoload.punch2.get_path():
+					is_in_combat = true
+					if hold_to_base_atk == false:
+						base_atk2_duration = true
 #sword
 				elif slot.texture.resource_path == autoload.slash_sword.get_path():
 					is_in_combat = true
 					if hold_to_base_atk == true:
 						match weapon_type:
 							autoload.weapon_list.sword:
-								animation.play("combo sword",blend,melee_atk_speed+ 0.15)
-								moveDuringAnimation(2.7)
+								animation.play("sword hold",blend,melee_atk_speed)
+								moveDuringAnimation(2.5)
 							autoload.weapon_list.sword_shield:
-								animation.play("base atk continue",blend,melee_atk_speed)
-								moveDuringAnimation(2)
+								animation.play("sword hold",blend,melee_atk_speed)
+								moveDuringAnimation(2.5)
 							autoload.weapon_list.dual_swords:
 								animation.play("combo dual swords",blend,melee_atk_speed+ 0.3)
 								moveDuringAnimation(2.7)
+							autoload.weapon_list.heavy:
+								animation.play("heavy hold",blend,melee_atk_speed)
+								moveDuringAnimation(1.75)
 					else:
 						base_atk_duration = true
 				elif slot.texture.resource_path == autoload.slash_sword2.get_path():
@@ -981,10 +1020,10 @@ func inputToState():
 			else:
 				state = autoload.state_list.walk
 		
-		elif anim_cancel == false:#We chec twice for "attack" input based on animation cancelling settings 
+		elif anim_cancel == false:#We chehc twice for "attack" input based on animation cancelling settings 
 			if Input.is_action_pressed("attack") and !cursor_visible: 
 				state = autoload.state_list.base_attack
-				can_walk = false
+
 
 	#skills put these below the walk elif statment in case of keybinding bugs, as of now it works so no need
 		elif Input.is_action_pressed("1"):
@@ -1032,7 +1071,7 @@ func inputToState():
 				
 		elif Input.is_action_pressed("attack") and !cursor_visible: 
 			state = autoload.state_list.base_attack
-			can_walk = false
+
 				
 				
 	#_______________________________________________________________________________
@@ -2259,7 +2298,7 @@ func _on_InventoryOpenCraftingSystemButton_mouse_exited():
 
 func _on_Inventory_mouse_entered():
 	var title:String = "Inventory"
-	var text:String = "Click to open Inventory\nThe inventory has many slots containing items which you can move around, or click to activate, items might be placed in the skillbar and can be consumed or activated from there using the specific keybinds.Use the Inventory buttons to delete items you don't need by  dragging them in the trash can, or click the split item's button to split in half the quantity of the items in the first slot, or press the combine button to merge all items similar items into a single stack"
+	var text:String = "Click to open Inventory\nThe inventory has many slots containing items which you can move around, or click to activate.\nItems might be placed in the skillbar and can be consumed or activated from there using the specific keybinds.Use the Inventory buttons to delete items you don't need by  dragging them in the trash can, or click the split item's button to split in half the quantity of the items in the first slot, or press the combine button to merge all items similar items into a single stack"
 	var instance = preload("res://tooltipSkillbar.tscn").instance()
 	callToolTip(instance,title,text)
 func _on_Inventory_mouse_exited():

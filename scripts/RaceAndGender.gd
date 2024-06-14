@@ -52,15 +52,31 @@ func loadAnimations()->void:
 	
 	
 	#L-click animatins with hold turned off 
+	animation.add_animation("fist click1", load("res://player/universal animations/Animations Fist/fist click1.anim"))
+	animation.add_animation("fist click2", load("res://player/universal animations/Animations Fist/fist click2.anim"))
+	
+	animation.add_animation("sword click1", load("res://player/universal animations/Animations Sword Light/sword click1.anim"))
+	animation.add_animation("sword click2", load("res://player/universal animations/Animations Sword Light/sword click2.anim"))
+	
+	animation.add_animation("heavy click1", load("res://player/universal animations/Animations Sword Heavy/heavy click1.anim"))
+	animation.add_animation("heavy click2", load("res://player/universal animations/Animations Sword Heavy/heavy click2.anim"))
+	
+	
+	
+	
 	animation.add_animation("base atk", load("res://player/universal animations/Animations Sword Light/base atk_test.anim"))
+	
+	
+	
+	
 	
 	#L-click animations
 	animation.add_animation("combo fist", load("res://player/universal animations/Animations Fist/combo fist.tres"))
 	animation.add_animation("shoot", load("res://player/universal animations/Animations Bow/shoot.anim"))
-	animation.add_animation("combo sword", load("res://player/universal animations/Animations Sword Light/combo sword.anim"))
+	animation.add_animation("sword hold", load("res://player/universal animations/Animations Sword Light/sword hold.anim"))
 	animation.add_animation("combo shield", load("res://player/universal animations/Animations Shield/combo shield.anim"))
 	animation.add_animation("combo dual swords", load("res://player/universal animations/Animations Sword Dual Wield/combo dual swords.anim"))
-	animation.add_animation("combo heavy", load("res://player/universal animations/Animations Sword Heavy/combo heavy.anim"))
+	animation.add_animation("heavy hold", load("res://player/universal animations/Animations Sword Heavy/heavy hold.anim"))
 	
 	#R-click animations
 	animation.add_animation("full draw", load("res://player/universal animations/Animations Bow/full draw.anim"))

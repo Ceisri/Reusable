@@ -11,11 +11,20 @@ func switchAttackIcon() -> void:
 	else:
 		match player.weapon_type:
 			autoload.weapon_list.fist:
-				icon.texture = autoload.punch
+				if player.base_atk_duration == false:
+					icon.texture = autoload.punch
+				else:
+					icon.texture = autoload.punch2
 			autoload.weapon_list.sword:
-				icon.texture = autoload.slash_sword
+				if player.base_atk_duration == false:
+					icon.texture = autoload.slash_sword
+				else:
+					icon.texture = autoload.slash_sword2
 			autoload.weapon_list.dual_swords:
-				icon.texture = autoload.slash_sword
+				if player.base_atk_duration == false:
+					icon.texture = autoload.slash_sword
+				else:
+					icon.texture = autoload.slash_sword2
 			autoload.weapon_list.sword_shield:
 				if player.base_atk_duration == false:
 					icon.texture = autoload.slash_sword
@@ -24,4 +33,7 @@ func switchAttackIcon() -> void:
 			autoload.weapon_list.bow:
 				icon.texture = autoload.quick_shot
 			autoload.weapon_list.heavy:
-				icon.texture = autoload.heavy_slash
+				if player.base_atk_duration == false:
+					icon.texture = autoload.slash_sword
+				else:
+					icon.texture = autoload.slash_sword2
