@@ -109,7 +109,8 @@ func _physics_process(delta: float) -> void:
 	fallDamage()
 	skillUserInterfaceInputs()
 	positionCoordinates()
-
+	MainWeapon()
+	SecWeapon()
 	jump()
 	deathLife(delta)#Main function
 	walk() 
@@ -233,22 +234,22 @@ func inputOrStateToAnimation()-> void:
 					clearParryAbsorb()
 					moveDuringAnimation(4)
 					match weapon_type:
-								autoload.weapon_type_list.sword:
+								autoload.weapon_list.sword:
 									if overhead_slash_combo == false:
 										animation.play("overhead slash sword",blend, melee_atk_speed - 0.15)
 									else:
 										animation.play("overhead slash sword",blend, melee_atk_speed + all_skills.overhead_slash_combo_speed_bonus)
-								autoload.weapon_type_list.sword_shield:
+								autoload.weapon_list.sword_shield:
 									if overhead_slash_combo == false:
 										animation.play("overhead slash sword",blend, melee_atk_speed- 0.15)
 									else:
 										animation.play("overhead slash sword",blend, melee_atk_speed + all_skills.overhead_slash_combo_speed_bonus)
-								autoload.weapon_type_list.dual_swords:
+								autoload.weapon_list.dual_swords:
 									if overhead_slash_combo == false:
 										animation.play("overhead slash sword",blend, melee_atk_speed- 0.15)
 									else:
 										animation.play("overhead slash sword",blend, melee_atk_speed + all_skills.overhead_slash_combo_speed_bonus)
-								autoload.weapon_type_list.heavy:
+								autoload.weapon_list.heavy:
 									if overhead_slash_combo == false:
 										animation.play("overhead slash heavy",blend, melee_atk_speed- 0.25)
 									else:
@@ -267,16 +268,16 @@ func inputOrStateToAnimation()-> void:
 			if all_skills.can_whirlwind == true:
 				if resolve > all_skills.whirlwind_cost:
 					match weapon_type:
-						autoload.weapon_type_list.sword:
+						autoload.weapon_list.sword:
 							animation.play("whirlwind sword",blend*1.5,melee_atk_speed+ 0.15)
 							moveDuringAnimation(6)
-						autoload.weapon_type_list.sword_shield:
+						autoload.weapon_list.sword_shield:
 							animation.play("whirlwind sword",blend*1.5,melee_atk_speed+ 0.15)
 							moveDuringAnimation(5)
-						autoload.weapon_type_list.dual_swords:
+						autoload.weapon_list.dual_swords:
 							animation.play("whirlwind sword",blend*1.5,melee_atk_speed + 0.1)
 							moveDuringAnimation(6.6)
-						autoload.weapon_type_list.heavy:
+						autoload.weapon_list.heavy:
 							animation.play("whirlwind heavy",blend*1.5,melee_atk_speed+ 0.15)
 							moveDuringAnimation(5)
 				else:
@@ -293,13 +294,13 @@ func inputOrStateToAnimation()-> void:
 			clearParryAbsorb()
 			moveDuringAnimation(6)
 			match weapon_type:
-						autoload.weapon_type_list.sword:
+						autoload.weapon_list.sword:
 							animation.play("rising slash shield",blend, melee_atk_speed + 0.35)
-						autoload.weapon_type_list.sword_shield:
+						autoload.weapon_list.sword_shield:
 							animation.play("rising slash shield",blend,melee_atk_speed + 0.35)
-						autoload.weapon_type_list.dual_swords:
+						autoload.weapon_list.dual_swords:
 							animation.play("rising slash shield",blend, melee_atk_speed + 0.33)
-						autoload.weapon_type_list.heavy:
+						autoload.weapon_list.heavy:
 							animation.play("rising slash heavy",blend,melee_atk_speed + 0.35)
 	#Cyclone____________________________________________________________________________________________
 		elif cyclone_duration == true:
@@ -310,22 +311,22 @@ func inputOrStateToAnimation()-> void:
 				if resolve > all_skills.cyclone_cost:
 					moveDuringAnimation(all_skills.cyclone_motion)
 					match weapon_type:
-						autoload.weapon_type_list.sword:
+						autoload.weapon_list.sword:
 							if cyclone_combo == false:
 								animation.play("cyclone sword",blend,melee_atk_speed+ 0.25)
 							else:
 								animation.play("cyclone sword",blend,melee_atk_speed+ 1)
-						autoload.weapon_type_list.sword_shield:
+						autoload.weapon_list.sword_shield:
 							if cyclone_combo == false:
 								animation.play("cyclone sword",blend,melee_atk_speed+ 0.25)
 							else:
 								animation.play("cyclone sword",blend,melee_atk_speed+ 1)
-						autoload.weapon_type_list.dual_swords:
+						autoload.weapon_list.dual_swords:
 							if cyclone_combo == false:
 								animation.play("cyclone sword",blend,melee_atk_speed+ 0.25)
 							else:
 								animation.play("cyclone sword",blend,melee_atk_speed+ 1)
-						autoload.weapon_type_list.heavy:
+						autoload.weapon_list.heavy:
 							if cyclone_combo == false:
 								animation.play("cyclone heavy",blend,melee_atk_speed+ 0.15)
 							else:
@@ -344,16 +345,16 @@ func inputOrStateToAnimation()-> void:
 			clearParryAbsorb()
 			if all_skills.can_heart_trust == true:
 					match weapon_type:
-						autoload.weapon_type_list.sword:
+						autoload.weapon_list.sword:
 							animation.play("heart trust sword",blend*1.5,melee_atk_speed+ 0.55)
 							moveDuringAnimation(4)
-						autoload.weapon_type_list.sword_shield:
+						autoload.weapon_list.sword_shield:
 							animation.play("heart trust sword",blend*1.5,melee_atk_speed+ 0.35)
 							moveDuringAnimation(3)
-						autoload.weapon_type_list.dual_swords:
+						autoload.weapon_list.dual_swords:
 							animation.play("heart trust sword",blend*1.5,melee_atk_speed + 0.1)
 							moveDuringAnimation(3.3)
-						autoload.weapon_type_list.heavy:
+						autoload.weapon_list.heavy:
 							animation.play("heart trust sword",blend*1.5,melee_atk_speed + 0.15)
 							moveDuringAnimation(6)
 			else:
@@ -367,7 +368,7 @@ func inputOrStateToAnimation()-> void:
 			is_in_combat = true
 			is_walking = false
 			clearParryAbsorb()
-			if weapon_type == autoload.weapon_type_list.heavy:
+			if weapon_type == autoload.weapon_list.heavy:
 				animation.play("taunt heavy",blend + 0.1,ferocity)
 			else:
 				animation.play("taunt",blend+ 0.1,ferocity)
@@ -376,42 +377,42 @@ func inputOrStateToAnimation()-> void:
 		elif base_atk_duration == true:
 			var compensation_speed = 0.05 #extra attack seed to compensate having to click multiple times 
 			match weapon_type:
-				autoload.weapon_type_list.fist:
+				autoload.weapon_list.fist:
 					animation.play("fist click1",blend,melee_atk_speed+compensation_speed)
 					moveDuringAnimation(2.5)
-				autoload.weapon_type_list.bow: 
+				autoload.weapon_list.bow: 
 					pass
-				autoload.weapon_type_list.sword:
+				autoload.weapon_list.sword:
 					animation.play("sword click1",blend, melee_atk_speed +compensation_speed)
 					moveDuringAnimation(2.5)
-				autoload.weapon_type_list.sword_shield:
+				autoload.weapon_list.sword_shield:
 					animation.play("sword click1",blend, melee_atk_speed +compensation_speed)
 					moveDuringAnimation(2.5)
-				autoload.weapon_type_list.dual_swords:
+				autoload.weapon_list.dual_swords:
 					animation.play("dual click1",0, melee_atk_speed +compensation_speed)
 					moveDuringAnimation(2.7)
-				autoload.weapon_type_list.heavy:
+				autoload.weapon_list.heavy:
 					animation.play("heavy click1",0, melee_atk_speed +compensation_speed)
 					moveDuringAnimation(1.75)
 
 		elif base_atk2_duration == true:
 			var compensation_speed = 0.05 #extra attack seed to compensate having to click multiple times 
 			match weapon_type:
-				autoload.weapon_type_list.fist:
+				autoload.weapon_list.fist:
 					animation.play("fist click2",0,melee_atk_speed+compensation_speed)
 					moveDuringAnimation(2)
-				autoload.weapon_type_list.bow: 
+				autoload.weapon_list.bow: 
 					pass
-				autoload.weapon_type_list.sword:
+				autoload.weapon_list.sword:
 					animation.play("sword click2",0, melee_atk_speed + compensation_speed)
 					moveDuringAnimation(2)
-				autoload.weapon_type_list.sword_shield:
+				autoload.weapon_list.sword_shield:
 					animation.play("sword click2",0, melee_atk_speed +compensation_speed)
 					moveDuringAnimation(2)
-				autoload.weapon_type_list.dual_swords:
+				autoload.weapon_list.dual_swords:
 					animation.play("dual click2",0, melee_atk_speed +compensation_speed)
 					moveDuringAnimation(2.7)
-				autoload.weapon_type_list.heavy:
+				autoload.weapon_list.heavy:
 					animation.play("heavy click2",0, melee_atk_speed +compensation_speed)
 					moveDuringAnimation(1.75)
 			
@@ -441,7 +442,7 @@ func inputOrStateToAnimation()-> void:
 					autoload.state_list.base_attack:
 						directionToCamera()
 						is_in_combat = true
-						if weapon_type == autoload.weapon_type_list.bow:
+						if weapon_type == autoload.weapon_list.bow:
 							can_walk = false
 						else:
 							can_walk = true
@@ -456,17 +457,17 @@ func inputOrStateToAnimation()-> void:
 						clearParryAbsorb()
 						if is_in_combat:
 							match weapon_type:
-								autoload.weapon_type_list.fist:
+								autoload.weapon_list.fist:
 									animation.play("walk",0,1)
-								autoload.weapon_type_list.bow: 
+								autoload.weapon_list.bow: 
 									animation.play("walk bow",0,1)	
-								autoload.weapon_type_list.sword:
+								autoload.weapon_list.sword:
 									animation.play("walk sword",0,1)
-								autoload.weapon_type_list.sword_shield:
+								autoload.weapon_list.sword_shield:
 									animation.play("walk shield")
-								autoload.weapon_type_list.dual_swords:
+								autoload.weapon_list.dual_swords:
 									animation.play("walk sword",0,1)
-								autoload.weapon_type_list.heavy:
+								autoload.weapon_list.heavy:
 									animation.play("walk heavy",0,1)
 								
 						else:
@@ -484,17 +485,17 @@ func inputOrStateToAnimation()-> void:
 						clearParryAbsorb()
 						if is_in_combat:
 							match weapon_type:
-								autoload.weapon_type_list.fist:
+								autoload.weapon_list.fist:
 									animation.play("idle fist",blend)
-								autoload.weapon_type_list.sword:
+								autoload.weapon_list.sword:
 									animation.play("idle sword",blend)
-								autoload.weapon_type_list.sword_shield:
+								autoload.weapon_list.sword_shield:
 									animation.play("idle shield",blend)
-								autoload.weapon_type_list.dual_swords:
+								autoload.weapon_list.dual_swords:
 									animation.play("idle sword",blend)
-								autoload.weapon_type_list.bow:
+								autoload.weapon_list.bow:
 									animation.play("idle bow",blend)
-								autoload.weapon_type_list.heavy:
+								autoload.weapon_list.heavy:
 									animation.play("idle heavy",blend)
 						else:
 							animation.play("idle",0.2,1)
@@ -600,7 +601,7 @@ func skills(slot)-> void:
 				elif slot.texture.resource_path == autoload.punch.get_path():
 					is_in_combat = true
 					if hold_to_base_atk == true:
-						animation.play("fist hold",blend,melee_atk_speed + 0.15)
+						animation.play("combo fist",blend,melee_atk_speed + 0.15)
 						moveDuringAnimation(2.5)
 					else:
 						base_atk_duration = true	
@@ -613,16 +614,16 @@ func skills(slot)-> void:
 					is_in_combat = true
 					if hold_to_base_atk == true:
 						match weapon_type:
-							autoload.weapon_type_list.sword:
+							autoload.weapon_list.sword:
 								animation.play("sword hold",blend,melee_atk_speed)
 								moveDuringAnimation(2.5)
-							autoload.weapon_type_list.sword_shield:
+							autoload.weapon_list.sword_shield:
 								animation.play("sword hold",blend,melee_atk_speed)
 								moveDuringAnimation(2.5)
-							autoload.weapon_type_list.dual_swords:
+							autoload.weapon_list.dual_swords:
 								animation.play("dual hold",blend,melee_atk_speed+ 0.3)
 								moveDuringAnimation(2.7)
-							autoload.weapon_type_list.heavy:
+							autoload.weapon_list.heavy:
 								animation.play("heavy hold",blend,melee_atk_speed)
 								moveDuringAnimation(1.75)
 					else:
@@ -637,7 +638,7 @@ func skills(slot)-> void:
 						can_walk = false
 						is_in_combat = true
 						resolve -= 1 * get_physics_process_delta_time()
-						if weapon_type == autoload.weapon_type_list.dual_swords:
+						if weapon_type == autoload.weapon_list.dual_swords:
 							animation.play("dual block",blend)
 						else:
 							animation.play("sword block",blend)
@@ -654,7 +655,7 @@ func skills(slot)-> void:
 						returnToIdleBasedOnWeaponType()
 #bow 
 				elif slot.texture.resource_path == autoload.quick_shot.get_path():
-					if weapon_type == autoload.weapon_type_list.bow:
+					if weapon_type == autoload.weapon_list.bow:
 						is_aiming = true
 						can_walk = false
 						current_race_gender.can_move = false
@@ -673,7 +674,7 @@ func skills(slot)-> void:
 						if overhead_icon.points >0:
 							if all_skills.can_overhead_slash == true:
 								if resolve > all_skills.overhead_slash_cost:
-									if weapon_type != autoload.weapon_type_list.fist:
+									if weapon_type != autoload.weapon_list.fist:
 										is_in_combat = true
 										overhead_slash_duration = true
 										animationCancelException(overhead_slash_duration)
@@ -747,7 +748,7 @@ func skills(slot)-> void:
 						if rising_icon.points >0:
 							if all_skills.can_rising_slash == true:
 								if resolve > all_skills.rising_slash_cost:
-									if weapon_type != autoload.weapon_type_list.fist:
+									if weapon_type != autoload.weapon_list.fist:
 										is_in_combat = true
 										rising_slash_duration = true
 										animationCancelException(rising_slash_duration)
@@ -786,7 +787,7 @@ func skills(slot)-> void:
 						if cyclone_icon.points >0 :
 							if all_skills.can_cyclone == true:
 								if resolve > all_skills.cyclone_cost:
-									if weapon_type != autoload.weapon_type_list.fist:
+									if weapon_type != autoload.weapon_list.fist:
 										cyclone_duration = true
 										animationCancelException(cyclone_duration)
 										if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
@@ -822,7 +823,7 @@ func skills(slot)-> void:
 						if whirlwind_icon.points >0 :
 							if all_skills.can_whirlwind == true:
 								if resolve > all_skills.whirlwind_cost:
-									if weapon_type != autoload.weapon_type_list.fist:
+									if weapon_type != autoload.weapon_list.fist:
 										whirlwind_duration = true
 										animationCancelException(whirlwind_duration)
 										if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
@@ -858,7 +859,7 @@ func skills(slot)-> void:
 						if heart_trust_icon.points >0 :
 							if all_skills.can_heart_trust == true:
 								if resolve > all_skills.heart_trust_cost:
-									if weapon_type != autoload.weapon_type_list.fist:
+									if weapon_type != autoload.weapon_list.fist:
 										heart_trust_duration = true
 										animationCancelException(heart_trust_duration)
 										if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
@@ -891,7 +892,7 @@ func skills(slot)-> void:
 
 #ranged bow skills
 				elif slot.texture.resource_path == autoload.full_draw.get_path():
-					if weapon_type == autoload.weapon_type_list.bow:
+					if weapon_type == autoload.weapon_list.bow:
 						is_aiming = true
 						can_walk = false
 						current_race_gender.can_move = false
@@ -988,15 +989,15 @@ func SkillQueueSystem()-> void:
 			skills(slot)
 func returnToIdleBasedOnWeaponType():
 	match weapon_type:
-			autoload.weapon_type_list.fist:
+			autoload.weapon_list.fist:
 				animation.play("idle",0.3)
-			autoload.weapon_type_list.sword:
+			autoload.weapon_list.sword:
 				animation.play("idle sword",0.3)
-			autoload.weapon_type_list.dual_swords:
+			autoload.weapon_list.dual_swords:
 				animation.play("idle sword",0.3)
-			autoload.weapon_type_list.bow:
+			autoload.weapon_list.bow:
 				animation.play("idle bow",0.3)
-			autoload.weapon_type_list.heavy:
+			autoload.weapon_list.heavy:
 				animation.play("idle heavy",0.3)
 func moveDuringAnimation(speed):
 	if !is_on_wall():
@@ -1736,7 +1737,8 @@ func skillUserInterfaceInputs():
 		saveGame()
 	elif Input.is_action_just_pressed("tab"):
 		is_in_combat = !is_in_combat
-
+		switchMainFromHipToHand()
+		switchSecondaryFromHipToHand()
 		saveGame()
 	elif Input.is_action_just_pressed("mousemode") or Input.is_action_just_pressed("ui_cancel"):	# Toggle mouse mode
 		saveGame()
@@ -2371,14 +2373,15 @@ func _on_GiveMeItems_pressed():
 	autoload.addNotStackableItem(inventory_grid,autoload.wood_sword)
 	autoload.addNotStackableItem(inventory_grid,autoload.garment1)
 	autoload.addNotStackableItem(inventory_grid,autoload.shoe1)
+	autoload.addNotStackableItem(inventory_grid,autoload.staff1)
 	autoload.addNotStackableItem(inventory_grid,autoload.torso_armor4)
 	autoload.addNotStackableItem(inventory_grid,autoload.torso_armor2)
 	autoload.addNotStackableItem(inventory_grid,autoload.torso_armor3)
-
-	autoload.addNotStackableItem(inventory_grid,autoload.axe_png)
-	autoload.addNotStackableItem(inventory_grid,autoload.pickaxe_png)
-	autoload.addNotStackableItem(inventory_grid,autoload.waraxe_png)
-	autoload.addNotStackableItem(inventory_grid,autoload.shield_wood_png)
+	autoload.addNotStackableItem(inventory_grid,autoload.shoulder1)
+	autoload.addNotStackableItem(inventory_grid,autoload.shoulder1)
+	autoload.addNotStackableItem(inventory_grid,autoload.bow0)
+	autoload.addNotStackableItem(inventory_grid,autoload.heavy_sword0)
+	autoload.addNotStackableItem(inventory_grid,autoload.shield0)
 	
 	
 #_____________________________________Currency______________________________________________________
@@ -2478,113 +2481,273 @@ func positionCoordinates():
 
 #__________________________________Equipment Management____________________________
 
-####################################################################################################
-
-
-
-#Equipment 2D___________________________________________________________________
-var weapon_type = autoload.weapon_type_list.fist
-var main_weapon = autoload.main_weap_list.zero
-var sec_weapon = autoload.sec_weap_list.zero
-var head = "naked"
-var torso = "naked"
-var legs = "naked"
-var hand_l = "naked"
-var hand_r = "naked"
-var foot_l = "naked"
-var foot_r = "naked"
-
-onready var main_weap_icon =$UI/GUI/Equipment/EquipmentBG/MainWeap/Icon
-onready var sec_weap_icon = $UI/GUI/Equipment/EquipmentBG/SecWeap/Icon
-onready var sec_wea_slot = $UI/GUI/Equipment/EquipmentBG/SecWeap
-onready var legs_icon = $UI/GUI/Equipment/EquipmentBG/Pants/Icon
-onready var helm_icon = $UI/GUI/Equipment/EquipmentBG/Helm/Icon
-onready var hand_l_icon = $UI/GUI/Equipment/EquipmentBG/GloveL/Icon
-onready var hand_r_icon = $UI/GUI/Equipment/EquipmentBG/GloveR/Icon
-onready var chest_icon = $UI/GUI/Equipment/EquipmentBG/BreastPlate/Icon
-onready var foot_r_icon = $UI/GUI/Equipment/EquipmentBG/ShoeR/Icon
-onready var foot_l_icon = $UI/GUI/Equipment/EquipmentBG/ShoeL/Iconvar 
-onready var glove_icon = $UI/GUI/Equipment/EquipmentBG/GloveR/Icon
-onready var glove_l_icon = $UI/GUI/Equipment/EquipmentBG/GloveL/Icon
-func SwitchEquipmentBasedOnEquipmentIcons():
-
-#main weapon____________________________________________________________________
-	if sec_weap_icon.texture == null:
-		sec_weapon = autoload.sec_weap_list.zero
-	if main_weap_icon != null:
-		if main_weap_icon.texture == null:
-			sec_wea_slot.visible = true
-			main_weapon = autoload.main_weap_list.zero
-			applyEffect("sword0", false)
-			weapon_type = autoload.weapon_type_list.fist
+#Main Weapon____________________________________________________________________
+var right_hand:Spatial = null 
+var right_hip :Spatial = null 
+onready var detector = $Mesh/Detector
+onready var main_weap_slot = $UI/GUI/Equipment/EquipmentBG/MainWeap
+onready var main_weap_icon = $UI/GUI/Equipment/EquipmentBG/MainWeap/Icon
+var current_weapon_instance: Node = null  
+var main_weapon = "null"
+var got_weapon = false
+var got_two_handed_weapon:bool = false
+var sheet_weapon:bool = false
+var is_primary_weapon_on_hip:bool = false
+var is_chopping_trees:bool = false
+func switchMainFromHipToHand():
+	if is_instance_valid(current_weapon_instance):
+		if right_hand != null:
+			if right_hip != null and current_weapon_instance != null:
+				if is_in_combat or is_chopping_trees:
+					if right_hand.get_child_count() == 0:
+						if current_weapon_instance != null:
+							if current_weapon_instance.get_parent() == right_hip:
+								right_hip.remove_child(current_weapon_instance)
+								right_hand.add_child(current_weapon_instance)
+								is_primary_weapon_on_hip = false
+				else:
+						if right_hip.get_child_count() == 0:
+							if current_weapon_instance != null:
+								if current_weapon_instance.get_parent() == right_hand:
+										right_hand.remove_child(current_weapon_instance)
+										right_hip.add_child(current_weapon_instance)
+func switchSecondaryFromHipToHand():
+	if is_instance_valid(sec_current_weapon_instance):
+		if is_in_combat:
+			if left_hand and left_hand.get_child_count() == 0:
+				if sec_current_weapon_instance != null and sec_current_weapon_instance.get_parent() == left_hip:
+					left_hip.remove_child(sec_current_weapon_instance)
+					left_hand.add_child(sec_current_weapon_instance)
+					is_secondary_weapon_on_hip = false 
 		else:
+			if left_hip and left_hip.get_child_count() == 0:
+				if sec_current_weapon_instance != null and sec_current_weapon_instance.get_parent() == left_hand:
+					left_hand.remove_child(sec_current_weapon_instance)
+					left_hip.add_child(sec_current_weapon_instance)
+					is_secondary_weapon_on_hip = true
+					if weapon_type == autoload.weapon_list.bow:
+						left_hip.hide()
+					else:
+						left_hip.show()
+func addItemToCharacterSheet(icon,slot,texture):
+	if icon.texture == null:
+		icon.texture = texture
+		slot.quantity = 1
+		icon.savedata()
+
+func fixInstance():
+	if right_hand:
+		right_hand.add_child(current_weapon_instance)
+		current_weapon_instance.get_node("CollisionShape").disabled = true
+		#current_weapon_instance.scale = Vector3(100, 100, 100)
+		got_weapon = true
+func switchWeapon():
+	match main_weapon:
+		"sword0":
+			if current_weapon_instance == null:
+				current_weapon_instance = autoload.sword_scene0.instance()
+				fixInstance()
+				addItemToCharacterSheet(main_weap_icon,main_weap_slot,autoload.wood_sword)
+		"heavy0":
+			if current_weapon_instance == null:
+				current_weapon_instance = autoload.heavy_scene0.instance()
+				fixInstance()
+				addItemToCharacterSheet(main_weap_icon,main_weap_slot,autoload.heavy_sword0)
+		"null":
+			current_weapon_instance = null
+			got_weapon = false
+func removeWeapon():
+	if got_weapon:
+		right_hand.remove_child(current_weapon_instance)
+		right_hip.remove_child(current_weapon_instance)
+		got_weapon = false
+		got_two_handed_weapon = false
+func drop():
+	if current_weapon_instance != null and Input.is_action_just_pressed("drop") and got_weapon:
+		removeWeapon()
+		right_hip.remove_child(current_weapon_instance)
+		var drop_position = global_transform.origin + direction.normalized() * 1.0# Set the drop position
+		current_weapon_instance.global_transform.origin = Vector3(drop_position.x - rand_range(0.3, 3), global_transform.origin.y + 0.2, drop_position.z + rand_range(1, 2))
+		current_weapon_instance.scale = Vector3(1, 1, 1)# Set the scale of the dropped instance
+		var collision_shape = current_weapon_instance.get_node("CollisionShape")
+		if collision_shape != null:
+			collision_shape.disabled = false
+		get_tree().root.add_child(current_weapon_instance)
+		main_weapon = "null"# Reset variables
+		current_weapon_instance = null
+		got_weapon = false
+		main_weap_slot.item = "null"
+		main_weap_icon.texture = null
+
+func pickItemsMainHand():
+	var bodies = $Mesh/Detector.get_overlapping_bodies()
+	for body in bodies:
+		if Input.is_action_pressed("collect"):
+			if current_weapon_instance == null:
+				if body.is_in_group("sword0") and not got_weapon:
+					main_weapon = "sword0"
+					got_weapon = true 
+					body.queue_free()  # Remove the picked-up item from the floor
+				elif body.is_in_group("heavy0") and not got_weapon:
+					main_weapon = "heavy0"
+					got_weapon = true
+					got_two_handed_weapon = true
+					body.queue_free()  # Remove the picked-up item from the floor
+				elif body.is_in_group("sword3") and not got_weapon:
+					body.queue_free()  # Remove the picked-up item from the floor
+				elif body.is_in_group("bow") and not got_sec_weapon:
+					secondary_weapon = "bow"
+					got_sec_weapon = true  # Set the flag to prevent picking up multiple items simultaneously
+					body.queue_free()  # Remove the picked-up item from the floor
+			elif current_weapon_instance != null and sec_current_weapon_instance == null:
+				if body.is_in_group("sword0") and not got_sec_weapon and got_weapon:
+					got_sec_weapon = true 
+					secondary_weapon = "sword0"
+					body.queue_free()  # Remove the picked-up item from the floor
+				elif body.is_in_group("sword1") and not got_sec_weapon:
+					secondary_weapon = "sword1"
+					got_sec_weapon = true  # Set the flag to prevent picking up multiple items simultaneously
+					body.queue_free()  # Remove the picked-up item from the floor
+				elif body.is_in_group("sword3") and not got_sec_weapon:
+					secondary_weapon = "sword1"
+					got_sec_weapon = true 
+					body.queue_free() 
+func MainWeapon():
+	switchMainFromHipToHand()
+	pickItemsMainHand()
+	switchWeapon()
+	if Input.is_action_just_pressed("drop"):
+		drop()
+		main_weapon = "null"
+#Secondary__________________________________________________________________________________________
+var left_hand:Node=  null 
+var left_hip: Node = null 
+onready var sec_weap_slot = $UI/GUI/Equipment/EquipmentBG/SecWeap
+onready var sec_weap_icon = $UI/GUI/Equipment/EquipmentBG/SecWeap/Icon
+var sec_current_weapon_instance: Node = null  
+
+var secondary_weapon: String = "null"
+var tertiary_weapon: String = "null"
+var tertiary_weapon_type  =  autoload.tertiary_list.empty
+var got_sec_weapon = false
+var is_secondary_weapon_on_hip = false 
+
+
+
+func fixSecInstance():
+	if left_hand:
+		left_hand.add_child(sec_current_weapon_instance)
+		sec_current_weapon_instance.get_node("CollisionShape").disabled = true
+		#sec_current_weapon_instance.scale = Vector3(100, 100, 100)
+		got_sec_weapon = true
+func switchSec():
+	match secondary_weapon:
+		"sword0":
+			if sec_current_weapon_instance == null:
+				sec_current_weapon_instance = autoload.sword_scene0.instance()
+				fixSecInstance()
+				addItemToCharacterSheet(sec_weap_icon,sec_weap_slot,autoload.wood_sword)
+		"bow":
+			if sec_current_weapon_instance == null:
+				sec_current_weapon_instance = autoload.bow_scene0.instance()
+				fixSecInstance()
+				addItemToCharacterSheet(sec_weap_icon,sec_weap_slot,autoload.bow)
+		"null":
+			sec_current_weapon_instance = null
+			got_sec_weapon = false
+
+func dropSec():
+	if sec_current_weapon_instance != null and Input.is_action_just_pressed("drop") and got_sec_weapon:
+		left_hand.remove_child(sec_current_weapon_instance)
+		left_hip.remove_child(sec_current_weapon_instance)
+		# Set the drop position
+		var drop_position = global_transform.origin + direction.normalized() * 1.0
+		sec_current_weapon_instance.global_transform.origin = Vector3(drop_position.x - rand_range(0, 3), global_transform.origin.y + 0.2, drop_position.z + rand_range(1, 3))
+		# Set the scale of the dropped instance
+		sec_current_weapon_instance.scale = Vector3(1, 1, 1)
+		var collision_shape = sec_current_weapon_instance.get_node("CollisionShape")
+		if collision_shape != null:
+			collision_shape.disabled = false
+		get_tree().root.add_child(sec_current_weapon_instance)
+		# Reset variables
+		secondary_weapon = "null"
+		got_sec_weapon = false
+		sec_current_weapon_instance = null
+		sec_weap_icon.texture = null
+		sec_weap_slot.item = "null"
+func SecWeapon():
+	switchSecondaryFromHipToHand()
+	switchSec()
+	if Input.is_action_just_pressed("drop"):
+		dropSec()
+		secondary_weapon = "null"
+		got_sec_weapon = false
+		sec_current_weapon_instance = null
+		
+func removeSecWeapon():
+	if got_sec_weapon:
+		left_hand.remove_child(sec_current_weapon_instance)
+		left_hip.remove_child(sec_current_weapon_instance)
+		got_sec_weapon = false
+
+func removeTertiaryWeap():
+	current_race_gender.equipArmor(autoload.shield_null,"shield")
+#Equipment 2D___________________________________________________________________
+var weapon_type = autoload.weapon_list.fist
+func SwitchEquipmentBasedOnEquipmentIcons():
+#main weapon____________________________________________________________________
+	if main_weap_icon != null:
+		main_weap_icon.savedata()
+		if main_weap_icon.texture != null:
 			if main_weap_icon.texture.get_path() == autoload.wood_sword.get_path():
-				sec_wea_slot.visible = true
-				main_weapon = autoload.main_weap_list.sword_beginner
+				main_weapon = "sword0"
+				got_two_handed_weapon = false
 				applyEffect("sword0", true)
 				if sec_weap_icon.texture == null:
-					sec_weapon = autoload.sec_weap_list.zero
-					weapon_type = autoload.weapon_type_list.sword
-			
-			elif main_weap_icon.texture.get_path() == autoload.axe_png.get_path():
-				sec_wea_slot.visible = true
-				main_weapon = autoload.main_weap_list.axe_beginner
-				if sec_weap_icon.texture == null:
-					sec_weapon = autoload.sec_weap_list.zero
-					weapon_type = autoload.weapon_type_list.sword
-				
-			elif main_weap_icon.texture.get_path() == autoload.pickaxe_png.get_path():
-				sec_wea_slot.visible = true
-				main_weapon = autoload.main_weap_list.pick_beginner
-				if sec_weap_icon.texture == null:
-					sec_weapon = autoload.sec_weap_list.zero
-					weapon_type = autoload.weapon_type_list.sword
-					
-			elif main_weap_icon.texture.get_path() == autoload.waraxe_png.get_path():
-					main_weapon =  autoload.main_weap_list.waraxe_beginner
-					weapon_type = autoload.weapon_type_list.heavy
-					sec_weapon = autoload.sec_weap_list.zero
-					sec_wea_slot.visible = false
-		
-			else:
-				sec_wea_slot.visible = true
-				main_weapon = autoload.main_weap_list.zero
-				sec_weapon = autoload.sec_weap_list.zero
-				applyEffect("sword0", false)
-				weapon_type = autoload.weapon_type_list.fist
-				
-			
-			
+					weapon_type = autoload.weapon_list.sword
+			elif main_weap_icon.texture.get_path() == autoload.heavy_sword0.get_path():
+				got_two_handed_weapon = true
+				removeSecWeapon()
+				removeTertiaryWeap()
+				main_weapon = "heavy0"
+				weapon_type = autoload.weapon_list.heavy
+		else:
+			removeWeapon()
+			main_weapon = "null"
+			applyEffect("sword0", false)
+			weapon_type = autoload.weapon_list.fist
 #sec weapon_____________________________________________________________________
-			if sec_weap_icon == null:
-				sec_weapon = autoload.sec_weap_list.zero
+	#Before adding a secondary weapon in the left hand check if the right hand is not empty handed
+	if main_weap_icon.texture != null:
+		if sec_weap_icon != null:
+			if got_two_handed_weapon == false:
+				if sec_weap_icon.texture != null:
+					if sec_weap_icon.texture.get_path() == autoload.wood_sword.get_path():
+						secondary_weapon = "sword0"
+						weapon_type = autoload.weapon_list.dual_swords
+				elif sec_weap_icon.texture == null:
+					removeSecWeapon()
+					secondary_weapon = "null"
 			else:
-				if sec_wea_slot.visible == false:
-					sec_weapon = autoload.sec_weap_list.zero
-				else:
+				removeSecWeapon()
+				secondary_weapon = "null"
+#shield_________________________________________________________________________
+	var tertiary_weapon_icon = $UI/GUI/Equipment/EquipmentBG/ThirdWeap/Icon
+	if tertiary_weapon_icon != null:
+		if got_two_handed_weapon == false:
+			if tertiary_weapon_icon.texture != null:
+				if tertiary_weapon_icon.texture.get_path() == autoload.shield0.get_path():
 					if sec_weap_icon.texture == null:
-						sec_weapon = autoload.sec_weap_list.zero
-					else:
-						if sec_weap_icon.texture.get_path() == autoload.wood_sword.get_path():
-							sec_weapon = autoload.sec_weap_list.sword_beginner
-							weapon_type = autoload.weapon_type_list.dual_swords
-					
-						elif sec_weap_icon.texture.get_path() == autoload.shield_wood_png.get_path():
-							sec_weapon = autoload.sec_weap_list.shield_beginner
-							weapon_type = autoload.weapon_type_list.sword_shield
-						
-						elif sec_weap_icon.texture.get_path() == autoload.axe_png.get_path():
-							sec_weapon = autoload.sec_weap_list.axe_beginner
-							weapon_type = autoload.weapon_type_list.dual_swords
-						
-						elif sec_weap_icon.texture.get_path() == autoload.pickaxe_png.get_path():
-							sec_weapon = autoload.sec_weap_list.pick_beginner
-							weapon_type = autoload.weapon_type_list.dual_swords
-						else:
-							sec_weapon = autoload.sec_weap_list.zero
-
-
+						tertiary_weapon = "shield0"
+						weapon_type = autoload.weapon_list.sword_shield
+						removeSecWeapon()
+			elif tertiary_weapon_icon.texture == null:
+				tertiary_weapon = "null"
+		else:
+			removeSecWeapon()
+			tertiary_weapon = "null"
 #head___________________________________________________________________________
+	var helm_icon = $UI/GUI/Equipment/EquipmentBG/Helm/Icon
 	if helm_icon != null:
 		if helm_icon.texture != null:
 			if helm_icon.texture.get_path() == autoload.hat1.get_path():
@@ -2594,7 +2757,7 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 			head = "naked"
 			applyEffect("helm1", false)
 #_______________________________chest___________________________________________
-
+	var chest_icon = $UI/GUI/Equipment/EquipmentBG/BreastPlate/Icon
 	if chest_icon != null: #check if the icon and texture are null just to avoid crashes
 		if chest_icon.texture != null:
 			#the singleton Global.gd holds the preloads paths to various textures, match them to the specific armor icon
@@ -2608,9 +2771,16 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 				torso = "cuirass0"
 		elif chest_icon.texture == null:
 			torso = "naked"
-
+#_______________________________belt___________________________________________
+	var belt_icon = $UI/GUI/Equipment/EquipmentBG/Belt/Icon
+	if belt_icon != null:
+		if belt_icon.texture != null:
+			if belt_icon.texture.get_path() == autoload.belt1.get_path():
+				belt = "belt1"
+		elif belt_icon.texture == null:
+			belt = "naked"
 #_______________________________legs____________________________________________
-	
+	var legs_icon = $UI/GUI/Equipment/EquipmentBG/Pants/Icon
 	if legs_icon != null:
 		if legs_icon.texture != null:
 			if legs_icon.texture.get_path() == autoload.pants1.get_path():
@@ -2618,13 +2788,14 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 		elif legs_icon.texture == null:
 			legs = "naked"
 #_______________________________hands___________________________________________
+	var hand_l_icon = $UI/GUI/Equipment/EquipmentBG/GloveL/Icon
 	if hand_l_icon != null:
 		if hand_l_icon.texture != null:
 			if hand_l_icon.texture.get_path() == autoload.glove1.get_path():
 				hand_l = "cloth1"
 		elif hand_l_icon.texture == null:
 			hand_l = "naked"
-
+	var hand_r_icon = $UI/GUI/Equipment/EquipmentBG/GloveR/Icon
 	if hand_r_icon != null:
 		if hand_r_icon.texture != null:
 			if hand_r_icon.texture.get_path() == autoload.glove1.get_path():
@@ -2633,7 +2804,7 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 			hand_r = "naked"
 
 #_______________________________feet____________________________________________
-	
+	var foot_r_icon = $UI/GUI/Equipment/EquipmentBG/ShoeR/Icon
 	if foot_r_icon != null:
 		if  foot_r_icon.texture != null:
 			if  foot_r_icon.texture.get_path() == autoload.shoe1.get_path():
@@ -2641,7 +2812,7 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 		elif foot_r_icon.texture == null:
 			foot_r = "naked"
 			
-	
+	var foot_l_icon = $UI/GUI/Equipment/EquipmentBG/ShoeL/Icon
 	if foot_l_icon != null:
 		if  foot_l_icon.texture != null:
 			if  foot_l_icon.texture.get_path() == autoload.shoe1.get_path():
@@ -2650,7 +2821,8 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 			foot_l = "naked"
 
 
-	
+	var glove_icon = $UI/GUI/Equipment/EquipmentBG/GloveR/Icon
+	var glove_l_icon = $UI/GUI/Equipment/EquipmentBG/GloveL/Icon
 	$UI/GUI/Equipment/EquipmentBG/SecWeap/Icon.savedata()
 	helm_icon.savedata()
 	chest_icon.savedata()
@@ -2659,11 +2831,18 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 	legs_icon.savedata()
 	foot_l_icon.savedata()
 	foot_r_icon.savedata()
-	main_weap_icon.savedata()
-
-
-
-
+	$UI/GUI/Equipment/EquipmentBG/Belt/Icon.savedata()
+	$UI/GUI/Equipment/EquipmentBG/ThirdWeap/Icon.savedata()
+	
+#_____________________________________Equipment 3D______________________________
+var head = "naked"
+var torso = "naked"
+var belt = "naked"
+var legs = "naked"
+var hand_l = "naked"
+var hand_r = "naked"
+var foot_l = "naked"
+var foot_r = "naked"
 #___________________________________________________________________________________________________
 #___________________________________Status effects______________________________
 # Define effects and their corresponding stat changes
@@ -5092,6 +5271,8 @@ var sex: String = "xx"
 var current_race_gender: Node = null 
 
 func switchSexRace():
+	main_weapon = "null"
+	secondary_weapon = "null"
 	match sex:
 		"xy":
 			match species:
@@ -5186,6 +5367,10 @@ func switchSexRace():
 					raceInstacePreparations()
 					InstanceRace()
 	if is_instance_valid(current_race_gender):
+		right_hand = current_race_gender.right_hand
+		left_hand = current_race_gender.left_hand
+		right_hip = current_race_gender.left_hip
+		left_hip = current_race_gender.right_hip
 		var current_face_set = current_race_gender.face_set
 func raceInstacePreparations():
 	current_race_gender.player = self 
@@ -5312,3 +5497,5 @@ func experienceSystem():
 # Calculate the percentage of experience points
 	var percentage: float = (float(experience_points) / float(experience_to_next_level)) * 100.0
 	exper_label.text = "Level " + str(level) + "\nXP: " + str(experience_points) + "/" + str(experience_to_next_level) + " (" + str(round((percentage* 1)/1)) + "%)"
+
+

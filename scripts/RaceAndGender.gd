@@ -3,16 +3,12 @@ extends Spatial
 var player 
 onready var animation:AnimationPlayer = $AnimationPlayer
 #onready var animation_tree:AnimationTree = $AnimationTree
-onready var left_hand = $Armature/Skeleton/LeftHand/Holder
-onready var right_hand = $Armature/Skeleton/RightHand/Holder
-onready var right_hip = $Armature/Skeleton/RightHip/holder
-onready var left_hip = $Armature/Skeleton/LeftHip/holder
 onready var left_eye = $Armature/Skeleton/IrisL
 onready var right_eye = $Armature/Skeleton/IrisR
 
+
+
 func _ready():
-	$Armature/Skeleton/RightHand/Holder/Weapon.queue_free()#testing sword, delete it on game start
-	$Armature/Skeleton/LeftHand/Holder/sword.queue_free()#testing sword, delete it on game start
 	player.animation = $AnimationPlayer
 	loadPlayerData()
 	switchSkin()
@@ -63,7 +59,7 @@ func loadAnimations()->void:
 	animation.add_animation("heavy click2", load("res://player/universal animations/Animations Sword Heavy/heavy click2.anim"))
 	
 	#L-click animations
-	animation.add_animation("combo fist", load("res://player/universal animations/Animations Fist/combo fist.tres"))
+	animation.add_animation("fist hold", load("res://player/universal animations/Animations Fist/combo fist.tres"))
 	animation.add_animation("shoot", load("res://player/universal animations/Animations Bow/shoot.anim"))
 	animation.add_animation("sword hold", load("res://player/universal animations/Animations Sword Light/sword hold.anim"))
 	animation.add_animation("dual hold", load("res://player/universal animations/Animations Sword Dual Wield/dual hold.anim"))
@@ -163,11 +159,41 @@ func switchEquipment()->void:
 							equipArmor(autoload.human_xx_pants_1,"Legs")
 						"gambeson":
 							equipArmor(autoload.human_xx_legs_gambeson_0,"Legs")
-					match player.tertiary_weapon:
-						"null":
-							equipArmor(autoload.shield_null,"shield")
-						"shield0":
-							equipArmor(autoload.shield_scene0,"shield")
+					match player.main_weapon:
+						autoload.main_weap_list.zero:
+							equipArmor(autoload.null_main,"main")
+							
+						autoload.main_weap_list.pick_beginner:
+							equipArmor(autoload.pickaxe_beginner_main,"main")
+							
+						autoload.main_weap_list.axe_beginner:
+							equipArmor(autoload.axe_beginner_main,"main")
+							
+						autoload.main_weap_list.sword_beginner:
+							equipArmor(autoload.sword_beginner_main,"main")
+							
+						autoload.main_weap_list.waraxe_beginner:
+							equipArmor(autoload.waraxe_beginner,"main")
+							
+							
+					match player.sec_weapon:
+						autoload.sec_weap_list.zero:
+							equipArmor(autoload.null_sec,"secondary")
+							
+						autoload.sec_weap_list.pick_beginner:
+							equipArmor(autoload.pickaxe_beginner_sec,"secondary")
+							
+						autoload.sec_weap_list.axe_beginner:
+							equipArmor(autoload.axe_beginner_sec,"secondary")
+							
+						autoload.sec_weap_list.sword_beginner:
+							equipArmor(autoload.sword_beginner_sec,"secondary")
+							
+						autoload.sec_weap_list.shield_beginner:
+							equipArmor(autoload.shield_beginner_sec,"secondary")
+				
+
+							
 					match player.hairstyle:
 						"1":
 							equipArmor(autoload.HXX_hair1,"hair")
@@ -388,11 +414,10 @@ func punch()->void:#fist
 				if victim.state != autoload.state_list.dead:
 					player.pushEnemyAway(push_distance, victim,0.25)
 		dealDMG(victim,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,player.stagger_chance)
-#Melee Functions to call in the AnimationPlayer
-#Heavy sword
+
 
 onready var area_melee_front:Area = $MeleeFront
-func ComboHeavy1()->void:#Heavy
+func baseAtktHit()->void:#Heavy
 	var damage_type:String = player.base_dmg_type
 	var damage:float = player.total_dmg * 1.5
 	var damage_flank:float = damage + player.flank_dmg 
@@ -400,7 +425,6 @@ func ComboHeavy1()->void:#Heavy
 	var critical_flank_damage : float  = damage_flank * player.critical_strength
 	#extra damage when the victim is trying to block but is facing the wrong way 
 	var punishment_damage : float = 7 
-	var punishment_damage_type :String = "slash"
 	var aggro_power:float = player.threat_power
 	var push_distance:float = 0.25 * player.total_impact
 	var enemies:Array = area_melee_front.get_overlapping_bodies()
@@ -409,73 +433,18 @@ func ComboHeavy1()->void:#Heavy
 			if victim != self:
 				if victim.state != autoload.state_list.dead:
 					player.pushEnemyAway(push_distance, victim,0.25)
-		dealDMG(victim,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,player.stagger_chance)
-func ComboHeavy2()->void:#Heavy
-	var damage_type:String = player.base_dmg_type
-	var damage:float = player.total_dmg * 2
-	var damage_flank:float = damage + player.flank_dmg 
-	var critical_damage : float  = damage * player.critical_strength
-	var critical_flank_damage : float  = damage_flank * player.critical_strength
-	#extra damage when the victim is trying to block but is facing the wrong way 
-	var punishment_damage : float = 7 
-	var punishment_damage_type :String = "slash"
-	var aggro_power:float = player.threat_power
-	var push_distance:float = 0.15 * player.total_impact
-	var enemies:Array = area_melee_front.get_overlapping_bodies()
-	for victim in enemies:
-		if victim.is_in_group("enemy"):
-			if victim != self:
-				if victim.state != autoload.state_list.dead:
-					player.pushEnemyAway(push_distance, victim,0.25)
-		dealDMG(victim,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,player.stagger_chance)
-func ComboHeavy3()->void:#Heavy
-	var damage_type:String = player.base_dmg_type
-	var damage:float = player.total_dmg * 2.5
-	var damage_flank:float = damage + player.flank_dmg 
-	var critical_damage : float  = damage * player.critical_strength
-	var critical_flank_damage : float  = damage_flank * player.critical_strength
-	#extra damage when the victim is trying to block but is facing the wrong way 
-	var punishment_damage : float = 7 
-	var punishment_damage_type :String = "slash"
-	var aggro_power:float = player.threat_power
-	var push_distance:float = 0.05 * player.total_impact
-	var enemies:Array = area_melee_front.get_overlapping_bodies()
-	for victim in enemies:
-		if victim.is_in_group("enemy"):
-			if victim != self:
-				if victim.state != autoload.state_list.dead:
-					player.pushEnemyAway(push_distance, victim,0.25)
-		dealDMG(victim,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,player.stagger_chance)
-func ComboHeavy4()->void:#Heavy
+		dealDMG(victim,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,damage_type,damage,damage_flank,push_distance,player.stagger_chance)
+func baseAtkLastHit()->void:#Heavy
 	player.all_skills.activateComboCyclone()
 	player.all_skills.activateComboOverheadslash()
 	player.all_skills.activateComboWhirlwind()
 	var damage_type:String = player.base_dmg_type
-	var damage:float = player.total_dmg * 4
-	var damage_flank = damage + player.flank_dmg 
-	var critical_damage : float  = damage * player.critical_strength
-	var critical_flank_damage : float  = damage_flank * player.critical_strength
-	#extra damage when the victim is trying to block but is facing the wrong way 
-	var punishment_damage : float = 7 
-	var punishment_damage_type :String = "slash"
-	var aggro_power:float = player.threat_power
-	var push_distance:float = 1 * player.total_impact
-	var enemies:Array = area_melee_front.get_overlapping_bodies()
-	for victim in enemies:
-		if victim.is_in_group("enemy"):
-			if victim != self:
-				if victim.state != autoload.state_list.dead:
-					player.pushEnemyAway(push_distance, victim,0.25)
-		dealDMG(victim,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,player.stagger_chance)
-func ComboLight():
-	var damage_type:String = player.base_dmg_type
-	var damage:float = player.total_dmg * 1.1
+	var damage:float = player.total_dmg * 1.5
 	var damage_flank:float = damage + player.flank_dmg 
 	var critical_damage : float  = damage * player.critical_strength
 	var critical_flank_damage : float  = damage_flank * player.critical_strength
 	#extra damage when the victim is trying to block but is facing the wrong way 
 	var punishment_damage : float = 7 
-	var punishment_damage_type :String = "slash"
 	var aggro_power:float = player.threat_power
 	var push_distance:float = 0.25 * player.total_impact
 	var enemies:Array = area_melee_front.get_overlapping_bodies()
@@ -484,7 +453,8 @@ func ComboLight():
 			if victim != self:
 				if victim.state != autoload.state_list.dead:
 					player.pushEnemyAway(push_distance, victim,0.25)
-		dealDMG(victim,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,player.stagger_chance)
+		dealDMG(victim,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,damage_type,damage,damage_flank,push_distance,player.stagger_chance)
+
 
 
 #Cleave
