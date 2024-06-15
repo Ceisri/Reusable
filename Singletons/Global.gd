@@ -48,25 +48,6 @@ enum state_list{
 	skillB}
 
 
-
-
-enum weapon_list {
-	fist,
-	sword,
-	dual_swords,
-	bow,
-	cross_bow,
-	heavy,
-	sword_shield,
-	spear,
-	spear_shield,
-	staff,
-}
-enum tertiary_list{
-	shield,
-	boomerang,
-	empty
-}
 enum damage_type {
 	slash,
 	blunt,
@@ -199,60 +180,74 @@ var red_potion_texture = preload("res://Potions/Red potion.png")
 var berserk_texture = preload("res://Classes/Swordsmen/scream.png")
 
 
+#______________________________________EQUIPMENT SYSTEM_____________________________________________
+onready var wood_sword =  preload("res://0.png")
+
+onready var axe_png =  preload("res://WeaponIcons/axe.png")
+onready var pickaxe_png =  preload("res://WeaponIcons/picaxe.png")
+onready var waraxe_png =  preload("res://WeaponIcons/waraxe.png")
+onready var great_sword_beginner_png =  preload("res://WeaponIcons/greatsword placeholder.png")
+onready var shield_wood_png =  preload("res://WeaponIcons/shield.png")
+enum main_weap_list{
+	sword_beginner,
+	axe_beginner,
+	pick_beginner,
+	waraxe_beginner,
+	greatsword_beginner,
+	zero
+}
+onready var sword_beginner_main_scene: PackedScene = preload("res://WeaponScenes/RightHand/Swords/sword0.tscn")
+onready var sword_beginner_mainB_scene: PackedScene = preload("res://WeaponScenes/RightHand/Swords/sword0B.tscn")
 
 
+onready var axe_beginner_main_scene: PackedScene = preload("res://WeaponScenes/RightHand/Axes/Axe.tscn")
+onready var axe_beginner_mainB_scene: PackedScene = preload("res://WeaponScenes/RightHand/Axes/AxeB.tscn")
+
+onready var pickaxe_beginner_main_scene: PackedScene = preload("res://WeaponScenes/RightHand/Pickaxes/PickAxe.tscn")
+onready var pickaxe_beginner_mainB_scene: PackedScene = preload("res://WeaponScenes/RightHand/Pickaxes/PickAxeB.tscn")
+
+onready var waraxe_beginner_scene: PackedScene = preload("res://WeaponScenes/TwoHanded/Axes/Waraxe0.tscn")
+onready var waraxe_beginnerB_scene: PackedScene = preload("res://WeaponScenes/TwoHanded/Axes/Waraxe0Back.tscn")
+
+onready var greatsword_beginner_scene: PackedScene = preload("res://WeaponScenes/TwoHanded/Swords/greatsword0.tscn")
+onready var greatsword_beginnerB_scene: PackedScene = preload("res://WeaponScenes/TwoHanded/Swords/greatsword0B.tscn")
+
+onready var null_main: PackedScene = preload("res://WeaponScenes/RightHand/nullmain.tscn")
+#___________________________________________________________________________________________________
+
+enum sec_weap_list{
+	sword_beginner,
+	axe_beginner,
+	pick_beginner,
+	waraxe_beginner,
+	shield_beginner,
+	zero
+}
+onready var sword_beginner_sec_scene: PackedScene = preload("res://WeaponScenes/LeftHand/Swords/sword0.tscn")
+onready var sword_beginner_secB_scene: PackedScene = preload("res://WeaponScenes/LeftHand/Swords/sword0B.tscn")
 
 
+onready var shield_beginner_sec_scene: PackedScene = preload("res://WeaponScenes/LeftHand/Shields/shield0.tscn")
 
+onready var axe_beginner_sec_scene: PackedScene = preload("res://WeaponScenes/LeftHand/Axes/Axe.tscn")
+onready var axe_beginner_secB_scene: PackedScene = preload("res://WeaponScenes/LeftHand/Axes/AxeB.tscn")
 
+onready var pickaxe_beginner_sec_scene: PackedScene = preload("res://WeaponScenes/LeftHand/PickAxes/Pickaxe.tscn")
+onready var pickaxe_beginner_secB_scene: PackedScene = preload("res://WeaponScenes/LeftHand/PickAxes/PickaxeB.tscn")
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+onready var null_sec: PackedScene = load("res://WeaponScenes/LeftHand/Shields/shieldnull.tscn")
+enum weapon_type_list {
+	fist,
+	sword,
+	dual_swords,
+	bow,
+	cross_bow,
+	heavy,
+	sword_shield,
+	spear,
+	spear_shield,
+	staff,
+}
 
 
 
@@ -261,10 +256,7 @@ var berserk_texture = preload("res://Classes/Swordsmen/scream.png")
 
 
 #equipment 2D icons__________________________________________________________________________________________
-onready var wood_sword =  preload("res://0.png")
-onready var heavy_sword0 =  preload("res://Equipment icons/heavy weapons/heav_sword_0.png")
-onready var shield0 =  preload("res://Equipment icons/shields/shield.png")
-onready var bow0 =  preload("res://Equipment icons/bows/bow.png")
+
 
 
 onready var hat1 = preload("res://Equipment icons/hat1.png")
@@ -279,17 +271,14 @@ onready var torso_armor2 = preload("res://Equipment icons/torso2.png")
 onready var torso_armor3 = preload("res://Equipment icons/torso3.png")
 onready var torso_armor4 = preload("res://Equipment icons/torso4.png")
 
-onready var staff1 = preload("res://Equipment icons/staves/staff1.png")
 onready var shoulder1 = preload("res://Equipment icons/shouleder pads/shoulder plate metal.png")
 
 #______________________________________3D equipable items___________________________________________
 onready var shoulder_scene0: PackedScene = preload("res://Equipment/Shoulder pads/shoulder plate metal.glb")
-onready var shield_scene0: PackedScene =  preload("res://player/weapons/shields/test Shield.tscn")
-onready var shield_null: PackedScene =  preload("res://player/weapons/shields/inv Shield.tscn")
-onready var sword_scene0: PackedScene = preload("res://player/weapons/sword/sword.tscn")
-onready var heavy_scene0: PackedScene = preload("res://player/weapons/greatsword/greatsword.tscn")
-onready var bow_scene0: PackedScene = preload("res://player/weapons/bows/bow.tscn")
-onready var bow_null: PackedScene = preload("res://player/weapons/bows/bow invsible.tscn")
+
+
+
+
 #________________Armor and clothing 3Dscenes to instance as children of skeletons___________________
 #stored male armors
 onready var human_xy_naked_torso_0: PackedScene = preload("res://Equipment/Armors/Human_XY/Torso/Torso0.tscn")#save the mesh as a scene and make sure the skin property share's the same bone names as the skeleton
