@@ -21,8 +21,6 @@ func loadAnimations()->void:
 	animation.add_animation("dead", load("res://player/universal animations/Animations Idle General/dead.anim"))
 	animation.add_animation("idle", load("res://player/universal animations/Animations Idle General/idle.anim"))
 	animation.add_animation("staggered", load("res://player/universal animations/Animations Idle General/staggeredPlayer.anim"))
-	animation.add_animation("jump", load("res://player/universal animations/Animations Movement General/jump.anim"))
-	animation.add_animation("jump run", load("res://player/universal animations/Animations Movement General/jump run.anim"))
 	animation.add_animation("fall", load("res://player/universal animations/Animations Movement General/fall.anim"))
 	animation.add_animation("idle fist", load("res://player/universal animations/Animations Fist/idle fist.anim"))
 	animation.add_animation("idle bow", load("res://player/universal animations/Animations Bow/idle  bow.anim"))#placeholder
@@ -92,18 +90,24 @@ func loadAnimations()->void:
 func EquipmentSwitch()->void:
 	switchEquipment()
 	switchArmorTexture()
+	switchWeapon()
 
 onready var skeleton: Skeleton = $Armature/Skeleton
 func equipArmor(clothing_to_equip,clothing_type_to_delete:String)->void:
-	var clothing_to_equip_instance = clothing_to_equip.instance()
-	clothing_to_equip_instance.scale = Vector3(1,1,1) # just in case you can't see the clothing, it might have been resized due to how mixamo works change this between 0.01 to 1 or 100 to test 
-	for child in skeleton.get_children():
-		if child.is_in_group(clothing_type_to_delete):
-			child.queue_free() # this will delete all the armors that share the same group, use names like "Legs, Torso,Hands,Feet"
-		if child.is_in_group("hair"):
-			hair = child
-			player.colorBodyParts()
-	skeleton.add_child(clothing_to_equip_instance)
+	if clothing_to_equip == null:
+		print("Can't equip NULL")
+	if !is_instance_valid(clothing_to_equip):
+		print("Can't equip INVALID")
+	else:
+		var clothing_to_equip_instance = clothing_to_equip.instance()
+		clothing_to_equip_instance.scale = Vector3(1,1,1) # just in case you can't see the clothing, it might have been resized due to how mixamo works change this between 0.01 to 1 or 100 to test 
+		for child in skeleton.get_children():
+			if child.is_in_group(clothing_type_to_delete):
+				child.queue_free() # this will delete all the armors that share the same group, use names like "Legs, Torso,Hands,Feet"
+			if child.is_in_group("hair"):
+				hair = child
+				player.colorBodyParts()
+		skeleton.add_child(clothing_to_equip_instance)
 	
 onready var hair:MeshInstance
 func switchEquipment()->void:
@@ -159,40 +163,6 @@ func switchEquipment()->void:
 							equipArmor(autoload.human_xx_pants_1,"Legs")
 						"gambeson":
 							equipArmor(autoload.human_xx_legs_gambeson_0,"Legs")
-					match player.main_weapon:
-						autoload.main_weap_list.zero:
-							equipArmor(autoload.null_main,"main")
-							
-						autoload.main_weap_list.pick_beginner:
-							equipArmor(autoload.pickaxe_beginner_main,"main")
-							
-						autoload.main_weap_list.axe_beginner:
-							equipArmor(autoload.axe_beginner_main,"main")
-							
-						autoload.main_weap_list.sword_beginner:
-							equipArmor(autoload.sword_beginner_main,"main")
-							
-						autoload.main_weap_list.waraxe_beginner:
-							equipArmor(autoload.waraxe_beginner,"main")
-							
-							
-					match player.sec_weapon:
-						autoload.sec_weap_list.zero:
-							equipArmor(autoload.null_sec,"secondary")
-							
-						autoload.sec_weap_list.pick_beginner:
-							equipArmor(autoload.pickaxe_beginner_sec,"secondary")
-							
-						autoload.sec_weap_list.axe_beginner:
-							equipArmor(autoload.axe_beginner_sec,"secondary")
-							
-						autoload.sec_weap_list.sword_beginner:
-							equipArmor(autoload.sword_beginner_sec,"secondary")
-							
-						autoload.sec_weap_list.shield_beginner:
-							equipArmor(autoload.shield_beginner_sec,"secondary")
-				
-
 							
 					match player.hairstyle:
 						"1":
@@ -206,6 +176,68 @@ func switchEquipment()->void:
 						"5":
 							equipArmor(autoload.HXX_hair5,"hair")
 
+func switchWeapon()->void:
+		match player.main_weapon:
+			autoload.main_weap_list.zero:
+				equipArmor(autoload.null_main,"main")
+							
+			autoload.main_weap_list.pick_beginner:
+				if player.is_in_combat == true:
+					equipArmor(autoload.pickaxe_beginner_main_scene,"main")
+				else:
+					equipArmor(autoload.pickaxe_beginner_mainB_scene,"main")
+			autoload.main_weap_list.axe_beginner:
+				if player.is_in_combat == true:
+					equipArmor(autoload.axe_beginner_main_scene,"main")
+				else:
+					equipArmor(autoload.axe_beginner_mainB_scene,"main")
+							
+			autoload.main_weap_list.sword_beginner:
+				if player.is_in_combat == true:
+					equipArmor(autoload.sword_beginner_main_scene,"main")
+				else:
+					equipArmor(autoload.sword_beginner_mainB_scene,"main")
+					
+			autoload.main_weap_list.waraxe_beginner:
+				if player.is_in_combat == true:
+					equipArmor(autoload.waraxe_beginner_scene,"main")
+				else:
+					equipArmor(autoload.waraxe_beginnerB_scene,"main")
+					
+			autoload.main_weap_list.greatsword_beginner:
+				if player.is_in_combat == true:
+					equipArmor(autoload.greatsword_beginner_scene,"main")
+				else:
+					equipArmor(autoload.greatsword_beginnerB_scene,"main")
+							
+		
+		if player.main_weapon == autoload.weapon_type_list.heavy:
+				equipArmor(autoload.null_sec,"secondary")
+		else:
+			match player.sec_weapon:
+				autoload.sec_weap_list.zero:
+					equipArmor(autoload.null_sec,"secondary")
+				autoload.sec_weap_list.pick_beginner:
+					if player.is_in_combat == true:
+						equipArmor(autoload.pickaxe_beginner_sec_scene,"secondary")
+					else:
+						equipArmor(autoload.pickaxe_beginner_secB_scene,"secondary")
+								
+				autoload.sec_weap_list.axe_beginner:
+					if player.is_in_combat == true:
+						equipArmor(autoload.axe_beginner_sec_scene,"secondary")
+					else:
+						equipArmor(autoload.axe_beginner_secB_scene,"secondary")
+								
+				autoload.sec_weap_list.sword_beginner:
+					if player.is_in_combat == true:
+						equipArmor(autoload.sword_beginner_sec_scene,"secondary")
+					else:
+						equipArmor(autoload.sword_beginner_secB_scene,"secondary")
+								
+				autoload.sec_weap_list.shield_beginner:
+					equipArmor(autoload.shield_beginner_sec_scene,"secondary")
+				
 var face_set:String = "1"
 #______________________________Switch Colors____________________________________
 

@@ -13,7 +13,8 @@ var skill_tree = false
 
 
 func _physics_process(delta:float)->void:
-	displayQuantity()
+	if visible == true:
+		displayQuantity()
 
 
 

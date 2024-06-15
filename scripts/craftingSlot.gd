@@ -18,7 +18,7 @@ func _physics_process(delta):
 
 
 func slotFunctions():
-
+	if visible == true:
 		displayQuantity()
 
 

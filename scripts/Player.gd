@@ -229,7 +229,7 @@ func inputOrStateToAnimation()-> void:
 			if all_skills.can_overhead_slash == true:#GOTTA FIX THIS ANIMATION, THW FIRST ONE IS SHIT THE SECOND IS GLITCHY, THIS IS A CORE SKILL SO IT NEEDS FIXING ASAP
 				if resolve > all_skills.overhead_slash_cost:
 					directionToCamera()
-					is_in_combat = true
+					switchToCombatStance()
 					clearParryAbsorb()
 					moveDuringAnimation(4)
 					match weapon_type:
@@ -262,7 +262,7 @@ func inputOrStateToAnimation()-> void:
 	#Whirlwind__________________________________________________________________________________________
 		elif whirlwind_duration == true :
 			directionToCamera()
-			is_in_combat = true
+			switchToCombatStance()
 			clearParryAbsorb()
 			if all_skills.can_whirlwind == true:
 				if resolve > all_skills.whirlwind_cost:
@@ -289,7 +289,7 @@ func inputOrStateToAnimation()-> void:
 	#Rising slash____________________________________________________________________________________
 		elif rising_slash_duration == true:
 			directionToCamera()
-			is_in_combat = true
+			switchToCombatStance()
 			clearParryAbsorb()
 			moveDuringAnimation(6)
 			match weapon_type:
@@ -304,7 +304,7 @@ func inputOrStateToAnimation()-> void:
 	#Cyclone____________________________________________________________________________________________
 		elif cyclone_duration == true:
 			directionToCamera()
-			is_in_combat = true
+			switchToCombatStance()
 			clearParryAbsorb()
 			if all_skills.can_cyclone == true:
 				if resolve > all_skills.cyclone_cost:
@@ -340,7 +340,7 @@ func inputOrStateToAnimation()-> void:
 		elif heart_trust_duration == true:
 			animationCancelException(heart_trust_duration)
 			directionToCamera()
-			is_in_combat = true
+			switchToCombatStance()
 			clearParryAbsorb()
 			if all_skills.can_heart_trust == true:
 					match weapon_type:
@@ -364,7 +364,7 @@ func inputOrStateToAnimation()-> void:
 			animationCancelException(taunt_duration)
 			directionToCamera()
 			can_walk = false
-			is_in_combat = true
+			switchToCombatStance()
 			is_walking = false
 			clearParryAbsorb()
 			if weapon_type == autoload.weapon_type_list.heavy:
@@ -440,7 +440,7 @@ func inputOrStateToAnimation()-> void:
 						can_walk = true
 					autoload.state_list.base_attack:
 						directionToCamera()
-						is_in_combat = true
+						switchToCombatStance()
 						if weapon_type == autoload.weapon_type_list.bow:
 							can_walk = false
 						else:
@@ -448,7 +448,7 @@ func inputOrStateToAnimation()-> void:
 						var slot = $UI/GUI/SkillBar/GridContainer/LClickSlot/Icon
 						skills(slot)
 					autoload.state_list.guard:
-						is_in_combat = true
+						switchToCombatStance()
 						var slot = $UI/GUI/SkillBar/GridContainer/RClickSlot/Icon
 						skills(slot)
 	#________________________________________movement states____________________________________________
@@ -598,19 +598,16 @@ func skills(slot)-> void:
 #Lclick and Rclick__________________________________________________________________________________
 #fist
 				elif slot.texture.resource_path == autoload.punch.get_path():
-					is_in_combat = true
 					if hold_to_base_atk == true:
 						animation.play("fist hold",blend,melee_atk_speed + 0.15)
 						moveDuringAnimation(2.5)
 					else:
 						base_atk_duration = true	
 				elif slot.texture.resource_path == autoload.punch2.get_path():
-					is_in_combat = true
 					if hold_to_base_atk == false:
 						base_atk2_duration = true
 #sword
 				elif slot.texture.resource_path == autoload.slash_sword.get_path():
-					is_in_combat = true
 					if hold_to_base_atk == true:
 						match weapon_type:
 							autoload.weapon_type_list.sword:
@@ -628,14 +625,12 @@ func skills(slot)-> void:
 					else:
 						base_atk_duration = true
 				elif slot.texture.resource_path == autoload.slash_sword2.get_path():
-					is_in_combat = true
 					if hold_to_base_atk == false:
 						base_atk2_duration = true
 				elif slot.texture.resource_path == autoload.guard_sword.get_path():
 					if resolve > 0:
 						is_walking = false
 						can_walk = false
-						is_in_combat = true
 						resolve -= 1 * get_physics_process_delta_time()
 						if weapon_type == autoload.weapon_type_list.dual_swords:
 							animation.play("dual block",blend)
@@ -647,7 +642,6 @@ func skills(slot)-> void:
 					if resolve > 0:
 						is_walking = false
 						can_walk = false
-						is_in_combat = true
 						resolve -= 1 * get_physics_process_delta_time()
 						animation.play("shield block",blend)
 					else:
@@ -674,7 +668,6 @@ func skills(slot)-> void:
 							if all_skills.can_overhead_slash == true:
 								if resolve > all_skills.overhead_slash_cost:
 									if weapon_type != autoload.weapon_type_list.fist:
-										is_in_combat = true
 										overhead_slash_duration = true
 										animationCancelException(overhead_slash_duration)
 										if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
@@ -710,7 +703,6 @@ func skills(slot)-> void:
 						if taunt_icon.points >0:
 							if all_skills.can_taunt == true:
 								if resolve > all_skills.taunt_cost:
-									is_in_combat = true
 									taunt_duration = true
 									is_walking = false
 									can_walk = false
@@ -748,7 +740,6 @@ func skills(slot)-> void:
 							if all_skills.can_rising_slash == true:
 								if resolve > all_skills.rising_slash_cost:
 									if weapon_type != autoload.weapon_type_list.fist:
-										is_in_combat = true
 										rising_slash_duration = true
 										animationCancelException(rising_slash_duration)
 										if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
@@ -1736,6 +1727,8 @@ func skillUserInterfaceInputs():
 		saveGame()
 	elif Input.is_action_just_pressed("tab"):
 		is_in_combat = !is_in_combat
+		if is_instance_valid(current_race_gender):
+			current_race_gender.switchWeapon()
 
 		saveGame()
 	elif Input.is_action_just_pressed("mousemode") or Input.is_action_just_pressed("ui_cancel"):	# Toggle mouse mode
@@ -1876,7 +1869,7 @@ func _on_Quit_pressed():
 func _on_InventorySaveButton_pressed():
 	saveInventoryData()
 	saveGame()
-onready var skills_list1 = $UI/GUI/SkillTrees/Background/SylvanSkills #placeholder
+onready var skills_list1 = $UI/GUI/SkillTrees/Background/M/V/ScrollContainer/GridContainer/SkillTree1
 func _on_SkillTree1_pressed():
 	closeSwitchOpen(skills_list1)
 	saveSkillBarData()
@@ -2479,7 +2472,12 @@ func positionCoordinates():
 #__________________________________Equipment Management____________________________
 
 ####################################################################################################
-
+func switchToCombatStance():
+	if is_in_combat == false:
+		is_in_combat = true
+		if is_instance_valid(current_race_gender):
+			current_race_gender.switchWeapon()
+			print("instancing")
 
 
 #Equipment 2D___________________________________________________________________
@@ -2503,7 +2501,7 @@ onready var hand_l_icon = $UI/GUI/Equipment/EquipmentBG/GloveL/Icon
 onready var hand_r_icon = $UI/GUI/Equipment/EquipmentBG/GloveR/Icon
 onready var chest_icon = $UI/GUI/Equipment/EquipmentBG/BreastPlate/Icon
 onready var foot_r_icon = $UI/GUI/Equipment/EquipmentBG/ShoeR/Icon
-onready var foot_l_icon = $UI/GUI/Equipment/EquipmentBG/ShoeL/Iconvar 
+onready var foot_l_icon = $UI/GUI/Equipment/EquipmentBG/ShoeL/Icon
 onready var glove_icon = $UI/GUI/Equipment/EquipmentBG/GloveR/Icon
 onready var glove_l_icon = $UI/GUI/Equipment/EquipmentBG/GloveL/Icon
 func SwitchEquipmentBasedOnEquipmentIcons():
@@ -2539,13 +2537,20 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 				if sec_weap_icon.texture == null:
 					sec_weapon = autoload.sec_weap_list.zero
 					weapon_type = autoload.weapon_type_list.sword
-					
+		
 			elif main_weap_icon.texture.get_path() == autoload.waraxe_png.get_path():
 					main_weapon =  autoload.main_weap_list.waraxe_beginner
 					weapon_type = autoload.weapon_type_list.heavy
 					sec_weapon = autoload.sec_weap_list.zero
 					sec_wea_slot.visible = false
-		
+
+					
+			elif main_weap_icon.texture.get_path() == autoload.great_sword_beginner_png.get_path():
+					main_weapon =  autoload.main_weap_list.greatsword_beginner
+					weapon_type = autoload.weapon_type_list.heavy
+					sec_weapon = autoload.sec_weap_list.zero
+					sec_wea_slot.visible = false
+
 			else:
 				sec_wea_slot.visible = true
 				main_weapon = autoload.main_weap_list.zero
@@ -2553,7 +2558,6 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 				applyEffect("sword0", false)
 				weapon_type = autoload.weapon_type_list.fist
 				
-			
 			
 #sec weapon_____________________________________________________________________
 			if sec_weap_icon == null:

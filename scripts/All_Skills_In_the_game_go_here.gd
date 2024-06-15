@@ -22,10 +22,6 @@ func ComboSystem():
 		
 		
 
-		
-		
-		
-			
 func updateCooldownLabel() -> void:
 	var current_time = OS.get_ticks_msec() / 1000.0
 	for child in $"../SkillBar/GridContainer".get_children():
