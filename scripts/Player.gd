@@ -2372,6 +2372,7 @@ func _on_GiveMeItems_pressed():
 	autoload.addNotStackableItem(inventory_grid,autoload.pickaxe_png)
 	autoload.addNotStackableItem(inventory_grid,autoload.waraxe_png)
 	autoload.addNotStackableItem(inventory_grid,autoload.shield_wood_png)
+	autoload.addNotStackableItem(inventory_grid,autoload.great_sword_beginner_png)
 	
 	
 #_____________________________________Currency______________________________________________________
