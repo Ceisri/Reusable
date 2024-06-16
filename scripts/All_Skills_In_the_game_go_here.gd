@@ -460,7 +460,7 @@ func updateOverheadSlash(label: Label, cooldown: float, current_time: float, las
 	else:
 		label.text = ""
 		can_overhead_slash = true
-var overhead_slash_combo_speed_bonus = 1.5 #1 = 100% extra speed
+var overhead_slash_combo_speed_bonus = 0.85 #1 = 100% extra speed
 func activateComboOverheadslash():
 	player.overhead_slash_combo = true
 	overhead_slash_start_time = OS.get_ticks_msec() / 1000.0

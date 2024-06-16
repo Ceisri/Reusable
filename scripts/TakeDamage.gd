@@ -1,7 +1,6 @@
 extends Spatial
 
 onready var parent:KinematicBody = get_parent()
-onready var viewport:Viewport = $Viewport
 var instigatorAggro
 
 
@@ -115,14 +114,15 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type)->v
 		instigatorAggro.threat += damage_to_take + aggro_power
 		text.amount =round(damage_to_take * 100)/ 100
 		text.state = damage_type
-		viewport.add_child(text)
+		add_child(text)
 	else:
 		text.status = "Parried"
 		text.state = damage_type
-		viewport.add_child(text)
+		add_child(text)
 
 
 func takeDamagePlayer(damage, aggro_power, instigator, stagger_chance, damage_type)->void:
+	var viewport:Viewport = $Viewport
 	var random_range = rand_range(0,100)
 	var text = autoload.floatingtext_damage.instance()
 	if parent.has_method("lookTarget"):
@@ -214,7 +214,7 @@ func takeStagger(stagger_chance: float) -> void:
 			parent.state = autoload.state_list.staggered
 			parent.staggered_duration = true
 			text.status = "Staggered"
-			viewport.add_child(text)
+			add_child(text)
 
 
 func takeHealing(healing,healer):
@@ -222,7 +222,7 @@ func takeHealing(healing,healer):
 	var text = autoload.floatingtext_damage.instance()
 	text.amount =round(healing * 100)/ 100
 	text.state = autoload.state_list.healing
-	viewport.add_child(text)
+	add_child(text)
 	
 var lifesteal_pop = preload("res://UI/lifestealandhealing.tscn")	
 func lifesteal(damage_to_take)-> void:#This is called by the enemy's script when they take damage
@@ -237,9 +237,10 @@ func lifesteal(damage_to_take)-> void:#This is called by the enemy's script when
 		elif parent.health > parent.max_health:
 			parent.health = parent.max_health
 	
-	
+
 var has_died:bool = false
 func getKilled(instigator)->void:
+	var entity_holder = parent.entity_holder
 	var health = parent.health
 	var max_health = parent.max_health
 	if has_died == false:
@@ -248,5 +249,6 @@ func getKilled(instigator)->void:
 			print(str(instigator.entity_name) +" has killed " +str(parent.entity_name))
 			if instigator.has_method("takeExperience"):
 				instigator.takeExperience(round((max_health * 0.01)+ parent.experience_worth))
+				entity_holder.dropItems(instigator)
 				has_died = true
 	

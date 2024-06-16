@@ -617,7 +617,7 @@ func skills(slot)-> void:
 								animation.play("sword hold",blend,melee_atk_speed)
 								moveDuringAnimation(2.5)
 							autoload.weapon_type_list.dual_swords:
-								animation.play("dual hold",blend,melee_atk_speed+ 0.3)
+								animation.play("dual hold",blend,melee_atk_speed)
 								moveDuringAnimation(2.7)
 							autoload.weapon_type_list.heavy:
 								animation.play("heavy hold",blend,melee_atk_speed)
@@ -2335,7 +2335,18 @@ func crafting():
 			$UI/GUI/Crafting/CraftingResultSlot.quantity = 2
 
 onready var take_damage_view = $"Damage&Effects/Viewport"
+
+
 #________________________________Add items to inventory_________________________
+
+func lootBodies()->void:
+	pass
+
+func receiveDrops(item,quantity)->void:#This is called by enemeis when they die or by quest givers or by gathering, works alone without neeeding to call lootBodies():
+	autoload.addStackableItem(inventory_grid,item,quantity)
+	autoload.addFloatingIcon(take_damage_view,item,quantity)
+	
+
 func _on_GiveMeItems_pressed():
 	coins += 550
 	autoload.addStackableItem(inventory_grid,autoload.garlic,200)

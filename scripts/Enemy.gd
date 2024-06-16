@@ -2,7 +2,8 @@ extends KinematicBody
 
 var experience_worth:int = 15
 onready var threat_system: Node = $Threat
-onready var animation =  $Mesh/human/AnimationPlayer
+onready var animation = $Mesh/EntityHolder/AnimationPlayer
+onready var entity_holder = $Mesh/EntityHolder
 var vertical_velocity : Vector3 = Vector3()
 var movement: Vector3 = Vector3()
 var horizontal_velocity : Vector3 = Vector3()
