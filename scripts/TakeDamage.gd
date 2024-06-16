@@ -226,6 +226,7 @@ func takeHealing(healing,healer):
 	
 var lifesteal_pop = preload("res://UI/lifestealandhealing.tscn")	
 func lifesteal(damage_to_take)-> void:#This is called by the enemy's script when they take damage
+	var viewport:Viewport = $Viewport
 	if parent.life_steal > 0:
 		var life_steal_ratio = damage_to_take * parent.life_steal
 		if parent.health < parent.max_health:
@@ -233,7 +234,10 @@ func lifesteal(damage_to_take)-> void:#This is called by the enemy's script when
 			if parent.is_in_group("Player") or parent.is_in_group("player"):
 				var text = lifesteal_pop.instance()
 				text.amount = round(life_steal_ratio * 100)/ 100
-				$Viewport.add_child(text)
+				if viewport == null:
+					add_child(text)
+				else:
+					viewport.add_child(text)
 		elif parent.health > parent.max_health:
 			parent.health = parent.max_health
 	
@@ -249,6 +253,7 @@ func getKilled(instigator)->void:
 			print(str(instigator.entity_name) +" has killed " +str(parent.entity_name))
 			if instigator.has_method("takeExperience"):
 				instigator.takeExperience(round((max_health * 0.01)+ parent.experience_worth))
-				entity_holder.dropItems(instigator)
+				if instigator.auto_loot == true:
+					entity_holder.dropItems(instigator)
 				has_died = true
 	

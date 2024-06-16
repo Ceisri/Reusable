@@ -12,11 +12,11 @@ var movement_speed = int()
 var angular_acceleration = int()
 var acceleration = int()
 var random_atk:float
-
-
+export var can_be_looted:bool = false
+onready var process:Timer = $Process #This is a timer node called "Process"
 func _ready()->void:
 	var one_sec:Timer = $"1secTimer"
-	var process:Timer = $Process #This is a timer node called "Process"
+	
 	process.connect("timeout", self, "process") #remember to set this timer to process mode = Physics
 	one_sec.connect("timeout", self, "oneSecondTimer")
 	#you can put any value in here, tick rate is inverse to FPS, smaller ticks = higher FPS for your enemies
@@ -25,7 +25,8 @@ func _ready()->void:
 	process.start(autoload.entity_tick_rate + rand_range(0, 0.015)) 
 
 func process()->void:
-	autoload.entityGravity(self)
+	if health >0:
+		autoload.entityGravity(self)
 	moveAside()
 	matchState()	
 	if health >0:
@@ -33,10 +34,12 @@ func process()->void:
 		if staggered_duration == true:
 			state = autoload.state_list.staggered
 	if health <0 or health ==0:
+		can_be_looted = true
 		if has_died == false:
 			death_time = 3.958
 			if has_died == true:
 				state = autoload.state_list.dead
+				process.stop()
 	
 func oneSecondTimer()->void:
 	damage_effect_manager.effectDurations()

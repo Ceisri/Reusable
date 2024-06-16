@@ -109,7 +109,7 @@ func _physics_process(delta: float) -> void:
 	fallDamage()
 	skillUserInterfaceInputs()
 	positionCoordinates()
-
+	lootBodies()
 	jump()
 	deathLife(delta)#Main function
 	walk() 
@@ -2338,10 +2338,21 @@ onready var take_damage_view = $"Damage&Effects/Viewport"
 
 
 #________________________________Add items to inventory_________________________
-
+onready var loot_table_node:Control = $UI/GUI/LootTable
 func lootBodies()->void:
-	pass
+	if is_walking == true:
+		loot_table_node.visible = false
+	else:
+		if Input.is_action_just_pressed("collect"):
+			var bodies = $Mesh/Detector.get_overlapping_bodies()
+			for lootable in bodies:
+				if lootable != self:
+					if lootable.is_in_group("Lootable"):
+						if lootable.can_be_looted == true:
+							loot_table_node.visible = true
+				
 
+var auto_loot:bool = false
 func receiveDrops(item,quantity)->void:#This is called by enemeis when they die or by quest givers or by gathering, works alone without neeeding to call lootBodies():
 	autoload.addStackableItem(inventory_grid,item,quantity)
 	autoload.addFloatingIcon(take_damage_view,item,quantity)
