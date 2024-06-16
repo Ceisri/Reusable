@@ -622,7 +622,30 @@ func shootArrow(arrow_damage):
 	get_tree().current_scene.add_child(arrow_instance)
 	arrow_instance.global_transform.origin = shoot_position
 
+var rock: PackedScene = preload("res://EnvironmentDecorations/throwable rock/throwable rock.tscn")
 
+func throwRock(damage):
+	var player_global_transform: Transform = player.global_transform
+	var rock_instance: KinematicBody
+	var player_direction = player.direction
+	var camera_transform: Transform = camera.global_transform
+	var camera_rotation_x: float = camera_transform.basis.get_euler().x#Get the rotation degrees on the x-axis of the camera
+	var strength_factor: float = 1.0#Calculate the strength factor based on the rotation of the camera
+	var player_forward: Vector3 = player_global_transform.basis.z.normalized()
+
+	var camera_global_transform: Transform = camera.global_transform
+	var camera_forward: Vector3 = -camera_global_transform.basis.z.normalized() 
+	var shoot_position: Vector3 = player.global_transform.origin + camera_forward * 0.5
+	shoot_position.y += vertical_spawn_offset + 1
+	var camera_right: Vector3 = camera_global_transform.basis.x.normalized()
+	# Shoot the first bullet towards where the camera is looking at
+	rock_instance = rock.instance()
+	rock_instance.direction = camera_forward
+	rock_instance.instigator = player
+	rock_instance.summoner = player
+	rock_instance.damage =  damage * player.strength 
+	get_tree().current_scene.add_child(rock_instance)
+	rock_instance.global_transform.origin = shoot_position
 
 var potion_cooldown: float = 3
 var last_potion_time: float = 0.0 

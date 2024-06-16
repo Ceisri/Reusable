@@ -20,11 +20,11 @@ func get_drag_data(position: Vector2):
 	var dragPreview =  autoload.drag_preview.instance()
 	dragPreview.texture = icon.texture
 	add_child(dragPreview)
-	#print("Item type:", item)
+	$"../../../../..".current_race_gender.EquipmentSwitch()
 	return data
 
 func can_drop_data(position, data):
-	#$"../../../../..".current_race_gender.EquipmentSwitch()
+	$"../../../../..".current_race_gender.EquipmentSwitch()
 	var target_slot = get_parent().get_name()
 	data["target_texture"] = icon.texture
 	data["target_quantity"] = quantity
@@ -46,7 +46,7 @@ func drop_data(position, data):
 	dragPreview.queue_free()# delete that floating image 
 	origin_icon.texture = target_texture
 	icon.texture = origin_texture
-	#$"../../../../..".current_race_gender.EquipmentSwitch()
+	$"../../../../..".current_race_gender.EquipmentSwitch()
 	if origin_texture == target_texture:
 		# Combine quantities if items are the same
 		quantity += data["origin_quantity"]

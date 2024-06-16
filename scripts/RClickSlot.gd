@@ -11,7 +11,7 @@ func switchAttackIcon():
 	else:
 		match player.weapon_type:
 			autoload.weapon_type_list.fist:
-				icon.texture = autoload.guard
+				icon.texture = autoload.throw_rock
 			autoload.weapon_type_list.sword:
 				icon.texture = autoload.guard_sword
 			autoload.weapon_type_list.sword_shield:

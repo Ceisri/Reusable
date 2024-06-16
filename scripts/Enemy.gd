@@ -160,7 +160,8 @@ func matchState()->void:
 								changeAttackType()
 								lookTarget(turn_speed)
 								followTarget(false)
-								animation.play("walk combat",0.3)
+
+								
 								
 		autoload.state_list.orbit:
 			if staggered_duration == false:

@@ -71,7 +71,7 @@ func equipArmorWeapons(clothing_to_equip,clothing_type_to_delete:String)->void:
 
 
 #BUTCHERING/GATHERING
-func gather(player,value)->void:#IF THE ENTITY IS A GATHERING ITEM LIKE A TREE OR IF IS A DEAD ENEMY TO BE BUTCHERED
+func gather(player,value)->void:
 	match owner_entity.is_made_of:
 		autoload.gathering_type.furless:
 			player.receiveDrops(autoload.steak,value)

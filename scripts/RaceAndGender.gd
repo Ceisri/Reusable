@@ -407,6 +407,19 @@ func  applyBlendShapes():
 			child.set("blend_shapes/Smile",smile)
 
 #___________________________________________Combat System___________________________________________
+func onHit()->void:#Put this on base attacks
+	if player.resolve < player.max_resolve:
+		player.resolve += player.total_on_hit_resolve_regen
+
+
+
+func throwRocks()->void:
+	player.all_skills.throwRock(player.total_dmg)
+
+func throwRocksStop()->void:
+	player.throw_rock_duration = false
+	player.can_walk = true
+
 
 
 func basAtkCD()->void:
@@ -425,7 +438,7 @@ func slideDMG()->void:#fist
 	var aggro_power:float = player.threat_power + 1
 	var push_distance:float = 0.5
 	var enemies:Array = trust_area.get_overlapping_bodies()
-
+	
 	slideImpact(enemies,aggro_power,push_distance)
 
 func punch()->void:#fist
@@ -443,6 +456,7 @@ func punch()->void:#fist
 	for victim in enemies:
 		if victim.is_in_group("enemy"):
 			if victim != self:
+				onHit()
 				if victim.state != autoload.state_list.dead:
 					player.pushEnemyAway(push_distance, victim,0.25)
 		dealDMG(victim,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,player.stagger_chance)
@@ -463,6 +477,7 @@ func baseAtktHit()->void:#Heavy
 	for victim in enemies:
 		if victim.is_in_group("enemy"):
 			if victim != self:
+				onHit()
 				if victim.state != autoload.state_list.dead:
 					player.pushEnemyAway(push_distance, victim,0.25)
 		dealDMG(victim,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,damage_type,damage,damage_flank,push_distance,player.stagger_chance)
@@ -483,6 +498,7 @@ func baseAtkLastHit()->void:#Heavy
 	for victim in enemies:
 		if victim.is_in_group("enemy"):
 			if victim != self:
+				onHit()
 				if victim.state != autoload.state_list.dead:
 					player.pushEnemyAway(push_distance, victim,0.25)
 		dealDMG(victim,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,damage_type,damage,damage_flank,push_distance,player.stagger_chance)
@@ -719,31 +735,36 @@ func staggeredOver():
 
 #___________________________________________________________________________________________________
 func dealDMG(victim,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,stagger_chance)-> void:
+		var random = rand_range(0,1)
 		if victim  != player:
-			if victim.has_method("takeDamage"):
-				if randf() <= player.critical_chance:#critical hit
-					if victim.absorbing == true or victim.parry == true: #victim is guarding
-						if player.isFacingSelf(victim,0.30): #the victim is looking face to face at self 
+			if victim.is_in_group("Entity"):
+				if victim.has_method("takeDamage"):
+					if random <= player.critical_chance:#critical hit
+						if victim.absorbing == true or victim.parry == true: #victim is guarding
+							if player.isFacingSelf(victim,0.30): #the victim is looking face to face at self 
+									victim.takeDamage(critical_damage/victim.guard_dmg_absorbition,aggro_power,player,stagger_chance,damage_type)
+							else: #apparently the victim is showing his back or flanks while guard, flank damage + punishment damage
+									victim.takeDamage(critical_flank_damage + punishment_damage,aggro_power,player,stagger_chance,punishment_damage_type)
+						else:#player is guarding
+							if player.isFacingSelf(victim,0.30): #check if the victim is looking at me 
 								victim.takeDamage(critical_damage/victim.guard_dmg_absorbition,aggro_power,player,stagger_chance,damage_type)
-						else: #apparently the victim is showing his back or flanks while guard, flank damage + punishment damage
-								victim.takeDamage(critical_flank_damage + punishment_damage,aggro_power,player,stagger_chance,punishment_damage_type)
-					else:#player is guarding
-						if player.isFacingSelf(victim,0.30): #check if the victim is looking at me 
-							victim.takeDamage(critical_damage/victim.guard_dmg_absorbition,aggro_power,player,stagger_chance,damage_type)
-						else: #apparently the victim is showing his back or flanks, extra damage
-							victim.takeDamage(critical_damage,aggro_power,player,stagger_chance,punishment_damage_type)
-				else: #normal hit
-					if victim.absorbing == true or victim.parry == true: #victim is guarding
-						if player.isFacingSelf(victim,0.30): #the victim is looking face to face at self 
-							victim.takeDamage(damage/victim.guard_dmg_absorbition,aggro_power,player,stagger_chance,damage_type)
-						else: #apparently the victim is showing his back or flanks while guard, flank damage + punishment damage
-							victim.takeDamage(damage_flank + punishment_damage,aggro_power,player,stagger_chance,punishment_damage_type)
-					else:#victim is not guarding
-						if player.isFacingSelf(victim,0.30):#the victim is looking face to face at self 
-							victim.takeDamage(damage,aggro_power,player,stagger_chance,damage_type)
-						else: #appareantly the victim is showing his back or flanks, extra damage
-							victim.takeDamage(damage_flank,aggro_power,player,stagger_chance,damage_type)
-
+							else: #apparently the victim is showing his back or flanks, extra damage
+								victim.takeDamage(critical_damage,aggro_power,player,stagger_chance,punishment_damage_type)
+					else: #normal hit
+						if victim.absorbing == true or victim.parry == true: #victim is guarding
+							if player.isFacingSelf(victim,0.30): #the victim is looking face to face at self 
+								victim.takeDamage(damage/victim.guard_dmg_absorbition,aggro_power,player,stagger_chance,damage_type)
+							else: #apparently the victim is showing his back or flanks while guard, flank damage + punishment damage
+								victim.takeDamage(damage_flank + punishment_damage,aggro_power,player,stagger_chance,punishment_damage_type)
+						else:#victim is not guarding
+							if player.isFacingSelf(victim,0.30):#the victim is looking face to face at self 
+								victim.takeDamage(damage,aggro_power,player,stagger_chance,damage_type)
+							else: #appareantly the victim is showing his back or flanks, extra damage
+								victim.takeDamage(damage_flank,aggro_power,player,stagger_chance,damage_type)
+			else:
+				if victim.has_method("getChopped"):
+					victim.getChopped(damage,player)
+					
 func slideImpact(enemy_detector1,aggro_power,push_distance)-> void:
 	for victim in enemy_detector1:
 		if victim.is_in_group("enemy"):

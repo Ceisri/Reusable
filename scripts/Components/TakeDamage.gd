@@ -40,7 +40,6 @@ func effectDurations()->void:
 		
 
 func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type)->void:
-	
 	if parent.health > -100:
 		var entity_holder = parent.entity_holder
 		entity_holder.handWeaponBackWeapon()
@@ -126,6 +125,11 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type)->v
 						parent.state = autoload.state_list.staggered
 						parent.staggered_duration = true
 						text.status = "Staggered"
+						
+			if random_range < instigator.critical_chance:
+				damage_to_take * instigator.critial_strength
+	
+	
 			parent.health -= damage_to_take	
 			instigatorAggro.threat += damage_to_take + aggro_power
 			text.amount =round(damage_to_take * 100)/ 100
@@ -215,11 +219,13 @@ func takeDamagePlayer(damage, aggro_power, instigator, stagger_chance, damage_ty
 			damage_to_take *= (1.0 - mitigation)
 			if instigator.has_method("lifesteal"):
 				instigator.lifesteal(damage_to_take)
+	
 		if random_range < stagger_chance - parent.stagger_resistance:
 			if parent.health >0:
 				parent.state = autoload.state_list.staggered
 				parent.staggered_duration = true
 				text.status = "Staggered"
+
 		parent.health -= damage_to_take	
 		text.amount =round(damage_to_take * 100)/ 100
 		text.state = damage_type

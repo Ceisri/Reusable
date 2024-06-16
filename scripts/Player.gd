@@ -14,7 +14,8 @@ var is_walking = bool()
 var is_running = bool()
 
 var duration = 200
-
+onready var slowest_timer:Timer = $SlowestTimer
+onready var slow_timer:Timer = $SlowTimer
 func _ready()->void:
 	loadPlayerData()
 	switchSexRace()
@@ -40,34 +41,39 @@ func _ready()->void:
 	l_click_slot.switchAttackIcon()
 	colorBodyParts()
 	switchButtonTextures()
-func _on_SlowTimer_timeout()->void:
+	slow_timer.connect("timeout", self, "slowTimer")
+	slow_timer.start(1)
+	slowest_timer.connect("timeout", self, "slowestTimer")
+	slowest_timer.start(3)
+	connectEquipment()
+func slowTimer()->void:
 	experienceSystem()
 	damage_effects_manager.effectDurations()
 	allResourcesBarsAndLabels()
 	money()
 	if health >0:
 		potionEffects()
-		if $UI/GUI/Equipment.visible == true :
-			current_race_gender.EquipmentSwitch()
-		saveSkillBarData()
-		convertStats()
-		hunger()
-		hydration()	
-		frameRate()	
 		all_skills.ComboSystem()
 		showStatusIcon()	
-		displayLabels()
+		crafting()
 		regenStats()
-
 		l_click_slot.switchAttackIcon()
 		r_click_slot.switchAttackIcon()
 		$UI/GUI/SkillTrees/Label.text = str("skill points: ")+ str(skill_points)
 		$UI/GUI/SkillTrees/Label2.text =  str("points spent: ")+ str(skill_points_spent)
-		
 	displayClock()
-	
 	if health <= 0 :
 		revival_wait_time -= 1
+func  slowestTimer()->void:
+	frameRate()
+	hydration()
+	hunger()
+	convertStats()
+	displayLabels()
+	SwitchEquipmentBasedOnEquipmentIcons()
+	if $UI/GUI/Equipment.visible == true :
+			current_race_gender.EquipmentSwitch()
+		
 func _on_3FPS_timeout()->void:
 	if health >0:
 		$UI/GUI/Equipment/Attributes/AttributePoints.text = "Attributes points left: " + str(attribute)
@@ -75,9 +81,7 @@ func _on_3FPS_timeout()->void:
 		var total_spent_attribute_points = spent_attribute_points_san + spent_attribute_points_wis + spent_attribute_points_mem + spent_attribute_points_int + spent_attribute_points_ins +spent_attribute_points_for + spent_attribute_points_str + spent_attribute_points_fur + spent_attribute_points_imp + spent_attribute_points_fer + spent_attribute_points_foc + spent_attribute_points_bal + spent_attribute_points_dex + spent_attribute_points_acc + spent_attribute_points_poi +spent_attribute_points_has + spent_attribute_points_agi + spent_attribute_points_cel + spent_attribute_points_fle + spent_attribute_points_def + spent_attribute_points_end + spent_attribute_points_sta + spent_attribute_points_vit + spent_attribute_points_res + spent_attribute_points_ten + spent_attribute_points_cha + spent_attribute_points_loy + spent_attribute_points_dip + spent_attribute_points_aut + spent_attribute_points_cou
 		# Update the text in the UI/GUI
 		$UI/GUI/Equipment/Attributes/AttributeSpent.text = "Attributes points Spent: " + str(total_spent_attribute_points)
-		crafting()
 		curtainsDown()
-		SwitchEquipmentBasedOnEquipmentIcons()
 		updateAllStats()
 
 func _physics_process(delta: float) -> void:
@@ -121,7 +125,7 @@ var animation: AnimationPlayer
 var hold_to_base_atk:bool = false #if true holding the base attack buttons continues a combo of attacks, releasing the button stops the attacks midway, if false it will just play the attack animation as if it was a normal skill
 var base_atk_duration:bool = false
 var base_atk2_duration:bool = false
-
+var throw_rock_duration:bool= false
 
 # Toggle the hold_to_base_atk variable and change the color of BaseAtkMode accordingly
 func _on_BaseAtkMode_pressed():
@@ -414,7 +418,12 @@ func inputOrStateToAnimation()-> void:
 				autoload.weapon_type_list.heavy:
 					animation.play("heavy click2",0, melee_atk_speed +compensation_speed)
 					moveDuringAnimation(1.75)
-			
+		elif throw_rock_duration == true:
+			direction = -camera.global_transform.basis.z
+			is_walking = false
+			can_walk = false
+			animation.play("throw rock",blend, ranged_atk_speed)
+			moveDuringAnimation(0)
 #################################################################################################################################################################
 	#_____________________________________MATCH STATE BEGINS HERE ___________________________________
 	#___________________________________________________________________________________________________
@@ -432,9 +441,9 @@ func inputOrStateToAnimation()-> void:
 						animation.play("slide",blend)
 						if !is_on_wall():
 							if is_sprinting == false:
-								horizontal_velocity = direction * slide_movement * agility
+								#horizontal_velocity = direction * slide_movement * agility
 								animationCancel()
-								#horizontal_velocity = direction * 200 * get_physics_process_delta_time()
+								horizontal_velocity = direction * 200 * get_physics_process_delta_time()
 							else:
 								moveDuringAnimation(sprint_speed)
 						can_walk = true
@@ -606,6 +615,19 @@ func skills(slot)-> void:
 				elif slot.texture.resource_path == autoload.punch2.get_path():
 					if hold_to_base_atk == false:
 						base_atk2_duration = true
+						
+				elif slot.texture.resource_path == autoload.throw_rock.get_path():
+					if hold_to_base_atk == false:
+						throw_rock_duration = true
+					else:
+						directionToCamera()
+						is_walking = false
+						can_walk = false
+						direction = -camera.global_transform.basis.z
+						moveDuringAnimation(0)
+						animation.play("throw rock",blend,ranged_atk_speed + 0.15)
+						
+						
 #sword
 				elif slot.texture.resource_path == autoload.slash_sword.get_path():
 					if hold_to_base_atk == true:
@@ -992,7 +1014,7 @@ func returnToIdleBasedOnWeaponType():
 func moveDuringAnimation(speed):
 	if !is_on_wall():
 		if current_race_gender.can_move == true:
-			horizontal_velocity = direction * speed 
+			horizontal_velocity = direction * speed * 1.5
 			movement_speed = speed
 		elif current_race_gender.can_move == false:
 			horizontal_velocity = direction * 0
@@ -1009,7 +1031,6 @@ func inputToState():
 
 #on land
 		elif dodge_animation_duration > 0 and resolve >0:
- 
 			state = autoload.state_list.slide
 
 		elif not is_on_floor() and not is_climbing and not is_swimming:
@@ -1976,9 +1997,13 @@ func resetSkills(tree):
 			skill_points += skill_points_spent
 			child.skillPoints()
 			skill_points_spent = 0 
+			
+			
 func UniversalToolTip(icon_texture):
 	var instance = preload("res://Tooltips/tooltip.tscn").instance()
 	var instance_skills = preload("res://Tooltips/tooltipSkills.tscn").instance()
+	var instance_leftdown = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
+	var instance_equipment = preload("res://Tooltips/tooltipEquipable.tscn").instance()
 	if icon_texture != null:
 		#consumablaes
 		if icon_texture.get_path() == autoload.red_potion.get_path():
@@ -1991,19 +2016,32 @@ func UniversalToolTip(icon_texture):
 		elif icon_texture.get_path() == autoload.beetroot.get_path():
 			callToolTip(instance,"beetroot","+15 health points +32 kcals +71.8 grams of water")
 			#equipment icons
-		elif icon_texture.get_path() == autoload.hat1.get_path():
-			callToolTip(instance,"Farmer Hat","+3 blunt resistance.\n +6 heat resistance.\n +3 cold resistance.\n +6 radiant resistance.")
-		elif icon_texture.get_path() == autoload.garment1.get_path():
-			callToolTip(instance,"Farmer Jacket","+3 slash resistance.\n +1 pierce resistance.\n +12 heat resistance.\n +12 cold resistance.")
-		elif icon_texture.get_path() == autoload.belt1.get_path():
-			callToolTip(instance,"Farmer Belt","+3% balance.\n +1.1% charisma.")
-		elif icon_texture.get_path() == autoload.glove1.get_path():
-			callToolTip(instance,"Farmer Glove","+1 slash resistance.\n +1 blunt resistance.\n  +1 pierce resistance.\n +3 cold resistance.\n +5 jolt resistance.\n +3 acid resistance.")
-		elif icon_texture.get_path() == autoload.pants1.get_path():
-			callToolTip(instance,"Farmer Pants","+3 slash resistance.\n +1 pierce resistance.\n +12 heat resistance.\n +12 cold resistance.")
-		elif icon_texture.get_path() == autoload.shoe1.get_path():
-			callToolTip(instance,"Farmer Shoe","+1 slash resistance.\n +1 blunt resistance.\n +3 pierce resistance.\n +1 heat resistance.\n +6 cold resistance.\n +15 jolt resistance.\n")
+#__________________________________EQUIPMENT DESCRIPTIONS HERE______________________________________
 
+		elif icon_texture.get_path() == autoload.shield_wood_png.get_path():
+			var title:String = "Wood Shield"
+			var stat1:String = "Melee attack speed: " +str(autoload.shield_wood_melee_speed)
+			var stat2:String = "Guard protection: + " + str(autoload.shield_wood_absorb)
+			var stat3:String = "slash/blunt/pierce resistance: + " + str(autoload.shield_wood_general_defense)
+			var description:String = "A very basic shield, yet study and dependable"
+			callToolTipEquip(instance_equipment,title, stat1, stat2, stat3,"","","", "", "",description)
+		elif icon_texture.get_path() == autoload.sword_beginner_png.get_path():
+			var title:String = "Iron broad sword"
+			var stat1:String = "base damage: "+ "+ " + str(autoload.sword_beginner_dmg)
+			var stat2:String = "Guard protection: + " + str(autoload.sword_beginner_absorb)
+			var description:String = "Looks like something that was produced enmasse, will make do"
+			callToolTipEquip(instance_equipment,title, stat1, stat2, "","","","", "", "",description)
+
+		elif icon_texture.get_path() == autoload.axe_beginner_png.get_path():
+			var title:String = "Iron axe"
+			var stat1:String = "base damage: "+ "+ " + str(autoload.axe_beginner_dmg)
+			var stat2:String = "Guard protection: + " + str(autoload.axe_beginner_absorb)
+			var stat3:String = "Melee attack speed: " +str(autoload.axe_beginner_melee_speed)
+			var description:String = "A very good tool"
+			callToolTipEquip(instance_equipment,title, stat1, stat2, stat3,"","","", "", "",description)
+
+
+#______________________________________SKILL DESCRIPTIONS HERE______________________________________
 		elif icon_texture.get_path() == autoload.cyclone.get_path():
 			var base_damage: float = all_skills.cyclone_damage + total_dmg
 			var points: int = cyclone_icon.points
@@ -2017,7 +2055,7 @@ func UniversalToolTip(icon_texture):
 			var description: String = all_skills.cyclone_description
 			var cooldown = str("Cooldown: ") + str(all_skills.cyclone_cooldown)+ str(" seconds")
 			var extra:String = "AOE, Stagger, Movement"
-			callToolTipSkill(instance_skills,"cyclone",total_value,cost,extra,cooldown,description)
+			callToolTipSegmented(instance_skills,"cyclone",total_value,cost,extra,cooldown,description)
 		elif icon_texture.get_path() == autoload.whirlwind.get_path():
 			var base_damage: float = all_skills.whirlwind_damage + total_dmg
 			var points: int =  whirlwind_icon.points
@@ -2036,7 +2074,7 @@ func UniversalToolTip(icon_texture):
 			var description: String =  all_skills.whirlwind_description
 			var cooldown = str("Cooldown: ") + str(all_skills.whirlwind_cooldown)+ str(" seconds")
 			var extra:String = "Burst damage,AOE, situational"
-			callToolTipSkill(instance_skills,"Overhead Slash",total_value,cost,extra,cooldown,description)
+			callToolTipSegmented(instance_skills,"Overhead Slash",total_value,cost,extra,cooldown,description)
 		
 
 		elif icon_texture.get_path() == autoload.overhead_slash.get_path():
@@ -2052,7 +2090,7 @@ func UniversalToolTip(icon_texture):
 			var description: String = all_skills.overhead_slash_description
 			var cooldown = str("Cooldown: ") + str(all_skills.overhead_slash_cooldown)+ str(" seconds")
 			var extra:String = "Damage"
-			callToolTipSkill(instance_skills,"Overhead Slash",total_value,cost,extra,cooldown,description)
+			callToolTipSegmented(instance_skills,"Overhead Slash",total_value,cost,extra,cooldown,description)
 		
 		elif icon_texture.get_path() == autoload.rising_slash.get_path():
 			var base_damage: float = all_skills.rising_slash_damage + total_dmg
@@ -2067,7 +2105,7 @@ func UniversalToolTip(icon_texture):
 			var description: String = all_skills.rising_slash_description
 			var cooldown = str("Cooldown: ") + str(all_skills.rising_slash_cooldown)+ str(" seconds")
 			var extra:String = "Damage, Stagger"
-			callToolTipSkill(instance_skills,"Rising Slash",total_value,cost,extra,cooldown,description)
+			callToolTipSegmented(instance_skills,"Rising Slash",total_value,cost,extra,cooldown,description)
 		
 		
 		elif icon_texture.get_path() == autoload.heart_trust.get_path():
@@ -2083,9 +2121,14 @@ func UniversalToolTip(icon_texture):
 			var description: String = all_skills.heart_trust_description
 			var cooldown = str("Cooldown: ") + str(all_skills.heart_trust_cooldown)+ str(" seconds")
 			var extra:String = "Burst damage, Damage over time"
-			callToolTipSkill(instance_skills,"Heart Trust",total_value,cost,extra,cooldown,str(description) + str(all_skills.heart_trust_bleed_duration) + " seconds")
+			callToolTipSegmented(instance_skills,"Heart Trust",total_value,cost,extra,cooldown,str(description) + str(all_skills.heart_trust_bleed_duration) + " seconds")
 		elif icon_texture.get_path() == autoload.dodge.get_path():
 			callToolTip(instance,"Dodge Slide",autoload.dodge_description)
+			
+			
+			
+			
+			
 #_______________________________________Inventory system____________________________________________
 #for this to work either preload all the item icons here or add the "Global.gd"
 #as an autoload, i called it add_item in my project, and i used it to to compre the path 
@@ -2157,9 +2200,15 @@ func inventoryMouseEntered(index):
 func inventoryMouseExited(index):
 	deleteTooltip()
 
-func callToolTipSkill(instance,title,total_value,base_value,cost,cooldown,description):
+func callToolTipSegmented(instance,title,total_value,base_value,cost,cooldown,description):
 		gui.add_child(instance)
 		instance.showTooltip(title,total_value,base_value,cost,cooldown,description)
+		
+func callToolTipEquip(instance,title, stat1, stat2, stat3, stat4, stat5, stat6, stat7, stat8, stat9):
+		gui.add_child(instance)
+		instance.showTooltip(title, stat1, stat2, stat3, stat4, stat5, stat6, stat7, stat8, stat9)
+		
+		
 func callToolTip(instance,title,text):
 		gui.add_child(instance)
 		instance.showTooltip(title,text)
@@ -2502,6 +2551,20 @@ func positionCoordinates():
 
 
 #__________________________________Equipment Management____________________________
+func connectEquipment():
+	main_weap_icon.connect("mouse_entered", self, "mainWeapMouseEntered")
+	main_weap_icon.connect("mouse_exited", self, "mainWeapMouseExited")
+	sec_weap_icon.connect("mouse_entered", self, "secWeapMouseEntered")
+	sec_weap_icon.connect("mouse_exited", self, "secWeapMouseExited")
+func mainWeapMouseEntered():
+	UniversalToolTip(main_weap_icon.texture)
+func mainWeapMouseExited():
+	deleteTooltip()
+	
+func secWeapMouseEntered():
+	UniversalToolTip(sec_weap_icon.texture)
+func secWeapMouseExited():
+	deleteTooltip()
 
 ####################################################################################################
 func switchToCombatStance():
@@ -2540,7 +2603,9 @@ func noPrimaryWeap():
 	var effects = [
 		"sword_beginner_png",
 		"axe_beginner_png",
-		"greatsword_beginner_png"
+		"greatsword_beginner_png",
+		"waraxe_beginner_png",
+		"pickaxe_png"
 		# Add other effects as needed
 	]
 	for effect in effects:
@@ -2549,6 +2614,8 @@ func noSecondaryWeap():
 	var effects = [
 		"sword_beginner_png2",
 		"axe_beginner_png2",
+		"shield_wood_png",
+		"pickaxe_png"
 		# Add other effects as needed
 	]
 	for effect in effects:
@@ -2557,7 +2624,9 @@ func primaryWeapEffect(Chosen):
 	var effects = [
 		"sword_beginner_png",
 		"axe_beginner_png",
-		"greatsword_beginner_png"
+		"greatsword_beginner_png",
+		"waraxe_beginner_png",
+		"pickaxe_png"
 		# Add other effects as needed
 	]
 	for effect in effects:
@@ -2568,7 +2637,9 @@ func primaryWeapEffect(Chosen):
 func secondaryWeapEffect(Chosen):
 	var effects = [
 		"sword_beginner_png2",
-		"axe_beginner_png2"
+		"axe_beginner_png2",
+		"shield_wood_png",
+		"pickaxe_png2"
 		# Add other effects as needed
 	]
 	for effect in effects:
@@ -2658,7 +2729,9 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 					
 						elif sec_weap_icon.texture.get_path() == autoload.shield_wood_png.get_path():
 							sec_weapon = autoload.sec_weap_list.shield_beginner
+							secondaryWeapEffect("shield_wood_png")
 							weapon_type = autoload.weapon_type_list.sword_shield
+							
 						
 						elif sec_weap_icon.texture.get_path() == autoload.axe_beginner_png.get_path():
 							sec_weapon = autoload.sec_weap_list.axe_beginner
@@ -2678,10 +2751,10 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 		if helm_icon.texture != null:
 			if helm_icon.texture.get_path() == autoload.hat1.get_path():
 				head = "garment1"
-				applyEffect("helm1", true)
+
 		elif helm_icon.texture == null:
 			head = "naked"
-			applyEffect("helm1", false)
+
 #_______________________________chest___________________________________________
 
 	if chest_icon != null: #check if the icon and texture are null just to avoid crashes
@@ -2735,9 +2808,6 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 #Use these for both equipment stats and for buffs or debuffs
 #___________________________________Status effects______________________________
 var effects = {
-	"effect2": {"stats": { "extra_vitality": 2,"extra_agility": 0.05,}, "applied": false},
-	
-	
 #_______________________________________________Debuffs ____________________________________________
 	"overhydration": {"stats": { "extra_vitality": -0.02,"extra_agility": -0.05,}, "applied": false},
 	"dehydration": {"stats": { "extra_intelligence": -0.25,"extra_agility": -0.25,}, "applied": false},
@@ -2771,19 +2841,17 @@ var effects = {
 	"berserk": {"stats": {"extra_intelligence": -0.5,"extra_balance": -0.5,"extra_agility": 0.5,"extra_melee_atk_speed": 1,"extra_range_atk_speed": 0.5,"extra_cast_atk_speed": 0.3,"extra_ferocity": 0.3,"extra_fury": 0.3,}, "applied": false},
 	
 	#equipment effects______________________________________________________________________________
-	
 	#Use thee respective names of item equipment png name in autoload, add a 2 at the end for secondary weapons
 	
 	"sword_beginner_png": {"stats": {"extra_dmg": autoload.sword_beginner_dmg,"extra_guard_dmg_absorbition": autoload.sword_beginner_absorb}, "applied": false},
 	"sword_beginner_png2": {"stats": {"extra_dmg": autoload.sword_beginner_dmg,"extra_guard_dmg_absorbition": autoload.sword_beginner_absorb}, "applied": false},
-	"axe_beginner_png": {"stats": {"extra_dmg": autoload.axe_beginner_dmg,"extra_guard_dmg_absorbition": autoload.axe_beginner_absorb}, "applied": false},
-	"axe_beginner_png2": {"stats": {"extra_dmg": autoload.axe_beginner_dmg,"extra_guard_dmg_absorbition": autoload.axe_beginner_absorb}, "applied": false},
-	"greatsword_beginner_png": {"stats": {"extra_dmg": autoload.greatsword_beginner_dmg,"extra_guard_dmg_absorbition": autoload.greatsword_beginner_absorb,"extra_impact": 0.25}, "applied": false},
-
-
-
-	"sword0": {"stats": { "extra_guard_dmg_absorbition": 0.3}, "applied": false}
-
+	"axe_beginner_png": {"stats": {"extra_dmg": autoload.axe_beginner_dmg,"extra_guard_dmg_absorbition": autoload.axe_beginner_absorb,"extra_melee_atk_speed": autoload.axe_beginner_melee_speed}, "applied": false},
+	"axe_beginner_png2": {"stats": {"extra_dmg": autoload.axe_beginner_dmg,"extra_guard_dmg_absorbition": autoload.axe_beginner_absorb,"extra_melee_atk_speed": autoload.axe_beginner_melee_speed}, "applied": false},
+	"greatsword_beginner_png": {"stats": {"extra_dmg": autoload.greatsword_beginner_dmg,"extra_guard_dmg_absorbition": autoload.greatsword_beginner_absorb,"extra_melee_atk_speed": autoload.greatsword_beginner_melee_speed}, "applied": false},
+	"waraxe_beginner_png": {"stats": {"extra_dmg": autoload.waraxe_beginner_dmg,"extra_guard_dmg_absorbition": autoload.waraxe_beginner_absorb,"extra_melee_atk_speed": autoload.waraxe_beginner_melee_speed}, "applied": false},
+	"shield_wood_png": {"stats": {"extra_guard_dmg_absorbition": autoload.shield_wood_absorb,"extra_melee_atk_speed": autoload.shield_wood_melee_speed,"slash_resistance":autoload.shield_wood_general_defense,"blunt_resistance":autoload.shield_wood_general_defense,"pierce_resistance": autoload.shield_wood_general_defense,}, "applied": false},
+	"pickaxe_png": {"stats": {"extra_dmg": autoload.pickaxe_dmg,"extra_guard_dmg_absorbition": autoload.pickaxe_absorb,"extra_melee_atk_speed": autoload.pickaxe_melee_speed}, "applied": false},
+	"pickaxe_png2": {"stats": {"extra_dmg": autoload.pickaxe_dmg,"extra_guard_dmg_absorbition": autoload.pickaxe_absorb,"extra_melee_atk_speed": autoload.pickaxe_melee_speed}, "applied": false},
 
 }
 
@@ -3067,8 +3135,6 @@ func _on_Toilet1_pressed():
 
 
 #Stats__________________________________________________________________________
-
-
 const base_weight = 60
 var weight = 60
 const base_walk_speed = 6
@@ -3081,8 +3147,17 @@ const base_jumping_power = 100
 var jumping_power = 100
 const base_dash_power = 20
 
-var defense =  10
-const base_defense = 0
+
+var base_flank_dmg : float = 3.0
+var flank_dmg: float =3.0 #extra damage to add to backstabs 
+
+var base_dmg:float = 1
+var extra_dmg:float = 0
+var total_dmg:float = 1
+
+var chopping_power:float = 1
+var extra_chopping_power:float = 1
+var total_chopping_power:float = 1
 
 #magic energy systems 
 const base_max_aefis = 100
@@ -3183,18 +3258,17 @@ var stagger_resistance: float = 0.5 #0 to 100 in percentage, this is directly de
 var deflection_chance : float = 0.33
 
 
-var guard_dmg_absorbition: float = 3 #total damage taken will be divided by this when guarding
+var guard_dmg_absorbition: float = 2 #total damage taken will be divided by this when guarding
 var extra_guard_dmg_absorbition:float
 var total_guard_dmg_absorbition:float
 
 
-var staggered = 0 
-var base_flank_dmg : float = 3.0
-var flank_dmg: float =3.0 #extra damage to add to backstabs 
 
-var base_dmg: float = 1
-var extra_dmg:float = 0
-var total_dmg:float = 1
+
+
+var on_hit_resolve_regen:float = 1
+var extra_on_hit_resolve_regen:float = 0
+var total_on_hit_resolve_regen:float = 1
 
 const base_melee_atk_speed: int = 1 
 var melee_atk_speed: float = 1 
@@ -3364,6 +3438,9 @@ func convertStats():
 	run_speed = base_run_speed * total_agility
 	total_guard_dmg_absorbition = extra_guard_dmg_absorbition + guard_dmg_absorbition
 	
+	total_on_hit_resolve_regen = on_hit_resolve_regen+ extra_on_hit_resolve_regen
+
+	
 	
 	stagger_chance = max(0, (total_impact - 1.00) * 45) +  max(0, (total_ferocity - 1.00) * 0.5) 
 	
@@ -3393,6 +3470,13 @@ func _on_BaseDMG_mouse_exited():
 func baseDamageMath():
 	total_dmg = (extra_dmg + base_dmg) * total_strength
 	
+func _on_Guard_Protection_mouse_entered():
+	var title:String = "Guard Protection"
+	var text:String = "when guarding either with right click or other skills and abilities,damage taken is divided by " + str(total_guard_dmg_absorbition)
+	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
+	callToolTip(instance,title,text)
+func _on_Guard_Protection_mouse_exited():
+	deleteTooltip()
 
 
 func attackSpeedMath():
@@ -3434,14 +3518,14 @@ func resistanceMath():
 		additional_resistance = res_multiplier * (total_resistance - 1)
 	elif total_resistance < 1:
 		additional_resistance = -res_multiplier * (1 - total_resistance)
-	defense = base_defense + int(total_resistance * 10)
+
 	max_health = (base_max_health * (total_vitality + additional_resistance)) * scale_factor
 	max_breath = base_max_breath * (total_stamina  + additional_resistance)
 	max_resolve = base_max_resolve * (total_tenacity + additional_resistance)
 
 
 func updateCritical():
-	var critical_chance = max(0, (total_accuracy - 1.00) * 0.5) +  max(0, (total_impact - 1.00) * 0.005) 
+	var critical_chance = max(0, (total_accuracy - 1.00) * 0.5) +  max(0, (total_impact - 1.00) * 0.005) + 50
 	var critical_strength = max(1.0, ((total_ferocity - 1) * 2))  # Ensure critical_strength is at least 1.0
 	critical_chance_val.text = str(round(critical_chance * 100 * 1000) / 1000) + "%"
 	$UI/GUI/Equipment/EquipmentBG/CombatStats/GridContainer/CritDamageValue.text = "x" + str(critical_strength)
@@ -3563,6 +3647,10 @@ func displayLabels():
 	
 	var dmg_label = $UI/GUI/Equipment/EquipmentBG/CombatStats/GridContainer/BaseDMGValue
 	displayStats(dmg_label,total_dmg)
+	
+	var guard_label = $UI/GUI/Equipment/EquipmentBG/CombatStats/GridContainer/GuardPROTValue
+	displayStats(guard_label,total_guard_dmg_absorbition)
+	
 	
 	var flank_dmg_label = $UI/GUI/Equipment/EquipmentBG/CombatStats/GridContainer/FlankDMGValue
 	displayStats(flank_dmg_label,flank_dmg)
@@ -5378,3 +5466,5 @@ func experienceSystem():
 # Calculate the percentage of experience points
 	var percentage: float = (float(experience_points) / float(experience_to_next_level)) * 100.0
 	exper_label.text = "Level " + str(level) + "\nXP: " + str(experience_points) + "/" + str(experience_to_next_level) + " (" + str(round((percentage* 1)/1)) + "%)"
+
+
