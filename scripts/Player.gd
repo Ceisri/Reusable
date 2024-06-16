@@ -2392,18 +2392,18 @@ func _on_GiveMeItems_pressed():
 	autoload.addStackableItem(inventory_grid,autoload.rosehip,200)
 	autoload.addStackableItem(inventory_grid,autoload.belt1,1)
 	autoload.addStackableItem(inventory_grid,autoload.glove1,1)
-	autoload.addNotStackableItem(inventory_grid,autoload.wood_sword)
+	autoload.addNotStackableItem(inventory_grid,autoload.sword_beginner_png)
 	autoload.addNotStackableItem(inventory_grid,autoload.garment1)
 	autoload.addNotStackableItem(inventory_grid,autoload.shoe1)
 	autoload.addNotStackableItem(inventory_grid,autoload.torso_armor4)
 	autoload.addNotStackableItem(inventory_grid,autoload.torso_armor2)
 	autoload.addNotStackableItem(inventory_grid,autoload.torso_armor3)
 
-	autoload.addNotStackableItem(inventory_grid,autoload.axe_png)
+	autoload.addNotStackableItem(inventory_grid,autoload.axe_beginner_png)
 	autoload.addNotStackableItem(inventory_grid,autoload.pickaxe_png)
-	autoload.addNotStackableItem(inventory_grid,autoload.waraxe_png)
+	autoload.addNotStackableItem(inventory_grid,autoload.waraxe_beginner_png)
 	autoload.addNotStackableItem(inventory_grid,autoload.shield_wood_png)
-	autoload.addNotStackableItem(inventory_grid,autoload.great_sword_beginner_png)
+	autoload.addNotStackableItem(inventory_grid,autoload.greatsword_beginner_png)
 	
 	
 #_____________________________________Currency______________________________________________________
@@ -2529,36 +2529,80 @@ onready var sec_weap_icon = $UI/GUI/Equipment/EquipmentBG/SecWeap/Icon
 onready var sec_wea_slot = $UI/GUI/Equipment/EquipmentBG/SecWeap
 onready var legs_icon = $UI/GUI/Equipment/EquipmentBG/Pants/Icon
 onready var helm_icon = $UI/GUI/Equipment/EquipmentBG/Helm/Icon
-onready var hand_l_icon = $UI/GUI/Equipment/EquipmentBG/GloveL/Icon
+
 onready var hand_r_icon = $UI/GUI/Equipment/EquipmentBG/GloveR/Icon
 onready var chest_icon = $UI/GUI/Equipment/EquipmentBG/BreastPlate/Icon
 onready var foot_r_icon = $UI/GUI/Equipment/EquipmentBG/ShoeR/Icon
-onready var foot_l_icon = $UI/GUI/Equipment/EquipmentBG/ShoeL/Icon
 onready var glove_icon = $UI/GUI/Equipment/EquipmentBG/GloveR/Icon
-onready var glove_l_icon = $UI/GUI/Equipment/EquipmentBG/GloveL/Icon
-func SwitchEquipmentBasedOnEquipmentIcons():
 
+
+func noPrimaryWeap():
+	var effects = [
+		"sword_beginner_png",
+		"axe_beginner_png",
+		"greatsword_beginner_png"
+		# Add other effects as needed
+	]
+	for effect in effects:
+		applyEffect(effect, false)
+func noSecondaryWeap():
+	var effects = [
+		"sword_beginner_png2",
+		"axe_beginner_png2",
+		# Add other effects as needed
+	]
+	for effect in effects:
+		applyEffect(effect, false)
+func primaryWeapEffect(Chosen):
+	var effects = [
+		"sword_beginner_png",
+		"axe_beginner_png",
+		"greatsword_beginner_png"
+		# Add other effects as needed
+	]
+	for effect in effects:
+		if effect != Chosen:
+			applyEffect(effect, false)
+	
+	applyEffect(Chosen, true)
+func secondaryWeapEffect(Chosen):
+	var effects = [
+		"sword_beginner_png2",
+		"axe_beginner_png2"
+		# Add other effects as needed
+	]
+	for effect in effects:
+		if effect != Chosen:
+			applyEffect(effect, false)
+	applyEffect(Chosen, true)
+	
+	
+	
+
+func SwitchEquipmentBasedOnEquipmentIcons():
 #main weapon____________________________________________________________________
 	if sec_weap_icon.texture == null:
 		sec_weapon = autoload.sec_weap_list.zero
+		noPrimaryWeap()
 	if main_weap_icon != null:
 		if main_weap_icon.texture == null:
 			sec_wea_slot.visible = true
 			main_weapon = autoload.main_weap_list.zero
-			applyEffect("sword0", false)
+			noPrimaryWeap()
 			weapon_type = autoload.weapon_type_list.fist
 		else:
-			if main_weap_icon.texture.get_path() == autoload.wood_sword.get_path():
+			if main_weap_icon.texture.get_path() == autoload.sword_beginner_png.get_path():
 				sec_wea_slot.visible = true
 				main_weapon = autoload.main_weap_list.sword_beginner
-				applyEffect("sword0", true)
+				primaryWeapEffect("sword_beginner_png")
 				if sec_weap_icon.texture == null:
 					sec_weapon = autoload.sec_weap_list.zero
 					weapon_type = autoload.weapon_type_list.sword
 			
-			elif main_weap_icon.texture.get_path() == autoload.axe_png.get_path():
+			elif main_weap_icon.texture.get_path() == autoload.axe_beginner_png.get_path():
 				sec_wea_slot.visible = true
 				main_weapon = autoload.main_weap_list.axe_beginner
+				primaryWeapEffect("axe_beginner_png")
 				if sec_weap_icon.texture == null:
 					sec_weapon = autoload.sec_weap_list.zero
 					weapon_type = autoload.weapon_type_list.sword
@@ -2570,15 +2614,18 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 					sec_weapon = autoload.sec_weap_list.zero
 					weapon_type = autoload.weapon_type_list.sword
 		
-			elif main_weap_icon.texture.get_path() == autoload.waraxe_png.get_path():
+			elif main_weap_icon.texture.get_path() == autoload.waraxe_beginner_png .get_path():
 					main_weapon =  autoload.main_weap_list.waraxe_beginner
+					noSecondaryWeap()
 					weapon_type = autoload.weapon_type_list.heavy
 					sec_weapon = autoload.sec_weap_list.zero
 					sec_wea_slot.visible = false
 
 					
-			elif main_weap_icon.texture.get_path() == autoload.great_sword_beginner_png.get_path():
+			elif main_weap_icon.texture.get_path() == autoload.greatsword_beginner_png.get_path():
 					main_weapon =  autoload.main_weap_list.greatsword_beginner
+					primaryWeapEffect("greatsword_beginner_png")
+					noSecondaryWeap()
 					weapon_type = autoload.weapon_type_list.heavy
 					sec_weapon = autoload.sec_weap_list.zero
 					sec_wea_slot.visible = false
@@ -2587,30 +2634,35 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 				sec_wea_slot.visible = true
 				main_weapon = autoload.main_weap_list.zero
 				sec_weapon = autoload.sec_weap_list.zero
-				applyEffect("sword0", false)
+				noPrimaryWeap()
 				weapon_type = autoload.weapon_type_list.fist
 				
 			
 #sec weapon_____________________________________________________________________
 			if sec_weap_icon == null:
 				sec_weapon = autoload.sec_weap_list.zero
+				noSecondaryWeap()
 			else:
 				if sec_wea_slot.visible == false:
 					sec_weapon = autoload.sec_weap_list.zero
+					noSecondaryWeap()
 				else:
 					if sec_weap_icon.texture == null:
 						sec_weapon = autoload.sec_weap_list.zero
+						noSecondaryWeap()
 					else:
-						if sec_weap_icon.texture.get_path() == autoload.wood_sword.get_path():
+						if sec_weap_icon.texture.get_path() == autoload.sword_beginner_png.get_path():
 							sec_weapon = autoload.sec_weap_list.sword_beginner
+							secondaryWeapEffect("sword_beginner_png2")
 							weapon_type = autoload.weapon_type_list.dual_swords
 					
 						elif sec_weap_icon.texture.get_path() == autoload.shield_wood_png.get_path():
 							sec_weapon = autoload.sec_weap_list.shield_beginner
 							weapon_type = autoload.weapon_type_list.sword_shield
 						
-						elif sec_weap_icon.texture.get_path() == autoload.axe_png.get_path():
+						elif sec_weap_icon.texture.get_path() == autoload.axe_beginner_png.get_path():
 							sec_weapon = autoload.sec_weap_list.axe_beginner
+							secondaryWeapEffect("axe_beginner_png2")
 							weapon_type = autoload.weapon_type_list.dual_swords
 						
 						elif sec_weap_icon.texture.get_path() == autoload.pickaxe_png.get_path():
@@ -2618,6 +2670,7 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 							weapon_type = autoload.weapon_type_list.dual_swords
 						else:
 							sec_weapon = autoload.sec_weap_list.zero
+							noSecondaryWeap()
 
 
 #head___________________________________________________________________________
@@ -2644,7 +2697,6 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 				torso = "cuirass0"
 		elif chest_icon.texture == null:
 			torso = "naked"
-
 #_______________________________legs____________________________________________
 	
 	if legs_icon != null:
@@ -2654,20 +2706,12 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 		elif legs_icon.texture == null:
 			legs = "naked"
 #_______________________________hands___________________________________________
-	if hand_l_icon != null:
-		if hand_l_icon.texture != null:
-			if hand_l_icon.texture.get_path() == autoload.glove1.get_path():
-				hand_l = "cloth1"
-		elif hand_l_icon.texture == null:
-			hand_l = "naked"
-
 	if hand_r_icon != null:
 		if hand_r_icon.texture != null:
 			if hand_r_icon.texture.get_path() == autoload.glove1.get_path():
 				hand_r = "cloth1"
 		elif hand_r_icon.texture == null:
 			hand_r = "naked"
-
 #_______________________________feet____________________________________________
 	
 	if foot_r_icon != null:
@@ -2676,33 +2720,20 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 				foot_r = "cloth1"
 		elif foot_r_icon.texture == null:
 			foot_r = "naked"
-			
-	
-	if foot_l_icon != null:
-		if  foot_l_icon.texture != null:
-			if  foot_l_icon.texture.get_path() == autoload.shoe1.get_path():
-				foot_l = "cloth1"
-		elif foot_l_icon.texture == null:
-			foot_l = "naked"
-
-
-	
-	$UI/GUI/Equipment/EquipmentBG/SecWeap/Icon.savedata()
+	#REMINDER check for bugs, if none then move the savedata in savegame()
+	sec_weap_icon.savedata()
 	helm_icon.savedata()
 	chest_icon.savedata()
 	glove_icon.savedata()
-	glove_l_icon.savedata()
 	legs_icon.savedata()
-	foot_l_icon.savedata()
 	foot_r_icon.savedata()
 	main_weap_icon.savedata()
 
 
 
 
-#___________________________________________________________________________________________________
+#Use these for both equipment stats and for buffs or debuffs
 #___________________________________Status effects______________________________
-# Define effects and their corresponding stat changes
 var effects = {
 	"effect2": {"stats": { "extra_vitality": 2,"extra_agility": 0.05,}, "applied": false},
 	
@@ -2740,15 +2771,20 @@ var effects = {
 	"berserk": {"stats": {"extra_intelligence": -0.5,"extra_balance": -0.5,"extra_agility": 0.5,"extra_melee_atk_speed": 1,"extra_range_atk_speed": 0.5,"extra_cast_atk_speed": 0.3,"extra_ferocity": 0.3,"extra_fury": 0.3,}, "applied": false},
 	
 	#equipment effects______________________________________________________________________________
-	"helm1": {"stats": {"blunt_resistance": 3,"heat_resistance": 6,"cold_resistance": 3,"radiant_resistance": 6}, "applied": false},
-	"garment1": {"stats": {"slash_resistance": 3,"pierce_resistance": 1,"heat_resistance": 12,"cold_resistance": 12}, "applied": false},
-	"belt1": {"stats": {"extra_balance": 0.03,"extra_charisma": 0.011 }, "applied": false},
-	"pants1": {"stats": {"slash_resistance": 4,"pierce_resistance": 3,"heat_resistance": 6,"cold_resistance": 8}, "applied": false},
-	"Lhand1": {"stats": {"slash_resistance": 1,"blunt_resistance": 1,"pierce_resistance": 1,"cold_resistance": 3,"jolt_resistance": 5,"acid_resistance": 3}, "applied": false},
-	"Rhand1": {"stats": {"slash_resistance": 1,"blunt_resistance": 1,"pierce_resistance": 1,"cold_resistance": 3,"jolt_resistance": 5,"acid_resistance": 3}, "applied": false},
-	"Lshoe1": {"stats": {"slash_resistance": 1,"blunt_resistance": 3,"pierce_resistance": 1,"heat_resistance": 1,"cold_resistance": 6,"jolt_resistance": 15}, "applied": false},
-	"Rshoe1": {"stats": {"slash_resistance": 1,"blunt_resistance": 3,"pierce_resistance": 1,"heat_resistance": 1,"cold_resistance": 6,"jolt_resistance": 15}, "applied": false},
+	
+	#Use thee respective names of item equipment png name in autoload, add a 2 at the end for secondary weapons
+	
+	"sword_beginner_png": {"stats": {"extra_dmg": autoload.sword_beginner_dmg,"extra_guard_dmg_absorbition": autoload.sword_beginner_absorb}, "applied": false},
+	"sword_beginner_png2": {"stats": {"extra_dmg": autoload.sword_beginner_dmg,"extra_guard_dmg_absorbition": autoload.sword_beginner_absorb}, "applied": false},
+	"axe_beginner_png": {"stats": {"extra_dmg": autoload.axe_beginner_dmg,"extra_guard_dmg_absorbition": autoload.axe_beginner_absorb}, "applied": false},
+	"axe_beginner_png2": {"stats": {"extra_dmg": autoload.axe_beginner_dmg,"extra_guard_dmg_absorbition": autoload.axe_beginner_absorb}, "applied": false},
+	"greatsword_beginner_png": {"stats": {"extra_dmg": autoload.greatsword_beginner_dmg,"extra_guard_dmg_absorbition": autoload.greatsword_beginner_absorb,"extra_impact": 0.25}, "applied": false},
+
+
+
 	"sword0": {"stats": { "extra_guard_dmg_absorbition": 0.3}, "applied": false}
+
+
 }
 
 # Function to apply or remove effects
@@ -3111,9 +3147,8 @@ var vitality: float = 1
 var resistance: float = 1
 var tenacity: float = 1
 
-const base_charisma = 1 
+
 var charisma: float = 1
-var charisma_multiplier: float = 1 
 var loyalty: float = 1 
 var diplomacy: float = 1
 var authority: float = 1
@@ -3409,12 +3444,8 @@ func updateCritical():
 	var critical_chance = max(0, (total_accuracy - 1.00) * 0.5) +  max(0, (total_impact - 1.00) * 0.005) 
 	var critical_strength = max(1.0, ((total_ferocity - 1) * 2))  # Ensure critical_strength is at least 1.0
 	critical_chance_val.text = str(round(critical_chance * 100 * 1000) / 1000) + "%"
-	critical_str_val.text = "x" + str(critical_strength)
+	$UI/GUI/Equipment/EquipmentBG/CombatStats/GridContainer/CritDamageValue.text = "x" + str(critical_strength)
 
-func updateScaleRelatedAttributes():
-	var scale_multiplication: float 
-	scale_multiplication = base_charisma * (charisma_multiplier * 0.8699 * (scale_factor * 1.15))
-	charisma = scale_multiplication 
 
 
 
@@ -4637,7 +4668,7 @@ func plusCha():
 	charisma = result[1]
 	print(spent_attribute_points_cha)
 func minusCha():
-	var result: Array = decreaseAttribute(spent_attribute_points_cha,charisma)
+	var result: Array = decreaseAttribute(spent_attribute_points_bal,charisma)
 	spent_attribute_points_cha = result[0]
 	charisma = result[1]
 	print(spent_attribute_points_cha)
@@ -4746,7 +4777,7 @@ onready var critical_str_val = $UI/GUI/Equipment/EquipmentBG/CombatStats/GridCon
 
 func updateAllStats():
 	updateAefisNefis()	
-	updateScaleRelatedAttributes()
+
 	updateCritical()
 
 
@@ -4875,7 +4906,7 @@ func savePlayerData():
 		"resistance": resistance,
 		"tenacity": tenacity,
 #Social attributes 
-		"charisma_multiplier":charisma_multiplier,
+
 		"loyalty": loyalty,
 		"diplomacy": diplomacy,
 		"authority": authority,
@@ -5084,8 +5115,7 @@ func loadPlayerData():
 				vitality = player_data["vitality"]
 
 #Social attributes 
-			if "charisma_multiplier" in player_data:
-				charisma_multiplier = player_data["charisma_multiplier"]
+
 			if "loyalty" in player_data:
 				loyalty = player_data["loyalty"]
 			if "diplomacy" in player_data:

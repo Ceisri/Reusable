@@ -3,7 +3,7 @@ extends Spatial
 export var can_hold_weapon:bool = true
 export var species:String = "human"
 	
-	
+
 	
 var item = autoload.bread #the item drops are always PNGs 
 var quantity = 1 
@@ -87,7 +87,7 @@ func dropItems(player)->void:#FOR AUTOLOOTING
 	
 	match held_weapon:
 		autoload.main_weap_list.axe_beginner:
-			player.receiveDrops(autoload.axe_png,1)
+			player.receiveDrops(autoload.axe_beginner_png,1)
 	
 	if armor == null:
 		pass
@@ -102,7 +102,7 @@ func dropItemsLootTable(player)->void: #FOR MANUAL LOOTING
 	
 	match held_weapon:
 		autoload.main_weap_list.axe_beginner:
-			player.receiveLootInLootTable(autoload.axe_png,1)
+			player.receiveLootInLootTable(autoload.axe_beginner_png,1)
 	
 	if armor == null:
 		pass

@@ -451,7 +451,7 @@ func punch()->void:#fist
 onready var area_melee_front:Area = $MeleeFront
 func baseAtktHit()->void:#Heavy
 	var damage_type:String = player.base_dmg_type
-	var damage:float = player.total_dmg * 1.5
+	var damage:float = player.total_dmg 
 	var damage_flank:float = damage + player.flank_dmg 
 	var critical_damage : float  = damage * player.critical_strength
 	var critical_flank_damage : float  = damage_flank * player.critical_strength
@@ -471,7 +471,7 @@ func baseAtkLastHit()->void:#Heavy
 	player.all_skills.activateComboOverheadslash()
 	player.all_skills.activateComboWhirlwind()
 	var damage_type:String = player.base_dmg_type
-	var damage:float = player.total_dmg * 1.5
+	var damage:float = player.total_dmg * 2.25
 	var damage_flank:float = damage + player.flank_dmg 
 	var critical_damage : float  = damage * player.critical_strength
 	var critical_flank_damage : float  = damage_flank * player.critical_strength

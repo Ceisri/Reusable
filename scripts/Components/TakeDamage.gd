@@ -40,8 +40,10 @@ func effectDurations()->void:
 		
 
 func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type)->void:
+	
 	if parent.health > -100:
 		var entity_holder = parent.entity_holder
+		entity_holder.handWeaponBackWeapon()
 		instigatorAggro = parent.threat_system.createFindThreat(instigator)
 		var random_range = rand_range(0,100)
 		var text = autoload.floatingtext_damage.instance()
