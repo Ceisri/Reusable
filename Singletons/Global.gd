@@ -3,6 +3,24 @@ extends Node
 #____________________________________________Perforance_____________________________________________
 var entity_tick_rate: float = 0.04
 #____________________________________________Enumerators____________________________________________
+enum gathering_type{#when hitting dead enemies they drop extra butchery items based on this list
+	mammal,
+	furless,
+	reptilian,
+	fish,
+	dragon,
+	tree,#attacking a tree drops leaves, wood and fruits
+	wood,#use this for placed or dead wood which only drops wood
+	rock,
+	gold_ore,
+	mixed_ore,
+	iron_ore,
+	copper_ore,
+	tin_ore,
+	aluminum_ore,
+	coal,
+}
+
 enum state_list{
 	idle,#1
 	walk,#2
@@ -54,6 +72,8 @@ enum damage_type {
 	#....
 	
 }
+
+
 #________________________________________Icons and their data_______________________________________
 
 onready var drag_preview = preload("res://scripts/Components/Sprite.tscn")
@@ -76,6 +96,10 @@ onready var bell_pepper = preload("res://Food Icons/Vegetables/bell pepper.png")
 onready var aubergine = preload("res://Food Icons/Vegetables/aubergine.png")
 #coocked meals
 onready var bread = preload("res://Food Icons/Cooked Meals/Bread/bread.png")
+
+#Gathering icons
+onready var steak = preload("res://Gathering Icons/Meat/Steak.png")
+onready var ribs = preload("res://Gathering Icons/Meat/ribs.png")
 
 
 
@@ -261,12 +285,13 @@ enum weapon_type_list {
 
 onready var hat1 = preload("res://Equipment icons/hat1.png")
 onready var pad1 = preload("res://Equipment icons/shoulder1.png")
-onready var garment1 = preload("res://Equipment icons/garment1.png")
+
 onready var pants1 = preload("res://Equipment icons/pants1.png")
 onready var shoe1 = preload("res://Equipment icons/shoe1.png")
 onready var glove1 = preload("res://Equipment icons/glove1.png")
 onready var belt1 = preload("res://Equipment icons/belt1.png")
 
+onready var garment1 = preload("res://Equipment icons/garment1.png")
 onready var torso_armor2 = preload("res://Equipment icons/torso2.png")
 onready var torso_armor3 = preload("res://Equipment icons/torso3.png")
 onready var torso_armor4 = preload("res://Equipment icons/torso4.png")
@@ -280,6 +305,14 @@ onready var shoulder_scene0: PackedScene = preload("res://Equipment/Shoulder pad
 
 
 #________________Armor and clothing 3Dscenes to instance as children of skeletons___________________
+enum torso_list{
+	naked,
+	tunic,
+	gambeson,
+	chainmail,
+	gambeson,
+	cuirass
+}
 #stored male armors
 onready var human_xy_naked_torso_0: PackedScene = preload("res://Equipment/Armors/Human_XY/Torso/Torso0.tscn")#save the mesh as a scene and make sure the skin property share's the same bone names as the skeleton
 onready var human_xy_tunic_0: PackedScene = preload("res://Equipment/Armors/Human_XY/Torso/Tunic0.tscn")
@@ -313,7 +346,7 @@ onready var HXYface1: PackedScene = preload("res://player/human/mal/Mesh/heads/h
 
 func addNotStackableItem(inventory_grid,item_texture):
 	for child in inventory_grid.get_children():
-		if child.is_in_group("Inventory"):
+		if child.is_in_group("Inventory")or child.is_in_group("Loot"):
 			var icon = child.get_node("Icon")
 			if icon.texture == null:
 				icon.texture = item_texture
@@ -326,7 +359,7 @@ func addNotStackableItem(inventory_grid,item_texture):
 				continue  # Move to the next slot if this one already has a sword
 func addStackableItem(inventory_grid,item_texture,quantity):
 		for child in inventory_grid.get_children():
-			if child.is_in_group("Inventory"):
+			if child.is_in_group("Inventory") or child.is_in_group("Loot"):
 				var icon = child.get_node("Icon")
 				if icon.texture == null:
 					icon.texture = item_texture
