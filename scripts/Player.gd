@@ -2339,19 +2339,28 @@ onready var take_damage_view = $"Damage&Effects/Viewport"
 
 #________________________________Add items to inventory_________________________
 onready var loot_table_node:Control = $UI/GUI/LootTable
+onready var loot_grid:GridContainer =$UI/GUI/LootTable/ScrollContainer/LootGrid
 func lootBodies()->void:
-	if is_walking == true:
-		loot_table_node.visible = false
-	else:
-		if Input.is_action_just_pressed("collect"):
-			var bodies = $Mesh/Detector.get_overlapping_bodies()
-			for lootable in bodies:
-				if lootable != self:
-					if lootable.is_in_group("Lootable"):
-						if lootable.can_be_looted == true:
-							loot_table_node.visible = true
-				
+	if auto_loot == false:
+		if is_walking == true:
+			loot_table_node.visible = false
+		else:
+			if Input.is_action_just_pressed("collect"):
+				var bodies = $Mesh/Detector.get_overlapping_bodies()
+				for lootable in bodies:
+					if lootable != self:
+						if lootable.is_in_group("Lootable"):
+							if lootable.can_be_looted == true:
+								loot_table_node.visible = true
+								if lootable.entity_holder.has_method("removeEquipment"):
+									lootable.entity_holder.removeEquipment()
 
+
+func receiveLootInLootTable(item,quantity)->void:#This is called by the players that use manual looting, it doesn't work with receiveDrops, either thiss or the other otherwise the loot is received twice 
+	autoload.addStackableItem(loot_grid,item,quantity)
+
+	
+	
 var auto_loot:bool = false
 func receiveDrops(item,quantity)->void:#This is called by enemeis when they die or by quest givers or by gathering, works alone without neeeding to call lootBodies():
 	autoload.addStackableItem(inventory_grid,item,quantity)

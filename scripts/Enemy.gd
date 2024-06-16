@@ -12,9 +12,22 @@ var movement_speed = int()
 var angular_acceleration = int()
 var acceleration = int()
 var random_atk:float
-export var can_be_looted:bool = false
+
+
+
+export var spawn_point:Vector3 
+export var can_be_looted:bool = false ##loot system in entity_holder = $Mesh/EntityHolder
+export var is_made_of= autoload.gathering_type.furless
+export var is_randomized:bool = true
+export var can_wear_armor:bool = true
+export var can_respawn:bool = true
+
 onready var process:Timer = $Process #This is a timer node called "Process"
 func _ready()->void:
+	spawn_point = translation
+	if is_randomized == true:
+		if can_wear_armor == true:
+			entity_holder.selectRandomEquipment()
 	var one_sec:Timer = $"1secTimer"
 	
 	process.connect("timeout", self, "process") #remember to set this timer to process mode = Physics
@@ -39,7 +52,28 @@ func process()->void:
 			death_time = 3.958
 			if has_died == true:
 				state = autoload.state_list.dead
-				process.stop()
+				
+				
+				
+				
+				
+func respawn()->void:
+	health = max_health
+	threat_system.resetThreats()
+	death_time = 0
+	has_died = false
+	can_be_looted = false
+	state = autoload.state_list.wander
+	translation = spawn_point
+	damage_effect_manager.resetEffects()
+	health = max_health
+	health = max_health
+	health = max_health
+	if is_randomized == true:
+		if can_wear_armor == true:
+			entity_holder.selectRandomEquipment()
+		
+			
 	
 func oneSecondTimer()->void:
 	damage_effect_manager.effectDurations()

@@ -236,3 +236,10 @@ func loseThreat()->void: #call this function every few ticks to lose threat from
 				get_parent().state = autoload.state_list.wander
 			else: #else engage the threatening player or entity 
 				get_parent().state = autoload.state_list.engage
+
+
+func resetThreats():
+	for assailant in targets:
+		if assailant != null and assailant.player != null:
+			if is_instance_valid(assailant) and is_instance_valid(assailant.player):
+				assailant.threat = 0
