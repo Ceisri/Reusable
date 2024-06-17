@@ -36,7 +36,7 @@ func _ready()->void:
 	#like Your_FakeProcess_Timer.start(0.05) means that your enemy will run at 20FPS which is more than enough
 	#and remember to put your time into physics mode and not idle mode otherwise it won't save you from lag
 	process.start(autoload.entity_tick_rate + rand_range(0, 0.015)) 
-
+var dropped_loot:bool = false
 func process()->void:
 	if health >0:
 		autoload.entityGravity(self)
@@ -52,6 +52,7 @@ func process()->void:
 			death_time = 3.958
 			if has_died == true:
 				state = autoload.state_list.dead
+
 				
 				
 				
@@ -69,6 +70,7 @@ func respawn()->void:
 	health = max_health
 	health = max_health
 	health = max_health
+	damage_effect_manager.has_got_killed_already = false
 	if is_randomized == true:
 		if can_wear_armor == true:
 			entity_holder.selectRandomEquipment()
@@ -160,7 +162,7 @@ func matchState()->void:
 								changeAttackType()
 								lookTarget(turn_speed)
 								followTarget(false)
-
+								animation.play("walk",0.2)
 								
 								
 		autoload.state_list.orbit:
@@ -359,6 +361,11 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type)->v
 	stored_instigator = instigator
 	damage_effect_manager.takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type)
 	damage_effect_manager.getKilled(instigator)
+	if health >0: 
+		lookTarget(turn_speed)
+		lookTarget(turn_speed)
+		lookTarget(turn_speed)
+		lookTarget(turn_speed)
 
 #stats______________________________________________________________________________________________
 var entity_name = "Demon"
@@ -610,10 +617,7 @@ func applyEffect(effect_name: String, active: bool)->void:
 
 func changeAttackType()->void:
 	random_atk = rand_range(0,1)
-func die():
-	death_time = 0
-	has_died = true 
-	state = autoload.state_list.dead
+
 func staggeredOver():
 	state = autoload.state_list.wander
 	staggered_duration = false
@@ -639,7 +643,7 @@ func dealDMG(enemy_detector1,critical_damage,aggro_power,damage_type,critical_fl
 						if randf() <= critical_chance:#critical hit
 							if victim.absorbing == true: #victim is guarding
 								if isFacingSelf(victim,0.30): #the victim is looking face to face at self 
-									victim.takeDamage(critical_damage/victim.guard_dmg_absorbition,aggro_power,self,stagger_chance,damage_type)
+									victim.takeDamage(critical_damage/victim.total_guard_dmg_absorbition,aggro_power,self,stagger_chance,damage_type)
 								else: #apparently the victim is showing his back or flanks while guarding, flank damage + punishment damage
 									victim.takeDamage(critical_flank_damage + punishment_damage,aggro_power,self,stagger_chance,punishment_damage_type)
 							elif victim.parry == true: 
@@ -649,14 +653,14 @@ func dealDMG(enemy_detector1,critical_damage,aggro_power,damage_type,critical_fl
 									victim.takeDamage(critical_flank_damage + punishment_damage,aggro_power,self,stagger_chance,punishment_damage_type)
 							else:#player is guarding
 								if isFacingSelf(victim,0.30): #check if the victim is looking at me 
-									victim.takeDamage(critical_damage/victim.guard_dmg_absorbition,aggro_power,self,stagger_chance,damage_type)
+									victim.takeDamage(critical_damage/victim.total_guard_dmg_absorbition,aggro_power,self,stagger_chance,damage_type)
 								else: #apparently the victim is showing his back or flanks, extra damage
 									victim.takeDamage(critical_flank_damage + punishment_damage,aggro_power,self,stagger_chance,punishment_damage_type)
 ##______________________________________________________________normal hit_______________________________________________________________________________________________
 						else: 
 							if victim.absorbing == true:#victim is guarding
 								if isFacingSelf(victim,0.30): #the victim is looking face to face at self 
-									victim.takeDamage(damage/victim.guard_dmg_absorbition,aggro_power,self,stagger_chance,damage_type)
+									victim.takeDamage(damage/victim.total_guard_dmg_absorbition,aggro_power,self,stagger_chance,damage_type)
 								else: #apparently the victim is showing his back or flanks while guard, flank damage + punishment damage
 									victim.takeDamage(damage_flank + punishment_damage,aggro_power,self,stagger_chance,punishment_damage_type)
 							elif victim.parry == true:
@@ -688,3 +692,10 @@ func atk4Spam()->void:
 	atk4_spam += 1
 	if atk4_spam == 4:
 		atk4_spam = 0
+
+
+
+func die():
+	death_time = 0
+	has_died = true 
+	state = autoload.state_list.dead

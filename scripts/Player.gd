@@ -3525,8 +3525,8 @@ func resistanceMath():
 
 
 func updateCritical():
-	var critical_chance = max(0, (total_accuracy - 1.00) * 0.5) +  max(0, (total_impact - 1.00) * 0.005) + 50
-	var critical_strength = max(1.0, ((total_ferocity - 1) * 2))  # Ensure critical_strength is at least 1.0
+	critical_chance = (max(0, (total_accuracy - 1.00) * 0.5) +  max(0, (total_impact - 1.00) * 0.005)) * 10
+	critical_strength = max(1.0, ((total_ferocity - 1) * 2))  # Ensure critical_strength is at least 1.0
 	critical_chance_val.text = str(round(critical_chance * 100 * 1000) / 1000) + "%"
 	$UI/GUI/Equipment/EquipmentBG/CombatStats/GridContainer/CritDamageValue.text = "x" + str(critical_strength)
 

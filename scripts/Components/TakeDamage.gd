@@ -118,7 +118,7 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type)->v
 				if parent.health >= -100:
 					entity_holder.gather(instigator,round(damage_to_take))
 
-
+			
 
 			if random_range < stagger_chance - parent.stagger_resistance:
 				if parent.health >0:
@@ -126,15 +126,41 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type)->v
 						parent.staggered_duration = true
 						text.status = "Staggered"
 						
-			if random_range < instigator.critical_chance:
-				damage_to_take * instigator.critial_strength
 	
 	
-			parent.health -= damage_to_take	
-			instigatorAggro.threat += damage_to_take + aggro_power
-			text.amount =round(damage_to_take * 100)/ 100
-			text.state = damage_type
-			add_child(text)
+			if instigator.isFacingSelf(parent,0.30):
+				if random_range < instigator.critical_chance:
+					damage_to_take * instigator.critical_strength
+					parent.health -= damage_to_take	
+					instigatorAggro.threat += damage_to_take + aggro_power
+					text.amount =round(damage_to_take * 100)/ 100
+					text.status = "Critical"
+					text.state = damage_type
+					add_child(text)
+				else:
+					parent.health -= damage_to_take	
+					instigatorAggro.threat += damage_to_take + aggro_power
+					text.amount =round(damage_to_take * 100)/ 100
+					text.state = damage_type
+					add_child(text)
+		
+		
+			else:
+				if  random_range< instigator.critical_chance:
+					damage_to_take * instigator.critical_strength
+					parent.health -= damage_to_take	+ instigator.flank_dmg
+					instigatorAggro.threat += damage_to_take + aggro_power
+					text.amount =round(damage_to_take * 100)/ 100
+					text.status = "Critical + Flank"
+					text.state = damage_type
+					add_child(text)
+				else:
+					parent.health -= damage_to_take	+ instigator.flank_dmg
+					instigatorAggro.threat += damage_to_take + aggro_power
+					text.amount =round(damage_to_take * 100)/ 100
+					text.state = damage_type
+					text.status = "Flanked"
+					add_child(text)
 		else:
 			text.status = "Parried"
 			text.state = damage_type
@@ -273,20 +299,24 @@ func lifesteal(damage_to_take)-> void:#This is called by the enemy's script when
 			parent.health = parent.max_health
 	
 
-
+var has_got_killed_already:bool = false
 func getKilled(instigator)->void:
-	var entity_holder = parent.entity_holder
-	var health = parent.health
-	var max_health = parent.max_health
-	if parent.has_died == false:
-		if health <= 0:
-			parent.state = autoload.state_list.dead
-			print(str(instigator.entity_name) +" has killed " +str(parent.entity_name))
-			if instigator.has_method("takeExperience"):
-				instigator.takeExperience(round((max_health * 0.01)+ parent.experience_worth))
+	if has_got_killed_already == false:
+		var entity_holder = parent.entity_holder
+		var health = parent.health
+		var max_health = parent.max_health
+		if parent.has_died == false:
+			if health <= 0:
+				parent.death_time = 3.958
+				parent.state = autoload.state_list.dead
+				print(str(instigator.entity_name) +" has killed " +str(parent.entity_name))
 				if instigator.auto_loot == true:
-					entity_holder.dropItems(instigator)
+						entity_holder.dropItems(instigator)
+						if instigator.has_method("takeExperience"):
+							instigator.takeExperience(round((max_health * 0.01)+ parent.experience_worth))
+							has_got_killed_already = true
 				else:
-					entity_holder.dropItemsLootTable(instigator)
-
-	
+						entity_holder.dropItemsLootTable(instigator)
+						has_got_killed_already = true
+						if instigator.has_method("takeExperience"):
+							instigator.takeExperience(round((max_health * 0.01)+ parent.experience_worth))

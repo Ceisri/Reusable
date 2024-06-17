@@ -739,28 +739,8 @@ func dealDMG(victim,critical_damage,aggro_power,damage_type,critical_flank_damag
 		if victim  != player:
 			if victim.is_in_group("Entity"):
 				if victim.has_method("takeDamage"):
-					if random <= player.critical_chance:#critical hit
-						if victim.absorbing == true or victim.parry == true: #victim is guarding
-							if player.isFacingSelf(victim,0.30): #the victim is looking face to face at self 
-									victim.takeDamage(critical_damage/victim.guard_dmg_absorbition,aggro_power,player,stagger_chance,damage_type)
-							else: #apparently the victim is showing his back or flanks while guard, flank damage + punishment damage
-									victim.takeDamage(critical_flank_damage + punishment_damage,aggro_power,player,stagger_chance,punishment_damage_type)
-						else:#player is guarding
-							if player.isFacingSelf(victim,0.30): #check if the victim is looking at me 
-								victim.takeDamage(critical_damage/victim.guard_dmg_absorbition,aggro_power,player,stagger_chance,damage_type)
-							else: #apparently the victim is showing his back or flanks, extra damage
-								victim.takeDamage(critical_damage,aggro_power,player,stagger_chance,punishment_damage_type)
-					else: #normal hit
-						if victim.absorbing == true or victim.parry == true: #victim is guarding
-							if player.isFacingSelf(victim,0.30): #the victim is looking face to face at self 
-								victim.takeDamage(damage/victim.guard_dmg_absorbition,aggro_power,player,stagger_chance,damage_type)
-							else: #apparently the victim is showing his back or flanks while guard, flank damage + punishment damage
-								victim.takeDamage(damage_flank + punishment_damage,aggro_power,player,stagger_chance,punishment_damage_type)
-						else:#victim is not guarding
-							if player.isFacingSelf(victim,0.30):#the victim is looking face to face at self 
-								victim.takeDamage(damage,aggro_power,player,stagger_chance,damage_type)
-							else: #appareantly the victim is showing his back or flanks, extra damage
-								victim.takeDamage(damage_flank,aggro_power,player,stagger_chance,damage_type)
+					victim.takeDamage(damage,aggro_power,player,stagger_chance,damage_type)
+
 			else:
 				if victim.has_method("getChopped"):
 					victim.getChopped(damage,player)
