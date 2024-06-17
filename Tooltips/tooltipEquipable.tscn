@@ -1,0 +1,106 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://Tooltips/tooltipEquipable.gd" type="Script" id=1]
+[ext_resource path="res://UI/fonts/percentage.tres" type="DynamicFont" id=3]
+[ext_resource path="res://InterfaceGraphics/banner.png" type="Texture" id=4]
+
+[node name="Node2D" type="Node2D" groups=["ToolTip", "Tooltip", "tooltip"]]
+scale = Vector2( 0.586748, 0.521626 )
+z_index = 658
+script = ExtResource( 1 )
+
+[node name="BG" type="TextureRect" parent="." groups=["Tooltip"]]
+modulate = Color( 1, 1, 1, 0.792157 )
+margin_left = 47.7206
+margin_top = 17.2537
+margin_right = 947.721
+margin_bottom = 567.254
+rect_scale = Vector2( 0.717536, 1.40027 )
+texture = ExtResource( 4 )
+
+[node name="GridContainer" type="GridContainer" parent="."]
+margin_left = 68.1724
+margin_top = 134.196
+margin_right = 668.172
+margin_bottom = 584.196
+rect_min_size = Vector2( 600, 450 )
+
+[node name="Stat1" type="RichTextLabel" parent="GridContainer"]
+margin_right = 600.0
+margin_bottom = 40.0
+rect_min_size = Vector2( 600, 40 )
+custom_fonts/normal_font = ExtResource( 3 )
+text = "stats1"
+
+[node name="Stat2" type="RichTextLabel" parent="GridContainer"]
+margin_top = 44.0
+margin_right = 600.0
+margin_bottom = 84.0
+rect_min_size = Vector2( 600, 40 )
+custom_fonts/normal_font = ExtResource( 3 )
+text = "stats1"
+
+[node name="Stat3" type="RichTextLabel" parent="GridContainer"]
+margin_top = 88.0
+margin_right = 600.0
+margin_bottom = 128.0
+rect_min_size = Vector2( 600, 40 )
+custom_fonts/normal_font = ExtResource( 3 )
+text = "stats1"
+
+[node name="Stat4" type="RichTextLabel" parent="GridContainer"]
+margin_top = 132.0
+margin_right = 600.0
+margin_bottom = 172.0
+rect_min_size = Vector2( 600, 40 )
+custom_fonts/normal_font = ExtResource( 3 )
+text = "stats1"
+
+[node name="Stat5" type="RichTextLabel" parent="GridContainer"]
+margin_top = 176.0
+margin_right = 600.0
+margin_bottom = 216.0
+rect_min_size = Vector2( 600, 40 )
+custom_fonts/normal_font = ExtResource( 3 )
+text = "stats1"
+
+[node name="Stat6" type="RichTextLabel" parent="GridContainer"]
+margin_top = 220.0
+margin_right = 600.0
+margin_bottom = 260.0
+rect_min_size = Vector2( 600, 40 )
+custom_fonts/normal_font = ExtResource( 3 )
+text = "stats1"
+
+[node name="Stat7" type="RichTextLabel" parent="GridContainer"]
+margin_top = 264.0
+margin_right = 600.0
+margin_bottom = 304.0
+rect_min_size = Vector2( 600, 40 )
+custom_fonts/normal_font = ExtResource( 3 )
+text = "stats1"
+
+[node name="Stat8" type="RichTextLabel" parent="GridContainer"]
+margin_top = 308.0
+margin_right = 600.0
+margin_bottom = 348.0
+rect_min_size = Vector2( 600, 40 )
+custom_fonts/normal_font = ExtResource( 3 )
+text = "stats1"
+
+[node name="Stat9" type="RichTextLabel" parent="GridContainer"]
+margin_top = 352.0
+margin_right = 600.0
+margin_bottom = 577.0
+rect_min_size = Vector2( 600, 225 )
+custom_fonts/normal_font = ExtResource( 3 )
+text = "Description:"
+
+[node name="Title" type="Label" parent="."]
+margin_left = 64.7637
+margin_top = 69.015
+margin_right = 112.764
+margin_bottom = 107.015
+rect_scale = Vector2( 1.88224, 1.3494 )
+custom_fonts/font = ExtResource( 3 )
+text = "Title"
