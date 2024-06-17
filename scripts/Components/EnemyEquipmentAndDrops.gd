@@ -10,7 +10,7 @@ var quantity = 1
 
 
 var armor
-	
+onready var entity = $"../.."
 func selectRandomEquipment() -> void:
 	# Get the enum values
 	var torso_values = autoload.torso_list.values()

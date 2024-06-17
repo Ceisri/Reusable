@@ -36,6 +36,16 @@ func _ready()->void:
 	#like Your_FakeProcess_Timer.start(0.05) means that your enemy will run at 20FPS which is more than enough
 	#and remember to put your time into physics mode and not idle mode otherwise it won't save you from lag
 	process.start(autoload.entity_tick_rate + rand_range(0, 0.015)) 
+	stutterPrevention()
+	
+	
+func stutterPrevention()->void:
+	var text = autoload.floatingtext_damage.instance()
+	text.status = "STUTTER PREVENTION"
+	add_child(text)
+	takeDamage(0, 0, self, 0, "empty")
+	threat_system.resetThreats()
+	
 var dropped_loot:bool = false
 func process()->void:
 	if health >0:
@@ -53,10 +63,6 @@ func process()->void:
 			if has_died == true:
 				state = autoload.state_list.dead
 
-				
-				
-				
-				
 				
 func respawn()->void:
 	health = max_health
@@ -85,11 +91,14 @@ func displayThreatInfo(label):
 	label.text = "\n".join(threat_system.threat_info)
 
 
-	
-	
+
 var state = autoload.state_list.wander
 var stagger_time:float  = 0
 var death_time:float  = 0
+
+var knockeddown_duration:bool = false
+var knockeddown_first_part:bool = false
+
 var staggered_duration: bool = false
 var has_died:bool = false
 
@@ -105,89 +114,112 @@ var atk3_spam:int = 0
 var atk_4_duration:bool = false
 var atk4_spam:int = 0
 func matchState()->void:
-	match state:
-		autoload.state_list.idle:
-			animation.play("idle",0.3)
-		autoload.state_list.wander:
-			if health >0:
-				$Wandering.wander()# animations are inside 
-				forceDirectionChange()
-		autoload.state_list.curious:
-			lookTarget(turn_speed)
-		autoload.state_list.engage:
-			var target = threat_system.findHighestThreat()
-			if health >0:#not dead
-#_______________________Entity is Stunned, Stop all attacks_______________________________________
-				if stunned_duration > 0:# not stunned 
-					animationCancel()
-					state = autoload.state_list.stunned
+	if knockeddown_duration == true:
+		animReset()
+		if health > 1:
+			animation.play("knocked down",0.3)
+			if knockeddown_first_part == false:
+				lookTarget(5)
+		
+		
+		
+	else:
+		match state:
+			autoload.state_list.idle:
+				animation.play("idle",0.3)
+			autoload.state_list.wander:
+				if health >0:
+					$Wandering.wander()# animations are inside 
+					forceDirectionChange()
+			autoload.state_list.curious:
+				lookTarget(turn_speed)
+			autoload.state_list.engage:
+				var target = threat_system.findHighestThreat()
+				if health >0:#not dead
+	#_______________________Entity is Stunned, Stop all attacks_______________________________________
+					if stunned_duration > 0:# not stunned 
+						animationCancel()
+						state = autoload.state_list.stunned
+						animation.play("staggered",0.2)
+	#_______________________Entity is staggered, Stop all attacks_______________________________________
+					elif staggered_duration == true:
+						animationCancel()
+						state = autoload.state_list.staggered
+						animation.play("staggered",0.2)	
+	#_______________________Entity is free to move and attack_______________________________________
+					else:
+						attackAnimations()
+						var  distance_to_target = findDistanceTarget()
+						if distance_to_target != null:
+	#________________________Target in range start choosing an attack and lock it in____________________
+							#This entity is in range to attack
+							if distance_to_target < 1.3:
+								var random_value = randf()
+								#check if this entity has been hit or instigated by anyone
+								if stored_instigator != null:
+									#The player is attacking this entity from behind or doing strange stuff like parrying or holding up the shield
+									#maybe there are multiple enemies and is parrying one while ignoring the other 
+									if stored_instigator.absorbing ==true or  stored_instigator.parry ==true:
+										lookTarget(4)
+									#The player is attacking but not hitting this Entity and tho they are in combat,
+									#either the player is missing hits or attacking multiple enemies
+									elif stored_instigator.is_attacking ==true:
+										if randi() % 2 == 0:  # 50% chance
+											lookTarget(4)
+								#Start a random attack and get stuck in the animation unable to move or turn
+								#giving a chance  for players to backstab or flank this entity
+								if random_atk < 0.25:  # 25% 
+										atk_1_duration = true
+										#Entity is stuck in animation, check how many times it attacked to see if it can turn around 
+										if atk1_spam > 2:
+											lookTarget(turn_speed)
+								elif random_atk < 0.50:  # 25% 
+										atk_2_duration = true
+										#Entity is stuck in animation, check how many times it attacked to see if it can turn around 
+										if atk2_spam > 1:
+											lookTarget(turn_speed)
+								elif random_atk < 0.75:  # 25%
+										atk_3_duration = true
+										if atk3_spam > 1:
+											lookTarget(turn_speed)
+								else:  # 25% of the remaining 70% 
+										atk_4_duration = true
+										#Entity is stuck in animation, check how many times it attacked to see if it can turn around 
+										if atk4_spam > 1:
+											lookTarget(turn_speed)
+
+	#__________________Target too far away, if not stuck in attack animation, follow it_________________
+							else:
+								if  atk_1_duration == false and atk_2_duration == false and atk_3_duration == false and atk_4_duration == false:
+									changeAttackType()
+									lookTarget(turn_speed)
+									followTarget(false)
+									animation.play("walk combat",0.2)
+									
+									
+			autoload.state_list.orbit:
+				if staggered_duration == false:
+					if orbit_time > 0:
+						orbit_time -= 3 * get_physics_process_delta_time()
+						orbitTarget()
+						lookTarget(turn_speed)
+					else:
+						state = autoload.state_list.engage
+			autoload.state_list.stunned:
+				if stunned_duration > 0:
 					animation.play("staggered",0.2)
-#_______________________Entity is staggered, Stop all attacks_______________________________________
-				elif staggered_duration == true:
-					animationCancel()
-					state = autoload.state_list.staggered
-					animation.play("staggered",0.2)	
-#_______________________Entity is free to move and attack_______________________________________
-				else:
-					attackAnimations()
-					var  distance_to_target = findDistanceTarget()
-					if distance_to_target != null:
-#________________________Target in range start choosing an attack and lock it in____________________
-						if distance_to_target < 1.3:
-							var random_value = randf()
-
-							if random_atk < 0.25:  # 25% 
-									atk_1_duration = true
-									#Entity is stuck in animation, check how many times it attacked to see if it can turn around 
-									if atk1_spam > 2:
-										lookTarget(turn_speed)
-							elif random_atk < 0.50:  # 25% 
-									atk_2_duration = true
-									#Entity is stuck in animation, check how many times it attacked to see if it can turn around 
-									if atk2_spam > 1:
-										lookTarget(turn_speed)
-							elif random_atk < 0.75:  # 25%
-									atk_3_duration = true
-									if atk3_spam > 1:
-										lookTarget(turn_speed)
-							else:  # 25% of the remaining 70% 
-									atk_4_duration = true
-									#Entity is stuck in animation, check how many times it attacked to see if it can turn around 
-									if atk4_spam > 1:
-										lookTarget(turn_speed)
-
-#__________________Target too far away, if not stuck in attack animation, follow it_________________
-						else:
-							if  atk_1_duration == false and atk_2_duration == false and atk_3_duration == false and atk_4_duration == false:
-								changeAttackType()
-								lookTarget(turn_speed)
-								followTarget(false)
-								animation.play("walk",0.2)
-								
-								
-		autoload.state_list.orbit:
-			if staggered_duration == false:
-				if orbit_time > 0:
-					orbit_time -= 3 * get_physics_process_delta_time()
-					orbitTarget()
-					lookTarget(turn_speed)
 				else:
 					state = autoload.state_list.engage
-		autoload.state_list.stunned:
-			if stunned_duration > 0:
+			autoload.state_list.staggered:
 				animation.play("staggered",0.2)
-			else:
-				state = autoload.state_list.engage
-		autoload.state_list.staggered:
-			animation.play("staggered",0.2)
-		autoload.state_list.dead:
-			if death_time >0:
-				death_time -= 1 * get_physics_process_delta_time()
-				animation.play("death",0.2)
-				if death_time <= 0:
-					has_died = true
-			else:	
-				animation.play("dead",0.6)
+			autoload.state_list.dead:
+				if death_time >0:
+					death_time -= 1 * get_physics_process_delta_time()
+					animation.play("death",0.2)
+					if death_time <= 0:
+						has_died = true
+				else:	
+					animation.play("dead",0.6)
 
 
 func attackAnimations()->void:
@@ -290,7 +322,20 @@ func lookTargetTween(turning_speed: float) -> void:
 		tween.interpolate_property(eyes, "rotation:y", eyes.rotation.y, target_rotation_y, turning_speed, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
 		tween.start()
 
-		
+
+func lookTargetTweenFixedSpeed() -> void:
+	var target = threat_system.findHighestThreat()
+	if target:
+		var target_position = target.player.global_transform.origin
+		var look_at_target_transform = eyes.global_transform.looking_at(target_position, Vector3.UP)
+		var target_rotation_y = look_at_target_transform.basis.get_euler().y
+
+		# Stop any existing tweening
+		tween.stop_all()
+
+		# Tween the rotation.y to target_rotation_y over a duration based on turning_speed
+		tween.interpolate_property(eyes, "rotation:y", eyes.rotation.y, target_rotation_y, 9, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
+		tween.start()
 		
 		
 var walk_speed: float = 3
@@ -367,6 +412,20 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type)->v
 		lookTarget(turn_speed)
 		lookTarget(turn_speed)
 
+func getKnockedDown(instigator)-> void:#call this for skills that have a different knock down chance
+	var text = autoload.floatingtext_damage.instance()
+	damage_effect_manager.getKnockedDown(instigator)
+	text.status = "Knocked Down!"
+	add_child(text)
+	animReset()
+	
+func animReset():
+	atk_1_duration = false
+	atk_2_duration = false
+	atk_3_duration = false
+	atk_4_duration = false
+	staggered_duration = false
+
 #stats______________________________________________________________________________________________
 var entity_name = "Demon"
 var level: int = 1
@@ -401,10 +460,12 @@ var max_vifis = 100
 var vifis = 100 
 
 #health system 
-const base_max_health = 60
-var max_health = 60
-var health = 60
+const base_max_health = 160
+var max_health = 160
+var health = 160
 #________________________
+
+var knockdown_chance: float = 50
 
 
 #additional combat energy systems
@@ -417,8 +478,8 @@ var resolve = 100
 var scale_factor = 1
 
 
-var critical_chance: float = 0
-var critical_strength: float = 2.0
+var critical_chance: float = 33
+var critical_dmg: float = 2.05
 var stagger_chance: float = 8 #0 to 100 in percentage
 var life_steal: float = 0
 #resistances
@@ -436,7 +497,10 @@ var bleed_resistance: int = 0
 var neuro_resistance: int = 0
 var radiant_resistance: int = 0
 
+var impact:float = 1
+var balance: float = 2
 
+var guard_dmg_absorbition: float = 2.5
 
 
 var base_flank_dmg : float = 5.0
@@ -621,59 +685,21 @@ func changeAttackType()->void:
 func staggeredOver():
 	state = autoload.state_list.wander
 	staggered_duration = false
-#___________________________________________________________________________________________________
+#________________________________________ATTACKS GO HERE____________________________________________
 func baseMeleeAtk()->void:
 	var damage_type:String = "slash"
-	var damage = 3 * level 
-	var damage_flank = damage + flank_dmg 
-	var critical_damage : float  = damage * critical_strength
-	var critical_flank_damage : float  = damage_flank * critical_strength
-	var punishment_damage : float = 7 #extra damage for when the victim is trying to block but is facing the wrong way 
-	var punishment_damage_type :String = "cold"
+	var damage = 5 * level 
 	var aggro_power = 0
 	var enemies = $Area.get_overlapping_bodies()
-	dealDMG(enemies,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank)
-func dealDMG(enemy_detector1,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank):
-	for victim in enemy_detector1:
-		if victim.is_in_group("Player"):
-			if victim != self:
-				victim.stored_instigator = self 
-				var rand = rand_range(0,1)
-				if victim.state != autoload.state_list.dead:
-						if randf() <= critical_chance:#critical hit
-							if victim.absorbing == true: #victim is guarding
-								if isFacingSelf(victim,0.30): #the victim is looking face to face at self 
-									victim.takeDamage(critical_damage/victim.total_guard_dmg_absorbition,aggro_power,self,stagger_chance,damage_type)
-								else: #apparently the victim is showing his back or flanks while guarding, flank damage + punishment damage
-									victim.takeDamage(critical_flank_damage + punishment_damage,aggro_power,self,stagger_chance,punishment_damage_type)
-							elif victim.parry == true: 
-								if isFacingSelf(victim,0.30): #the victim is looking face to face at self
-									victim.takeDamage(0,aggro_power,self,0,damage_type)
-								else: #apparently the victim is showing his back or flanks while guarding, flank damage + punishment damage
-									victim.takeDamage(critical_flank_damage + punishment_damage,aggro_power,self,stagger_chance,punishment_damage_type)
-							else:#player is guarding
-								if isFacingSelf(victim,0.30): #check if the victim is looking at me 
-									victim.takeDamage(critical_damage/victim.total_guard_dmg_absorbition,aggro_power,self,stagger_chance,damage_type)
-								else: #apparently the victim is showing his back or flanks, extra damage
-									victim.takeDamage(critical_flank_damage + punishment_damage,aggro_power,self,stagger_chance,punishment_damage_type)
-##______________________________________________________________normal hit_______________________________________________________________________________________________
-						else: 
-							if victim.absorbing == true:#victim is guarding
-								if isFacingSelf(victim,0.30): #the victim is looking face to face at self 
-									victim.takeDamage(damage/victim.total_guard_dmg_absorbition,aggro_power,self,stagger_chance,damage_type)
-								else: #apparently the victim is showing his back or flanks while guard, flank damage + punishment damage
-									victim.takeDamage(damage_flank + punishment_damage,aggro_power,self,stagger_chance,punishment_damage_type)
-							elif victim.parry == true:
-								if isFacingSelf(victim,0.30): #the victim is looking face to face at self 
-									victim.takeDamage(0,aggro_power,self,0,damage_type)
-								else: #apparently the victim is showing his back or flanks while guard, flank damage + punishment damage
-									victim.takeDamage(damage_flank + punishment_damage,aggro_power,self,stagger_chance,punishment_damage_type)
-							else:
-								if isFacingSelf(victim,0.30):#the victim is looking face to face at self 
-									victim.takeDamage(damage,aggro_power,self,stagger_chance,damage_type)
-								else: #appareantly the victim is showing his back or flanks, extra damage
-									victim.takeDamage(damage_flank,aggro_power,self,stagger_chance,damage_type)
-
+	for victim in enemies:
+		dealDMG(victim,aggro_power,damage_type,damage)
+func dealDMG(victim,aggro_power,damage_type,damage)-> void:
+		var random = rand_range(0,1)
+		if victim  != self:
+			if victim.is_in_group("Entity"):
+				if victim.is_in_group("Player"):
+					if victim.has_method("takeDamage"):
+						victim.takeDamage(damage,aggro_power,self,stagger_chance,damage_type)
 
 
 func atk1Spam()->void:
@@ -699,3 +725,7 @@ func die():
 	death_time = 0
 	has_died = true 
 	state = autoload.state_list.dead
+func getUp()->void:
+	knockeddown_duration = false
+func startGettingUp()->void:
+	knockeddown_first_part = false

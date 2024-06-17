@@ -120,49 +120,67 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type)->v
 
 			
 
-			if random_range < stagger_chance - parent.stagger_resistance:
+			if random_range < instigator.stagger_chance - parent.stagger_resistance:
 				if parent.health >0:
 						parent.state = autoload.state_list.staggered
 						parent.staggered_duration = true
-						text.status = "Staggered"
+						text.status = "Staggered!"
 						
-	
-	
+			if random_range < instigator.knockdown_chance:
+				if instigator.impact > parent.balance:
+					if parent.health > damage_to_take * 3:#This is important to avoid enemies getting up while they are dead just to then die instantly soon after
+						parent.staggered_duration = false
+						text.status = "Knocked Down!"
+						getKnockedDown(instigator)
+				else:
+					parent.staggered_duration = false
+					text.status = "Knock Down Resisted!"
+#______________________________________DMG SECTION__________________________________________________
 			if instigator.isFacingSelf(parent,0.30):
-				if random_range < instigator.critical_chance:
-					damage_to_take * instigator.critical_strength
-					parent.health -= damage_to_take	
-					instigatorAggro.threat += damage_to_take + aggro_power
-					text.amount =round(damage_to_take * 100)/ 100
-					text.status = "Critical"
+				if parent.absorbing == true:
+					var total_dmg_to_take = damage_to_take / parent.guard_dmg_absorbition
+					var absorbed_damage = damage_to_take - total_dmg_to_take
+					var absorbed_percentage = (absorbed_damage / damage_to_take) * 100
+					text.status = "Absorbed: " + str(round(absorbed_percentage*100)/100) + "%"
 					text.state = damage_type
+					parent.health -= total_dmg_to_take
 					add_child(text)
 				else:
-					parent.health -= damage_to_take	
-					instigatorAggro.threat += damage_to_take + aggro_power
-					text.amount =round(damage_to_take * 100)/ 100
-					text.state = damage_type
-					add_child(text)
-		
+					if random_range < instigator.critical_chance:
+						var total_dmg_to_take = damage_to_take * instigator.critical_dmg 
+						parent.health -= total_dmg_to_take
+						text.amount =round(total_dmg_to_take * 100)/ 100
+						instigatorAggro.threat += total_dmg_to_take
+						text.status = "Critical Hit!"
+						text.state = damage_type
+						add_child(text)
+					else:
+						parent.health -= damage_to_take
+						instigatorAggro.threat += damage_to_take + aggro_power
+						text.amount =round(damage_to_take * 100)/ 100
+						text.state = damage_type
+						add_child(text)
+			
 		
 			else:
 				if  random_range< instigator.critical_chance:
-					damage_to_take * instigator.critical_strength
-					parent.health -= damage_to_take	+ instigator.flank_dmg
-					instigatorAggro.threat += damage_to_take + aggro_power
-					text.amount =round(damage_to_take * 100)/ 100
-					text.status = "Critical + Flank"
+					var total_dmg_to_take = (damage_to_take * instigator.critical_dmg) + instigator.flank_dmg
+					parent.health -= total_dmg_to_take
+					text.amount =round(total_dmg_to_take * 100)/ 100
+					instigatorAggro.threat += total_dmg_to_take
+					text.status = "Critical + Flank!"
 					text.state = damage_type
 					add_child(text)
 				else:
-					parent.health -= damage_to_take	+ instigator.flank_dmg
-					instigatorAggro.threat += damage_to_take + aggro_power
-					text.amount =round(damage_to_take * 100)/ 100
+					var total_dmg_to_take = damage_to_take  + instigator.flank_dmg
+					parent.health -= total_dmg_to_take
+					text.amount =round(total_dmg_to_take * 100)/ 100
+					instigatorAggro.threat += total_dmg_to_take
 					text.state = damage_type
-					text.status = "Flanked"
+					text.status = "Flanked!"
 					add_child(text)
 		else:
-			text.status = "Parried"
+			text.status = "Parried!"
 			text.state = damage_type
 			add_child(text)
 	else:
@@ -174,6 +192,14 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type)->v
 		
 		
 		
+func getKnockedDown(instigator)->void:
+	instigatorAggro = parent.threat_system.createFindThreat(instigator)
+	parent.knockeddown_duration = true
+	parent.knockeddown_first_part = true
+	parent.staggered_duration = false
+	parent.stored_instigator = instigator
+	instigatorAggro.threat += 50
+
 
 
 func takeDamagePlayer(damage, aggro_power, instigator, stagger_chance, damage_type)->void:
@@ -246,17 +272,52 @@ func takeDamagePlayer(damage, aggro_power, instigator, stagger_chance, damage_ty
 			if instigator.has_method("lifesteal"):
 				instigator.lifesteal(damage_to_take)
 	
+	
+		if instigator.isFacingSelf(parent,0.30): #Frontal attacks
+			if parent.absorbing == true:
+				var total_dmg_to_take = damage_to_take / parent.guard_dmg_absorbition
+				var absorbed_damage = damage_to_take - total_dmg_to_take
+				var absorbed_percentage = (absorbed_damage / damage_to_take) * 100
+				text.status = "Absorbed: " + str(round(absorbed_percentage*100)/100) + "%"
+				text.state = damage_type
+				parent.health -= total_dmg_to_take
+				viewport.add_child(text)
+			else:
+				if random_range < instigator.critical_chance:
+					var total_dmg_to_take = damage_to_take * instigator.critical_dmg 
+					parent.health -= total_dmg_to_take
+					text.amount =round(total_dmg_to_take * 100)/ 100
+					text.status = "Critical Hit!"
+					text.state = damage_type
+					viewport.add_child(text)
+				else:
+					parent.health -= damage_to_take	
+					text.amount =round(damage_to_take * 100)/ 100
+					text.state = damage_type
+					viewport.add_child(text)
+		
+		
+		else: #Backstabs or Flank Attacks
+				if  random_range< instigator.critical_chance:
+					var total_dmg_to_take = (damage_to_take * instigator.critical_dmg) + instigator.flank_dmg
+					parent.health -= total_dmg_to_take
+					text.amount =round(total_dmg_to_take * 100)/ 100
+					text.status = "Critical + Flank!"
+					text.state = damage_type
+					viewport.add_child(text)
+				else:
+					var total_dmg_to_take = damage_to_take + instigator.flank_dmg
+					parent.health -= total_dmg_to_take
+					text.amount =round(total_dmg_to_take * 100)/ 100
+					text.state = damage_type
+					text.status = "Flanked!"
+					viewport.add_child(text)
+
 		if random_range < stagger_chance - parent.stagger_resistance:
 			if parent.health >0:
 				parent.state = autoload.state_list.staggered
 				parent.staggered_duration = true
 				text.status = "Staggered"
-
-		parent.health -= damage_to_take	
-		text.amount =round(damage_to_take * 100)/ 100
-		text.state = damage_type
-		viewport.add_child(text)
-
 	else:
 		text.status = "Parried"
 		text.state = damage_type
@@ -297,7 +358,6 @@ func lifesteal(damage_to_take)-> void:#This is called by the enemy's script when
 					viewport.add_child(text)
 		elif parent.health > parent.max_health:
 			parent.health = parent.max_health
-	
 
 var has_got_killed_already:bool = false
 func getKilled(instigator)->void:

@@ -445,8 +445,8 @@ func punch()->void:#fist
 	var damage_type:String = "blunt"
 	var damage:float = player.total_dmg
 	var damage_flank:float = damage + player.flank_dmg 
-	var critical_damage : float  = damage * player.critical_strength
-	var critical_flank_damage : float  = damage_flank * player.critical_strength
+	var critical_damage : float  =0
+	var critical_flank_damage : float  =0
 	#extra damage when the victim is trying to block but is facing the wrong way 
 	var punishment_damage : float = 7 
 	var punishment_damage_type :String = "blunt"
@@ -459,7 +459,7 @@ func punch()->void:#fist
 				onHit()
 				if victim.state != autoload.state_list.dead:
 					player.pushEnemyAway(push_distance, victim,0.25)
-		dealDMG(victim,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,player.stagger_chance)
+		dealDMG(victim,aggro_power,damage_type,damage)
 
 
 onready var area_melee_front:Area = $MeleeFront
@@ -467,8 +467,8 @@ func baseAtktHit()->void:#Heavy
 	var damage_type:String = player.base_dmg_type
 	var damage:float = player.total_dmg 
 	var damage_flank:float = damage + player.flank_dmg 
-	var critical_damage : float  = damage * player.critical_strength
-	var critical_flank_damage : float  = damage_flank * player.critical_strength
+	var critical_damage : float  =0
+	var critical_flank_damage : float  = damage_flank * player.critical_dmg
 	#extra damage when the victim is trying to block but is facing the wrong way 
 	var punishment_damage : float = 7 
 	var aggro_power:float = player.threat_power
@@ -480,7 +480,7 @@ func baseAtktHit()->void:#Heavy
 				onHit()
 				if victim.state != autoload.state_list.dead:
 					player.pushEnemyAway(push_distance, victim,0.25)
-		dealDMG(victim,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,damage_type,damage,damage_flank,push_distance,player.stagger_chance)
+		dealDMG(victim,aggro_power,damage_type,damage)
 func baseAtkLastHit()->void:#Heavy
 	player.all_skills.activateComboCyclone()
 	player.all_skills.activateComboOverheadslash()
@@ -488,8 +488,8 @@ func baseAtkLastHit()->void:#Heavy
 	var damage_type:String = player.base_dmg_type
 	var damage:float = player.total_dmg * 2.25
 	var damage_flank:float = damage + player.flank_dmg 
-	var critical_damage : float  = damage * player.critical_strength
-	var critical_flank_damage : float  = damage_flank * player.critical_strength
+	var critical_damage : float  = 0
+	var critical_flank_damage : float  = damage_flank * player.critical_dmg
 	#extra damage when the victim is trying to block but is facing the wrong way 
 	var punishment_damage : float = 7 
 	var aggro_power:float = player.threat_power
@@ -501,7 +501,7 @@ func baseAtkLastHit()->void:#Heavy
 				onHit()
 				if victim.state != autoload.state_list.dead:
 					player.pushEnemyAway(push_distance, victim,0.25)
-		dealDMG(victim,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,damage_type,damage,damage_flank,push_distance,player.stagger_chance)
+		dealDMG(victim,aggro_power,damage_type,damage)
 
 
 
@@ -510,8 +510,8 @@ func cleaveDMG()->void:#Heavy
 	var damage_type:String = player.base_dmg_type
 	var damage:float = player.total_dmg * 1.8
 	var damage_flank = damage + player.flank_dmg 
-	var critical_damage : float  = damage * player.critical_strength
-	var critical_flank_damage : float  = damage_flank * player.critical_strength
+	var critical_damage : float  = 0
+	var critical_flank_damage : float  = damage_flank * player.critical_dmg
 	#extra damage when the victim is trying to block but is facing the wrong way 
 	var punishment_damage : float = 7 
 	var punishment_damage_type :String = "slash"
@@ -523,7 +523,7 @@ func cleaveDMG()->void:#Heavy
 			if victim != self:
 				if victim.state != autoload.state_list.dead:
 					player.pushEnemyAway(push_distance, victim,0.25)
-		dealDMG(victim,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,player.stagger_chance)
+		dealDMG(victim,aggro_power,damage_type,damage)
 
 
 #Overhead Slash section
@@ -542,8 +542,8 @@ func overheadSlashDMG()->void:
 		damage_multiplier += (points - 1) * player.all_skills.overhead_slash_dmg_proportion
 	var damage: float = base_damage * damage_multiplier
 	var damage_flank = damage + player.flank_dmg 
-	var critical_damage : float  = damage * player.critical_strength
-	var critical_flank_damage : float  = damage_flank * player.critical_strength
+	var critical_damage : float  = 0
+	var critical_flank_damage : float  = 0
 	var punishment_damage : float = 7 #extra damage for when the victim is trying to block but is facing the wrong way 
 	var punishment_damage_type :String = "slash"
 	var aggro_power = damage + 20
@@ -554,7 +554,7 @@ func overheadSlashDMG()->void:
 			if victim != self:
 				if victim.state != autoload.state_list.dead:
 					player.pushEnemyAway(push_distance, victim,0.25)
-		dealDMG(victim,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,100)
+		dealDMG(victim,aggro_power,damage_type,damage)
 
 
 #rising slash section
@@ -572,8 +572,8 @@ func risingSlashDMG()-> void:
 			damage_multiplier += (points - 1) * player.all_skills.rising_slash_dmg_proportion
 	var damage = base_damage * damage_multiplier	
 	var damage_flank: float = damage + player.flank_dmg 
-	var critical_damage: float  = damage * player.critical_strength
-	var critical_flank_damage : float  = damage_flank * player.critical_strength
+	var critical_damage: float  =0
+	var critical_flank_damage : float  = 0
 	#extra damage when the victim is trying to block but is facing the wrong way 
 	var punishment_damage : float = 7 
 	var punishment_damage_type :String = "slash"
@@ -585,7 +585,7 @@ func risingSlashDMG()-> void:
 			if victim != self:
 				if victim.state != autoload.state_list.dead:
 					player.pushEnemyAway(push_distance, victim,0.25)
-		dealDMG(victim,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,1)
+		dealDMG(victim,aggro_power,damage_type,damage)
 
 #Cyclone section
 #This skill is viable for all melee weapon types EXCEPT FIST WEAPONS
@@ -603,8 +603,8 @@ func cycloneDMG() -> void:
 		damage_multiplier += (points - 1) * 0.05
 	var damage: float = base_damage * damage_multiplier
 	var damage_flank = damage + player.flank_dmg 
-	var critical_damage : float  = damage * player.critical_strength
-	var critical_flank_damage : float  = damage_flank * player.critical_strength
+	var critical_damage : float  =0
+	var critical_flank_damage : float  = 0
 	var punishment_damage : float = 7 #extra damage for when the victim is trying to block but is facing the wrong way 
 	var punishment_damage_type :String = "slash"
 	var aggro_power =  20
@@ -620,7 +620,7 @@ func cycloneDMG() -> void:
 			if victim != self:
 				if victim.state != autoload.state_list.dead:
 					player.pushEnemyAway(push_distance, victim,0.25)
-		dealDMG(victim,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,stagger_chance)
+		dealDMG(victim,aggro_power,damage_type,damage)
 
 
 #Whirlwind section
@@ -644,19 +644,24 @@ func whirlwindDMG() -> void:
 
 	var damage: float = (base_damage * damage_multiplier) + additional_damage
 	var damage_flank = damage + player.flank_dmg 
-	var critical_damage : float  = damage * player.critical_strength
-	var critical_flank_damage : float  = damage_flank * player.critical_strength
+	var critical_damage : float  =0
+	var critical_flank_damage : float  =0
 	var punishment_damage : float = 7 #extra damage for when the victim is trying to block but is facing the wrong way 
 	var punishment_damage_type :String = "slash"
 	var aggro_power =  20
-	var push_distance:float = 0.25 * player.total_impact
+	var push_distance:float = 0.4 * player.total_impact
 	var enemies = melee_aoe.get_overlapping_bodies()
 	for victim in enemies:
 		if victim.is_in_group("enemy"):
 			if victim != self:
 				if victim.state != autoload.state_list.dead:
 					player.pushEnemyAway(push_distance, victim,0.25)
-		dealDMG(victim,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,player.stagger_chance)
+					if victim.has_method("getKnockedDown"):
+						if victim.health > damage:
+							if victim.balance < 3:
+								victim.getKnockedDown(player)
+							
+		dealDMG(victim,aggro_power,damage_type,damage)
 
 #HeartTrust
 onready var trust_area: Area = $MeleeTrusting
@@ -672,8 +677,8 @@ func HeartTrustDMG()->void:
 		damage_multiplier += (points - 1) * player.all_skills.heart_trust_dmg_proportion
 	var damage: float = base_damage * damage_multiplier
 	var damage_flank:float = damage + player.flank_dmg 
-	var critical_damage : float  = damage * player.critical_strength
-	var critical_flank_damage : float  = damage_flank * player.critical_strength
+	var critical_damage : float  =0
+	var critical_flank_damage : float  =0
 	#extra damage when the victim is trying to block but is facing the wrong way 
 	var punishment_damage : float = 15
 	var punishment_damage_type :String = "slash"
@@ -686,7 +691,7 @@ func HeartTrustDMG()->void:
 			if victim != self:
 				if victim.state != autoload.state_list.dead:
 					player.pushEnemyAway(push_distance, victim,0.25)
-		dealDMG(victim,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,player.stagger_chance)
+		dealDMG(victim,aggro_power,damage_type,damage)
 
 
 onready var area_mid_range:Area = $MidRangeAOE
@@ -734,13 +739,12 @@ func staggeredOver():
 	player.staggered_duration = false
 
 #___________________________________________________________________________________________________
-func dealDMG(victim,critical_damage,aggro_power,damage_type,critical_flank_damage,punishment_damage,punishment_damage_type,damage,damage_flank,push_distance,stagger_chance)-> void:
+func dealDMG(victim,aggro_power,damage_type,damage)-> void:
 		var random = rand_range(0,1)
 		if victim  != player:
 			if victim.is_in_group("Entity"):
 				if victim.has_method("takeDamage"):
 					victim.takeDamage(damage,aggro_power,player,stagger_chance,damage_type)
-
 			else:
 				if victim.has_method("getChopped"):
 					victim.getChopped(damage,player)

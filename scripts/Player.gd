@@ -46,7 +46,18 @@ func _ready()->void:
 	slowest_timer.connect("timeout", self, "slowestTimer")
 	slowest_timer.start(3)
 	connectEquipment()
+	stutterPrevention()
+
+	
+func stutterPrevention()->void:
+	var text = autoload.floatingtext_damage.instance()
+	text.status = "STUTTER PREVENTION"
+	take_damage_view.add_child(text)
+	add_child(text)
+	
+	
 func slowTimer()->void:
+	cameraRotation()#Run camera rotation multiple times, it's a light function and makes things smoother 
 	experienceSystem()
 	damage_effects_manager.effectDurations()
 	allResourcesBarsAndLabels()
@@ -64,7 +75,8 @@ func slowTimer()->void:
 	displayClock()
 	if health <= 0 :
 		revival_wait_time -= 1
-func  slowestTimer()->void:
+func slowestTimer()->void:
+	cameraRotation()#Run camera rotation multiple times, it's a light function and makes things smoother 
 	frameRate()
 	hydration()
 	hunger()
@@ -75,6 +87,7 @@ func  slowestTimer()->void:
 			current_race_gender.EquipmentSwitch()
 		
 func _on_3FPS_timeout()->void:
+	cameraRotation()#Run camera rotation multiple times, it's a light function and makes things smoother 
 	if health >0:
 		$UI/GUI/Equipment/Attributes/AttributePoints.text = "Attributes points left: " + str(attribute)
 	# Calculate the sum of all spent attribute points
@@ -1743,6 +1756,8 @@ func _on_Unstuck_pressed():
 	can_walk = true
 	autoload.gravity(self)
 func skillUserInterfaceInputs():
+	
+	$UI/GUI/CombatStats.visible = $UI/GUI/Equipment.visible
 	if Input.is_action_just_pressed("skills"):
 		closeSwitchOpen(skill_trees)
 		saveGame()
@@ -1768,6 +1783,7 @@ func skillUserInterfaceInputs():
 		saveGame()
 	elif Input.is_action_just_pressed("Character"):
 		closeSwitchOpen(character)
+		
 		saveGame()
 	elif Input.is_action_just_pressed("UI"):
 		closeSwitchOpen(character)
@@ -1778,6 +1794,8 @@ func skillUserInterfaceInputs():
 	elif Input.is_action_just_pressed("Menu"):
 		closeSwitchOpen(menu)
 		saveGame()
+		
+	
 #skillbar buttons
 func _on_Inventory_pressed():
 	closeSwitchOpen(inventory)
@@ -2852,7 +2870,6 @@ var effects = {
 	"shield_wood_png": {"stats": {"extra_guard_dmg_absorbition": autoload.shield_wood_absorb,"extra_melee_atk_speed": autoload.shield_wood_melee_speed,"slash_resistance":autoload.shield_wood_general_defense,"blunt_resistance":autoload.shield_wood_general_defense,"pierce_resistance": autoload.shield_wood_general_defense,}, "applied": false},
 	"pickaxe_png": {"stats": {"extra_dmg": autoload.pickaxe_dmg,"extra_guard_dmg_absorbition": autoload.pickaxe_absorb,"extra_melee_atk_speed": autoload.pickaxe_melee_speed}, "applied": false},
 	"pickaxe_png2": {"stats": {"extra_dmg": autoload.pickaxe_dmg,"extra_guard_dmg_absorbition": autoload.pickaxe_absorb,"extra_melee_atk_speed": autoload.pickaxe_melee_speed}, "applied": false},
-
 }
 
 # Function to apply or remove effects
@@ -3232,10 +3249,6 @@ var courage: float = 1
 
 var threat_power:float = 0
 
-var critical_chance: float = 0.00
-var critical_strength: float = 2.0
-var stagger_chance: float  = 0.25
-
 
 var life_steal: float = 0.0
 var exra_life_steal: float = 0.0
@@ -3258,9 +3271,9 @@ var stagger_resistance: float = 0.5 #0 to 100 in percentage, this is directly de
 var deflection_chance : float = 0.33
 
 
-var guard_dmg_absorbition: float = 2 #total damage taken will be divided by this when guarding
+var base_guard_dmg_absorbition: float = 2 #total damage taken will be divided by this when guarding
 var extra_guard_dmg_absorbition:float
-var total_guard_dmg_absorbition:float
+var guard_dmg_absorbition:float
 
 
 
@@ -3360,11 +3373,11 @@ var total_authority: float = 0
 var total_courage: float = 0
 
 
-func regenStats():
+func regenStats()->void:
 	regenAefisNefis()
 				
 
-func regenAefisNefis():
+func regenAefisNefis()->void:
 	if health >0:
 		aefis = min(aefis + intelligence + wisdom, max_aefis)
 		nefis = min(nefis + instinct, max_nefis)
@@ -3377,18 +3390,18 @@ func regenAefisNefis():
 
 
 
-func limitStatsToMaximum():
+func limitStatsToMaximum()->void:
 	if health > max_health:
 		health = max_health
 	if resolve > max_resolve:
 		resolve = max_resolve
 
-func convertStats():
+func convertStats()->void:
 	resistanceMath()
 	attackSpeedMath()
 	flankDamageMath()
 	baseDamageMath()
-	updateCritical()
+	rngStatsMath()
 
 	
 	total_sanity = extra_sanity + sanity
@@ -3436,50 +3449,74 @@ func convertStats():
 	max_health = base_max_health * total_vitality
 	max_sprint_speed = base_max_sprint_speed * total_agility
 	run_speed = base_run_speed * total_agility
-	total_guard_dmg_absorbition = extra_guard_dmg_absorbition + guard_dmg_absorbition
+	guard_dmg_absorbition = extra_guard_dmg_absorbition + base_guard_dmg_absorbition
 	
 	total_on_hit_resolve_regen = on_hit_resolve_regen+ extra_on_hit_resolve_regen
 
 	
 	
-	stagger_chance = max(0, (total_impact - 1.00) * 45) +  max(0, (total_ferocity - 1.00) * 0.5) 
+var base_critical_chance: float = 12.5
+var extra_critical_chance: float 
+var critical_chance: float 
+
+var base_critical_dmg: float = 2.0
+var extra_critical_dmg: float 
+var critical_dmg: float
+
+
+var base_stagger_chance: float  = 5
+var extra_stagger_chance: float
+var stagger_chance: float 
+
+var knockdown_chance: float = 10
+
+
+func rngStatsMath()->void:
+	critical_chance = (base_critical_chance + extra_critical_chance) * total_accuracy
+	critical_dmg = (base_critical_dmg + extra_critical_dmg) * total_fury
+
+	stagger_chance = (base_stagger_chance + extra_stagger_chance ) * total_force
+
+
+
+
+
+
 	
-	
-func _on_FlankDMG_mouse_entered():
+func _on_FlankDMG_mouse_entered()->void:
 	var title:String = "Flank Damage"
 	var text:String = "Non-Frontal attacks towards enemies deal extra flat flank damage\n. gain more flank damage by  from your ferocity attribute, accuracy attribute, from skills or equipment" 
 	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	callToolTip(instance,title,text)
-func _on_FlankDMG_mouse_exited():
+func _on_FlankDMG_mouse_exited()->void:
 	deleteTooltip()
 	
-	
-func flankDamageMath():
+func flankDamageMath()->void:
 	flank_dmg = (base_flank_dmg * (total_ferocity + total_accuracy)) 
 
 
 
 var base_dmg_type :String = "blunt" #this changes based on the weapon that is being used
-func _on_BaseDMG_mouse_entered():
+func _on_BaseDMG_mouse_entered()->void:
 	var title:String = "Base Damage"
 	var text:String = "This is the base damage you do with physical attacks, wether melee or ranged by using throwables or bows, no effect on crossbows or other mechanical weapons, no effect on attacks which are purely based on Aefis or Nefis" 
 	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	callToolTip(instance,title,text)
-func _on_BaseDMG_mouse_exited():
+func _on_BaseDMG_mouse_exited()->void:
 	deleteTooltip()
-func baseDamageMath():
+func baseDamageMath()->void:
 	total_dmg = (extra_dmg + base_dmg) * total_strength
 	
-func _on_Guard_Protection_mouse_entered():
+func _on_Guard_Protection_mouse_entered()->void:
 	var title:String = "Guard Protection"
-	var text:String = "when guarding either with right click or other skills and abilities,damage taken is divided by " + str(total_guard_dmg_absorbition)
+	var text:String = "when guarding either with right click or other skills and abilities,damage taken is divided by " + str(guard_dmg_absorbition)
 	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	callToolTip(instance,title,text)
 func _on_Guard_Protection_mouse_exited():
 	deleteTooltip()
 
 
-func attackSpeedMath():
+func attackSpeedMath()->void:
 	var bonus_universal_speed = (total_celerity -1) * 0.15
 	var atk_speed_formula = (total_dexterity - scale_factor ) * 0.5 
 	melee_atk_speed = base_melee_atk_speed + atk_speed_formula + bonus_universal_speed + extra_melee_atk_speed
@@ -3495,14 +3532,14 @@ func attackSpeedMath():
 
 
 
-func _on_ReLabel_mouse_entered():
+func _on_ReLabel_mouse_entered()->void:
 	var title:String = "Resolve"
 	var text:String = "Gain Resolve at a ratio of 100% your tenacity and 50% your resistance\n.Consume resolve to dodge, block and to use melee attacks" 
 	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	callToolTip(instance,title,text)
 func _on_ReLabel_mouse_exited():
 	deleteTooltip()
-func _on_LifeBar_mouse_entered():
+func _on_LifeBar_mouse_entered()->void:
 	var title:String = "Life points"
 	var text:String = "Gain life at a ratio of 100% your vitality and 50% your resistance and 100% of your height\n.Reaching 0 life points makes downed you lose all threat from neutral enemies when downed and can't do anything but crawl around,when downed you bleed every second losing more life points, reaching -100 results in death" 
 	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
@@ -3511,7 +3548,7 @@ func _on_LifeBar_mouse_exited():
 	deleteTooltip()
 	
 	
-func resistanceMath():
+func resistanceMath()->void:
 	var additional_resistance: float  = 0
 	var res_multiplier : float  = 0.5
 	if total_resistance > 1:
@@ -3524,24 +3561,16 @@ func resistanceMath():
 	max_resolve = base_max_resolve * (total_tenacity + additional_resistance)
 
 
-func updateCritical():
-	critical_chance = (max(0, (total_accuracy - 1.00) * 0.5) +  max(0, (total_impact - 1.00) * 0.005)) * 10
-	critical_strength = max(1.0, ((total_ferocity - 1) * 2))  # Ensure critical_strength is at least 1.0
-	critical_chance_val.text = str(round(critical_chance * 100 * 1000) / 1000) + "%"
-	$UI/GUI/Equipment/EquipmentBG/CombatStats/GridContainer/CritDamageValue.text = "x" + str(critical_strength)
 
 
-
-
-
-func _on_AeBar_mouse_entered():
+func _on_AeBar_mouse_entered()->void:
 	var title:String = "Aefis"
 	var text:String = "Gain Aefis at a ratio of 50% your intelligence, 25% your wisdom and  25% your sanity\nYour body can harvest the free-flowing Aefis in the universe, a form of energy used for creation. This ethereal force can be channeled to shape reality, manifesting your deepest desires and forging powerful artifacts. Mastery of Aefis allows you to tap into limitless potential, altering the fabric of existence itself." 
 	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	callToolTip(instance,title,text)
 func _on_AeBar_mouse_exited():
 	deleteTooltip()
-func _on_NeBar_mouse_entered():
+func _on_NeBar_mouse_entered()->void:
 	var title:String = "Nefis"
 	var text:String = "Gain Nefis at a ratio of 50% your instinct, 25% your fury and  25% your force\nYour body produces the free-flowing Nefis, a form of energy used for destruction and corruption. This dark force can be channeled to unravel reality, spreading chaos and forging weapons of immense power. Mastery of Nefis allows you to tap into its malevolent potential, altering the fabric of existence with devastating effects."
 	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
@@ -3549,7 +3578,7 @@ func _on_NeBar_mouse_entered():
 func _on_NeBar_mouse_exited():
 	deleteTooltip()
 
-func updateAefisNefis():
+func updateAefisNefis()->void:
 	var intelligence_portion = total_intelligence * 0.5
 	var instinct_portion = total_instinct * 0.25
 	var wisdom_portion = total_wisdom * 0.25
@@ -3573,7 +3602,7 @@ onready var food_bar = $UI/GUI/Portrait/MinimapHolder/FoodBar
 onready var food_label = $UI/GUI/Portrait/MinimapHolder/FoodLabel
 onready var water_bar = $UI/GUI/Portrait/MinimapHolder/WaterBar
 onready var water_label = $UI/GUI/Portrait/MinimapHolder/WaterLabel
-func allResourcesBarsAndLabels():
+func allResourcesBarsAndLabels()->void:
 	displayResources(hp_bar,hp_label,health,max_health,"HP")
 	displayResourcesRound(water_bar,water_label,water,max_water,"")
 	displayResourcesRound(food_bar,food_label,kilocalories,max_kilocalories,"")
@@ -3583,11 +3612,11 @@ func allResourcesBarsAndLabels():
 	displayResourcesRound(br_bar,br_label,breath,max_breath,"BH : ")
 	
 	
-func displayResources(bar,label,value,max_value,acronim):
+func displayResources(bar,label,value,max_value,acronim)->void:
 	label.text =  acronim + ": %.2f / %.2f" % [value,max_value]
 	bar.value = value 
 	bar.max_value = max_value 
-func displayResourcesRound(bar,label,value,max_value,acronim):
+func displayResourcesRound(bar,label,value,max_value,acronim)->void:
 	label.text =  acronim + str(round(value)) + "/" + str(round(max_value))
 	bar.value = value 
 	bar.max_value = max_value 
@@ -3632,27 +3661,30 @@ var spent_attribute_points_dip = 0
 var spent_attribute_points_aut = 0
 var spent_attribute_points_cou = 0
 
-func displayLabels():
-	var cast_spd_label: Label = $UI/GUI/Equipment/EquipmentBG/CombatStats/GridContainer/CastingSpeedValue
+func displayLabels()->void:
+	var cast_spd_label: Label = $UI/GUI/CombatStats/GridContainer/CastingSpeedValue
 	displayStats(cast_spd_label,casting_speed)
-	var ran_spd_label: Label = $UI/GUI/Equipment/EquipmentBG/CombatStats/GridContainer/RangedSpeedValue
+	var ran_spd_label: Label = $UI/GUI/CombatStats/GridContainer/RangedSpeedValue
 	displayStats(ran_spd_label,ranged_atk_speed)
-	var atk_spd_label: Label = $UI/GUI/Equipment/EquipmentBG/CombatStats/GridContainer/AtkSpeedValue
+	var atk_spd_label: Label =$UI/GUI/CombatStats/GridContainer/AtkSpeedValue
 	displayStats(atk_spd_label,melee_atk_speed)
-	var life_steal_label: Label = $UI/GUI/Equipment/EquipmentBG/CombatStats/GridContainer/LifeStealValue
+	var life_steal_label: Label = $UI/GUI/CombatStats/GridContainer/LifeStealValue
 	displayStats(life_steal_label,life_steal)
-	var stagger_chance_label: Label = $UI/GUI/Equipment/EquipmentBG/CombatStats/GridContainer/StaggerChanceValue
+	var stagger_chance_label: Label = $UI/GUI/CombatStats/GridContainer/StaggerChanceValue
 	displayStats(stagger_chance_label,stagger_chance)
 	
 	
-	var dmg_label = $UI/GUI/Equipment/EquipmentBG/CombatStats/GridContainer/BaseDMGValue
+	var dmg_label = $UI/GUI/CombatStats/GridContainer/BaseDMGValue
 	displayStats(dmg_label,total_dmg)
 	
-	var guard_label = $UI/GUI/Equipment/EquipmentBG/CombatStats/GridContainer/GuardPROTValue
-	displayStats(guard_label,total_guard_dmg_absorbition)
+	var guard_label = $UI/GUI/CombatStats/GridContainer/GuardPROTValue
+	displayStats(guard_label,guard_dmg_absorbition)
 	
 	
-	var flank_dmg_label = $UI/GUI/Equipment/EquipmentBG/CombatStats/GridContainer/FlankDMGValue
+	var crits_label = $UI/GUI/CombatStats/GridContainer/CritChanceValue
+	displayStats(crits_label,critical_chance)
+	
+	var flank_dmg_label =$UI/GUI/CombatStats/GridContainer/FlankDMGValue
 	displayStats(flank_dmg_label,flank_dmg)
 	
 	
@@ -3751,11 +3783,11 @@ func displayLabels():
 	displayStats(val_radiant, radiant_resistance)
 
 
-func displayStats(label, value):
+func displayStats(label, value)->void:
 	var rounded_value = str(round(value * 1000) / 1000)
 	label.text = rounded_value
 
-func connectAttributeHovering():
+func connectAttributeHovering()->void:
 	var int_label: Label = $UI/GUI/Equipment/Attributes/Intelligence
 	var ins_label = $UI/GUI/Equipment/Attributes/Instinct
 	var wis_label = $UI/GUI/Equipment/Attributes/Wisdom
@@ -3927,43 +3959,43 @@ func connectAttributeHovering():
 
 
 
-func intHovered():
+func intHovered()->void:
 	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	callToolTip(instance,"Intelligence","Increases the  rate at which you gain experience.\nIncreases your Aefis")
-func intExited():
+func intExited()->void:
 	deleteTooltip()
-func insHovered():
+func insHovered()->void:
 	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	callToolTip(instance,"Instinct","Increases your Nefis")
-func insExited():
+func insExited()->void:
 	deleteTooltip()
-func wisHovered():
+func wisHovered()->void:
 	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
-func wisExited():
+func wisExited()->void:
 	deleteTooltip()
-func memHovered():
+func memHovered()->void:
 	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
-func memExited():
+func memExited()->void:
 	deleteTooltip()
-func sanHovered():
+func sanHovered()->void:
 	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	callToolTip(instance,"Sanity","Makes you more resistant to certain debuffs\nIncreases your Aefis")
-func sanExited():
+func sanExited()->void:
 	deleteTooltip()
 
-func strHovered():
+func strHovered()->void:
 	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
-func strExited():
+func strExited()->void:
 	deleteTooltip()
-func forceHovered():
+func forceHovered()->void:
 	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	callToolTip(instance,"placeholder","Increases your Nefis")
-func forceExited():
+func forceExited()->void:
 	deleteTooltip()
-func impHovered():
+func impHovered()->void:
 	var instance = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
 	callToolTip(instance,"placeholder","holder placer")
 func impExited():
@@ -4865,9 +4897,6 @@ onready var critical_str_val = $UI/GUI/Equipment/EquipmentBG/CombatStats/GridCon
 
 func updateAllStats():
 	updateAefisNefis()	
-
-	updateCritical()
-
 
 
 
