@@ -127,10 +127,15 @@ onready var arcane_blast =  preload("res://Classes/Ability Icons/Magic Icons1/5.
 
 
 #base attacks
-onready var punch = preload("res://Classes/handcombat/punch.png")
-onready var punch2 = preload("res://Classes/handcombat/punch2.png")
-onready var guard = preload("res://Classes/handcombat/guard.png")
-onready var dodge = preload("res://Classes/handcombat/dodge.png")
+onready var punch = preload("res://Classes/Classless/punch.jpg")
+onready var punch2 = preload("res://Classes/Classless/punch2.jpg")
+onready var throw_rock = preload("res://Classes/Classless/throw rocks.jpg")
+
+
+
+onready var dodge = preload("res://Classes/Classless/rush.jpg")
+
+
 var dodge_description: String = "Slide in the chosen direction to evade attacks, becoming invincible for the duration and pushing back foes you collide with.\n Sliding between their legs allows you to maneuver and get behind them.\n\n Double press DIRECTIONAL KEYS alternatively, drag and drop it onto the skill bar, then use your keyboard to activate."
 #sword______________________________________________________________________________________________
 onready var slash_sword =  preload("res://Classes/Swordsmen/slash.png")
@@ -205,13 +210,39 @@ var berserk_texture = preload("res://Classes/Swordsmen/scream.png")
 
 
 #______________________________________EQUIPMENT SYSTEM_____________________________________________
-onready var wood_sword =  preload("res://0.png")
+onready var sword_beginner_png =  preload("res://WeaponIcons/sword_beginner.png")
+const sword_beginner_dmg = 2
+const sword_beginner_absorb = 1
 
-onready var axe_png =  preload("res://WeaponIcons/axe.png")
+onready var axe_beginner_png =  preload("res://WeaponIcons/axe.png")
+const axe_beginner_dmg = 2.5
+const axe_beginner_melee_speed = -0.05
+const axe_beginner_absorb = 1
+
+
 onready var pickaxe_png =  preload("res://WeaponIcons/picaxe.png")
-onready var waraxe_png =  preload("res://WeaponIcons/waraxe.png")
-onready var great_sword_beginner_png =  preload("res://WeaponIcons/greatsword placeholder.png")
+const pickaxe_dmg = 1.5
+const pickaxe_melee_speed = -0.09
+const pickaxe_absorb = 1
+
+onready var waraxe_beginner_png =  preload("res://WeaponIcons/waraxe.png")
+const waraxe_beginner_dmg = 4.5
+const waraxe_beginner_melee_speed = -0.15
+const waraxe_beginner_absorb = 1
+
+
+onready var greatsword_beginner_png =  preload("res://WeaponIcons/greatsword placeholder.png")
+const greatsword_beginner_dmg = 3.5
+const greatsword_beginner_melee_speed = -0.05
+const greatsword_beginner_absorb = 5
+
+
 onready var shield_wood_png =  preload("res://WeaponIcons/shield.png")
+const shield_wood_general_defense = 12 #increase some defenses defenses by  this value, remeber we are using the league's dmg formula so 50 equals 33.333% damage reduction 100 equals 50% damage reduction, 200 equals 66.666% damage reduction
+const shield_wood_melee_speed = -0.075
+const shield_wood_absorb = 100
+
+
 enum main_weap_list{
 	sword_beginner,
 	axe_beginner,
