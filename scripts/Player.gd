@@ -53,7 +53,7 @@ func stutterPrevention()->void:
 	var text = autoload.floatingtext_damage.instance()
 	text.status = "STUTTER PREVENTION"
 	take_damage_view.add_child(text)
-	add_child(text)
+
 	
 	
 func slowTimer()->void:
@@ -83,8 +83,6 @@ func slowestTimer()->void:
 	convertStats()
 	displayLabels()
 	SwitchEquipmentBasedOnEquipmentIcons()
-	if $UI/GUI/Equipment.visible == true :
-			current_race_gender.EquipmentSwitch()
 		
 func _on_3FPS_timeout()->void:
 	cameraRotation()#Run camera rotation multiple times, it's a light function and makes things smoother 
@@ -98,7 +96,7 @@ func _on_3FPS_timeout()->void:
 		updateAllStats()
 
 func _physics_process(delta: float) -> void:
-	
+	walkSound()
 	all_skills.updateCooldownLabel()
 	var state_enum = autoload.state_list  # Access the enum from the singleton
 	var state_value = state  # Get the current state value
@@ -139,6 +137,9 @@ var hold_to_base_atk:bool = false #if true holding the base attack buttons conti
 var base_atk_duration:bool = false
 var base_atk2_duration:bool = false
 var throw_rock_duration:bool= false
+var stomp_duration:bool= false
+
+
 
 # Toggle the hold_to_base_atk variable and change the color of BaseAtkMode accordingly
 func _on_BaseAtkMode_pressed():
@@ -148,7 +149,8 @@ func _on_BaseAtkMode_pressed():
 
 
 
-
+var staggered_duration:bool = false
+var knockeddown_duration:bool = false
 
 
 var overhead_slash_duration:bool = false
@@ -163,7 +165,9 @@ var cyclone_combo:bool = false
 var whirlwind_duration:bool = false
 var whirlwind_combo:bool = false
 #___________________________________________________________________________________________________
-var staggered_duration:bool = false
+
+
+
 var taunt_duration:bool = false
 var state = autoload.state_list.idle
 func animationCancel()->void:#Universal stop, call this when I'm stunned, staggered, dead, knocked down and so on 
@@ -172,6 +176,7 @@ func animationCancel()->void:#Universal stop, call this when I'm stunned, stagge
 	cyclone_combo = false
 	base_atk_duration = false
 	base_atk2_duration = false
+	stomp_duration = false
 	if overhead_slash_duration == true:
 		all_skills.overheadSlashCD()
 		overhead_slash_duration = false
@@ -220,8 +225,20 @@ func animationCancelException(exception) -> void:#So far it seems to be useless,
 func inputOrStateToAnimation()-> void:
 	if current_race_gender == null or animation == null:
 		print("mesh not instanced or animationPlayer not found")
-	if staggered_duration == true:
+		
+	if knockeddown_duration == true:
+		if health >0:
+			can_walk = false
+			horizontal_velocity = direction * 0
+			current_race_gender.can_move = false
+			animation.play("knocked down",blend)
+			animationCancel()
+		else:
+			state = autoload.state_list.dead
+
+	elif staggered_duration == true:
 		can_walk = false
+		is_walking = false
 		horizontal_velocity = direction * 0
 		current_race_gender.can_move = false
 		animation.play("staggered",blend)
@@ -230,6 +247,7 @@ func inputOrStateToAnimation()-> void:
 		animationCancel()
 		animation.play("staggered",blend)
 		can_walk = false
+		is_walking = false
 		horizontal_velocity = direction * 0
 		current_race_gender.can_move = false
 	else:
@@ -437,6 +455,15 @@ func inputOrStateToAnimation()-> void:
 			can_walk = false
 			animation.play("throw rock",blend, ranged_atk_speed)
 			moveDuringAnimation(0)
+			
+		elif stomp_duration == true:
+			directionToCamera()
+			animation.play("stomp",blend,melee_atk_speed * 1.2)
+			moveDuringAnimation(2)
+			
+			
+			
+			
 #################################################################################################################################################################
 	#_____________________________________MATCH STATE BEGINS HERE ___________________________________
 	#___________________________________________________________________________________________________
@@ -479,7 +506,7 @@ func inputOrStateToAnimation()-> void:
 						if is_in_combat:
 							match weapon_type:
 								autoload.weapon_type_list.fist:
-									animation.play("walk",0,1)
+									animation.play("walk sword",0,1)
 								autoload.weapon_type_list.bow: 
 									animation.play("walk bow",0,1)	
 								autoload.weapon_type_list.sword:
@@ -490,7 +517,6 @@ func inputOrStateToAnimation()-> void:
 									animation.play("walk sword",0,1)
 								autoload.weapon_type_list.heavy:
 									animation.play("walk heavy",0,1)
-								
 						else:
 							animation.play("walk",0,1)
 					autoload.state_list.sprint:
@@ -622,12 +648,20 @@ func skills(slot)-> void:
 				elif slot.texture.resource_path == autoload.punch.get_path():
 					if hold_to_base_atk == true:
 						animation.play("fist hold",blend,melee_atk_speed + 0.15)
+						directionToCamera()
 						moveDuringAnimation(2.5)
 					else:
-						base_atk_duration = true	
+						base_atk_duration = true
+						
 				elif slot.texture.resource_path == autoload.punch2.get_path():
 					if hold_to_base_atk == false:
 						base_atk2_duration = true
+#_________________________________________STOMP_____________________________________________________
+				elif slot.texture.resource_path == autoload.stomp.get_path():
+					if all_skills.can_stomp == true:
+						stomp_duration = true
+					else:
+						returnToIdleBasedOnWeaponType()
 						
 				elif slot.texture.resource_path == autoload.throw_rock.get_path():
 					if hold_to_base_atk == false:
@@ -644,6 +678,7 @@ func skills(slot)-> void:
 #sword
 				elif slot.texture.resource_path == autoload.slash_sword.get_path():
 					if hold_to_base_atk == true:
+						directionToCamera()
 						match weapon_type:
 							autoload.weapon_type_list.sword:
 								animation.play("sword hold",blend,melee_atk_speed)
@@ -1104,8 +1139,10 @@ func inputToState():
 		elif Input.is_action_pressed("B"):
 				state = autoload.state_list.skillB
 				
+				
 		elif Input.is_action_pressed("attack") and !cursor_visible: 
 			state = autoload.state_list.base_attack
+			walk_sound.playing = false
 
 				
 				
@@ -1113,8 +1150,10 @@ func inputToState():
 			
 		elif is_sprinting == true:
 				state =  autoload.state_list.sprint
+				
 		elif is_running:
 				state = autoload.state_list.run
+
 		elif is_walking:
 				state =  autoload.state_list.walk
 		elif Input.is_action_pressed("forward") or Input.is_action_pressed("left") or  Input.is_action_pressed("right") or  Input.is_action_pressed("backward"):
@@ -1127,11 +1166,21 @@ func inputToState():
 				else:
 					state =  autoload.state_list.walk
 					can_walk = true
+					walk_sound.playing = true
 		elif Input.is_action_pressed("crouch"):
 			state =  autoload.state_list.crouch
 		else:
 			if health >0:
+				walk_sound.playing = false
 				state =  autoload.state_list.idle
+#_______________________________________________Sound_______________________________________________
+onready var walk_sound =$Walk
+func walkSound()->void:
+	if is_walking and !is_running and !is_sprinting and !is_attacking:
+		walk_sound.playing = true
+	else:
+		walk_sound.playing = false
+		
 #_______________________________________________Combat______________________________________________
 func attack():
 	if Input.is_action_pressed("attack"):
@@ -1308,6 +1357,7 @@ var max_sprint_speed = 25
 var max_sprint_animation_speed = 2.5
 
 var can_walk:bool = true 
+
 func walk()->void:
 	h_rot = $Camroot/h.global_transform.basis.get_euler().y
 	movement_speed = 0
@@ -1339,6 +1389,7 @@ func walk()->void:
 				is_running = false
 				is_aiming = false
 				is_crouching = false
+
 			elif Input.is_action_pressed("run")and is_in_combat == false and  health > 0:
 				is_in_combat = false
 				sprint_speed = 10
@@ -1347,6 +1398,7 @@ func walk()->void:
 				is_aiming = false
 				is_crouching = false
 				movement_speed = run_speed
+
 
 			else: # Walk State and speed
 				sprint_speed = 10
@@ -1362,12 +1414,14 @@ func walk()->void:
 			is_sprinting = false
 			is_running = false
 			is_crouching = false
+
 	else:
 		sprint_speed = 10
 		is_walking = false
 		is_sprinting = false
 		is_running = false
 		is_crouching = false
+
 
 	autoload.movement(self)
 
@@ -1756,18 +1810,16 @@ func _on_Unstuck_pressed():
 	can_walk = true
 	autoload.gravity(self)
 func skillUserInterfaceInputs():
-	
 	$UI/GUI/CombatStats.visible = $UI/GUI/Equipment.visible
 	if Input.is_action_just_pressed("skills"):
 		closeSwitchOpen(skill_trees)
 		saveGame()
 	elif Input.is_action_just_pressed("tab"):
 		is_in_combat = !is_in_combat
-		if is_instance_valid(current_race_gender):
-			current_race_gender.switchWeapon()
-
+		gearUp()
 		saveGame()
 	elif Input.is_action_just_pressed("mousemode") or Input.is_action_just_pressed("ui_cancel"):	# Toggle mouse mode
+		gearUp()
 		saveGame()
 		cursor_visible =!cursor_visible
 	if !cursor_visible:
@@ -1778,12 +1830,13 @@ func skillUserInterfaceInputs():
 		closeSwitchOpen(inventory)
 		saveInventoryData()
 		saveGame()
+		gearUp()
 	elif Input.is_action_just_pressed("Crafting"):
 		closeSwitchOpen(crafting)
 		saveGame()
 	elif Input.is_action_just_pressed("Character"):
 		closeSwitchOpen(character)
-		
+		gearUp()
 		saveGame()
 	elif Input.is_action_just_pressed("UI"):
 		closeSwitchOpen(character)
@@ -1908,10 +1961,7 @@ func _on_Quit_pressed():
 func _on_InventorySaveButton_pressed():
 	saveInventoryData()
 	saveGame()
-onready var skills_list1 = $UI/GUI/SkillTrees/Background/M/V/ScrollContainer/GridContainer/SkillTree1
-func _on_SkillTree1_pressed():
-	closeSwitchOpen(skills_list1)
-	saveSkillBarData()
+
 func saveInventoryData():
 	# Call savedata() function on each child of inventory_grid that belongs to the group "Inventory"
 	for child in inventory_grid.get_children():
@@ -1953,6 +2003,19 @@ func saveSkillBarData():
 
 #______________________________________skill tree system____________________________________________
 onready var vanguard_skill_tree: Control = $UI/GUI/SkillTrees/Background/Vanguard
+onready var monk_skill_tree: Control =$UI/GUI/SkillTrees/Background/Monk
+onready var reset_skills: Control = $UI/GUI/SkillTrees/ResetSkills
+
+
+func _on_SkillTree0_pressed():
+	vanguard_skill_tree.visible = false
+	monk_skill_tree.visible = true
+	
+func _on_SkillTree1_pressed():
+	vanguard_skill_tree.visible = true
+	monk_skill_tree.visible = false
+
+
 #skills in skills-tree
 onready var all_skills = $UI/GUI/SkillTrees
 onready var taunt_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill1/Icon
@@ -1970,9 +2033,10 @@ func connectGenericSkillTee(tree):# this is called by connectSkillTree() to give
 			child.connect("mouse_entered", self, "skillMouseEntered", [tree, index]) # Pass 'tree' here
 			child.connect("mouse_exited", self, "skillMouseExited", [index])
 	 # Correcting the connection for ResetSkills button
-	$UI/GUI/SkillTrees/ResetSkills.connect("pressed", self, "resetSkills", [tree])
+	reset_skills.connect("pressed", self, "resetSkills", [tree])
 func connectSkillTree():# connects all skill trees
 	connectGenericSkillTee(vanguard_skill_tree)
+	connectGenericSkillTee(monk_skill_tree)
 var skill_points_spent:int = 0 
 func skillPressed(tree,index)->void:
 	var button = tree.get_node("skill" + str(index))
@@ -1981,6 +2045,7 @@ func skillPressed(tree,index)->void:
 	if icon_texture != null:
 		spendSkillPoints(icon_texture_rect,button)
 	saveGame()
+	
 func spendSkillPoints(icon_texture_rect,button):
 	if skill_points >0:
 		icon_texture_rect.points += 1 
@@ -2074,6 +2139,8 @@ func UniversalToolTip(icon_texture):
 			var cooldown = str("Cooldown: ") + str(all_skills.cyclone_cooldown)+ str(" seconds")
 			var extra:String = "AOE, Stagger, Movement"
 			callToolTipSegmented(instance_skills,"cyclone",total_value,cost,extra,cooldown,description)
+	
+	
 		elif icon_texture.get_path() == autoload.whirlwind.get_path():
 			var base_damage: float = all_skills.whirlwind_damage + total_dmg
 			var points: int =  whirlwind_icon.points
@@ -2092,7 +2159,7 @@ func UniversalToolTip(icon_texture):
 			var description: String =  all_skills.whirlwind_description
 			var cooldown = str("Cooldown: ") + str(all_skills.whirlwind_cooldown)+ str(" seconds")
 			var extra:String = "Burst damage,AOE, situational"
-			callToolTipSegmented(instance_skills,"Overhead Slash",total_value,cost,extra,cooldown,description)
+			callToolTipSegmented(instance_skills,"Desperate Slash",total_value,cost,extra,cooldown,description)
 		
 
 		elif icon_texture.get_path() == autoload.overhead_slash.get_path():
@@ -2140,10 +2207,23 @@ func UniversalToolTip(icon_texture):
 			var cooldown = str("Cooldown: ") + str(all_skills.heart_trust_cooldown)+ str(" seconds")
 			var extra:String = "Burst damage, Damage over time"
 			callToolTipSegmented(instance_skills,"Heart Trust",total_value,cost,extra,cooldown,str(description) + str(all_skills.heart_trust_bleed_duration) + " seconds")
+	
+	
 		elif icon_texture.get_path() == autoload.dodge.get_path():
 			callToolTip(instance,"Dodge Slide",autoload.dodge_description)
 			
-			
+		elif icon_texture.get_path() == autoload.stomp.get_path():
+			var base_damage: float = all_skills.stomp_dmg + total_dmg
+			var total_damage: float  =all_skills.stomp_dmg + total_dmg
+			var damage_to_knocked =  total_damage *all_skills.stomp_dmg_proportion
+			var total_value = str("Damage: ") + str(total_damage) 
+			var total_extr_value = "Damage to knocked down enemies : " + str(total_damage *all_skills.stomp_dmg_proportion)
+			var description: String = all_skills.stomp_description
+			var cooldown = str("Cooldown: ") + str(all_skills.stomp_cooldown)+ str(" seconds")
+			var extra:String = "Burst damage, Situational"
+			callToolTipSegmented(instance_skills,"Stomp",total_value,total_extr_value,cooldown,extra,str(description))
+
+
 			
 			
 			
@@ -2176,7 +2256,8 @@ var double_press_time_inv: float = 0.4
 func inventorySlotPressed(index):
 	var button = inventory_grid.get_node("InventorySlot" + str(index))
 	var icon_texture_rect = button.get_node("Icon")
-	var icon_texture = icon_texture_rect.texture	
+	var icon_texture = icon_texture_rect.texture
+	gearUp()
 	if icon_texture != null:
 		if  icon_texture.get_path() == "res://UI/graphics/SkillIcons/empty.png":
 				button.quantity = 0
@@ -2209,13 +2290,14 @@ func inventorySlotPressed(index):
 		savePlayerData()
 #__Hover inventory slots
 func inventoryMouseEntered(index):
+	gearUp()
 	var button = inventory_grid.get_node("InventorySlot" + str(index))
 	var icon_texture = button.get_node("Icon").texture
 	var instance = preload("res://Tooltips/tooltip.tscn").instance()
-
 	UniversalToolTip(icon_texture)
 
 func inventoryMouseExited(index):
+	gearUp()
 	deleteTooltip()
 
 func callToolTipSegmented(instance,title,total_value,base_value,cost,cooldown,description):
@@ -2321,6 +2403,7 @@ func _on_OpenAllUI_mouse_entered():
 	var instance = preload("res://Tooltips/tooltipSkillbar.tscn").instance()
 	callToolTip(instance,title,text)
 func _on_OpenAllUI_mouse_exited():
+	gearUp()
 	deleteTooltip()
 	
 	
@@ -2334,6 +2417,7 @@ func _on_Edit_mouse_exited():
 
 	
 func _on_Character_mouse_entered():
+	gearUp()
 	var title:String = "Character Sheet"
 	var text:String = "Click to open:\nYour character sheet with your equipment, stats and attributes"
 	var instance = preload("res://Tooltips/tooltipSkillbar.tscn").instance()
@@ -2345,6 +2429,7 @@ func _on_Menu_mouse_entered():
 	var title:String = "Menu"
 	var text:String = "Opens Settins menu and Quitting interface"
 	var instance = preload("res://Tooltips/tooltipSkillbar.tscn").instance()
+	
 	callToolTip(instance,title,text)
 func _on_Menu_mouse_exited():
 	deleteTooltip()
@@ -2461,7 +2546,8 @@ func _on_GiveMeItems_pressed():
 	autoload.addStackableItem(inventory_grid,autoload.glove1,1)
 	autoload.addNotStackableItem(inventory_grid,autoload.sword_beginner_png)
 	autoload.addNotStackableItem(inventory_grid,autoload.garment1)
-	autoload.addNotStackableItem(inventory_grid,autoload.shoe1)
+	autoload.addNotStackableItem(inventory_grid,autoload.boots1)
+	autoload.addNotStackableItem(inventory_grid,autoload.boots2)
 	autoload.addNotStackableItem(inventory_grid,autoload.torso_armor4)
 	autoload.addNotStackableItem(inventory_grid,autoload.torso_armor2)
 	autoload.addNotStackableItem(inventory_grid,autoload.torso_armor3)
@@ -2567,30 +2653,119 @@ func positionCoordinates():
 	# Use %d to format integers without decimals
 	coordinates.text = "%d, %d, %d" % [rounded_position.x, rounded_position.y, rounded_position.z]
 
-
+####################################################################################################
+####################################################################################################
+####################################################################################################
+####################################################################################################
+####################################################################################################
+####################################################################################################
 #__________________________________Equipment Management____________________________
-func connectEquipment():
+func gearUp()->void:	
+	if is_instance_valid(current_race_gender):
+		current_race_gender.EquipmentSwitch()
+		print("instancing")
+		
+onready var main_weap_icon =$UI/GUI/Equipment/EquipmentBG/MainWeap/Icon
+onready var sec_weap_icon = $UI/GUI/Equipment/EquipmentBG/SecWeap/Icon
+onready var sec_wea_slot = $UI/GUI/Equipment/EquipmentBG/SecWeap
+onready var legs_icon = $UI/GUI/Equipment/EquipmentBG/Pants/Icon
+onready var helm_icon = $UI/GUI/Equipment/EquipmentBG/Helm/Icon
+
+onready var hand_r_icon = $UI/GUI/Equipment/EquipmentBG/GloveR/Icon
+onready var chest_icon = $UI/GUI/Equipment/EquipmentBG/Chest/Icon
+onready var feet_icon = $UI/GUI/Equipment/EquipmentBG/Feet/Icon
+onready var glove_icon = $UI/GUI/Equipment/EquipmentBG/GloveR/Icon
+
+onready var equipment_bg:TextureRect = $UI/GUI/Equipment/EquipmentBG
+func connectEquipment()->void:
 	main_weap_icon.connect("mouse_entered", self, "mainWeapMouseEntered")
 	main_weap_icon.connect("mouse_exited", self, "mainWeapMouseExited")
 	sec_weap_icon.connect("mouse_entered", self, "secWeapMouseEntered")
 	sec_weap_icon.connect("mouse_exited", self, "secWeapMouseExited")
-func mainWeapMouseEntered():
-	UniversalToolTip(main_weap_icon.texture)
-func mainWeapMouseExited():
-	deleteTooltip()
 	
-func secWeapMouseEntered():
+	feet_icon.connect("mouse_entered", self, "feetMouseEntered")
+	feet_icon.connect("mouse_exited", self, "feetMouseExited")
+	
+	legs_icon.connect("mouse_entered", self, "legsMouseEntered")
+	legs_icon.connect("mouse_exited", self, "legsMouseExited")
+	
+	chest_icon.connect("mouse_entered", self, "chestMouseEntered")
+	chest_icon.connect("mouse_exited", self, "chestMouseExited")
+
+	helm_icon.connect("mouse_entered", self, "helmMouseEntered")
+	helm_icon.connect("mouse_exited", self, "helmMouseExited")
+
+	glove_icon.connect("mouse_entered", self, "gloveMouseEntered")
+	glove_icon.connect("mouse_exited", self, "gloveMouseExited")
+
+	equipment_bg.connect("mouse_entered", self, "equipmentBackgroundMouseEntered")
+	equipment_bg.connect("mouse_exited", self, "equipmentBackgroundMouseExited")
+	
+	
+	
+func equipmentBackgroundMouseEntered()->void:
+	gearUp()
+	deleteTooltip()
+func equipmentBackgroundMouseExited()->void:
+	gearUp()
+	deleteTooltip()
+#___________________________________________________________________________________________________
+func mainWeapMouseEntered()->void:
+	gearUp()
+	UniversalToolTip(main_weap_icon.texture)
+func mainWeapMouseExited()->void:
+	gearUp()
+	deleteTooltip()
+#___________________________________________________________________________________________________
+func secWeapMouseEntered()->void:
+	gearUp()
 	UniversalToolTip(sec_weap_icon.texture)
 func secWeapMouseExited():
+	gearUp()
 	deleteTooltip()
+#___________________________________________________________________________________________________
+func legsMouseEntered():
+	gearUp()
+	UniversalToolTip(legs_icon.texture)
+func legsMouseExited():
+	gearUp()
+	deleteTooltip()	
+#___________________________________________________________________________________________________
+func chestMouseEntered():
+	gearUp()
+	UniversalToolTip(chest_icon.texture)
+func chestMouseExited():
+	gearUp()
+	deleteTooltip()	
+#___________________________________________________________________________________________________
+func feetMouseEntered():
+	gearUp()
+	UniversalToolTip(feet_icon.texture)
+func feetMouseExited():
+	gearUp()
+	deleteTooltip()	
+#___________________________________________________________________________________________________
+func helmMouseEntered():
+	gearUp()
+	UniversalToolTip(helm_icon.texture)
+func helmMouseExited():
+	gearUp()
+	deleteTooltip()	
+#___________________________________________________________________________________________________
+func gloveMouseEntered():
+	gearUp()
+	UniversalToolTip(glove_icon.texture)
+func gloveMouseExited():
+	gearUp()
+	deleteTooltip()	
+	
 
+	
 ####################################################################################################
 func switchToCombatStance():
 	if is_in_combat == false:
 		is_in_combat = true
-		if is_instance_valid(current_race_gender):
-			current_race_gender.switchWeapon()
-			print("instancing")
+		gearUp()
 
 
 #Equipment 2D___________________________________________________________________
@@ -2602,19 +2777,8 @@ var torso = "naked"
 var legs = "naked"
 var hand_l = "naked"
 var hand_r = "naked"
-var foot_l = "naked"
-var foot_r = "naked"
+var feet = autoload.boots_list.set_1
 
-onready var main_weap_icon =$UI/GUI/Equipment/EquipmentBG/MainWeap/Icon
-onready var sec_weap_icon = $UI/GUI/Equipment/EquipmentBG/SecWeap/Icon
-onready var sec_wea_slot = $UI/GUI/Equipment/EquipmentBG/SecWeap
-onready var legs_icon = $UI/GUI/Equipment/EquipmentBG/Pants/Icon
-onready var helm_icon = $UI/GUI/Equipment/EquipmentBG/Helm/Icon
-
-onready var hand_r_icon = $UI/GUI/Equipment/EquipmentBG/GloveR/Icon
-onready var chest_icon = $UI/GUI/Equipment/EquipmentBG/BreastPlate/Icon
-onready var foot_r_icon = $UI/GUI/Equipment/EquipmentBG/ShoeR/Icon
-onready var glove_icon = $UI/GUI/Equipment/EquipmentBG/GloveR/Icon
 
 
 func noPrimaryWeap():
@@ -2665,8 +2829,7 @@ func secondaryWeapEffect(Chosen):
 			applyEffect(effect, false)
 	applyEffect(Chosen, true)
 	
-	
-	
+
 
 func SwitchEquipmentBasedOnEquipmentIcons():
 #main weapon____________________________________________________________________
@@ -2805,22 +2968,27 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 			hand_r = "naked"
 #_______________________________feet____________________________________________
 	
-	if foot_r_icon != null:
-		if  foot_r_icon.texture != null:
-			if  foot_r_icon.texture.get_path() == autoload.shoe1.get_path():
-				foot_r = "cloth1"
-		elif foot_r_icon.texture == null:
-			foot_r = "naked"
+	if feet_icon == null:
+		feet = autoload.boots_list.set_0
+	else:
+		if  feet_icon.texture == null:
+			feet = autoload.boots_list.set_0
+		else:
+			if  feet_icon.texture.get_path() == autoload.boots1.get_path():
+				feet = autoload.boots_list.set_1
+			elif feet_icon.texture.get_path() == autoload.boots1.get_path():
+				feet = autoload.boots_list.set_2
+				
+				
+				
 	#REMINDER check for bugs, if none then move the savedata in savegame()
 	sec_weap_icon.savedata()
 	helm_icon.savedata()
 	chest_icon.savedata()
 	glove_icon.savedata()
 	legs_icon.savedata()
-	foot_r_icon.savedata()
+	feet_icon.savedata()
 	main_weap_icon.savedata()
-
-
 
 
 #Use these for both equipment stats and for buffs or debuffs
@@ -4888,8 +5056,7 @@ func decreaseAttribute(spent_attribute,attribute_name):
 
 
 
-onready var critical_chance_val = $UI/GUI/Equipment/EquipmentBG/CombatStats/GridContainer/CritChanceValue
-onready var critical_str_val = $UI/GUI/Equipment/EquipmentBG/CombatStats/GridContainer/CritDamageValue
+
 
 
 
@@ -5495,5 +5662,8 @@ func experienceSystem():
 # Calculate the percentage of experience points
 	var percentage: float = (float(experience_points) / float(experience_to_next_level)) * 100.0
 	exper_label.text = "Level " + str(level) + "\nXP: " + str(experience_points) + "/" + str(experience_to_next_level) + " (" + str(round((percentage* 1)/1)) + "%)"
+
+
+
 
 

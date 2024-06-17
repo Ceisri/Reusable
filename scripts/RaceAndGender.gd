@@ -163,7 +163,15 @@ func switchEquipment()->void:
 							equipArmor(autoload.human_xx_pants_1,"Legs")
 						"gambeson":
 							equipArmor(autoload.human_xx_legs_gambeson_0,"Legs")
-							
+			
+					match player.feet:
+						autoload.boots_list.set_0:
+							equipArmor(autoload.human_xx_feet_0,"Feet")
+						autoload.boots_list.set_1:
+							equipArmor(autoload.human_xx_feet_1,"Feet")
+						autoload.boots_list.set_2:
+							equipArmor(autoload.human_xx_feet_2,"Feet")
+
 					match player.hairstyle:
 						"1":
 							equipArmor(autoload.HXX_hair1,"hair")
@@ -462,6 +470,30 @@ func punch()->void:#fist
 		dealDMG(victim,aggro_power,damage_type,damage)
 
 
+func stompCD():
+	player.stomp_duration = false
+	player.all_skills.stompCD()
+
+func stompHit():
+	var damage_type:String = player.base_dmg_type
+	var damage:float = player.all_skills.stomp_dmg + player.total_dmg
+	var aggro_power:float = player.threat_power
+	var dmg_against_knocked: float = damage * player.all_skills.stomp_dmg_proportion
+	var push_distance:float = 0.25 * player.total_impact
+	var enemies:Array = area_melee_front.get_overlapping_bodies()
+	for victim in enemies:
+		if victim.is_in_group("Entity"):
+			if victim != self:
+				onHit()
+				if victim.state != autoload.state_list.dead:
+					player.pushEnemyAway(push_distance, victim,0.25)
+				if victim.knockeddown_duration == true:
+					dealDMG(victim,aggro_power,damage_type,dmg_against_knocked)
+				else:
+					dealDMG(victim,aggro_power,damage_type,damage)
+
+
+
 onready var area_melee_front:Area = $MeleeFront
 func baseAtktHit()->void:#Heavy
 	var damage_type:String = player.base_dmg_type
@@ -475,35 +507,34 @@ func baseAtktHit()->void:#Heavy
 	var push_distance:float = 0.25 * player.total_impact
 	var enemies:Array = area_melee_front.get_overlapping_bodies()
 	for victim in enemies:
-		if victim.is_in_group("enemy"):
-			if victim != self:
-				onHit()
-				if victim.state != autoload.state_list.dead:
+		if victim.is_in_group("Entity") and victim != self:
+			dealDMG(victim,aggro_power,damage_type,damage)
+			onHit()
+			playSoundSwordHit()
+			if victim.state != autoload.state_list.dead:
 					player.pushEnemyAway(push_distance, victim,0.25)
-		dealDMG(victim,aggro_power,damage_type,damage)
+		else:
+			playSoundSwordWoosh()
+			
+		
 func baseAtkLastHit()->void:#Heavy
 	player.all_skills.activateComboCyclone()
 	player.all_skills.activateComboOverheadslash()
 	player.all_skills.activateComboWhirlwind()
 	var damage_type:String = player.base_dmg_type
 	var damage:float = player.total_dmg * 2.25
-	var damage_flank:float = damage + player.flank_dmg 
-	var critical_damage : float  = 0
-	var critical_flank_damage : float  = damage_flank * player.critical_dmg
-	#extra damage when the victim is trying to block but is facing the wrong way 
-	var punishment_damage : float = 7 
 	var aggro_power:float = player.threat_power
 	var push_distance:float = 0.25 * player.total_impact
 	var enemies:Array = area_melee_front.get_overlapping_bodies()
 	for victim in enemies:
-		if victim.is_in_group("enemy"):
-			if victim != self:
-				onHit()
-				if victim.state != autoload.state_list.dead:
+		if victim.is_in_group("Entity") and victim != self:
+			dealDMG(victim,aggro_power,damage_type,damage)
+			onHit()
+			playSoundSwordHit()
+			if victim.state != autoload.state_list.dead:
 					player.pushEnemyAway(push_distance, victim,0.25)
-		dealDMG(victim,aggro_power,damage_type,damage)
-
-
+		else:
+			playSoundSwordWoosh()
 
 #Cleave
 func cleaveDMG()->void:#Heavy
@@ -654,14 +685,21 @@ func whirlwindDMG() -> void:
 	for victim in enemies:
 		if victim.is_in_group("enemy"):
 			if victim != self:
+				dealDMG(victim,aggro_power,damage_type,damage)
+				onHit()
+				playSoundSwordHit()
 				if victim.state != autoload.state_list.dead:
 					player.pushEnemyAway(push_distance, victim,0.25)
-					if victim.has_method("getKnockedDown"):
-						if victim.health > damage:
+			if victim.has_method("getKnockedDown"):
+				if victim.health > damage:
 							if victim.balance < 3:
 								victim.getKnockedDown(player)
-							
-		dealDMG(victim,aggro_power,damage_type,damage)
+		else:
+			playSoundSwordWoosh()
+			
+					
+						
+								
 
 #HeartTrust
 onready var trust_area: Area = $MeleeTrusting
@@ -695,7 +733,7 @@ func HeartTrustDMG()->void:
 
 
 onready var area_mid_range:Area = $MidRangeAOE
-func tauntEffect():
+func tauntEffect()-> void:
 	player.berserk_duration = 6
 	var enemies:Array = area_mid_range.get_overlapping_bodies()
 	for victim in enemies:
@@ -712,32 +750,40 @@ func tauntCD()->void:
 var can_move: bool = false
 func stopMovement()-> void:
 	can_move = false
-func startMovement():
+func startMovement()-> void:
 	can_move = true 
-func doubleAtkEnd():
+func doubleAtkEnd()-> void:
 	player.double_atk_duration = false
 #___________________________________________________________________________________________________
 #Start and stop a state of damage immunity
-func startParry():
+func startParry()-> void:
 	player.parry = true
-func stopParry():
+func stopParry()-> void:
 	player.parry = false
 #Start and stop a state of damage reduction 
-func startAbsorb():
+func startAbsorb()-> void:
 	player.absorbing = true
-func stopAbsorb():
+func stopAbsorb()-> void:
 	player.absorbing = false
-func jump():
+func jump()-> void:
 	player.jumping()
 	player.jump_duration = false
-func die():
+func die()-> void:
 	player.death_duration = false
 	player.has_died = true 
 	player.state = autoload.state_list.dead
-func staggeredOver():
-	player.state = autoload.state_list.wander
+func staggeredOver()-> void:
 	player.staggered_duration = false
+func getUp():
+	player.knockeddown_duration = false
 
+onready var weapon_woosh = $WeaponWoosh
+func playSoundSwordWoosh()-> void:
+	weapon_woosh.play()
+	
+onready var weapon_hit = $WeaponHit
+func playSoundSwordHit()-> void:
+	weapon_hit.play()
 #___________________________________________________________________________________________________
 func dealDMG(victim,aggro_power,damage_type,damage)-> void:
 		var random = rand_range(0,1)

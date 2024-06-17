@@ -50,3 +50,4 @@ func loaddata():
 		get_parent().quantity = savedQuantity
 	else:
 		pass
+

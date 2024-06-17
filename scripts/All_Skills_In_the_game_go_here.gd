@@ -84,6 +84,11 @@ func updateCooldownLabel() -> void:
 			var label: Label = child.get_node("CD")
 			if label != null:
 				 updateTaunt(label,taunt_cooldown, current_time,last_taunt_time)
+#__________________________________________________Stomp____________________________________________
+		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.stomp.get_path():
+			var label: Label = child.get_node("CD")
+			if label != null:
+				 updateStomp(label,stomp_cooldown,current_time,last_stomp_time)
 		
 				
 		
@@ -158,6 +163,36 @@ func updateDodge(label: Label, cooldown: float, current_time: float, last_time: 
 	else:
 		label.text = ""
 		can_dodge = true
+
+#___________________________________________________________________________________________________
+var stomp_description: String = "Stomp the ground beneath you dealing extra damage to KNOCKED DOWN enemies"
+var stomp_dmg: float = 5
+var stomp_dmg_proportion: float = 2.5
+
+var stomp_cooldown: float = 6
+var last_stomp_time: float = 0.0 
+func stompCD():
+	var current_time: float = OS.get_ticks_msec() / 1000.0
+	if current_time - last_stomp_time >= stomp_cooldown:
+		last_stomp_time = current_time
+
+var can_stomp: bool = false
+func updateStomp(label: Label, cooldown: float, current_time: float, last_time: float) -> void:
+	var elapsed_time: float = current_time - last_time
+	var remaining_cooldown: float = max(0, cooldown - elapsed_time)
+	if remaining_cooldown!= 0:
+		can_stomp = false
+		label.text = str(round(remaining_cooldown) )
+	else:
+		label.text = ""
+		can_stomp = true
+
+
+
+
+
+
+
 
 #___________________________________________________________________________________________________	
 onready var camera: Camera = $"../../../Camroot/h/v/Camera"
@@ -440,7 +475,7 @@ func switchStance():
 var overhead_slash_cooldown: float = 2.5
 var last_overhead_slash_time: float = 0.0 
 var overhead_slash_cost: float = 7
-var overhead_slash_description: String = "+6% compounding extra damage per skill level.\nDamage increased by both SLASH DAMAGE and BLUNT DAMAGE stats\nStrike foes in front of you in the head,\nThis skill activates faster and guarantees to stagger foes after the following: Cyclone, Desperate Slash, Heart Trust,rising slash, 4th hit of base attack"
+var overhead_slash_description: String = "+6% compounding extra damage per skill level.\nDamage increased by both SLASH DAMAGE and BLUNT DAMAGE stats\nStrike foes in front of you in the head,\nThis skill activates faster and guarantees to stagger foes after the following: Cyclone, Desperate Slash, Heart Trust,Rising slash or the last hit of base attack"
 var overhead_slash_damage: float = 12
 var overhead_slash_dmg_proportion: float = 0.06
 var overhead_slash_start_time: float = 0.0
@@ -566,7 +601,7 @@ var whirlwind_cooldown: float = 3.0
 var whirlwind_cost:float = 6.0
 var whirlwind_damage: float = 3.0
 var whirlwind_damage_multiplier:float = 1.0
-var whirlwind_description: String = "+5% compounding extra damage per skill level.\n+1 damage per 3% missing health.\nSlice foes around you, dealing higher damage the less health you have"
+var whirlwind_description: String = "+5% compounding extra damage per skill level.\n+1 damage per 3% missing health.\nSlice foes around you, dealing higher damage the less health you have and Knocking down all foes hit unless their balance attribute is too high, or their health is lower than the PRE-MITIGATION damage of this attack"
 var last_whirlwind_time: float = 0.0 
 var whirlwind_combo_start_time: float =  0.0
 func whirlwindCD()->void:

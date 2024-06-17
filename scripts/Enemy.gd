@@ -39,12 +39,16 @@ func _ready()->void:
 	stutterPrevention()
 	
 	
-func stutterPrevention()->void:
+func stutterPrevention()->void:#This prevents lag happening when first hitting an enemy,
+	#It probably happens because the prealoed scene is harder to instance the first time 
 	var text = autoload.floatingtext_damage.instance()
 	text.status = "STUTTER PREVENTION"
 	add_child(text)
-	takeDamage(0, 0, self, 0, "empty")
+	damage_effect_manager.stutterNow(99999999999, "heat")
 	threat_system.resetThreats()
+	health = max_health
+	
+	
 	
 var dropped_loot:bool = false
 func process()->void:
@@ -388,7 +392,7 @@ var speed: float = 3.0
 var rotation_speed: float = 2.0
 
 onready var take_damage_audio = $TakeHit
-onready var take_damage_view  = $"Damage&Effects/Viewport"
+
 func takeThreat(aggro_power,instigator)->void:
 	stored_instigator = instigator
 	var target = threat_system.createFindThreat(instigator)
@@ -465,7 +469,7 @@ var max_health = 160
 var health = 160
 #________________________
 
-var knockdown_chance: float = 50
+var knockdown_chance: float = 15
 
 
 #additional combat energy systems

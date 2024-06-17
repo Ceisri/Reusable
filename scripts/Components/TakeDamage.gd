@@ -35,9 +35,15 @@ func effectDurations()->void:
 		parent.applyEffect("berserk",false)
 		
 		
+func stutterNow(damage, damage_type)->void:
+	var text = autoload.floatingtext_damage.instance()
+	text.status = "Lag NOW"
+	text.state = damage_type
+	text.amount = damage
+	add_child(text)
+
 		
-		
-		
+onready var fall_sound =$GetKnockedDown
 
 func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type)->void:
 	if parent.health > -100:
@@ -145,6 +151,7 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type)->v
 					text.state = damage_type
 					parent.health -= total_dmg_to_take
 					add_child(text)
+
 				else:
 					if random_range < instigator.critical_chance:
 						var total_dmg_to_take = damage_to_take * instigator.critical_dmg 
@@ -154,12 +161,14 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type)->v
 						text.status = "Critical Hit!"
 						text.state = damage_type
 						add_child(text)
+
 					else:
 						parent.health -= damage_to_take
 						instigatorAggro.threat += damage_to_take + aggro_power
 						text.amount =round(damage_to_take * 100)/ 100
 						text.state = damage_type
 						add_child(text)
+
 			
 		
 			else:
@@ -171,6 +180,7 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type)->v
 					text.status = "Critical + Flank!"
 					text.state = damage_type
 					add_child(text)
+	
 				else:
 					var total_dmg_to_take = damage_to_take  + instigator.flank_dmg
 					parent.health -= total_dmg_to_take
@@ -179,6 +189,7 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type)->v
 					text.state = damage_type
 					text.status = "Flanked!"
 					add_child(text)
+
 		else:
 			text.status = "Parried!"
 			text.state = damage_type
@@ -199,6 +210,12 @@ func getKnockedDown(instigator)->void:
 	parent.staggered_duration = false
 	parent.stored_instigator = instigator
 	instigatorAggro.threat += 50
+	fall_sound.play()
+	
+func getKnockedDownPlayer(instigator)->void:
+	parent.knockeddown_duration = true
+	parent.staggered_duration = false
+	parent.stored_instigator = instigator
 
 
 
@@ -272,6 +289,20 @@ func takeDamagePlayer(damage, aggro_power, instigator, stagger_chance, damage_ty
 			if instigator.has_method("lifesteal"):
 				instigator.lifesteal(damage_to_take)
 	
+	
+		if random_range < instigator.stagger_chance - parent.stagger_resistance:
+				if parent.health >0:
+					parent.staggered_duration = true
+					text.status = "Staggered!"
+					viewport.add_child(text)
+						
+		if random_range < instigator.knockdown_chance:
+			#	if instigator.impact > parent.balance:
+					if parent.health > damage_to_take * 3:#This is important to avoid enemies getting up while they are dead just to then die instantly soon after
+						parent.staggered_duration = false
+						text.status = "Knocked Down!"
+						getKnockedDownPlayer(instigator)
+						viewport.add_child(text)
 	
 		if instigator.isFacingSelf(parent,0.30): #Frontal attacks
 			if parent.absorbing == true:
