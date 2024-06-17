@@ -1,7 +1,6 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=4 format=2]
 
 [ext_resource path="res://scripts/tooltipSkill.gd" type="Script" id=1]
-[ext_resource path="res://UI/fonts/base.tres" type="DynamicFont" id=2]
 [ext_resource path="res://UI/fonts/percentage.tres" type="DynamicFont" id=3]
 [ext_resource path="res://InterfaceGraphics/banner.png" type="Texture" id=4]
 
@@ -18,15 +17,6 @@ margin_right = 910.226
 margin_bottom = -174.657
 rect_scale = Vector2( 0.717536, 1.40027 )
 texture = ExtResource( 4 )
-
-[node name="Title" type="Label" parent="."]
-margin_left = 23.8603
-margin_top = -663.311
-margin_right = 71.8603
-margin_bottom = -630.311
-rect_scale = Vector2( 2.24132, 1.61791 )
-custom_fonts/font = ExtResource( 2 )
-text = "Title"
 
 [node name="Total" type="RichTextLabel" parent="."]
 margin_left = 34.0862
@@ -72,3 +62,12 @@ margin_bottom = -79.0118
 rect_min_size = Vector2( 600, 360 )
 custom_fonts/normal_font = ExtResource( 3 )
 text = "+5% compounding extra damage per skill level                +SLASH DAMAGE                                                               'spin and slash foes around you in an area attack, each foe can be hit up to 3 times"
+
+[node name="Title" type="Label" parent="."]
+margin_left = 28.9733
+margin_top = -667.145
+margin_right = 79.9733
+margin_bottom = -627.145
+rect_scale = Vector2( 1.88224, 1.3494 )
+custom_fonts/font = ExtResource( 3 )
+text = "Title"
