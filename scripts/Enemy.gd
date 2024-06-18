@@ -54,7 +54,7 @@ var dropped_loot:bool = false
 func process()->void:
 	if health >0:
 		autoload.entityGravity(self)
-	moveAside()
+
 	matchState()	
 	if health >0:
 		threat_system.loseThreat()
@@ -169,14 +169,14 @@ func matchState()->void:
 
 
 
-
+onready var ray_left = $RayLeft
+onready var ray_right = $RayRight
 func combat():
+	var check_left = ray_left.get_collider()
+	var check_right = ray_right.get_collider()
 	var random_value = randf()
 	var  distance_to_target = findDistanceTarget()
-
-
 	attackAnimations()
-	
 	if distance_to_target != null:
 		if distance_to_target > 1.3:
 			if  atk_1_duration == false and atk_2_duration == false and atk_3_duration == false and atk_4_duration == false:
@@ -184,37 +184,29 @@ func combat():
 				lookTarget(turn_speed)
 				followTarget(false)
 				animation.play("walk combat",0.2)
-			
-			
 		else:
-			if stored_instigator != null:
-				if stored_instigator.absorbing ==true or  stored_instigator.parry ==true:
-					lookTarget(4)
+			randomizeAttacks()
+						
+					
 
-				elif stored_instigator.is_attacking ==true:
-						if randi() % 2 == 0:  # 50% chance
-							lookTarget(4)
-#Start a random attack and get stuck in the animation unable to move or turn
-#giving a chance  for players to backstab or flank this entity
-				if random_atk < 0.25:  # 25% 
-										atk_1_duration = true
-										#Entity is stuck in animation, check how many times it attacked to see if it can turn around 
-										if atk1_spam > 2:
-											lookTarget(turn_speed)
-				elif random_atk < 0.50:  # 25% 
-										atk_2_duration = true
-										#Entity is stuck in animation, check how many times it attacked to see if it can turn around 
-										if atk2_spam > 1:
-											lookTarget(turn_speed)
-				elif random_atk < 0.75:  # 25%
-										atk_3_duration = true
-										if atk3_spam > 1:
-											lookTarget(turn_speed)
-				else:  # 25% of the remaining 70% 
-										atk_4_duration = true
-										#Entity is stuck in animation, check how many times it attacked to see if it can turn around 
-										if atk4_spam > 1:
-											lookTarget(turn_speed)
+func randomizeAttacks()->void:
+	if random_atk < 0.25:  # 25% 
+		atk_1_duration = true
+	if atk1_spam > 2:
+		lookTarget(turn_speed)
+	elif random_atk < 0.50:  # 25% 
+		atk_2_duration = true
+		if atk2_spam > 1:
+			lookTarget(turn_speed)
+	elif random_atk < 0.75:  # 25%
+		atk_3_duration = true
+		if atk3_spam > 1:
+			lookTarget(turn_speed)
+	else:  # 25% of the remaining 70% 
+		atk_4_duration = true
+		if atk4_spam > 1:
+			lookTarget(turn_speed)
+
 
 
 func attackAnimations()->void:
@@ -247,17 +239,21 @@ func forceDirectionChange() -> void:
 		tween.start()
 var orbit_time:float = 5
 onready var ray_straight: RayCast = $RayStraight
-func moveAside()->void: #move to the side to leave space for other enemies
-	if health > 0:
-		if state != autoload.state_list.wander:
-			if ray_straight.is_colliding():
-				var body = ray_straight.get_collider()
-				if body != self:
-					if body.is_in_group("Enemy"):
-						state = autoload.state_list.orbit
-						orbit_time = 1.5
-					elif body.is_in_group("Player"):
-							state = autoload.state_list.engage
+
+func slideLeft():
+	var distance = 2.0
+	var speed = 2.0
+	
+	var direction_to_target = -global_transform.basis.x  # Move sideways to the left
+	
+	var movement = direction_to_target * distance * speed * get_process_delta_time()
+	
+	move_and_slide(movement)
+
+
+
+
+
 var direction: Vector3
 onready var tween = $Tween
 func slideForward() -> void:

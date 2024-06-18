@@ -17,7 +17,7 @@ var duration = 200
 onready var slowest_timer:Timer = $SlowestTimer
 onready var slow_timer:Timer = $SlowTimer
 func _ready()->void:
-	autoload.drawGlobalThreat(self)
+#	autoload.drawGlobalThreat(self)
 	loadPlayerData()
 	switchSexRace()
 	setInventoryOwner()
@@ -182,6 +182,8 @@ func animationCancel()->void:#Universal stop, call this when I'm stunned, stagge
 	cyclone_combo = false
 	base_atk_duration = false
 	base_atk2_duration = false
+	throw_rock_duration = false
+	
 	
 	if stomp_duration == true:
 		all_skills.stompCD()
@@ -688,9 +690,31 @@ func skills(slot)-> void:
 				elif slot.texture.resource_path == autoload.stomp.get_path():
 					if all_skills.can_stomp == true:
 						stomp_duration = true
+						all_skills.stompCD()
+						if overhead_slash_duration == true:
+							all_skills.overheadSlashCD()
+							overhead_slash_duration = false
+						if rising_slash_duration == true:
+							rising_slash_duration = false
+							all_skills.risingSlashCD()
+						if heart_trust_duration == true:
+							all_skills.heartTrustSlashCD()
+							heart_trust_duration = false
+						if cyclone_duration == true:
+							all_skills.cycloneCD()
+							cyclone_duration = false
+						if whirlwind_duration == true:
+							all_skills.whirlwindCD()
+							whirlwind_duration = false
+						if taunt_duration == true:
+							all_skills.tauntCD()
+							taunt_duration = false
 					else:
 						returnToIdleBasedOnWeaponType()
-						
+
+
+
+
 				elif slot.texture.resource_path == autoload.throw_rock.get_path():
 					if hold_to_base_atk == false:
 						throw_rock_duration = true
