@@ -210,7 +210,7 @@ func loseThreat()->void: #call this function every few ticks to lose threat from
 					if assailant.player != null:
 						
 						if assailant.player.health <= 0:
-							assailant.threat = 0
+							assailant.threat -= 3
 						else:
 							var distance = assailant.player.global_transform.origin.distance_to(parent_position)
 							# Calculate reduction based on distance range

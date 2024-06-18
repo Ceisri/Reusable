@@ -15,8 +15,7 @@ func effectDurations()->void:
 			pass
 		else:
 			var damage: float = autoload.bleed_dmg 
-			if parent.health >0:
-				parent.takeDamage(damage,damage,parent.stored_instigator,0,"bleed")
+			parent.takeDamage(damage,damage,parent.stored_instigator,0,"bleed")
 		parent.applyEffect("bleeding",true)
 		parent.bleeding_duration -= 1
 	else:

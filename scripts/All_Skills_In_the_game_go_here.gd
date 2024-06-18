@@ -597,7 +597,7 @@ func activateComboCyclone():
 	cyclone_combo_start_time = OS.get_ticks_msec() / 1000.0
 	print("Active")
 #___________________________________________________________________________________________________
-var whirlwind_cooldown: float = 3.0
+var whirlwind_cooldown: float = 7
 var whirlwind_cost:float = 6.0
 var whirlwind_damage: float = 3.0
 var whirlwind_damage_multiplier:float = 1.0

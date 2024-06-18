@@ -29,7 +29,7 @@ func checkSteeringDirection(delta):
 			moveForward(delta)
 			horizontal_velocity = horizontal_velocity.linear_interpolate(direction.normalized() * speed, acceleration * delta)
 			rotateShip(delta)
-			body.player_mesh.rotation.y = mesh.rotation.y
+			#body.player_mesh.rotation.y = mesh.rotation.y
 	if  direction_timer >0: 
 		horizontal_velocity = stored_direction * speed * delta
 		horizontal_velocity = horizontal_velocity.linear_interpolate(stored_direction.normalized() * speed, acceleration * delta)

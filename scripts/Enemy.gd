@@ -118,89 +118,45 @@ var atk3_spam:int = 0
 var atk_4_duration:bool = false
 var atk4_spam:int = 0
 func matchState()->void:
-	if knockeddown_duration == true:
+	var target = threat_system.findHighestThreat()
+	
+	if health <0:
+		if death_time >0:
+			death_time -= 1 * get_physics_process_delta_time()
+			animation.play("death",0.2)
+			if death_time <= 0:
+				has_died = true
+		else:	
+			animation.play("dead",0.6)
+
+	elif stunned_duration > 0:
+		animationCancel()
+		animation.play("staggered",0.2)
+		
+		
+	elif knockeddown_duration == true:
 		animReset()
+		animationCancel()
 		if health > 1:
 			animation.play("knocked down",0.3)
 			if knockeddown_first_part == false:
 				lookTarget(5)
-		
-		
+				
+	elif staggered_duration == true:
+		animationCancel()
+		animation.play("staggered",0.2)
 		
 	else:
 		match state:
 			autoload.state_list.idle:
 				animation.play("idle",0.3)
 			autoload.state_list.wander:
-				if health >0:
-					$Wandering.wander()# animations are inside 
-					forceDirectionChange()
+				$Wandering.wander()# animations are inside 
+				forceDirectionChange()
 			autoload.state_list.curious:
 				lookTarget(turn_speed)
 			autoload.state_list.engage:
-				var target = threat_system.findHighestThreat()
-				if health >0:#not dead
-	#_______________________Entity is Stunned, Stop all attacks_______________________________________
-					if stunned_duration > 0:# not stunned 
-						animationCancel()
-						state = autoload.state_list.stunned
-						animation.play("staggered",0.2)
-	#_______________________Entity is staggered, Stop all attacks_______________________________________
-					elif staggered_duration == true:
-						animationCancel()
-						state = autoload.state_list.staggered
-						animation.play("staggered",0.2)	
-	#_______________________Entity is free to move and attack_______________________________________
-					else:
-						attackAnimations()
-						var  distance_to_target = findDistanceTarget()
-						if distance_to_target != null:
-	#________________________Target in range start choosing an attack and lock it in____________________
-							#This entity is in range to attack
-							if distance_to_target < 1.3:
-								var random_value = randf()
-								#check if this entity has been hit or instigated by anyone
-								if stored_instigator != null:
-									#The player is attacking this entity from behind or doing strange stuff like parrying or holding up the shield
-									#maybe there are multiple enemies and is parrying one while ignoring the other 
-									if stored_instigator.absorbing ==true or  stored_instigator.parry ==true:
-										lookTarget(4)
-									#The player is attacking but not hitting this Entity and tho they are in combat,
-									#either the player is missing hits or attacking multiple enemies
-									elif stored_instigator.is_attacking ==true:
-										if randi() % 2 == 0:  # 50% chance
-											lookTarget(4)
-								#Start a random attack and get stuck in the animation unable to move or turn
-								#giving a chance  for players to backstab or flank this entity
-								if random_atk < 0.25:  # 25% 
-										atk_1_duration = true
-										#Entity is stuck in animation, check how many times it attacked to see if it can turn around 
-										if atk1_spam > 2:
-											lookTarget(turn_speed)
-								elif random_atk < 0.50:  # 25% 
-										atk_2_duration = true
-										#Entity is stuck in animation, check how many times it attacked to see if it can turn around 
-										if atk2_spam > 1:
-											lookTarget(turn_speed)
-								elif random_atk < 0.75:  # 25%
-										atk_3_duration = true
-										if atk3_spam > 1:
-											lookTarget(turn_speed)
-								else:  # 25% of the remaining 70% 
-										atk_4_duration = true
-										#Entity is stuck in animation, check how many times it attacked to see if it can turn around 
-										if atk4_spam > 1:
-											lookTarget(turn_speed)
-
-	#__________________Target too far away, if not stuck in attack animation, follow it_________________
-							else:
-								if  atk_1_duration == false and atk_2_duration == false and atk_3_duration == false and atk_4_duration == false:
-									changeAttackType()
-									lookTarget(turn_speed)
-									followTarget(false)
-									animation.play("walk combat",0.2)
-									
-									
+				combat()
 			autoload.state_list.orbit:
 				if staggered_duration == false:
 					if orbit_time > 0:
@@ -209,21 +165,56 @@ func matchState()->void:
 						lookTarget(turn_speed)
 					else:
 						state = autoload.state_list.engage
-			autoload.state_list.stunned:
-				if stunned_duration > 0:
-					animation.play("staggered",0.2)
-				else:
-					state = autoload.state_list.engage
-			autoload.state_list.staggered:
-				animation.play("staggered",0.2)
-			autoload.state_list.dead:
-				if death_time >0:
-					death_time -= 1 * get_physics_process_delta_time()
-					animation.play("death",0.2)
-					if death_time <= 0:
-						has_died = true
-				else:	
-					animation.play("dead",0.6)
+
+
+
+
+
+func combat():
+	var random_value = randf()
+	var  distance_to_target = findDistanceTarget()
+
+
+	attackAnimations()
+	
+	if distance_to_target != null:
+		if distance_to_target > 1.3:
+			if  atk_1_duration == false and atk_2_duration == false and atk_3_duration == false and atk_4_duration == false:
+				changeAttackType()
+				lookTarget(turn_speed)
+				followTarget(false)
+				animation.play("walk combat",0.2)
+			
+			
+		else:
+			if stored_instigator != null:
+				if stored_instigator.absorbing ==true or  stored_instigator.parry ==true:
+					lookTarget(4)
+
+				elif stored_instigator.is_attacking ==true:
+						if randi() % 2 == 0:  # 50% chance
+							lookTarget(4)
+#Start a random attack and get stuck in the animation unable to move or turn
+#giving a chance  for players to backstab or flank this entity
+				if random_atk < 0.25:  # 25% 
+										atk_1_duration = true
+										#Entity is stuck in animation, check how many times it attacked to see if it can turn around 
+										if atk1_spam > 2:
+											lookTarget(turn_speed)
+				elif random_atk < 0.50:  # 25% 
+										atk_2_duration = true
+										#Entity is stuck in animation, check how many times it attacked to see if it can turn around 
+										if atk2_spam > 1:
+											lookTarget(turn_speed)
+				elif random_atk < 0.75:  # 25%
+										atk_3_duration = true
+										if atk3_spam > 1:
+											lookTarget(turn_speed)
+				else:  # 25% of the remaining 70% 
+										atk_4_duration = true
+										#Entity is stuck in animation, check how many times it attacked to see if it can turn around 
+										if atk4_spam > 1:
+											lookTarget(turn_speed)
 
 
 func attackAnimations()->void:
@@ -537,24 +528,7 @@ var stored_instigator:KinematicBody
 var bleeding_duration:float = 0
 var stunned_duration:float = 0
 var berserk_duration:float = 0 
-func effectDurations():
-	if bleeding_duration > 0:
-		if stored_instigator == null:
-			pass
-		else:
-			var damage: float = autoload.bleed_dmg 
-			takeDamage(damage,damage,stored_instigator,0,"bleed")
-		applyEffect("bleeding",true)
-		bleeding_duration -= 1
-	else:
-		applyEffect("bleeding",false)
-	if stunned_duration > 0:
-		state = autoload.state_list.stunned
-		applyEffect("stunned",true)
-		stunned_duration -= 1
-	else:
-		state = autoload.state_list.engage
-		applyEffect("stunned",false)
+
 	
 
 

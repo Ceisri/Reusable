@@ -17,6 +17,7 @@ var duration = 200
 onready var slowest_timer:Timer = $SlowestTimer
 onready var slow_timer:Timer = $SlowTimer
 func _ready()->void:
+	autoload.drawGlobalThreat(self)
 	loadPlayerData()
 	switchSexRace()
 	setInventoryOwner()
@@ -121,13 +122,18 @@ func _physics_process(delta: float) -> void:
 	inputOrStateToAnimation()
 	inputToState()
 	attack()
-	fallDamage()
 	skillUserInterfaceInputs()
 	positionCoordinates()
 	lootBodies()
 	jump()
 	deathLife(delta)#Main function
-	walk() 
+	
+	if is_dead == false:
+		if stunned_duration == 0:
+			if knockeddown_duration == false:
+				if staggered_duration == false:
+					if taunt_duration == false:
+						walk() 
 	
 
 #________________________________Input-State-Animation-SkillBar System______________________________
@@ -176,7 +182,9 @@ func animationCancel()->void:#Universal stop, call this when I'm stunned, stagge
 	cyclone_combo = false
 	base_atk_duration = false
 	base_atk2_duration = false
-	stomp_duration = false
+	
+	if stomp_duration == true:
+		all_skills.stompCD()
 	if overhead_slash_duration == true:
 		all_skills.overheadSlashCD()
 		overhead_slash_duration = false
@@ -222,33 +230,51 @@ func animationCancelException(exception) -> void:#So far it seems to be useless,
 			print("taunt_duration true")
 			all_skills.tauntCD()
 			taunt_duration = false
+			
+			
+func stopBeingParlized()-> void:
+	staggered_duration = false
+	knockeddown_duration = false
+	stunned_duration = 0
+			
+			
 func inputOrStateToAnimation()-> void:
 	if current_race_gender == null or animation == null:
 		print("mesh not instanced or animationPlayer not found")
 		
+		
 	if knockeddown_duration == true:
-		if health >0:
+		if parry == true:
+			knockeddown_duration = false
+			staggered_duration = false
+		elif absorbing == true:
+			knockeddown_duration = false
+
+			
+		else:
 			can_walk = false
+			is_walking = false
 			horizontal_velocity = direction * 0
 			current_race_gender.can_move = false
-			animation.play("knocked down",blend)
-			animationCancel()
-		else:
-			state = autoload.state_list.dead
+			direction = Vector3.ZERO
+			if health > 15:
+				animation.play("knocked down",blend)
+				animationCancel()
+			else:
+				knockeddown_duration = false
 
 	elif staggered_duration == true:
 		can_walk = false
 		is_walking = false
-		horizontal_velocity = direction * 0
 		current_race_gender.can_move = false
 		animation.play("staggered",blend)
 		animationCancel()
 	elif stunned_duration > 0 and health >0:
 		animationCancel()
+		autoload.gravity(self)
 		animation.play("staggered",blend)
 		can_walk = false
 		is_walking = false
-		horizontal_velocity = direction * 0
 		current_race_gender.can_move = false
 	else:
 		
@@ -546,6 +572,24 @@ func inputOrStateToAnimation()-> void:
 									animation.play("idle heavy",blend)
 						else:
 							animation.play("idle",0.2,1)
+							
+					autoload.state_list.downed:
+						if health >= -100:
+							if is_walking == true:
+								animation.play("downed walk",0.35)
+								movement_speed = walk_speed * 0.3
+								health -= 1 * get_physics_process_delta_time()
+								is_dead = false
+							else:
+								animation.play("downed idle",0.35)
+								is_dead = false
+								
+						else:
+							animation.play("dead",0.35)
+							is_dead = true
+						
+
+							
 	#skillbar stuff_____________________________________________________________________________________
 					autoload.state_list.skill1:
 						var slot = $UI/GUI/SkillBar/GridContainer/Slot1/Icon
@@ -611,23 +655,7 @@ func inputOrStateToAnimation()-> void:
 						animation.play("jump",blend)
 					autoload.state_list.fall:
 						animation.play("fall",blend)
-					autoload.state_list.dead:
-						staggered_duration = false
-						if health <= -100:
-							can_walk = true
-							current_race_gender.can_move = true 
-							horizontal_velocity * direction * 0
-							animation.play("dead",0.35)
-						else:
-							can_walk = true
-							current_race_gender.can_move = true 
-							if is_walking == true:
-								is_in_combat = false
-								animation.play("downed walk",0.4)
-								health -= 0.1
-							else:
-								health -= 0.01
-								animation.play("downed idle",0.35)
+
 onready var l_click_slot = $UI/GUI/SkillBar/GridContainer/LClickSlot
 onready var r_click_slot = $UI/GUI/SkillBar/GridContainer/RClickSlot
 func skills(slot)-> void:
@@ -741,6 +769,9 @@ func skills(slot)-> void:
 										overhead_slash_duration = true
 										animationCancelException(overhead_slash_duration)
 										if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
+											if stomp_duration == true:
+												stomp_duration = false
+												all_skills.stompCD()
 #											if overhead_slash_duration == true:
 #												all_skills.overheadSlashCD()
 #												overhead_slash_duration = false
@@ -777,6 +808,9 @@ func skills(slot)-> void:
 									is_walking = false
 									can_walk = false
 									if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
+											if stomp_duration == true:
+												stomp_duration = false
+												all_skills.stompCD()
 											if overhead_slash_duration == true:
 												all_skills.overheadSlashCD()
 												overhead_slash_duration = false
@@ -813,6 +847,9 @@ func skills(slot)-> void:
 										rising_slash_duration = true
 										animationCancelException(rising_slash_duration)
 										if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
+											if stomp_duration == true:
+												stomp_duration = false
+												all_skills.stompCD()
 											if overhead_slash_duration == true:
 												all_skills.overheadSlashCD()
 												overhead_slash_duration = false
@@ -851,6 +888,9 @@ func skills(slot)-> void:
 										cyclone_duration = true
 										animationCancelException(cyclone_duration)
 										if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
+											if stomp_duration == true:
+												stomp_duration = false
+												all_skills.stompCD()
 											if overhead_slash_duration == true:
 												all_skills.overheadSlashCD()
 												overhead_slash_duration = false
@@ -887,6 +927,9 @@ func skills(slot)-> void:
 										whirlwind_duration = true
 										animationCancelException(whirlwind_duration)
 										if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
+											if stomp_duration == true:
+												stomp_duration = false
+												all_skills.stompCD()
 											if overhead_slash_duration == true:
 												all_skills.overheadSlashCD()
 												overhead_slash_duration = false
@@ -923,6 +966,9 @@ func skills(slot)-> void:
 										heart_trust_duration = true
 										animationCancelException(heart_trust_duration)
 										if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
+											if stomp_duration == true:
+												stomp_duration = false
+												all_skills.stompCD()
 											if overhead_slash_duration == true:
 												all_skills.overheadSlashCD()
 												overhead_slash_duration = false
@@ -1070,8 +1116,10 @@ func moveDuringAnimation(speed):
 var sprint_animation_speed: float = 1
 var anim_cancel:bool = true #If true using abilities and skills interupts base attacks or other animations
 func inputToState():
-	if health <= 0:
-		state = autoload.state_list.dead
+	if  health < 0.001:
+		state = autoload.state_list.downed
+	elif health < -100:
+		is_dead = true
 	else:
 #on water
 		if is_swimming:
@@ -1090,7 +1138,7 @@ func inputToState():
 			else:
 				state = autoload.state_list.walk
 		
-		elif anim_cancel == false:#We chehc twice for "attack" input based on animation cancelling settings 
+		elif anim_cancel == false:#We check twice for "attack" input based on animation cancelling settings 
 			if Input.is_action_pressed("attack") and !cursor_visible: 
 				state = autoload.state_list.base_attack
 
@@ -1262,6 +1310,7 @@ onready var revive_here:Button = $UI/GUI/SkillBar/ReviveHere
 onready var revive_here_free:Button = $UI/GUI/SkillBar/ReviveHereFree
 onready var revive_in_town:Button = $UI/GUI/SkillBar/ReviveInTown
 
+var is_dead:bool = false
 var revival_wait_time:int = 300
 var struggles:int = 15
 var revival_cost:int =  500
@@ -1270,6 +1319,7 @@ func deathLife(delta)->void:
 	if health >0:
 		climbing()
 		fieldOfView()
+		is_dead = false
 	else:
 		animationCancel()
 		if revival_wait_time >0:
@@ -1306,6 +1356,7 @@ func reviveHereFree()->void:
 		struggles = 15
 		staggered_duration = false
 		autoload.gravity(self)
+		is_dead = false
 func reviveHere()->void:#Paid option
 	if coins >= revival_cost:
 		coins-= revival_cost
@@ -1321,6 +1372,7 @@ func reviveHere()->void:#Paid option
 		struggles = 15
 		staggered_duration = false
 		autoload.gravity(self)
+		is_dead = false
 func struggle()->void:
 	if struggles >0:
 		revival_wait_time -= rng.randi_range(1,6)
@@ -1341,12 +1393,12 @@ func reviveInTown()->void:
 	translation = Vector3(0,5, 0)
 	can_walk = true
 	autoload.gravity(self)
+	is_dead = false
 
 
 
 #_______________________________________________Basic Movement______________________________________
 var h_rot 
-var blocking = false
 var is_in_combat = false
 var enabled_climbing = false
 var is_crouching = false
@@ -1363,12 +1415,11 @@ func walk()->void:
 	movement_speed = 0
 	angular_acceleration = 3.25
 	acceleration = 15
-	if can_walk == true and health > -100:
+	if can_walk == true:
 		if (Input.is_action_pressed("forward") ||  Input.is_action_pressed("backward") ||  Input.is_action_pressed("left") ||  Input.is_action_pressed("right")):
 			direction = Vector3(Input.get_action_strength("left") - Input.get_action_strength("right"),
 						0,
 						Input.get_action_strength("forward") - Input.get_action_strength("backward"))
-			strafe_dir = direction
 			direction = direction.rotated(Vector3.UP, h_rot).normalized()
 			is_walking = true
 		# Sprint input, state and speed
@@ -1483,16 +1534,6 @@ var fall_damage:float = 10
 var fall_distance:float = 0
 var minimum_fall_distance:float = 0.5
 var old_vel : float = 0.0
-func fallDamage() -> void:#This is shit, gotta change it eventually
-	if state ==  autoload.state_list.fall and !is_climbing and !is_on_wall():
-		fall_distance += 0.02
-		if fall_distance > minimum_fall_distance: 
-			fall_damage += (2.5 +(0.01 * max_health)) / agility
-	else:
-		if fall_distance > minimum_fall_distance: 
-			takeDamage(fall_damage, 100, self, 0, "blunt")
-		fall_damage = 0
-		fall_distance = 0 
 
 # Physics value
 var direction : Vector3 = Vector3()

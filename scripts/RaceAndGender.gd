@@ -507,12 +507,13 @@ func baseAtktHit()->void:#Heavy
 	var push_distance:float = 0.25 * player.total_impact
 	var enemies:Array = area_melee_front.get_overlapping_bodies()
 	for victim in enemies:
-		if victim.is_in_group("Entity") and victim != self:
-			dealDMG(victim,aggro_power,damage_type,damage)
-			onHit()
-			playSoundSwordHit()
-			if victim.state != autoload.state_list.dead:
-					player.pushEnemyAway(push_distance, victim,0.25)
+		if victim != self or victim != null:
+			if victim.is_in_group("Entity"):
+				dealDMG(victim,aggro_power,damage_type,damage)
+				onHit()
+				playSoundSwordHit()
+				if victim.state != autoload.state_list.dead:
+						player.pushEnemyAway(push_distance, victim,0.25)
 		else:
 			playSoundSwordWoosh()
 			
@@ -527,12 +528,13 @@ func baseAtkLastHit()->void:#Heavy
 	var push_distance:float = 0.25 * player.total_impact
 	var enemies:Array = area_melee_front.get_overlapping_bodies()
 	for victim in enemies:
-		if victim.is_in_group("Entity") and victim != self:
-			dealDMG(victim,aggro_power,damage_type,damage)
-			onHit()
-			playSoundSwordHit()
-			if victim.state != autoload.state_list.dead:
-					player.pushEnemyAway(push_distance, victim,0.25)
+		if victim != self or victim != null:
+			if victim.is_in_group("Entity"):
+				dealDMG(victim,aggro_power,damage_type,damage)
+				onHit()
+				playSoundSwordHit()
+				if victim.state != autoload.state_list.dead:
+						player.pushEnemyAway(push_distance, victim,0.25)
 		else:
 			playSoundSwordWoosh()
 
