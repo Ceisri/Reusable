@@ -14,12 +14,11 @@ func ComboSystem():
 		# Check if time has passed have passed since the combo was started
 		if current_time - cyclone_combo_start_time >= 1.5:
 			player.cyclone_combo = false
-			print("Cyclone combo is now false")
+
 	if player.overhead_slash_combo:
 		if current_time - overhead_slash_start_time>= 2.25:
 			player.overhead_slash_combo = false
-			print("overhead_slash_combo is now false")
-		
+
 		
 
 func updateCooldownLabel() -> void:
@@ -51,10 +50,15 @@ func updateCooldownLabel() -> void:
 			if label != null:
 				 updateLabel(label,necro_switch_cooldown, current_time, last_necro_switch_time)
 #______________________________________________Dodge  cooldowns_____________________________________
-		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.dodge.get_path():
+		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.dash.get_path():
 			var label: Label = child.get_node("CD")
 			if label != null:
-				 updateDodge(label,dodge_cooldown, current_time,last_dodge_time)
+				 updateDash(label,dodge_cooldown, current_time,last_dodge_time)
+#___________________________________________Backstep  cooldowns_____________________________________
+		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.backstep.get_path():
+			var label: Label = child.get_node("CD")
+			if label != null:
+				 updateBackstep(label,backstep_cooldown,current_time,last_backstep_time)
 #___________________________________________Overhead and rising slash cooldowns_________________
 		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.overhead_slash.get_path():
 			var label: Label = child.get_node("CD")
@@ -126,11 +130,6 @@ func updateLabelCounter(label: Label, cooldown: float, current_time: float, last
 	else:
 		label.text = ""
 		can_counter = true
-		
-		
-		
-		
-
 func updateLabel(label: Label, cooldown: float, current_time: float, last_time: float) -> void:
 	var elapsed_time: float = current_time - last_time
 	var remaining_cooldown: float = max(0, cooldown - elapsed_time)
@@ -144,17 +143,14 @@ func updateLabel(label: Label, cooldown: float, current_time: float, last_time: 
 var dodge_cooldown: float = 1
 var last_dodge_time: float = 0.0 
 var dodge_cost: float = 10
-func dodgeCD():
+func dashCD()->void:
 	var current_time: float = OS.get_ticks_msec() / 1000.0
 	if current_time - last_dodge_time >= dodge_cooldown:
-		if player.resolve >= dodge_cost:
-			player.resolve -= dodge_cost
-			player.dodge_animation_duration += player.dodge_animation_max_duration
 			last_dodge_time = current_time
 			activateComboCyclone()
 			activateComboWhirlwind()
 var can_dodge: bool = false
-func updateDodge(label: Label, cooldown: float, current_time: float, last_time: float) -> void:
+func updateDash(label: Label, cooldown: float, current_time: float, last_time: float) -> void:
 	var elapsed_time: float = current_time - last_time
 	var remaining_cooldown: float = max(0, cooldown - elapsed_time)
 	if remaining_cooldown!= 0:
@@ -165,6 +161,57 @@ func updateDodge(label: Label, cooldown: float, current_time: float, last_time: 
 		can_dodge = true
 
 #___________________________________________________________________________________________________
+var backstep_distance: float = 9
+var backstep_cooldown: float = 6
+var last_backstep_time: float = 0.0 
+func backstepCD()->void:
+	var current_time: float = OS.get_ticks_msec() / 1000.0
+	if current_time - last_backstep_time >= backstep_cooldown:
+		last_backstep_time = current_time
+var can_backstep: bool = false
+func updateBackstep(label: Label, cooldown: float, current_time: float, last_time: float) -> void:
+	var elapsed_time: float = current_time - last_time
+	var remaining_cooldown: float = max(0, cooldown - elapsed_time)
+	if remaining_cooldown!= 0:
+		can_backstep = false
+		label.text = str(round(remaining_cooldown) )
+	else:
+		label.text = ""
+		can_backstep = true
+func interruptBackstep()->void:
+	if player.leftstep_duration == true:
+		backstepCD()
+		player.backstep_duration = false
+		player.frontstep_duration = false
+		player.leftstep_duration = false
+		player.rightstep_duration = false
+	if player.backstep_duration == true:
+		backstepCD()
+		player.backstep_duration = false
+		player.frontstep_duration = false
+		player.leftstep_duration = false
+		player.rightstep_duration = false
+	if player.frontstep_duration == true :
+		backstepCD()
+		player.backstep_duration = false
+		player.frontstep_duration = false
+		player.leftstep_duration = false
+		player.rightstep_duration = false
+	if player.rightstep_duration == true:
+		backstepCD()
+		player.backstep_duration = false
+		player.frontstep_duration = false
+		player.leftstep_duration = false
+		player.rightstep_duration = false
+	if player.leftstep_duration == true:
+		backstepCD()
+		player.backstep_duration = false
+		player.frontstep_duration = false
+		player.leftstep_duration = false
+		player.rightstep_duration = false
+#___________________________________________________________________________________________________
+
+
 var stomp_description: String = "Stomp the ground beneath you dealing extra damage to KNOCKED DOWN enemies"
 var stomp_dmg: float = 5
 var stomp_dmg_proportion: float = 2.5
@@ -194,8 +241,245 @@ func updateStomp(label: Label, cooldown: float, current_time: float, last_time: 
 
 
 
-#___________________________________________________________________________________________________	
+
+
+
+#___________________________________________________________________________________________________
+var overhead_slash_distance: float = 6
+var overhead_slash_cooldown: float = 2.5
+var last_overhead_slash_time: float = 0.0 
+var overhead_slash_cost: float = 7
+var overhead_slash_description: String = "+6% compounding extra damage per skill level.\nDamage increased by both SLASH DAMAGE and BLUNT DAMAGE stats\nStrike foes in front of you in the head,\nThis skill activates faster and guarantees to stagger foes after the following: Cyclone, Desperate Slash, Heart Trust,Rising slash or the last hit of base attack"
+var overhead_slash_damage: float = 12
+var overhead_slash_dmg_proportion: float = 0.06
+var overhead_slash_start_time: float = 0.0
+func overheadSlashCD():
+	var current_time: float = OS.get_ticks_msec() / 1000.0
+	if current_time - last_overhead_slash_time >= overhead_slash_cooldown:
+		if player.resolve >=overhead_slash_cost:
+			activateComboWhirlwind()
+			last_overhead_slash_time = current_time
+var can_overhead_slash: bool = false
+func updateOverheadSlash(label: Label, cooldown: float, current_time: float, last_time: float) -> void:
+	var elapsed_time: float = current_time - last_time
+	var remaining_cooldown: float = max(0, cooldown - elapsed_time)
+	if remaining_cooldown!= 0:
+		can_overhead_slash = false
+		label.text = str(round(remaining_cooldown) )
+	else:
+		label.text = ""
+		can_overhead_slash = true
+var overhead_slash_combo_speed_bonus = 0.85 #1 = 100% extra speed
+func activateComboOverheadslash():
+	player.overhead_slash_combo = true
+	overhead_slash_start_time = OS.get_ticks_msec() / 1000.0
+#___________________________________________________________________________________________________
+var rising_slash_cooldown: float = 5
+var last_rising_slash_time: float = 0.0 
+var rising_slash_description: String = "+4% compounding extra damage per skill level.\nHit foes in front of you with an upward slash staggering them"
+var rising_slash_cost: float = 7
+var rising_slash_damage: float = 5
+var rising_slash_dmg_proportion: float = 0.04
+func risingSlashCD():
+	var current_time: float = OS.get_ticks_msec() / 1000.0
+	if current_time - last_rising_slash_time >= rising_slash_cooldown:
+		if player.resolve >=rising_slash_cost:
+			activateComboCyclone()
+			activateComboOverheadslash()
+			last_rising_slash_time = current_time
+			
+var can_rising_slash: bool = false
+func updateRising(label: Label, cooldown: float, current_time: float, last_time: float) -> void:
+	var elapsed_time: float = current_time - last_time
+	var remaining_cooldown: float = max(0, cooldown - elapsed_time)
+	if remaining_cooldown!= 0:
+		can_rising_slash = false
+		label.text = str(round(remaining_cooldown) )
+	else:
+		label.text = ""
+		can_rising_slash = true
+#___________________________________________________________________________________________________
+var heart_trust_cooldown: float = 20
+var last_heart_trust_time: float = 0.0 
+var heart_trust_cost: float = 7
+var heart_trust_dmg: float =  18
+var heart_trust_bleed_duration: float = 7
+var heart_trust_description: String = "5% compounding extra damage per skill level.\nstab foes in front, causing them to bleed for: "
+var heart_trust_dmg_proportion: float = 0.05
+func heartTrustSlashCD():
+	var current_time: float = OS.get_ticks_msec() / 1000.0
+	if current_time - last_heart_trust_time >= heart_trust_cooldown:
+		if player.resolve >=heart_trust_cost:
+			activateComboOverheadslash()
+			last_heart_trust_time = current_time
+var can_heart_trust: bool = false
+func updateHeartTrust(label: Label, cooldown: float, current_time: float, last_time: float) -> void:
+	var elapsed_time: float = current_time - last_time
+	var remaining_cooldown: float = max(0, cooldown - elapsed_time)
+	if remaining_cooldown!= 0:
+		can_heart_trust = false
+		label.text = str(round(remaining_cooldown) )
+	else:
+		label.text = ""
+		can_heart_trust = true
+#___________________________________________________________________________________________________
+var taunt_cooldown: float =  30
+var last_taunt_time: float = 0.0 
+var taunt_cost: float = 7
+func tauntCD():
+	var current_time: float = OS.get_ticks_msec() / 1000.0
+	if current_time - last_taunt_time >= taunt_cooldown:
+		if player.resolve >=taunt_cost:
+			last_taunt_time = current_time
+var can_taunt: bool = false
+func updateTaunt(label: Label, cooldown: float, current_time: float, last_time: float) -> void:
+	var elapsed_time: float = current_time - last_time
+	var remaining_cooldown: float = max(0, cooldown - elapsed_time)
+	if remaining_cooldown!= 0:
+		can_taunt = false
+		label.text = str(round(remaining_cooldown) )
+	else:
+		label.text = ""
+		can_taunt = true
+#___________________________________________________________________________________________________
+
+var cyclone_damage: float = 7
+var cyclone_cooldown: float = 2
+var cyclone_cost: float = 4.5
+var cyclone_motion: float = 6
+var cyclone_description: String = "\n+5% compounding extra damage per skill level.\nSpin and slash foes around you in an area attack, each foe can be hit up to 2 times.\nThis skill activates faster and guarantees to stagger foes after the following:  Dodge slide, 4th hit of base attack, Rising slash"
+var cyclone_combo_start_time:float = 0.0
+var last_cyclone_time: float = 0.0 
+func cycloneCD()->void:
+	var current_time: float = OS.get_ticks_msec() / 1000.0
+	if current_time - last_cyclone_time >= cyclone_cooldown:
+		activateComboOverheadslash()
+		last_cyclone_time = current_time
+var can_cyclone: bool = false
+func updateLabelCyclone(label: Label, cooldown: float, current_time: float, last_time: float) -> void:
+	var elapsed_time: float = current_time - last_time
+	var remaining_cooldown: float = max(0, cooldown - elapsed_time)
+	#print("remaining_cooldown:", remaining_cooldown)
+	if remaining_cooldown!= 0:
+		can_cyclone = false
+		label.text = str(round(remaining_cooldown) )
+	else:
+		label.text = ""
+		can_cyclone = true
+func activateComboCyclone():
+	player.cyclone_combo = true
+	cyclone_combo_start_time = OS.get_ticks_msec() / 1000.0
+
+#___________________________________________________________________________________________________
+var whirlwind_cooldown: float = 7
+var whirlwind_cost:float = 6.0
+var whirlwind_damage: float = 3.0
+var whirlwind_damage_multiplier:float = 1.0
+var whirlwind_description: String = "+5% compounding extra damage per skill level.\n+1 damage per 3% missing health.\nSlice foes around you, dealing higher damage the less health you have and Knocking down all foes hit unless their balance attribute is too high, or their health is lower than the PRE-MITIGATION damage of this attack"
+var last_whirlwind_time: float = 0.0 
+var whirlwind_combo_start_time: float =  0.0
+func whirlwindCD()->void:
+	var current_time: float = OS.get_ticks_msec() / 1000.0
+	if current_time - last_whirlwind_time >= whirlwind_cooldown:
+		activateComboOverheadslash()
+		last_whirlwind_time = current_time
+var can_whirlwind:bool = false
+func updateWhirlwind(label: Label, cooldown: float, current_time: float, last_time: float) -> void:
+	var elapsed_time: float = current_time - last_time
+	var remaining_cooldown: float = max(0, cooldown - elapsed_time)
+	if remaining_cooldown!= 0:
+		can_whirlwind = false
+		label.text = str(round(remaining_cooldown) )
+	else:
+		label.text = ""
+		can_whirlwind = true
+func activateComboWhirlwind():
+	player.whirlwind_combo = true
+	whirlwind_combo_start_time = OS.get_ticks_msec() / 1000.0
+#___________________________________________________________________________________________________
+var counter_cooldown: float = 3
+var last_counter_time: float = 0.0 
+var counter_cost: float = 5
+func counterStrike()->void:
+	var current_time: float = OS.get_ticks_msec() / 1000.0
+	if current_time - last_counter_time >= counter_cooldown:
+		last_counter_time = current_time
+#___________________________________________________________________________________________________
+		
+func interruptBaseAtk():
+	player.base_atk_duration = false
+	player.base_atk2_duration = false
+#___________________________________________________________________________________________________
+
+var arrow: PackedScene = preload("res://Equipment/Arrows/Iron/Arrow_Iron.tscn")
+
+func shootArrow(arrow_damage):
+	var player_global_transform: Transform = player.global_transform
+	var arrow_instance: KinematicBody
+	var player_direction = player.direction
+	var camera_transform: Transform = camera.global_transform
+	var camera_rotation_x: float = camera_transform.basis.get_euler().x#Get the rotation degrees on the x-axis of the camera
+	var strength_factor: float = 1.0#Calculate the strength factor based on the rotation of the camera
+	var player_forward: Vector3 = player_global_transform.basis.z.normalized()
+
+	var camera_global_transform: Transform = camera.global_transform
+	var camera_forward: Vector3 = -camera_global_transform.basis.z.normalized() 
+	var shoot_position: Vector3 = player.global_transform.origin + camera_forward * 0.5
+	shoot_position.y += vertical_spawn_offset + 1
+	var camera_right: Vector3 = camera_global_transform.basis.x.normalized()
+	# Shoot the first bullet towards where the camera is looking at
+	arrow_instance = arrow.instance()
+	arrow_instance.direction = camera_forward
+	arrow_instance.instigator = player
+	arrow_instance.summoner = player
+	arrow_instance.damage =  arrow_damage * player.strength 
+	get_tree().current_scene.add_child(arrow_instance)
+	arrow_instance.global_transform.origin = shoot_position
+
+var rock: PackedScene = preload("res://EnvironmentDecorations/throwable rock/throwable rock.tscn")
+
+func throwRock(damage):
+	var player_global_transform: Transform = player.global_transform
+	var rock_instance: KinematicBody
+	var player_direction = player.direction
+	var camera_transform: Transform = camera.global_transform
+	var camera_rotation_x: float = camera_transform.basis.get_euler().x#Get the rotation degrees on the x-axis of the camera
+	var strength_factor: float = 1.0#Calculate the strength factor based on the rotation of the camera
+	var player_forward: Vector3 = player_global_transform.basis.z.normalized()
+
+	var camera_global_transform: Transform = camera.global_transform
+	var camera_forward: Vector3 = -camera_global_transform.basis.z.normalized() 
+	var shoot_position: Vector3 = player.global_transform.origin + camera_forward * 0.5
+	shoot_position.y += vertical_spawn_offset + 1
+	var camera_right: Vector3 = camera_global_transform.basis.x.normalized()
+	# Shoot the first bullet towards where the camera is looking at
+	rock_instance = rock.instance()
+	rock_instance.direction = camera_forward
+	rock_instance.instigator = player
+	rock_instance.summoner = player
+	rock_instance.damage =  damage * player.strength 
+	get_tree().current_scene.add_child(rock_instance)
+	rock_instance.global_transform.origin = shoot_position
+
+var potion_cooldown: float = 3
+var last_potion_time: float = 0.0 
+
+func potion():
+	var current_time: float = OS.get_ticks_msec() / 1000.0
+	if current_time - last_potion_time >= potion_cooldown:
+		last_counter_time = current_time
+
+
+
+
+
+
+
+
+
+#___________________________________________________________________________________________________
 onready var camera: Camera = $"../../../Camroot/h/v/Camera"
+
 var base_attack: PackedScene = preload("res://Classes/Necromant/Spells/ArcaneBlast.tscn")
 var vertical_spawn_offset: float = 0.8
 var forward_offset: float = 1
@@ -467,225 +751,3 @@ func switchStance():
 	if current_time - last_necro_switch_time >= necro_switch_cooldown:
 		necro_switch = !necro_switch
 		last_necro_switch_time = current_time
-
-
-
-
-#___________________________________________________________________________________________________
-var overhead_slash_cooldown: float = 2.5
-var last_overhead_slash_time: float = 0.0 
-var overhead_slash_cost: float = 7
-var overhead_slash_description: String = "+6% compounding extra damage per skill level.\nDamage increased by both SLASH DAMAGE and BLUNT DAMAGE stats\nStrike foes in front of you in the head,\nThis skill activates faster and guarantees to stagger foes after the following: Cyclone, Desperate Slash, Heart Trust,Rising slash or the last hit of base attack"
-var overhead_slash_damage: float = 12
-var overhead_slash_dmg_proportion: float = 0.06
-var overhead_slash_start_time: float = 0.0
-func overheadSlashCD():
-	var current_time: float = OS.get_ticks_msec() / 1000.0
-	if current_time - last_overhead_slash_time >= overhead_slash_cooldown:
-		if player.resolve >=overhead_slash_cost:
-			activateComboWhirlwind()
-			last_overhead_slash_time = current_time
-var can_overhead_slash: bool = false
-func updateOverheadSlash(label: Label, cooldown: float, current_time: float, last_time: float) -> void:
-	var elapsed_time: float = current_time - last_time
-	var remaining_cooldown: float = max(0, cooldown - elapsed_time)
-	if remaining_cooldown!= 0:
-		can_overhead_slash = false
-		label.text = str(round(remaining_cooldown) )
-	else:
-		label.text = ""
-		can_overhead_slash = true
-var overhead_slash_combo_speed_bonus = 0.85 #1 = 100% extra speed
-func activateComboOverheadslash():
-	player.overhead_slash_combo = true
-	overhead_slash_start_time = OS.get_ticks_msec() / 1000.0
-#___________________________________________________________________________________________________
-var rising_slash_cooldown: float = 5
-var last_rising_slash_time: float = 0.0 
-var rising_slash_description: String = "+4% compounding extra damage per skill level.\nHit foes in front of you with an upward slash staggering them"
-var rising_slash_cost: float = 7
-var rising_slash_damage: float = 5
-var rising_slash_dmg_proportion: float = 0.04
-func risingSlashCD():
-	var current_time: float = OS.get_ticks_msec() / 1000.0
-	if current_time - last_rising_slash_time >= rising_slash_cooldown:
-		if player.resolve >=rising_slash_cost:
-			activateComboCyclone()
-			activateComboOverheadslash()
-			last_rising_slash_time = current_time
-			
-var can_rising_slash: bool = false
-func updateRising(label: Label, cooldown: float, current_time: float, last_time: float) -> void:
-	var elapsed_time: float = current_time - last_time
-	var remaining_cooldown: float = max(0, cooldown - elapsed_time)
-	if remaining_cooldown!= 0:
-		can_rising_slash = false
-		label.text = str(round(remaining_cooldown) )
-	else:
-		label.text = ""
-		can_rising_slash = true
-#___________________________________________________________________________________________________
-var heart_trust_cooldown: float = 20
-var last_heart_trust_time: float = 0.0 
-var heart_trust_cost: float = 7
-var heart_trust_dmg: float =  18
-var heart_trust_bleed_duration: float = 7
-var heart_trust_description: String = "5% compounding extra damage per skill level.\nstab foes in front, causing them to bleed for: "
-var heart_trust_dmg_proportion: float = 0.05
-func heartTrustSlashCD():
-	var current_time: float = OS.get_ticks_msec() / 1000.0
-	if current_time - last_heart_trust_time >= heart_trust_cooldown:
-		if player.resolve >=heart_trust_cost:
-			activateComboOverheadslash()
-			last_heart_trust_time = current_time
-var can_heart_trust: bool = false
-func updateHeartTrust(label: Label, cooldown: float, current_time: float, last_time: float) -> void:
-	var elapsed_time: float = current_time - last_time
-	var remaining_cooldown: float = max(0, cooldown - elapsed_time)
-	if remaining_cooldown!= 0:
-		can_heart_trust = false
-		label.text = str(round(remaining_cooldown) )
-	else:
-		label.text = ""
-		can_heart_trust = true
-#___________________________________________________________________________________________________
-var taunt_cooldown: float =  30
-var last_taunt_time: float = 0.0 
-var taunt_cost: float = 7
-func tauntCD():
-	var current_time: float = OS.get_ticks_msec() / 1000.0
-	if current_time - last_taunt_time >= taunt_cooldown:
-		if player.resolve >=taunt_cost:
-			last_taunt_time = current_time
-var can_taunt: bool = false
-func updateTaunt(label: Label, cooldown: float, current_time: float, last_time: float) -> void:
-	var elapsed_time: float = current_time - last_time
-	var remaining_cooldown: float = max(0, cooldown - elapsed_time)
-	if remaining_cooldown!= 0:
-		can_taunt = false
-		label.text = str(round(remaining_cooldown) )
-	else:
-		label.text = ""
-		can_taunt = true
-#___________________________________________________________________________________________________
-
-var cyclone_damage: float = 7
-var cyclone_cooldown: float = 2
-var cyclone_cost: float = 4.5
-var cyclone_motion: float = 6
-var cyclone_description: String = "\n+5% compounding extra damage per skill level.\nSpin and slash foes around you in an area attack, each foe can be hit up to 2 times.\nThis skill activates faster and guarantees to stagger foes after the following:  Dodge slide, 4th hit of base attack, Rising slash"
-var cyclone_combo_start_time:float = 0.0
-var last_cyclone_time: float = 0.0 
-func cycloneCD()->void:
-	var current_time: float = OS.get_ticks_msec() / 1000.0
-	if current_time - last_cyclone_time >= cyclone_cooldown:
-		activateComboOverheadslash()
-		last_cyclone_time = current_time
-var can_cyclone: bool = false
-func updateLabelCyclone(label: Label, cooldown: float, current_time: float, last_time: float) -> void:
-	var elapsed_time: float = current_time - last_time
-	var remaining_cooldown: float = max(0, cooldown - elapsed_time)
-	#print("remaining_cooldown:", remaining_cooldown)
-	if remaining_cooldown!= 0:
-		can_cyclone = false
-		label.text = str(round(remaining_cooldown) )
-	else:
-		label.text = ""
-		can_cyclone = true
-func activateComboCyclone():
-	player.cyclone_combo = true
-	cyclone_combo_start_time = OS.get_ticks_msec() / 1000.0
-	print("Active")
-#___________________________________________________________________________________________________
-var whirlwind_cooldown: float = 7
-var whirlwind_cost:float = 6.0
-var whirlwind_damage: float = 3.0
-var whirlwind_damage_multiplier:float = 1.0
-var whirlwind_description: String = "+5% compounding extra damage per skill level.\n+1 damage per 3% missing health.\nSlice foes around you, dealing higher damage the less health you have and Knocking down all foes hit unless their balance attribute is too high, or their health is lower than the PRE-MITIGATION damage of this attack"
-var last_whirlwind_time: float = 0.0 
-var whirlwind_combo_start_time: float =  0.0
-func whirlwindCD()->void:
-	var current_time: float = OS.get_ticks_msec() / 1000.0
-	if current_time - last_whirlwind_time >= whirlwind_cooldown:
-		activateComboOverheadslash()
-		last_whirlwind_time = current_time
-var can_whirlwind:bool = false
-func updateWhirlwind(label: Label, cooldown: float, current_time: float, last_time: float) -> void:
-	var elapsed_time: float = current_time - last_time
-	var remaining_cooldown: float = max(0, cooldown - elapsed_time)
-	if remaining_cooldown!= 0:
-		can_whirlwind = false
-		label.text = str(round(remaining_cooldown) )
-	else:
-		label.text = ""
-		can_whirlwind = true
-func activateComboWhirlwind():
-	player.whirlwind_combo = true
-	whirlwind_combo_start_time = OS.get_ticks_msec() / 1000.0
-#___________________________________________________________________________________________________
-var counter_cooldown: float = 3
-var last_counter_time: float = 0.0 
-var counter_cost: float = 5
-func counterStrike()->void:
-	var current_time: float = OS.get_ticks_msec() / 1000.0
-	if current_time - last_counter_time >= counter_cooldown:
-		last_counter_time = current_time
-#___________________________________________________________________________________________________
-
-var arrow: PackedScene = preload("res://Equipment/Arrows/Iron/Arrow_Iron.tscn")
-
-func shootArrow(arrow_damage):
-	var player_global_transform: Transform = player.global_transform
-	var arrow_instance: KinematicBody
-	var player_direction = player.direction
-	var camera_transform: Transform = camera.global_transform
-	var camera_rotation_x: float = camera_transform.basis.get_euler().x#Get the rotation degrees on the x-axis of the camera
-	var strength_factor: float = 1.0#Calculate the strength factor based on the rotation of the camera
-	var player_forward: Vector3 = player_global_transform.basis.z.normalized()
-
-	var camera_global_transform: Transform = camera.global_transform
-	var camera_forward: Vector3 = -camera_global_transform.basis.z.normalized() 
-	var shoot_position: Vector3 = player.global_transform.origin + camera_forward * 0.5
-	shoot_position.y += vertical_spawn_offset + 1
-	var camera_right: Vector3 = camera_global_transform.basis.x.normalized()
-	# Shoot the first bullet towards where the camera is looking at
-	arrow_instance = arrow.instance()
-	arrow_instance.direction = camera_forward
-	arrow_instance.instigator = player
-	arrow_instance.summoner = player
-	arrow_instance.damage =  arrow_damage * player.strength 
-	get_tree().current_scene.add_child(arrow_instance)
-	arrow_instance.global_transform.origin = shoot_position
-
-var rock: PackedScene = preload("res://EnvironmentDecorations/throwable rock/throwable rock.tscn")
-
-func throwRock(damage):
-	var player_global_transform: Transform = player.global_transform
-	var rock_instance: KinematicBody
-	var player_direction = player.direction
-	var camera_transform: Transform = camera.global_transform
-	var camera_rotation_x: float = camera_transform.basis.get_euler().x#Get the rotation degrees on the x-axis of the camera
-	var strength_factor: float = 1.0#Calculate the strength factor based on the rotation of the camera
-	var player_forward: Vector3 = player_global_transform.basis.z.normalized()
-
-	var camera_global_transform: Transform = camera.global_transform
-	var camera_forward: Vector3 = -camera_global_transform.basis.z.normalized() 
-	var shoot_position: Vector3 = player.global_transform.origin + camera_forward * 0.5
-	shoot_position.y += vertical_spawn_offset + 1
-	var camera_right: Vector3 = camera_global_transform.basis.x.normalized()
-	# Shoot the first bullet towards where the camera is looking at
-	rock_instance = rock.instance()
-	rock_instance.direction = camera_forward
-	rock_instance.instigator = player
-	rock_instance.summoner = player
-	rock_instance.damage =  damage * player.strength 
-	get_tree().current_scene.add_child(rock_instance)
-	rock_instance.global_transform.origin = shoot_position
-
-var potion_cooldown: float = 3
-var last_potion_time: float = 0.0 
-
-func potion():
-	var current_time: float = OS.get_ticks_msec() / 1000.0
-	if current_time - last_potion_time >= potion_cooldown:
-		last_counter_time = current_time

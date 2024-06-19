@@ -102,21 +102,6 @@ var death_time:float  = 0
 
 var knockeddown_duration:bool = false
 var knockeddown_first_part:bool = false
-
-var staggered_duration: bool = false
-var has_died:bool = false
-
-var atk_1_duration:bool = false
-var atk1_spam:int = 0
-
-var atk_2_duration:bool = false
-var atk2_spam:int = 0
-
-var atk_3_duration:bool = false
-var atk3_spam:int = 0
-
-var atk_4_duration:bool = false
-var atk4_spam:int = 0
 func matchState()->void:
 	var target = threat_system.findHighestThreat()
 	
@@ -168,7 +153,20 @@ func matchState()->void:
 
 
 
+var staggered_duration: bool = false
+var has_died:bool = false
 
+var atk_1_duration:bool = false
+var atk1_spam:int = 0
+
+var atk_2_duration:bool = false
+var atk2_spam:int = 0
+
+var atk_3_duration:bool = false
+var atk3_spam:int = 0
+
+var atk_4_duration:bool = false
+var atk4_spam:int = 0
 onready var ray_left = $RayLeft
 onready var ray_right = $RayRight
 func combat():
@@ -184,6 +182,8 @@ func combat():
 				lookTarget(turn_speed)
 				followTarget(false)
 				animation.play("walk combat",0.2)
+			else:
+				print("This unit is maybe stuck ?")
 		else:
 			randomizeAttacks()
 						
@@ -456,7 +456,7 @@ var max_health = 160
 var health = 160
 #________________________
 
-var knockdown_chance: float = 15
+var knockdown_chance: float = 50
 
 
 #additional combat energy systems
@@ -628,6 +628,10 @@ var effects = {
 	"Lshoe1": {"stats": {"slash_resistance": 1,"blunt_resistance": 3,"pierce_resistance": 1,"heat_resistance": 1,"cold_resistance": 6,"jolt_resistance": 15}, "applied": false},
 	"Rshoe1": {"stats": {"slash_resistance": 1,"blunt_resistance": 3,"pierce_resistance": 1,"heat_resistance": 1,"cold_resistance": 6,"jolt_resistance": 15}, "applied": false},
 	"sword0": {"stats": { "extra_guard_dmg_absorbition": 0.3,"slash_dmg":12}, "applied": false}
+
+
+
+
 }
 
 
@@ -701,5 +705,6 @@ func die():
 	state = autoload.state_list.dead
 func getUp()->void:
 	knockeddown_duration = false
+	state = autoload.state_list.wander
 func startGettingUp()->void:
 	knockeddown_first_part = false

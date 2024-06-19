@@ -30,7 +30,7 @@ func loadAnimations()->void:
 	animation.add_animation("downed idle", load("res://player/universal animations/Animations Idle General/downed idle.anim"))
 	
 	
-	animation.add_animation("slide", load("res://player/universal animations/Animations Movement General/slide.anim"))
+	
 	
 	animation.add_animation("walk", load("res://player/universal animations/Animations Movement General/walk.tres"))
 	animation.add_animation("walk bow", load("res://player/universal animations/Animations Bow/walk bow.anim"))
@@ -432,24 +432,40 @@ func throwRocksStop()->void:
 
 func basAtkCD()->void:
 	player.base_atk_duration = false
-	player.animationCancel()
+
 	
 func basAtk2CD()->void:
 	player.base_atk2_duration = false
-	player.animationCancel()
 
 
 
+
+
+func backstepCD()->void:
+	player.all_skills.backstepCD()
+	player.backstep_duration = false
+	player.frontstep_duration = false
+	player.leftstep_duration = false
+	player.rightstep_duration = false
+	player.is_aiming = false
+
+func slideCD()->void:
+	player.slide_duration = false
+	print("slide over")
+
+func dashCD()->void:
+	player.all_skills.dashCD()
+	player.dash_duration = false
 
 var stagger_chance: float 
-func slideDMG()->void:#fist
+func slideDMG()->void:
 	var aggro_power:float = player.threat_power + 1
 	var push_distance:float = 0.5
 	var enemies:Array = trust_area.get_overlapping_bodies()
 	
 	slideImpact(enemies,aggro_power,push_distance)
 
-func punch()->void:#fist
+func punch()->void:
 	var damage_type:String = "blunt"
 	var damage:float = player.total_dmg
 	var damage_flank:float = damage + player.flank_dmg 
@@ -507,15 +523,21 @@ func baseAtktHit()->void:#Heavy
 	var push_distance:float = 0.25 * player.total_impact
 	var enemies:Array = area_melee_front.get_overlapping_bodies()
 	for victim in enemies:
-		if victim != self or victim != null:
-			if victim.is_in_group("Entity"):
-				dealDMG(victim,aggro_power,damage_type,damage)
-				onHit()
-				playSoundSwordHit()
-				if victim.state != autoload.state_list.dead:
-						player.pushEnemyAway(push_distance, victim,0.25)
-		else:
+		if victim == self:
 			playSoundSwordWoosh()
+		elif victim == player:
+			playSoundSwordWoosh()
+		elif victim == null:
+			playSoundSwordWoosh()
+		else:
+			if !victim.is_in_group("Player"):
+				if victim.is_in_group("Entity"):
+					dealDMG(victim,aggro_power,damage_type,damage)
+					onHit()
+					playSoundSwordHit()
+					if victim.state != autoload.state_list.dead:
+						player.pushEnemyAway(push_distance, victim,0.25)
+
 			
 		
 func baseAtkLastHit()->void:#Heavy
@@ -528,16 +550,20 @@ func baseAtkLastHit()->void:#Heavy
 	var push_distance:float = 0.25 * player.total_impact
 	var enemies:Array = area_melee_front.get_overlapping_bodies()
 	for victim in enemies:
-		if victim != self or victim != null:
-			if victim.is_in_group("Entity"):
-				dealDMG(victim,aggro_power,damage_type,damage)
-				onHit()
-				playSoundSwordHit()
-				if victim.state != autoload.state_list.dead:
-						player.pushEnemyAway(push_distance, victim,0.25)
-		else:
+		if victim == self:
 			playSoundSwordWoosh()
-
+		elif victim == player:
+			playSoundSwordWoosh()
+		elif victim == null:
+			playSoundSwordWoosh()
+		else:
+			if !victim.is_in_group("Player"):
+				if victim.is_in_group("Entity"):
+					dealDMG(victim,aggro_power,damage_type,damage)
+					onHit()
+					playSoundSwordHit()
+					if victim.state != autoload.state_list.dead:
+						player.pushEnemyAway(push_distance, victim,0.25)
 #Cleave
 func cleaveDMG()->void:#Heavy
 	var damage_type:String = player.base_dmg_type

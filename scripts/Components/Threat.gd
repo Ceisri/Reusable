@@ -1,5 +1,6 @@
 extends Node
 
+onready var parent = get_parent()
 class ThreatManagement:
 	var player : Node
 	var threat : int
@@ -208,9 +209,10 @@ func loseThreat()->void: #call this function every few ticks to lose threat from
 			if is_instance_valid(assailant):
 				if assailant != null:
 					if assailant.player != null:
-						
 						if assailant.player.health <= 0:
-							assailant.threat -= 3
+							assailant.threat = 0
+							parent.state = autoload.state_list.wander
+							
 						else:
 							var distance = assailant.player.global_transform.origin.distance_to(parent_position)
 							# Calculate reduction based on distance range
@@ -230,12 +232,12 @@ func loseThreat()->void: #call this function every few ticks to lose threat from
 			break
 			
 			
-	if get_parent().health > 0:
-		if get_parent().state != autoload.state_list.staggered:
+	if parent.health > 0:
+		if parent.state != autoload.state_list.staggered:
 			if all_zero_threat: #if no player or entity  has any threat towards the parent of this node, return to a harmless state
-				get_parent().state = autoload.state_list.wander
+				parent.state = autoload.state_list.wander
 			else: #else engage the threatening player or entity 
-				get_parent().state = autoload.state_list.engage
+				parent.state = autoload.state_list.engage
 
 
 func resetThreats():
