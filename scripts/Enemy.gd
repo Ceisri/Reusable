@@ -57,8 +57,6 @@ func process()->void:
 	behaviourTree()
 	if health >0:
 		threat_system.loseThreat()
-		if staggered_duration == true:
-			state = autoload.state_list.staggered
 	if health <0 or health ==0:
 		can_be_looted = true
 		if has_died == false:
@@ -87,6 +85,12 @@ func respawn()->void:
 			
 	
 func oneSecondTimer()->void:
+	var state_enum = autoload.state_list  # Access the enum from the singleton
+	var state_value = state  # Get the current state value
+	var state_name = state_enum.keys()[state_value]  # Convert enum to string
+	$Label3D.text = state_name
+	if staggered_duration == true:
+		staggered_duration = false
 	damage_effect_manager.effectDurations()
 	if health <-99:
 		respawn()
@@ -98,7 +102,6 @@ func displayThreatInfo(label):
 
 
 var state = autoload.state_list.wander
-var stagger_time:float  = 0
 var death_time:float  = 0
 
 var knockeddown_duration:bool = false
@@ -106,7 +109,6 @@ var knockeddown_first_part:bool = false
 
 func behaviourTree()->void:
 	var target = threat_system.findHighestThreat()
-	
 	if health <0:
 		if death_time >0:
 			death_time -= 1 * get_physics_process_delta_time()
@@ -174,26 +176,27 @@ var atk3_spam:int = 0
 
 var atk_4_duration:bool = false
 var atk4_spam:int = 0
-onready var ray_left = $RayLeft
-onready var ray_right = $RayRight
+
 func combat():
-	var check_left = ray_left.get_collider()
-	var check_right = ray_right.get_collider()
-	var random_value = randf()
-	var  distance_to_target = findDistanceTarget()
-	attackAnimations()
-	if distance_to_target != null:
-		if distance_to_target <= 1.3:
-			randomizeAttacks()
-			print("This unit is attacking" + str(distance_to_target))
-		else:
-			if  atk_1_duration == false and atk_2_duration == false and atk_3_duration == false and atk_4_duration == false:
-				changeAttackType()
-				lookTarget(turn_speed)
-				followTarget(false)
-				animation.play("walk combat",0.2)
+	if staggered_duration == false:
+		var random_value = randf()
+		var  distance_to_target = findDistanceTarget()
+		attackAnimations()
+		if distance_to_target != null:
+			if distance_to_target <= 1.3:
+				randomizeAttacks()
+				print("This unit is attacking" + str(distance_to_target))
 			else:
-				print("This unit is maybe stuck ?" + str(distance_to_target))
+				if  atk_1_duration == false and atk_2_duration == false and atk_3_duration == false and atk_4_duration == false:
+					changeAttackType()
+					lookTarget(turn_speed)
+					followTarget(false)
+					animation.play("walk combat",0.2)
+				else:
+					print("This unit is maybe stuck ?" + str(distance_to_target))
+					
+				
+				
 						
 					
 
@@ -464,7 +467,7 @@ var max_health = 160
 var health = 160
 #________________________
 
-var knockdown_chance: float = 100
+
 
 
 #additional combat energy systems
@@ -479,7 +482,10 @@ var scale_factor = 1
 
 var critical_chance: float = 33
 var critical_dmg: float = 2.05
-var stagger_chance: float = 8 #0 to 100 in percentage
+var knockdown_chance: float = 6
+var stagger_chance: float = 13 #0 to 100 in percentage
+
+
 var life_steal: float = 0
 #resistances
 var stagger_resistance: float = 0.0 #0 to 100 in percentage, this is directly detracted to instigator.stagger_chance 
@@ -692,18 +698,22 @@ func atk1Spam()->void:
 	atk1_spam += 1
 	if atk1_spam == 4:
 		atk1_spam = 0
+		changeAttackType()
 func atk2Spam()->void:
 	atk2_spam += 1
 	if atk2_spam == 4:
 		atk2_spam = 0
+		changeAttackType()
 func atk3Spam()->void:
 	atk3_spam += 1
 	if atk3_spam == 4:
 		atk3_spam = 0
+		changeAttackType()
 func atk4Spam()->void:
 	atk4_spam += 1
 	if atk4_spam == 4:
 		atk4_spam = 0
+		changeAttackType()
 
 
 

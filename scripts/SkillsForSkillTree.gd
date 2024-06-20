@@ -9,7 +9,8 @@ var skill_tree = true
 var points: int = 0
 
 func skillPoints()->void:#update the skill points spent on this specific skill
-	label.text = str(icon.points)
+	if is_instance_valid(label):
+		label.text = str(icon.points)
 
 func get_drag_data(position: Vector2):
 	var slot = get_parent().get_name()

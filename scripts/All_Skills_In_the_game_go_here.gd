@@ -88,7 +88,7 @@ func updateCooldownLabel() -> void:
 			var label: Label = child.get_node("CD")
 			if label != null:
 				 updateHeartTrust(label,heart_trust_cooldown, current_time,last_heart_trust_time)
-#__________________________________________________Heart Trust______________________________________
+#__________________________________________________Taunt____________________________________________
 		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.taunt.get_path():
 			var label: Label = child.get_node("CD")
 			if label != null:
@@ -98,7 +98,15 @@ func updateCooldownLabel() -> void:
 			var label: Label = child.get_node("CD")
 			if label != null:
 				 updateStomp(label,stomp_cooldown,current_time,last_stomp_time)
-		
+#__________________________________________________Kick_____________________________________________
+		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.kick.get_path():
+			var label: Label = child.get_node("CD")
+			if label != null:
+				 updateKick(label,kick_cooldown,current_time,last_kick_time)
+				
+				
+				
+				
 				
 		
 		
@@ -202,8 +210,6 @@ func updateBackstep(label: Label, cooldown: float, current_time: float, last_tim
 		label.text = ""
 		can_backstep = true
 #___________________________________________________________________________________________________
-
-
 var stomp_description: String = "Stomp the ground beneath you dealing extra damage to KNOCKED DOWN enemies"
 var stomp_dmg: float = 5
 var stomp_dmg_proportion: float = 2.5
@@ -225,17 +231,29 @@ func updateStomp(label: Label, cooldown: float, current_time: float, last_time: 
 	else:
 		label.text = ""
 		can_stomp = true
+#___________________________________________________________________________________________________
+var kick_description: String = "+5% damage per skill level, kick your foes knocking them down if their balance attribute is below 3 or their health is too low"
+var kick_dmg: float = 5
+var kick_dmg_proportion: float = 0.5
+var kick_cost: float = 7
+var kick_cooldown: float = 6
+var last_kick_time: float = 0.0 
 
+func kickCD():
+	var current_time: float = OS.get_ticks_msec() / 1000.0
+	if current_time - last_kick_time >= kick_cooldown:
+		last_kick_time = current_time
 
-
-
-
-
-
-
-
-
-
+var can_kick: bool = false
+func updateKick(label: Label, cooldown: float, current_time: float, last_time: float) -> void:
+	var elapsed_time: float = current_time - last_time
+	var remaining_cooldown: float = max(0, cooldown - elapsed_time)
+	if remaining_cooldown!= 0:
+		can_kick = false
+		label.text = str(round(remaining_cooldown) )
+	else:
+		label.text = ""
+		can_kick = true
 #___________________________________________________________________________________________________
 var overhead_slash_distance: float = 6
 var overhead_slash_cooldown: float = 2.5

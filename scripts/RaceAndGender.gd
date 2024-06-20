@@ -449,6 +449,14 @@ func backstepCD()->void:
 	player.rightstep_duration = false
 	player.is_aiming = false
 
+func slideImpact()-> void:
+	for victim in trust_area.get_overlapping_bodies():
+		if victim.is_in_group("Enemy"):
+			if victim != self:
+				if victim.state != autoload.state_list.dead:
+					player.pushEnemyAway(0.5, victim,0.25)
+					victim.takeThreat(3,player)
+					victim.takeStagger(100)
 func slideCD()->void:
 	player.slide_duration = false
 	player.all_skills.slideCD()
@@ -482,11 +490,43 @@ func punch()->void:
 		dealDMG(victim,aggro_power,damage_type,damage)
 
 
-func stompCD():
+func kickCD()->void:
+	player.resolve -= player.all_skills.kick_cost
+	player.all_skills.kickCD()
+	player.kick_duration = false
+
+func kickDMG()-> void:
+	var damage_type:String = player.base_dmg_type
+	var base_damage: float = player.all_skills.kick_dmg + player.total_dmg
+	var points: int = player.kick_icon.points
+	var damage_multiplier: float = 1.0
+	if points > 1:
+		damage_multiplier += (points - 1) * player.all_skills.kick_dmg_proportion
+	var damage: float = (base_damage * damage_multiplier)
+	var damage_flank = damage + player.flank_dmg 
+	var push_distance:float = 0.6 * player.total_impact
+	var enemies = trust_area.get_overlapping_bodies()
+	for victim in enemies:
+		if victim.is_in_group("Enemy"):
+			if victim != self:
+				dealDMG(victim,0,damage_type,damage)
+				if victim.state != autoload.state_list.dead:
+					player.pushEnemyAway(push_distance, victim,0.25)
+			if victim.has_method("getKnockedDown"):
+				if victim.health > damage:
+					if victim.balance < 3:
+						victim.getKnockedDown(player)
+
+
+
+
+
+
+func stompCD()->void:
 	player.stomp_duration = false
 	player.all_skills.stompCD()
 
-func stompHit():
+func stompHit()->void:
 	var damage_type:String = player.base_dmg_type
 	var damage:float = player.all_skills.stomp_dmg + player.total_dmg
 	var aggro_power:float = player.threat_power
@@ -696,20 +736,13 @@ func whirlwindDMG() -> void:
 	var missing_health_percentage: float = 1.0 - (float(player.health) / float(player.max_health))
 	var additional_damage_per_3_percent: float = 1
 	var additional_damage: float = (missing_health_percentage / 0.03) * additional_damage_per_3_percent
-
 	var damage: float = (base_damage * damage_multiplier) + additional_damage
-	var damage_flank = damage + player.flank_dmg 
-	var critical_damage : float  =0
-	var critical_flank_damage : float  =0
-	var punishment_damage : float = 7 #extra damage for when the victim is trying to block but is facing the wrong way 
-	var punishment_damage_type :String = "slash"
-	var aggro_power =  20
 	var push_distance:float = 0.4 * player.total_impact
 	var enemies = melee_aoe.get_overlapping_bodies()
 	for victim in enemies:
 		if victim.is_in_group("enemy"):
 			if victim != self:
-				dealDMG(victim,aggro_power,damage_type,damage)
+				dealDMG(victim,0,damage_type,damage)
 				onHit()
 				playSoundSwordHit()
 				if victim.state != autoload.state_list.dead:
@@ -819,14 +852,6 @@ func dealDMG(victim,aggro_power,damage_type,damage)-> void:
 				if victim.has_method("getChopped"):
 					victim.getChopped(damage,player)
 					
-func slideImpact(enemy_detector1,aggro_power,push_distance)-> void:
-	for victim in enemy_detector1:
-		if victim.is_in_group("enemy"):
-			if victim != self:
-				if victim.state != autoload.state_list.dead:
-					player.pushEnemyAway(push_distance, victim,0.25)
-					victim.takeThreat(aggro_power,player)
-					victim.takeStagger(100)
 
 #___________________________________________________________________________________________________
 #Ranged Functions to call in the AnimationPlayer

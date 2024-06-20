@@ -1,6 +1,6 @@
 extends TextureRect
 
-var player
+onready var player = $"../../../../../../.."
 var points: int = 0
 
 func savedata():
