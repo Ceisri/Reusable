@@ -660,6 +660,9 @@ func skills(slot)-> void:
 							dash_duration = true
 							if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
 								all_skills.interruptBackstep()
+								if slide_duration == true:
+									all_skills.slideCD()
+									slide_duration = false
 								if overhead_slash_duration == true:
 									all_skills.overheadSlashCD()
 									overhead_slash_duration = false
@@ -711,6 +714,9 @@ func skills(slot)-> void:
 					else:
 						backstep_duration = true
 					if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
+						if slide_duration == true:
+							all_skills.slideCD()
+							slide_duration = false
 						if dash_duration == true:
 							all_skills.dashCD()
 							dash_duration = false
@@ -763,6 +769,9 @@ func skills(slot)-> void:
 				switchToCombatStance()
 				if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
 						all_skills.interruptBackstep()
+						if slide_duration == true:
+							all_skills.slideCD()
+							slide_duration = false
 						if dash_duration == true:
 							all_skills.dashCD()
 							dash_duration = false
@@ -784,6 +793,7 @@ func skills(slot)-> void:
 						if taunt_duration == true:
 							all_skills.tauntCD()
 							taunt_duration = false
+							
 								
 
 
@@ -869,6 +879,9 @@ func skills(slot)-> void:
 								all_skills.interruptBaseAtk()
 								if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
 									all_skills.interruptBackstep()
+									if slide_duration == true:
+										all_skills.slideCD()
+										slide_duration = false
 									if dash_duration == true:
 										all_skills.dashCD()
 										dash_duration = false
@@ -914,6 +927,9 @@ func skills(slot)-> void:
 								all_skills.interruptBaseAtk()
 								if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
 										all_skills.interruptBackstep()
+										if slide_duration == true:
+											all_skills.slideCD()
+											slide_duration = false
 										if dash_duration == true:
 											all_skills.dashCD()
 											dash_duration = false
@@ -935,7 +951,7 @@ func skills(slot)-> void:
 										if whirlwind_duration == true:
 											all_skills.whirlwindCD()
 											whirlwind_duration = false
-#											if taunt_duration == true:
+#										if taunt_duration == true:
 #												all_skills.tauntCD()
 #												taunt_duration = false
 							else:
@@ -958,6 +974,9 @@ func skills(slot)-> void:
 									all_skills.interruptBaseAtk()
 									if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
 										all_skills.interruptBackstep()
+										if slide_duration == true:
+											all_skills.slideCD()
+											slide_duration = false
 										if dash_duration == true:
 											all_skills.dashCD()
 											dash_duration = false
@@ -1004,6 +1023,9 @@ func skills(slot)-> void:
 									all_skills.interruptBaseAtk()
 									if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
 										all_skills.interruptBackstep()
+										if slide_duration == true:
+											all_skills.slideCD()
+											slide_duration = false
 										if dash_duration == true:
 											all_skills.dashCD()
 											dash_duration = false
@@ -1048,6 +1070,9 @@ func skills(slot)-> void:
 									if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
 										all_skills.interruptBaseAtk()
 										all_skills.interruptBackstep()
+										if slide_duration == true:
+											all_skills.slideCD()
+											slide_duration = false
 										if dash_duration == true:
 											all_skills.dashCD()
 											dash_duration = false
@@ -1091,6 +1116,9 @@ func skills(slot)-> void:
 									if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
 										all_skills.interruptBaseAtk()
 										all_skills.interruptBackstep()
+										if slide_duration == true:
+											all_skills.slideCD()
+											slide_duration = false
 										if dash_duration == true:
 											all_skills.dashCD()
 											dash_duration = false

@@ -201,37 +201,6 @@ func updateBackstep(label: Label, cooldown: float, current_time: float, last_tim
 	else:
 		label.text = ""
 		can_backstep = true
-func interruptBackstep()->void:
-	if player.leftstep_duration == true:
-		backstepCD()
-		player.backstep_duration = false
-		player.frontstep_duration = false
-		player.leftstep_duration = false
-		player.rightstep_duration = false
-	if player.backstep_duration == true:
-		backstepCD()
-		player.backstep_duration = false
-		player.frontstep_duration = false
-		player.leftstep_duration = false
-		player.rightstep_duration = false
-	if player.frontstep_duration == true :
-		backstepCD()
-		player.backstep_duration = false
-		player.frontstep_duration = false
-		player.leftstep_duration = false
-		player.rightstep_duration = false
-	if player.rightstep_duration == true:
-		backstepCD()
-		player.backstep_duration = false
-		player.frontstep_duration = false
-		player.leftstep_duration = false
-		player.rightstep_duration = false
-	if player.leftstep_duration == true:
-		backstepCD()
-		player.backstep_duration = false
-		player.frontstep_duration = false
-		player.leftstep_duration = false
-		player.rightstep_duration = false
 #___________________________________________________________________________________________________
 
 
@@ -429,9 +398,6 @@ func counterStrike()->void:
 		last_counter_time = current_time
 #___________________________________________________________________________________________________
 		
-func interruptBaseAtk():
-	player.base_atk_duration = false
-	player.base_atk2_duration = false
 #___________________________________________________________________________________________________
 
 var arrow: PackedScene = preload("res://Equipment/Arrows/Iron/Arrow_Iron.tscn")
