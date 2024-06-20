@@ -49,11 +49,16 @@ func updateCooldownLabel() -> void:
 			var label: Label = child.get_node("CD")
 			if label != null:
 				 updateLabel(label,necro_switch_cooldown, current_time, last_necro_switch_time)
-#______________________________________________Dodge  cooldowns_____________________________________
+#______________________________________________Dash  cooldowns_____________________________________
 		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.dash.get_path():
 			var label: Label = child.get_node("CD")
 			if label != null:
-				 updateDash(label,dodge_cooldown, current_time,last_dodge_time)
+				 updateDash(label,dash_cooldown, current_time,last_dash_time)
+#______________________________________________Slide  cooldowns_____________________________________
+		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.slide.get_path():
+			var label: Label = child.get_node("CD")
+			if label != null:
+				 updateSlide(label,slide_cooldown,current_time,last_slide_time)
 #___________________________________________Backstep  cooldowns_____________________________________
 		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.backstep.get_path():
 			var label: Label = child.get_node("CD")
@@ -138,28 +143,46 @@ func updateLabel(label: Label, cooldown: float, current_time: float, last_time: 
 		label.text = str(round(remaining_cooldown) )
 	else:
 		label.text = ""
-
 #___________________________________________________________________________________________________
-var dodge_cooldown: float = 1
-var last_dodge_time: float = 0.0 
-var dodge_cost: float = 10
+var dash_cooldown: float = 2
+var last_dash_time: float = 0.0 
+var dash_cost: float = 10
 func dashCD()->void:
 	var current_time: float = OS.get_ticks_msec() / 1000.0
-	if current_time - last_dodge_time >= dodge_cooldown:
-			last_dodge_time = current_time
+	if current_time - last_dash_time >= dash_cooldown:
+			last_dash_time = current_time
 			activateComboCyclone()
 			activateComboWhirlwind()
-var can_dodge: bool = false
+var can_dash: bool = false
 func updateDash(label: Label, cooldown: float, current_time: float, last_time: float) -> void:
 	var elapsed_time: float = current_time - last_time
 	var remaining_cooldown: float = max(0, cooldown - elapsed_time)
 	if remaining_cooldown!= 0:
-		can_dodge = false
+		can_dash = false
 		label.text = str(round(remaining_cooldown) )
 	else:
 		label.text = ""
-		can_dodge = true
+		can_dash = true
+#___________________________________________________________________________________________________
+var slide_cooldown: float = 5
+var last_slide_time: float = 0.0 
+var slide_cost: float = 10
+func slideCD()->void:
+	var current_time: float = OS.get_ticks_msec() / 1000.0
+	if current_time - last_slide_time >= slide_cooldown:
+		last_slide_time = current_time
 
+
+var can_slide: bool = false
+func updateSlide(label: Label, cooldown: float, current_time: float, last_time: float) -> void:
+	var elapsed_time: float = current_time - last_time
+	var remaining_cooldown: float = max(0, cooldown - elapsed_time)
+	if remaining_cooldown!= 0:
+		can_slide = false
+		label.text = str(round(remaining_cooldown) )
+	else:
+		label.text = ""
+		can_slide = true
 #___________________________________________________________________________________________________
 var backstep_distance: float = 9
 var backstep_cooldown: float = 6

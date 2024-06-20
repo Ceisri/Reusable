@@ -193,17 +193,13 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type)->v
 			text.status = "Parried!"
 			text.state = damage_type
 			add_child(text)
-	else:
-		if parent.can_respawn == true:
-			parent.health = parent.max_health 
-			parent.respawn()
-		else:
-			parent.queue_free()
+
 		
 		
 		
 func getKnockedDown(instigator)->void:
 	instigatorAggro = parent.threat_system.createFindThreat(instigator)
+	parent.animReset()
 	parent.knockeddown_duration = true
 	parent.knockeddown_first_part = true
 	parent.staggered_duration = false
@@ -212,9 +208,9 @@ func getKnockedDown(instigator)->void:
 	fall_sound.play()
 	
 func getKnockedDownPlayer(instigator)->void:
-	parent.knockeddown_duration = true
-	parent.staggered_duration = false
-	parent.stored_instigator = instigator
+		parent.knockeddown_duration = true
+		parent.staggered_duration = false
+		parent.stored_instigator = instigator
 
 
 
@@ -290,12 +286,16 @@ func takeDamagePlayer(damage, aggro_power, instigator, stagger_chance, damage_ty
 	
 	
 		if random_range < instigator.stagger_chance - parent.stagger_resistance:
-				if parent.health >0:
-					parent.staggered_duration = true
-					text.status = "Staggered!"
-					viewport.add_child(text)
+			if parent.absorbing == false:
+				if parent.parry == false:
+					if parent.health >0:
+						parent.staggered_duration = true
+						text.status = "Staggered!"
+						viewport.add_child(text)
 						
-		if random_range < instigator.knockdown_chance:
+		if random_range < instigator.knockdown_chance / parent.balance:
+			if parent.absorbing == false:
+				if parent.parry == false:
 			#	if instigator.impact > parent.balance:
 					if parent.health > damage_to_take * 3:#This is important to avoid enemies getting up while they are dead just to then die instantly soon after
 						parent.staggered_duration = false
@@ -352,7 +352,7 @@ func takeDamagePlayer(damage, aggro_power, instigator, stagger_chance, damage_ty
 		text.status = "Parried"
 		text.state = damage_type
 		viewport.add_child(text)
-
+		
 
 func takeStagger(stagger_chance: float) -> void:
 	var random_range = rand_range(0,100)

@@ -54,8 +54,7 @@ var dropped_loot:bool = false
 func process()->void:
 	if health >0:
 		autoload.entityGravity(self)
-
-	matchState()	
+	behaviourTree()
 	if health >0:
 		threat_system.loseThreat()
 		if staggered_duration == true:
@@ -89,6 +88,8 @@ func respawn()->void:
 	
 func oneSecondTimer()->void:
 	damage_effect_manager.effectDurations()
+	if health <-99:
+		respawn()
 
 func displayThreatInfo(label):
 	threat_system.threat_info = threat_system.getBestFive()
@@ -102,7 +103,8 @@ var death_time:float  = 0
 
 var knockeddown_duration:bool = false
 var knockeddown_first_part:bool = false
-func matchState()->void:
+
+func behaviourTree()->void:
 	var target = threat_system.findHighestThreat()
 	
 	if health <0:
@@ -117,8 +119,7 @@ func matchState()->void:
 	elif stunned_duration > 0:
 		animationCancel()
 		animation.play("staggered",0.2)
-		
-		
+
 	elif knockeddown_duration == true:
 		animReset()
 		animationCancel()
@@ -132,6 +133,9 @@ func matchState()->void:
 		animation.play("staggered",0.2)
 		
 	else:
+		matchState()
+		
+func matchState()->void:
 		match state:
 			autoload.state_list.idle:
 				animation.play("idle",0.3)
@@ -150,6 +154,9 @@ func matchState()->void:
 						lookTarget(turn_speed)
 					else:
 						state = autoload.state_list.engage
+
+
+
 
 
 
@@ -176,16 +183,17 @@ func combat():
 	var  distance_to_target = findDistanceTarget()
 	attackAnimations()
 	if distance_to_target != null:
-		if distance_to_target > 1.3:
+		if distance_to_target <= 1.3:
+			randomizeAttacks()
+			print("This unit is attacking" + str(distance_to_target))
+		else:
 			if  atk_1_duration == false and atk_2_duration == false and atk_3_duration == false and atk_4_duration == false:
 				changeAttackType()
 				lookTarget(turn_speed)
 				followTarget(false)
 				animation.play("walk combat",0.2)
 			else:
-				print("This unit is maybe stuck ?")
-		else:
-			randomizeAttacks()
+				print("This unit is maybe stuck ?" + str(distance_to_target))
 						
 					
 
@@ -456,7 +464,7 @@ var max_health = 160
 var health = 160
 #________________________
 
-var knockdown_chance: float = 50
+var knockdown_chance: float = 100
 
 
 #additional combat energy systems

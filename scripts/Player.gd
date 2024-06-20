@@ -48,6 +48,7 @@ func _ready()->void:
 	slowest_timer.start(3)
 	connectEquipment()
 	stutterPrevention()
+	struggle_button.text = "Struggle:" + str(struggles)+ " remaining"
 
 	
 func stutterPrevention()->void:
@@ -115,10 +116,9 @@ func _physics_process(delta: float) -> void:
 	autoload.gravity(self)
 	dodgeIframe()
 	doublePressToDash()
-
 	fullscreen()
 	showEnemyStats()
-	inputOrStateToAnimation()
+	behaviourTree()
 	inputToState()
 	attack()
 	skillUserInterfaceInputs()
@@ -154,13 +154,10 @@ var dash_duration:bool= false
 var slide_duration:bool= false
 
 
-# Toggle the hold_to_base_atk variable and change the color of BaseAtkMode accordingly
-func _on_BaseAtkMode_pressed():
-	hold_to_base_atk = !hold_to_base_atk
-	switchButtonTextures()
 
 
 
+var death_duration:bool = false
 
 var staggered_duration:bool = false
 var knockeddown_duration:bool = false
@@ -179,78 +176,44 @@ var whirlwind_duration:bool = false
 var whirlwind_combo:bool = false
 #___________________________________________________________________________________________________
 
-
-
 var taunt_duration:bool = false
 var state = autoload.state_list.idle
-func getInterrupted()->void:#Universal stop, call this when I'm stunned, staggered, dead, knocked down and so on 
-	overhead_slash_combo = false
-	whirlwind_combo = false
-	cyclone_combo = false
-	base_atk_duration = false
-	base_atk2_duration = false
-	throw_rock_duration = false
-	
-	all_skills.interruptBackstep()
-	if dash_duration == true:
-		all_skills.dashCD()
-		dash_duration = false
-	if backstep_duration == true:
-		all_skills.backstepCD()
-		backstep_duration = false
-	if frontstep_duration == true:
-		all_skills.backstepCD()
-		frontstep_duration = false
-	if leftstep_duration == true:
-		all_skills.backstepCD()
-		rightstep_duration = false
-	if  leftstep_duration == true:
-		all_skills.backstepCD()
-		rightstep_duration = false
-		
-	if stomp_duration == true:
-		all_skills.stompCD()
-		stomp_duration = false
-	if overhead_slash_duration == true:
-		all_skills.overheadSlashCD()
-		overhead_slash_duration = false
-	if rising_slash_duration == true:
-		rising_slash_duration = false
-		all_skills.risingSlashCD()
-	if heart_trust_duration == true:
-		all_skills.heartTrustSlashCD()
-		heart_trust_duration = false
-	if cyclone_duration == true:
-		all_skills.cycloneCD()
-		cyclone_duration = false
-	if whirlwind_duration == true:
-		all_skills.whirlwindCD()
-		whirlwind_duration = false
-	if taunt_duration == true:
-		all_skills.tauntCD()
-		taunt_duration = false
 
-			
-			
-func stopBeingParlized()-> void:
-	staggered_duration = false
-	knockeddown_duration = false
-	stunned_duration = 0
-			
 
-func inputOrStateToAnimation()-> void:
-	if current_race_gender == null or animation == null:
-		print("mesh not instanced or animationPlayer not found")
-		
-		
+func behaviourTree()-> void:
+	if health < 0: 
+		getInterrupted()
+		clearParryAbsorb()
+		stopBeingParlized()
+		if health >= -100:
+			if is_walking:
+				animation.play("downed walk",0.35)
+				movement_speed = 1
+				health -= 1 * get_physics_process_delta_time()
+				is_dead = false
+			else:
+				animation.play("downed idle",0.35)
+				is_dead = false
+									
+		else:
+			animation.play("dead",0.35)
+			is_dead = true
+	else:
+		if current_race_gender == null or animation == null:
+			print("mesh not instanced or animationPlayer not found")
+		else:
+			passiveActions()#this checks for stuns,staggers, knockdowns or other dis
+
+
+
+func passiveActions()-> void:
 	if knockeddown_duration == true:
+		clearParryAbsorb()
 		if parry == true:
 			knockeddown_duration = false
 			staggered_duration = false
 		elif absorbing == true:
 			knockeddown_duration = false
-
-			
 		else:
 			can_walk = false
 			is_walking = false
@@ -260,7 +223,6 @@ func inputOrStateToAnimation()-> void:
 			if health > 15:
 				animation.play("knocked down",blend)
 				getInterrupted()
-
 
 	elif staggered_duration == true:
 		can_walk = false
@@ -276,8 +238,9 @@ func inputOrStateToAnimation()-> void:
 		is_walking = false
 		current_race_gender.can_move = false
 	else:
-		
-#_______________________________________________ACTIVE ACTIONS______________________________________
+		activeActions()
+
+func activeActions()->void:
 		SkillQueueSystem()#DO NOT REMOVE THIS! it is neccessary to allow skill cancelling, skill cancelling doesn't work without skill queue, it has a toggle on off anyway for players that don't like it 
 		if Input.is_action_pressed("rclick"):
 			switchToCombatStance()
@@ -308,9 +271,7 @@ func inputOrStateToAnimation()-> void:
 				if taunt_duration == true:
 					all_skills.tauntCD()
 					taunt_duration = false
-
-
-
+	
 		if dash_duration == true:
 			directionToCamera()
 			moveDuringAnimation(all_skills.backstep_distance)
@@ -343,11 +304,6 @@ func inputOrStateToAnimation()-> void:
 			moveSidewaysDuringAnimation(-all_skills.backstep_distance)
 			direction = -camera.global_transform.basis.z
 			animation.play("rightstep",blend,1)
-			
-			
-			
-			
-			
 			
 			
 	#Overhead Slash_________________________________________________________________________________
@@ -498,7 +454,7 @@ func inputOrStateToAnimation()-> void:
 			else:
 				animation.play("taunt",blend+ 0.1,ferocity)
 				
-#__________________IF THE PLAYER DECIDED TO PLAY WITH HOLD OFF, SO 1 CLICK = 1 BASE ATTTACK__________
+#__________________IF THE PLAYER DECIDED TO PLAY WITH HOLD OFF, 1 CLICK = 1 BASE ATTTACK__________
 		elif base_atk_duration == true:
 			var compensation_speed = 0.05 #extra attack seed to compensate having to click multiple times 
 			match weapon_type:
@@ -552,20 +508,11 @@ func inputOrStateToAnimation()-> void:
 			directionToCamera()
 			animation.play("stomp",blend,melee_atk_speed * 1.2)
 			moveDuringAnimation(2)
-			
-			
-			
-			
-#################################################################################################################################################################
-	#_____________________________________MATCH STATE BEGINS HERE ___________________________________
-	#___________________________________________________________________________________________________
-#################################################################################################################################################################
-#################################################################################################################################################################
-##################################################################################################################################################################################################################################################################################################################################
-#################################################################################################################################################################
-#################################################################################################################################################################	
-	
 		else:
+			matchState()
+			
+			
+func matchState()->void:
 				match state:
 					autoload.state_list.base_attack:
 						is_in_combat = true
@@ -627,24 +574,7 @@ func inputOrStateToAnimation()-> void:
 									animation.play("idle heavy",blend)
 						else:
 							animation.play("idle",0.2,1)
-							
-					autoload.state_list.downed:
-						if health >= -100:
-							if is_walking:
-								animation.play("downed walk",0.35)
-								movement_speed = 1
-								health -= 1 * get_physics_process_delta_time()
-								is_dead = false
-							else:
-								animation.play("downed idle",0.35)
-								is_dead = false
-								
-						else:
-							animation.play("dead",0.35)
-							is_dead = true
-						
 
-							
 	#skillbar stuff_____________________________________________________________________________________
 					autoload.state_list.skill1:
 						var slot = $UI/GUI/SkillBar/GridContainer/Slot1/Icon
@@ -715,18 +645,18 @@ onready var l_click_slot = $UI/GUI/SkillBar/GridContainer/LClickSlot
 onready var r_click_slot = $UI/GUI/SkillBar/GridContainer/RClickSlot
 func skills(slot)-> void:
 	if slot != null:
-			if slot.texture != null:
-				if slot.texture.resource_path == autoload.dash.get_path() and dash_duration == false:
-					if all_skills.can_dodge == false:
+		if slot.texture != null:
+			if slot.texture.resource_path == autoload.dash.get_path() and dash_duration == false:
+					if all_skills.can_dash == false:
 						dash_duration  = false
 						returnToIdleBasedOnWeaponType()
 					else:
-						if resolve <= all_skills.dodge_cost:
+						if resolve <= all_skills.dash_cost:
 							returnToIdleBasedOnWeaponType()
 							dash_duration = false
 							all_skills.interruptBaseAtk()
 						else:
-							resolve -= all_skills.dodge_cost
+							resolve -= all_skills.dash_cost
 							dash_duration = true
 							if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
 								all_skills.interruptBackstep()
@@ -748,10 +678,11 @@ func skills(slot)-> void:
 								if taunt_duration == true:
 									all_skills.tauntCD()
 									taunt_duration = false
-
-
-						
-				if slot.texture.resource_path == autoload.slide.get_path():
+			if slot.texture.resource_path == autoload.slide.get_path():
+				if all_skills.can_slide == false:
+					slide_duration  = false
+					returnToIdleBasedOnWeaponType()
+				else:
 					slide_duration = true
 					is_in_combat = true
 					all_skills.interruptBaseAtk()
@@ -762,181 +693,226 @@ func skills(slot)-> void:
 					
 						
 						
-				elif slot.texture.resource_path == autoload.backstep.get_path():
-					if all_skills.can_backstep == false:
-						returnToIdleBasedOnWeaponType()
-						frontstep_duration = false
-						backstep_duration = false
-						leftstep_duration = false
-						rightstep_duration = false
+			elif slot.texture.resource_path == autoload.backstep.get_path():
+				if all_skills.can_backstep == false:
+					returnToIdleBasedOnWeaponType()
+					frontstep_duration = false
+					backstep_duration = false
+					leftstep_duration = false
+					rightstep_duration = false
+				else:
+					all_skills.interruptBaseAtk()
+					if Input.is_action_pressed("forward"):
+						frontstep_duration = true
+					elif Input.is_action_pressed("right"):
+						rightstep_duration = true	
+					elif Input.is_action_pressed("left"):
+						leftstep_duration = true
 					else:
-						all_skills.interruptBaseAtk()
-						if Input.is_action_pressed("forward"):
-							frontstep_duration = true
-						elif Input.is_action_pressed("right"):
-							rightstep_duration = true	
-						elif Input.is_action_pressed("left"):
-							leftstep_duration = true
-						else:
-							backstep_duration = true
-						if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
-							if dash_duration == true:
-								all_skills.dashCD()
-								dash_duration = false
-							if stomp_duration == true:
-								stomp_duration = false
-								all_skills.stompCD()
-							if overhead_slash_duration == true:
-								all_skills.overheadSlashCD()
-								overhead_slash_duration = false
-							if rising_slash_duration == true:
-								rising_slash_duration = false
-								all_skills.risingSlashCD()
-							if heart_trust_duration == true:
-								all_skills.heartTrustSlashCD()
-								heart_trust_duration = false
-							if cyclone_duration == true:
-								all_skills.cycloneCD()
-								cyclone_duration = false
-							if whirlwind_duration == true:
-								all_skills.whirlwindCD()
-								whirlwind_duration = false
-							if taunt_duration == true:
-								all_skills.tauntCD()
-								taunt_duration = false
+						backstep_duration = true
+					if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
+						if dash_duration == true:
+							all_skills.dashCD()
+							dash_duration = false
+						if stomp_duration == true:
+							stomp_duration = false
+							all_skills.stompCD()
+						if overhead_slash_duration == true:
+							all_skills.overheadSlashCD()
+							overhead_slash_duration = false
+						if rising_slash_duration == true:
+							rising_slash_duration = false
+							all_skills.risingSlashCD()
+						if heart_trust_duration == true:
+							all_skills.heartTrustSlashCD()
+							heart_trust_duration = false
+						if cyclone_duration == true:
+							all_skills.cycloneCD()
+							cyclone_duration = false
+						if whirlwind_duration == true:
+							all_skills.whirlwindCD()
+							whirlwind_duration = false
+						if taunt_duration == true:
+							all_skills.tauntCD()
+							taunt_duration = false
 					
 #Lclick and Rclick__________________________________________________________________________________
 #fist
-				elif slot.texture.resource_path == autoload.punch.get_path():
-					if hold_to_base_atk == true:
-						animation.play("fist hold",blend,melee_atk_speed + 0.15)
-						directionToCamera()
-						moveDuringAnimation(2.5)
-					else:
-						base_atk_duration = true
-						is_in_combat = true
+			elif slot.texture.resource_path == autoload.punch.get_path():
+				if hold_to_base_atk == true:
+					animation.play("fist hold",blend,melee_atk_speed + 0.15)
+					directionToCamera()
+					moveDuringAnimation(2.5)
+				else:
+					base_atk_duration = true
+					is_in_combat = true
 						
-				elif slot.texture.resource_path == autoload.punch2.get_path():
-					if hold_to_base_atk == false:
-						base_atk2_duration = true
-						is_in_combat = true
+			elif slot.texture.resource_path == autoload.punch2.get_path():
+				if hold_to_base_atk == false:
+					base_atk2_duration = true
+					is_in_combat = true
 #_________________________________________STOMP_____________________________________________________
-				elif slot.texture.resource_path == autoload.stomp.get_path():
-					if all_skills.can_stomp == false:
-						stomp_duration = false
-						returnToIdleBasedOnWeaponType()
-					else:
+			elif slot.texture.resource_path == autoload.stomp.get_path():
+				if all_skills.can_stomp == false:
+					stomp_duration = false
+					returnToIdleBasedOnWeaponType()
+				else:
 						stomp_duration = true
-						is_in_combat = true
-						all_skills.interruptBaseAtk()
-						switchToCombatStance()
-						if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
-							all_skills.interruptBackstep()
-							if dash_duration == true:
-								all_skills.dashCD()
-								dash_duration = false
-							if overhead_slash_duration == true:
-								all_skills.overheadSlashCD()
-								overhead_slash_duration = false
-							if rising_slash_duration == true:
-								rising_slash_duration = false
-								all_skills.risingSlashCD()
-							if heart_trust_duration == true:
-								all_skills.heartTrustSlashCD()
-								heart_trust_duration = false
-							if cyclone_duration == true:
-								all_skills.cycloneCD()
-								cyclone_duration = false
-							if whirlwind_duration == true:
-								all_skills.whirlwindCD()
-								whirlwind_duration = false
-							if taunt_duration == true:
-								all_skills.tauntCD()
-								taunt_duration = false
+				is_in_combat = true
+				all_skills.interruptBaseAtk()
+				switchToCombatStance()
+				if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
+						all_skills.interruptBackstep()
+						if dash_duration == true:
+							all_skills.dashCD()
+							dash_duration = false
+						if overhead_slash_duration == true:
+							all_skills.overheadSlashCD()
+							overhead_slash_duration = false
+						if rising_slash_duration == true:
+							rising_slash_duration = false
+							all_skills.risingSlashCD()
+						if heart_trust_duration == true:
+							all_skills.heartTrustSlashCD()
+							heart_trust_duration = false
+						if cyclone_duration == true:
+							all_skills.cycloneCD()
+							cyclone_duration = false
+						if whirlwind_duration == true:
+							all_skills.whirlwindCD()
+							whirlwind_duration = false
+						if taunt_duration == true:
+							all_skills.tauntCD()
+							taunt_duration = false
 								
 
 
 
 
 #________________________________________THROW ROCKS________________________________________________
-				elif slot.texture.resource_path == autoload.throw_rock.get_path():
-					if hold_to_base_atk == false:
-						throw_rock_duration = true
-						is_in_combat = true
-					else:
-						directionToCamera()
-						is_walking = false
-						can_walk = false
-						is_in_combat = true
-						direction = -camera.global_transform.basis.z
-						moveDuringAnimation(0)
-						animation.play("throw rock",blend,ranged_atk_speed + 0.15)
-						
-						
+			elif slot.texture.resource_path == autoload.throw_rock.get_path():
+				if hold_to_base_atk == false:
+					throw_rock_duration = true
+					is_in_combat = true
+				else:
+					directionToCamera()
+					is_walking = false
+					can_walk = false
+					is_in_combat = true
+					direction = -camera.global_transform.basis.z
+					moveDuringAnimation(0)
+					animation.play("throw rock",blend,ranged_atk_speed + 0.15)
+					
+					
 #sword
-				elif slot.texture.resource_path == autoload.slash_sword.get_path():
-					if hold_to_base_atk == true:
-						directionToCamera()
-						match weapon_type:
-							autoload.weapon_type_list.sword:
-								animation.play("sword hold",blend,melee_atk_speed)
-								moveDuringAnimation(2.5)
-							autoload.weapon_type_list.sword_shield:
-								animation.play("sword hold",blend,melee_atk_speed)
-								moveDuringAnimation(2.5)
-							autoload.weapon_type_list.dual_swords:
-								animation.play("dual hold",blend,melee_atk_speed)
-								moveDuringAnimation(2.7)
-							autoload.weapon_type_list.heavy:
-								animation.play("heavy hold",blend,melee_atk_speed)
-								moveDuringAnimation(1.75)
+			elif slot.texture.resource_path == autoload.slash_sword.get_path():
+				if hold_to_base_atk == true:
+					directionToCamera()
+					match weapon_type:
+						autoload.weapon_type_list.sword:
+							animation.play("sword hold",blend,melee_atk_speed)
+							moveDuringAnimation(2.5)
+						autoload.weapon_type_list.sword_shield:
+							animation.play("sword hold",blend,melee_atk_speed)
+							moveDuringAnimation(2.5)
+						autoload.weapon_type_list.dual_swords:
+							animation.play("dual hold",blend,melee_atk_speed)
+							moveDuringAnimation(2.7)
+						autoload.weapon_type_list.heavy:
+							animation.play("heavy hold",blend,melee_atk_speed)
+							moveDuringAnimation(1.75)
+				else:
+					base_atk_duration = true
+			elif slot.texture.resource_path == autoload.slash_sword2.get_path():
+				if hold_to_base_atk == false:
+					base_atk2_duration = true
+			elif slot.texture.resource_path == autoload.guard_sword.get_path():
+				if resolve > 0:
+					is_walking = false
+					can_walk = false
+					is_in_combat = true
+					resolve -= 1 * get_physics_process_delta_time()
+					if weapon_type == autoload.weapon_type_list.dual_swords:
+						animation.play("dual block",blend)
 					else:
-						base_atk_duration = true
-				elif slot.texture.resource_path == autoload.slash_sword2.get_path():
-					if hold_to_base_atk == false:
-						base_atk2_duration = true
-				elif slot.texture.resource_path == autoload.guard_sword.get_path():
-					if resolve > 0:
-						is_walking = false
-						can_walk = false
-						is_in_combat = true
-						resolve -= 1 * get_physics_process_delta_time()
-						if weapon_type == autoload.weapon_type_list.dual_swords:
-							animation.play("dual block",blend)
-						else:
-							animation.play("sword block",blend)
-					else:
-						returnToIdleBasedOnWeaponType()
-				elif slot.texture.resource_path == autoload.block_shield.get_path():
-					if resolve > 0:
-						is_walking = false
-						can_walk = false
-						all_skills.interruptBaseAtk()
-						resolve -= 1 * get_physics_process_delta_time()
-						animation.play("shield block",blend)
-					else:
-						returnToIdleBasedOnWeaponType()
+						animation.play("sword block",blend)
+				else:
+					returnToIdleBasedOnWeaponType()
+			elif slot.texture.resource_path == autoload.block_shield.get_path():
+				if resolve > 0:
+					is_walking = false
+					can_walk = false
+					all_skills.interruptBaseAtk()
+					resolve -= 1 * get_physics_process_delta_time()
+					animation.play("shield block",blend)
+				else:
+					returnToIdleBasedOnWeaponType()
 #bow 
-				elif slot.texture.resource_path == autoload.quick_shot.get_path():
-					if weapon_type == autoload.weapon_type_list.bow:
-						is_aiming = true
-						can_walk = false
-						current_race_gender.can_move = false
-						is_in_combat = true
-						if is_walking == false:
-							animation.play("shoot",blend,ranged_atk_speed + 0.4)
+			elif slot.texture.resource_path == autoload.quick_shot.get_path():
+				if weapon_type == autoload.weapon_type_list.bow:
+					is_aiming = true
+					can_walk = false
+					current_race_gender.can_move = false
+					is_in_combat = true
+					if is_walking == false:
+						animation.play("shoot",blend,ranged_atk_speed + 0.4)
 
 #melee weapon skills
 #__________________________________________  overhead slash    _____________________________________
-				elif slot.texture.resource_path == autoload.overhead_slash.get_path():
-					if overhead_icon.points >0:
-						if all_skills.can_overhead_slash == true:
-							if resolve > all_skills.overhead_slash_cost:
-								if weapon_type != autoload.weapon_type_list.fist:
-									overhead_slash_duration = true
-									is_in_combat = true
-									all_skills.interruptBaseAtk()
-									if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
+			elif slot.texture.resource_path == autoload.overhead_slash.get_path():
+				if overhead_icon.points >0:
+					if all_skills.can_overhead_slash == true:
+						if resolve > all_skills.overhead_slash_cost:
+							if weapon_type != autoload.weapon_type_list.fist:
+								overhead_slash_duration = true
+								is_in_combat = true
+								all_skills.interruptBaseAtk()
+								if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
+									all_skills.interruptBackstep()
+									if dash_duration == true:
+										all_skills.dashCD()
+										dash_duration = false
+									if stomp_duration == true:
+										stomp_duration = false
+										all_skills.stompCD()
+									#if overhead_slash_duration == true:
+									#	all_skills.overheadSlashCD()
+										#overhead_slash_duration = false
+									if rising_slash_duration == true:
+										rising_slash_duration = false
+										all_skills.risingSlashCD()
+									if heart_trust_duration == true:
+										all_skills.heartTrustSlashCD()
+										heart_trust_duration = false
+									if cyclone_duration == true:
+										all_skills.cycloneCD()
+										cyclone_duration = false
+									if whirlwind_duration == true:
+										all_skills.whirlwindCD()
+										whirlwind_duration = false
+									if taunt_duration == true:
+										all_skills.tauntCD()
+										taunt_duration = false
+							else:
+								returnToIdleBasedOnWeaponType()
+								overhead_slash_duration = false
+						else:
+							returnToIdleBasedOnWeaponType()
+							overhead_slash_duration = false
+					else:
+						returnToIdleBasedOnWeaponType()
+						overhead_slash_duration = false
+#___________________________________________________________________________________________________
+			elif slot.texture.resource_path == autoload.taunt.get_path():
+					if taunt_icon.points >0:
+						if all_skills.can_taunt == true:
+							if resolve > all_skills.taunt_cost:
+								taunt_duration = true
+								is_walking = false
+								can_walk = false
+								is_in_combat = true
+								all_skills.interruptBaseAtk()
+								if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
 										all_skills.interruptBackstep()
 										if dash_duration == true:
 											all_skills.dashCD()
@@ -944,9 +920,9 @@ func skills(slot)-> void:
 										if stomp_duration == true:
 											stomp_duration = false
 											all_skills.stompCD()
-										#if overhead_slash_duration == true:
-										#	all_skills.overheadSlashCD()
-											#overhead_slash_duration = false
+										if overhead_slash_duration == true:
+											all_skills.overheadSlashCD()
+											overhead_slash_duration = false
 										if rising_slash_duration == true:
 											rising_slash_duration = false
 											all_skills.risingSlashCD()
@@ -959,270 +935,283 @@ func skills(slot)-> void:
 										if whirlwind_duration == true:
 											all_skills.whirlwindCD()
 											whirlwind_duration = false
-										if taunt_duration == true:
-											all_skills.tauntCD()
-											taunt_duration = false
-								else:
-									returnToIdleBasedOnWeaponType()
-									overhead_slash_duration = false
-							else:
-								returnToIdleBasedOnWeaponType()
-								overhead_slash_duration = false
-						else:
-							returnToIdleBasedOnWeaponType()
-							overhead_slash_duration = false
-#___________________________________________________________________________________________________
-				elif slot.texture.resource_path == autoload.taunt.get_path():
-						if taunt_icon.points >0:
-							if all_skills.can_taunt == true:
-								if resolve > all_skills.taunt_cost:
-									taunt_duration = true
-									is_walking = false
-									can_walk = false
-									is_in_combat = true
-									all_skills.interruptBaseAtk()
-									if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
-											all_skills.interruptBackstep()
-											if dash_duration == true:
-												all_skills.dashCD()
-												dash_duration = false
-											if stomp_duration == true:
-												stomp_duration = false
-												all_skills.stompCD()
-											if overhead_slash_duration == true:
-												all_skills.overheadSlashCD()
-												overhead_slash_duration = false
-											if rising_slash_duration == true:
-												rising_slash_duration = false
-												all_skills.risingSlashCD()
-											if heart_trust_duration == true:
-												all_skills.heartTrustSlashCD()
-												heart_trust_duration = false
-											if cyclone_duration == true:
-												all_skills.cycloneCD()
-												cyclone_duration = false
-											if whirlwind_duration == true:
-												all_skills.whirlwindCD()
-												whirlwind_duration = false
 #											if taunt_duration == true:
 #												all_skills.tauntCD()
 #												taunt_duration = false
-								else:
-									returnToIdleBasedOnWeaponType()
-									taunt_duration = false
 							else:
 								returnToIdleBasedOnWeaponType()
 								taunt_duration = false
 						else:
 							returnToIdleBasedOnWeaponType()
 							taunt_duration = false
+					else:
+						returnToIdleBasedOnWeaponType()
+						taunt_duration = false
 #_________________________________________ rising slash ____________________________________________
-				elif slot.texture.resource_path == autoload.rising_slash.get_path():
-						if rising_icon.points >0:
-							if all_skills.can_rising_slash == true:
-								if resolve > all_skills.rising_slash_cost:
-									if weapon_type != autoload.weapon_type_list.fist:
-										rising_slash_duration = true
-										is_in_combat = true
-										all_skills.interruptBaseAtk()
-										if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
-											all_skills.interruptBackstep()
-											if dash_duration == true:
-												all_skills.dashCD()
-												dash_duration = false
-											if stomp_duration == true:
-												stomp_duration = false
-												all_skills.stompCD()
-											if overhead_slash_duration == true:
-												all_skills.overheadSlashCD()
-												overhead_slash_duration = false
+			elif slot.texture.resource_path == autoload.rising_slash.get_path():
+					if rising_icon.points >0:
+						if all_skills.can_rising_slash == true:
+							if resolve > all_skills.rising_slash_cost:
+								if weapon_type != autoload.weapon_type_list.fist:
+									rising_slash_duration = true
+									is_in_combat = true
+									all_skills.interruptBaseAtk()
+									if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
+										all_skills.interruptBackstep()
+										if dash_duration == true:
+											all_skills.dashCD()
+											dash_duration = false
+										if stomp_duration == true:
+											stomp_duration = false
+											all_skills.stompCD()
+										if overhead_slash_duration == true:
+											all_skills.overheadSlashCD()
+											overhead_slash_duration = false
 #											if rising_slash_duration == true:
 #												rising_slash_duration = false
 #												all_skills.risingSlashCD()
-											if heart_trust_duration == true:
-												all_skills.heartTrustSlashCD()
-												heart_trust_duration = false
-											if cyclone_duration == true:
-												all_skills.cycloneCD()
-												cyclone_duration = false
-											if whirlwind_duration == true:
-												all_skills.whirlwindCD()
-												whirlwind_duration = false
-											if taunt_duration == true:
-												all_skills.tauntCD()
-												taunt_duration = false
-										else:
-											pass
-								else:
-									returnToIdleBasedOnWeaponType()
-									rising_slash_duration = false
+										if heart_trust_duration == true:
+											all_skills.heartTrustSlashCD()
+											heart_trust_duration = false
+										if cyclone_duration == true:
+											all_skills.cycloneCD()
+											cyclone_duration = false
+										if whirlwind_duration == true:
+											all_skills.whirlwindCD()
+											whirlwind_duration = false
+										if taunt_duration == true:
+											all_skills.tauntCD()
+											taunt_duration = false
+									else:
+										pass
 							else:
 								returnToIdleBasedOnWeaponType()
 								rising_slash_duration = false
 						else:
 							returnToIdleBasedOnWeaponType()
 							rising_slash_duration = false
+					else:
+						returnToIdleBasedOnWeaponType()
+						rising_slash_duration = false
 #_________________________________________  cyclone   ______________________________________________
-				elif slot.texture.resource_path == autoload.cyclone.get_path():
-						if cyclone_icon.points >0 :
-							if all_skills.can_cyclone == true:
-								if resolve > all_skills.cyclone_cost:
-									if weapon_type != autoload.weapon_type_list.fist:
-										cyclone_duration = true
-										is_in_combat = true
-										all_skills.interruptBaseAtk()
-										if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
-											all_skills.interruptBackstep()
-											if dash_duration == true:
-												all_skills.dashCD()
-												dash_duration = false
-											if stomp_duration == true:
-												stomp_duration = false
-												all_skills.stompCD()
-											if overhead_slash_duration == true:
-												all_skills.overheadSlashCD()
-												overhead_slash_duration = false
-											if rising_slash_duration == true:
-												all_skills.risingSlashCD()
-												rising_slash_duration = false
-											if heart_trust_duration == true:
-												all_skills.heartTrustSlashCD()
-												heart_trust_duration = false
+			elif slot.texture.resource_path == autoload.cyclone.get_path():
+					if cyclone_icon.points >0 :
+						if all_skills.can_cyclone == true:
+							if resolve > all_skills.cyclone_cost:
+								if weapon_type != autoload.weapon_type_list.fist:
+									cyclone_duration = true
+									is_in_combat = true
+									all_skills.interruptBaseAtk()
+									if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
+										all_skills.interruptBackstep()
+										if dash_duration == true:
+											all_skills.dashCD()
+											dash_duration = false
+										if stomp_duration == true:
+											stomp_duration = false
+											all_skills.stompCD()
+										if overhead_slash_duration == true:
+											all_skills.overheadSlashCD()
+											overhead_slash_duration = false
+										if rising_slash_duration == true:
+											all_skills.risingSlashCD()
+											rising_slash_duration = false
+										if heart_trust_duration == true:
+											all_skills.heartTrustSlashCD()
+											heart_trust_duration = false
 #											if cyclone_duration == true:
 #												all_skills.cycloneCD()
 #												cyclone_duration = false
-											if whirlwind_duration == true:
-												all_skills.whirlwindCD()
-												whirlwind_duration = false
-											if taunt_duration == true:
-												all_skills.tauntCD()
-												taunt_duration = false
-								else:
-									returnToIdleBasedOnWeaponType()
-									cyclone_duration = false
+										if whirlwind_duration == true:
+											all_skills.whirlwindCD()
+											whirlwind_duration = false
+										if taunt_duration == true:
+											all_skills.tauntCD()
+											taunt_duration = false
 							else:
 								returnToIdleBasedOnWeaponType()
 								cyclone_duration = false
 						else:
 							returnToIdleBasedOnWeaponType()
 							cyclone_duration = false
+					else:
+						returnToIdleBasedOnWeaponType()
+						cyclone_duration = false
 #__________________________________________ Whirlwind _____________________________________________
-				elif slot.texture.resource_path == autoload.whirlwind.get_path():
-						if whirlwind_icon.points >0 :
-							if all_skills.can_whirlwind == true:
-								if resolve > all_skills.whirlwind_cost:
-									if weapon_type != autoload.weapon_type_list.fist:
-										whirlwind_duration = true
-										is_in_combat = true
-										if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
-											all_skills.interruptBaseAtk()
-											all_skills.interruptBackstep()
-											if dash_duration == true:
-												all_skills.dashCD()
-												dash_duration = false
-											if stomp_duration == true:
-												stomp_duration = false
-												all_skills.stompCD()
-											if overhead_slash_duration == true:
-												all_skills.overheadSlashCD()
-												overhead_slash_duration = false
-											if rising_slash_duration == true:
-												all_skills.risingSlashCD()
-												rising_slash_duration = false
-											if heart_trust_duration == true:
-												all_skills.heartTrustSlashCD()
-												heart_trust_duration = false
-											if cyclone_duration == true:
-												all_skills.cycloneCD()
-												cyclone_duration = false
+			elif slot.texture.resource_path == autoload.whirlwind.get_path():
+					if whirlwind_icon.points >0 :
+						if all_skills.can_whirlwind == true:
+							if resolve > all_skills.whirlwind_cost:
+								if weapon_type != autoload.weapon_type_list.fist:
+									whirlwind_duration = true
+									is_in_combat = true
+									if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
+										all_skills.interruptBaseAtk()
+										all_skills.interruptBackstep()
+										if dash_duration == true:
+											all_skills.dashCD()
+											dash_duration = false
+										if stomp_duration == true:
+											stomp_duration = false
+											all_skills.stompCD()
+										if overhead_slash_duration == true:
+											all_skills.overheadSlashCD()
+											overhead_slash_duration = false
+										if rising_slash_duration == true:
+											all_skills.risingSlashCD()
+											rising_slash_duration = false
+										if heart_trust_duration == true:
+											all_skills.heartTrustSlashCD()
+											heart_trust_duration = false
+										if cyclone_duration == true:
+											all_skills.cycloneCD()
+											cyclone_duration = false
 #											if whirlwind_duration == true:
 #												all_skills.whirlwindCD()
 #												whirlwind_duration = false
-											if taunt_duration == true:
-												all_skills.tauntCD()
-												taunt_duration = false
-								else:
-									returnToIdleBasedOnWeaponType()
-									whirlwind_duration = false
+										if taunt_duration == true:
+											all_skills.tauntCD()
+											taunt_duration = false
 							else:
 								returnToIdleBasedOnWeaponType()
 								whirlwind_duration = false
 						else:
 							returnToIdleBasedOnWeaponType()
 							whirlwind_duration = false
+					else:
+						returnToIdleBasedOnWeaponType()
+						whirlwind_duration = false
 #__________________________________________ Heart Trust ____________________________________________
-				elif slot.texture.resource_path == autoload.heart_trust.get_path():
-						if heart_trust_icon.points >0 :
-							if all_skills.can_heart_trust == true:
-								if resolve > all_skills.heart_trust_cost:
-									if weapon_type != autoload.weapon_type_list.fist:
-										heart_trust_duration = true
-										if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
-											all_skills.interruptBaseAtk()
-											all_skills.interruptBackstep()
-											if dash_duration == true:
-												all_skills.dashCD()
-												dash_duration = false
-											if stomp_duration == true:
-												stomp_duration = false
-												all_skills.stompCD()
-											if overhead_slash_duration == true:
-												all_skills.overheadSlashCD()
-												overhead_slash_duration = false
-											if rising_slash_duration == true:
-												all_skills.risingSlashCD()
-												rising_slash_duration = false
+			elif slot.texture.resource_path == autoload.heart_trust.get_path():
+					if heart_trust_icon.points >0 :
+						if all_skills.can_heart_trust == true:
+							if resolve > all_skills.heart_trust_cost:
+								if weapon_type != autoload.weapon_type_list.fist:
+									heart_trust_duration = true
+									if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
+										all_skills.interruptBaseAtk()
+										all_skills.interruptBackstep()
+										if dash_duration == true:
+											all_skills.dashCD()
+											dash_duration = false
+										if stomp_duration == true:
+											stomp_duration = false
+											all_skills.stompCD()
+										if overhead_slash_duration == true:
+											all_skills.overheadSlashCD()
+											overhead_slash_duration = false
+										if rising_slash_duration == true:
+											all_skills.risingSlashCD()
+											rising_slash_duration = false
 #											if heart_trust_duration == true:
 #												all_skills.heartTrustSlashCD()
-											if cyclone_duration == true:
-												all_skills.cycloneCD()
-												cyclone_duration = false
-											if whirlwind_duration == true:
-												all_skills.whirlwindCD()
-												whirlwind_duration = false
-											if taunt_duration == true:
-												all_skills.tauntCD()
-												taunt_duration = false
-								else:
-									returnToIdleBasedOnWeaponType()
-									heart_trust_duration = false
+										if cyclone_duration == true:
+											all_skills.cycloneCD()
+											cyclone_duration = false
+										if whirlwind_duration == true:
+											all_skills.whirlwindCD()
+											whirlwind_duration = false
+										if taunt_duration == true:
+											all_skills.tauntCD()
+											taunt_duration = false
 							else:
 								returnToIdleBasedOnWeaponType()
 								heart_trust_duration = false
 						else:
 							returnToIdleBasedOnWeaponType()
 							heart_trust_duration = false
+					else:
+						returnToIdleBasedOnWeaponType()
+						heart_trust_duration = false
 
 #ranged bow skills
-				elif slot.texture.resource_path == autoload.full_draw.get_path():
-					if weapon_type == autoload.weapon_type_list.bow:
-						is_aiming = true
-						can_walk = false
-						current_race_gender.can_move = false
-						animation.play("full draw",0.3,ranged_atk_speed)
-				elif slot.texture.resource_path == autoload.base_attack_necromant.get_path():
-					all_skills.baseAttack() # placeholder
-				elif slot.texture.resource_path == autoload.necro_guard.get_path():
-					pass #necromance guard placeholder
-				elif slot.texture.resource_path == autoload.necromant_switch.get_path():
-					all_skills.switchStance()# different stances or weapons switches base attacks
-					l_click_slot.switchAttackIcon()
-					r_click_slot.switchAttackIcon()
+			elif slot.texture.resource_path == autoload.full_draw.get_path():
+				if weapon_type == autoload.weapon_type_list.bow:
+					is_aiming = true
+					can_walk = false
+					current_race_gender.can_move = false
+					animation.play("full draw",0.3,ranged_atk_speed)
+			elif slot.texture.resource_path == autoload.base_attack_necromant.get_path():
+				all_skills.baseAttack() # placeholder
+			elif slot.texture.resource_path == autoload.necro_guard.get_path():
+				pass #necromance guard placeholder
+			elif slot.texture.resource_path == autoload.necromant_switch.get_path():
+				all_skills.switchStance()# different stances or weapons switches base attacks
+				l_click_slot.switchAttackIcon()
+				r_click_slot.switchAttackIcon()
 #consumables________________________________________________________________________________________
-				elif slot.texture.resource_path == autoload.red_potion.get_path():
-					slot.get_parent().displayQuantity()
-					for child in inventory_grid.get_children():
-						if child.is_in_group("Inventory"):
-							var index_str = child.get_name().split("InventorySlot")[1]
-							var index = int(index_str)
-							var button = inventory_grid.get_node("InventorySlot" + str(index))
-							button = inventory_grid.get_node("InventorySlot" + str(index))
-							if health < max_health:
-								autoload.consumeRedPotion(self,button,inventory_grid,true,slot.get_parent())				
+			elif slot.texture.resource_path == autoload.red_potion.get_path():
+				slot.get_parent().displayQuantity()
+				for child in inventory_grid.get_children():
+					if child.is_in_group("Inventory"):
+						var index_str = child.get_name().split("InventorySlot")[1]
+						var index = int(index_str)
+						var button = inventory_grid.get_node("InventorySlot" + str(index))
+						button = inventory_grid.get_node("InventorySlot" + str(index))
+						if health < max_health:
+							autoload.consumeRedPotion(self,button,inventory_grid,true,slot.get_parent())
+							
 var skill_cancelling:bool = true#this only works with the SkillQueueSystem() and serves to interupt skills with other skills 
 var queue_skills:bool = true #this is only for people with disabilities or if the game ever goes online to help with high ping, as of now it can't be used by itself until I revamp the skill cancel system  
 
 
+func getInterrupted()->void:#Universal stop, call this when I'm stunned, staggered, dead, knocked down and so on 
+	overhead_slash_combo = false
+	whirlwind_combo = false
+	cyclone_combo = false
+	base_atk_duration = false
+	base_atk2_duration = false
+	throw_rock_duration = false
+	
+	all_skills.interruptBackstep()
+	if dash_duration == true:
+		all_skills.dashCD()
+		dash_duration = false
+	if backstep_duration == true:
+		all_skills.backstepCD()
+		backstep_duration = false
+	if frontstep_duration == true:
+		all_skills.backstepCD()
+		frontstep_duration = false
+	if leftstep_duration == true:
+		all_skills.backstepCD()
+		rightstep_duration = false
+	if  leftstep_duration == true:
+		all_skills.backstepCD()
+		rightstep_duration = false
+		
+	if stomp_duration == true:
+		all_skills.stompCD()
+		stomp_duration = false
+	if overhead_slash_duration == true:
+		all_skills.overheadSlashCD()
+		overhead_slash_duration = false
+	if rising_slash_duration == true:
+		rising_slash_duration = false
+		all_skills.risingSlashCD()
+	if heart_trust_duration == true:
+		all_skills.heartTrustSlashCD()
+		heart_trust_duration = false
+	if cyclone_duration == true:
+		all_skills.cycloneCD()
+		cyclone_duration = false
+	if whirlwind_duration == true:
+		all_skills.whirlwindCD()
+		whirlwind_duration = false
+	if taunt_duration == true:
+		all_skills.tauntCD()
+		taunt_duration = false
+
+			
+			
+func stopBeingParlized()-> void:
+	staggered_duration = false
+	knockeddown_duration = false
+	stunned_duration = 0
+# Toggle the hold_to_base_atk variable and change the color of BaseAtkMode accordingly
+func _on_BaseAtkMode_pressed():
+	hold_to_base_atk = !hold_to_base_atk
+	switchButtonTextures()
 func _on_SkillQueue_pressed():
 	queue_skills = !queue_skills
 	switchButtonTextures()
@@ -1657,8 +1646,6 @@ func walk()->void:
 				is_aiming = false
 				is_crouching = false
 				movement_speed = run_speed
-
-
 			else: # Walk State and speed
 				if health >0:
 					sprint_speed = 10
@@ -1687,7 +1674,6 @@ func walk()->void:
 		is_sprinting = false
 		is_running = false
 		is_crouching = false
-
 
 	autoload.movement(self)
 
@@ -1783,7 +1769,7 @@ func dodgeIframe():
 		set_collision_mask(1)   
 		
 func doublePressToDash()-> void:
-	if resolve >= all_skills.dodge_cost:
+	if resolve >= all_skills.dash_cost:
 		if dash_countback > 0:
 			dash_timerback += get_physics_process_delta_time()
 		if dash_timerback >= double_press_time:
@@ -1793,7 +1779,7 @@ func doublePressToDash()-> void:
 			dash_countback += 1
 		if dash_countback == 2 and dash_timerback < double_press_time:
 			dash_duration = true
-			resolve -= all_skills.dodge_cost
+			resolve -= all_skills.dash_cost
 
 
 		if dash_countforward > 0:
@@ -1805,7 +1791,7 @@ func doublePressToDash()-> void:
 			dash_countforward += 1
 		if dash_countforward == 2 and dash_timerforward < double_press_time:
 			dash_duration = true
-			resolve -= all_skills.dodge_cost
+			resolve -= all_skills.dash_cost
 
 		if dash_countleft > 0:
 			dash_timerleft += get_physics_process_delta_time()
@@ -1816,7 +1802,7 @@ func doublePressToDash()-> void:
 			dash_countleft += 1
 		if dash_countleft == 2 and dash_timerleft < double_press_time:
 			dash_duration = true
-			resolve -= all_skills.dodge_cost
+			resolve -= all_skills.dash_cost
 
 		if dash_countright > 0:
 			dash_timerright += get_physics_process_delta_time()
@@ -1827,7 +1813,7 @@ func doublePressToDash()-> void:
 			dash_countright += 1
 		if dash_countright == 2 and dash_timerright < double_press_time :
 			dash_duration = true
-			resolve -= all_skills.dodge_cost
+			resolve -= all_skills.dash_cost
 	#_____________________________________________________Camera_______________________________________
 var is_aiming: bool = false
 var camrot_h: float = 0
@@ -2447,7 +2433,7 @@ func UniversalToolTip(icon_texture):
 	
 	
 		elif icon_texture.get_path() == autoload.dash.get_path():
-			callToolTip(instance,"Dodge Slide",autoload.dodge_description)
+			callToolTip(instance,"Dash",autoload.dash_description)
 			
 		elif icon_texture.get_path() == autoload.stomp.get_path():
 			var base_damage: float = all_skills.stomp_dmg + total_dmg

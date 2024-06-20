@@ -451,19 +451,15 @@ func backstepCD()->void:
 
 func slideCD()->void:
 	player.slide_duration = false
-	print("slide over")
+	player.all_skills.slideCD()
+
 
 func dashCD()->void:
 	player.all_skills.dashCD()
 	player.dash_duration = false
 
 var stagger_chance: float 
-func slideDMG()->void:
-	var aggro_power:float = player.threat_power + 1
-	var push_distance:float = 0.5
-	var enemies:Array = trust_area.get_overlapping_bodies()
-	
-	slideImpact(enemies,aggro_power,push_distance)
+
 
 func punch()->void:
 	var damage_type:String = "blunt"
