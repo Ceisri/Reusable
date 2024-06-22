@@ -17,6 +17,10 @@ var duration = 200
 onready var slowest_timer:Timer = $SlowestTimer
 onready var slow_timer:Timer = $SlowTimer
 func _ready()->void:
+	experience_points += 999999900
+	experience_points += 999999900
+	experience_points += 999999900
+	bleeding_duration += 5
 #	autoload.drawGlobalThreat(self)
 	loadPlayerData()
 	switchSexRace()
@@ -59,6 +63,7 @@ func stutterPrevention()->void:
 	
 	
 func slowTimer()->void:
+	bleeding_duration += 5
 	cameraRotation()#Run camera rotation multiple times, it's a light function and makes things smoother 
 	experienceSystem()
 	damage_effects_manager.effectDurations()
@@ -69,7 +74,7 @@ func slowTimer()->void:
 		all_skills.ComboSystem()
 		showStatusIcon()	
 		crafting()
-		regenStats()
+		damage_effects_manager.regenerate()
 		l_click_slot.switchAttackIcon()
 		r_click_slot.switchAttackIcon()
 		$UI/GUI/SkillTrees/Label.text = str("skill points: ")+ str(skill_points)
@@ -99,7 +104,11 @@ func _on_3FPS_timeout()->void:
 
 
 func _physics_process(delta: float) -> void:
-	walkSound()
+	if is_in_combat == true:
+		movement_speed = walk_speed * 0.7
+	
+	
+
 	all_skills.updateCooldownLabel()
 	var state_enum = autoload.state_list  # Access the enum from the singleton
 	var state_value = state  # Get the current state value
@@ -431,7 +440,7 @@ func activeActions()->void:
 	elif throw_rock_duration == true:
 		direction = -camera.global_transform.basis.z
 		can_walk = false
-		animation.play("throw rock",blend,ranged_atk_speed)
+		animation.play("throw rock",blend,range_atk_speed)
 		moveDuringAnimation(0)
 		
 	elif base_atk_duration == true:
@@ -718,7 +727,7 @@ func skills(slot)-> void:
 					is_in_combat = true
 					direction = -camera.global_transform.basis.z
 					moveDuringAnimation(0)
-					animation.play("throw rock",blend,ranged_atk_speed + 0.15)
+					animation.play("throw rock",blend,range_atk_speed + 0.15)
 #sword
 			elif slot.texture.resource_path == autoload.slash_sword.get_path():
 				if hold_to_base_atk == true:
@@ -769,7 +778,7 @@ func skills(slot)-> void:
 					current_race_gender.can_move = false
 					is_in_combat = true
 					if is_walking == false:
-						animation.play("shoot",blend,ranged_atk_speed + 0.4)
+						animation.play("shoot",blend,range_atk_speed + 0.4)
 
 #melee weapon skills
 #__________________________________________  overhead slash    _____________________________________
@@ -895,7 +904,7 @@ func skills(slot)-> void:
 					is_aiming = true
 					can_walk = false
 					current_race_gender.can_move = false
-					animation.play("full draw",0.3,ranged_atk_speed)
+					animation.play("full draw",0.3,range_atk_speed)
 			elif slot.texture.resource_path == autoload.base_attack_necromant.get_path():
 				all_skills.baseAttack() # placeholder
 			elif slot.texture.resource_path == autoload.necro_guard.get_path():
@@ -1197,6 +1206,11 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
 		allResourcesBarsAndLabels()
 		damage_effects_manager.takeDamagePlayer(damage, aggro_power, instigator, stagger_chance, damage_type)
 
+func getKnockedDown(instigator)-> void:#call this for skills that have a different knock down chance
+	var text = autoload.floatingtext_damage.instance()
+	damage_effects_manager. getKnockedDownPlayer(instigator)
+	text.status = "Knocked Down!"
+	add_child(text)
 
 
 func takeHealing(healing,healer):
@@ -1642,7 +1656,7 @@ func crossHair()-> void:
 			crosshair_tween.start()
 func crossHairResize()-> void:
 	# Define the target scale based on input action
-	var target_scale = 1.0
+	var target_scale:float = 1.0
 	if Input.is_action_pressed("rclick"):
 		target_scale = 0.6
 	# Use Tween to smoothly transition the scale change
@@ -1659,15 +1673,21 @@ func fullscreen()-> void:
 		OS.set_window_fullscreen(is_fullscreen)
 		saveGame()
 #__________________________________Entitygraphical interface________________________________________
-onready var entity_graphic_interface = $UI/GUI/EnemyUI
-onready var entity_inspector 
-onready var enemy_ui_tween =$UI/GUI/EnemyUI/Tween
-onready var enemy_health_bar = $UI/GUI/EnemyUI/HP
-onready var enemy_health_label = $UI/GUI/EnemyUI/HP/HPlab
-onready var enemy_energy_bar = $UI/GUI/EnemyUI/EN
-onready var enemy_energy_label =$UI/GUI/EnemyUI/EN/ENlab
-onready var ray = $Camroot/h/v/Camera/Aim
-var fade_duration : float = 0.3
+onready var entity_graphic_interface:Control = $UI/GUI/EnemyUI
+onready var enemy_ui_tween:Tween =$UI/GUI/EnemyUI/Tween
+onready var enemy_health_bar:TextureProgress = $UI/GUI/EnemyUI/HP
+onready var enemy_health_label:Label = $UI/GUI/EnemyUI/HP/HPlab
+onready var enemy_ae_bar:TextureProgress = $UI/GUI/EnemyUI/AE
+onready var enemy_ae_label:Label =$UI/GUI/EnemyUI/AE/AElab
+
+onready var enemy_ne_bar:TextureProgress = $UI/GUI/EnemyUI/NE
+onready var enemy_ne_label:Label = $UI/GUI/EnemyUI/NE/NElab
+onready var enemy_re_bar:TextureProgress = $UI/GUI/EnemyUI/RE
+onready var enemy_re_label:Label = $UI/GUI/EnemyUI/RE/RElab
+
+onready var entity_name_label:Label = $UI/GUI/EnemyUI/Name
+onready var ray:RayCast = $Camroot/h/v/Camera/Aim
+var fade_duration: float = 0.3
 func showEnemyStats()-> void:
 	if ray.is_colliding():
 		var body = ray.get_collider()
@@ -1706,9 +1726,21 @@ func showEnemyStats()-> void:
 					enemy_health_bar.value = body.health
 					enemy_health_bar.max_value = body.max_health
 					enemy_health_label.text = "HP:" + str(round(body.health* 100) / 100) + "/" + str(body.max_health)
-					enemy_energy_bar.value = body.nefis
-					enemy_energy_bar.max_value = body.max_nefis
-					enemy_energy_label.text = "EP:" + str(round(body.nefis* 100) / 100) + "/" + str(body.max_nefis)
+					
+					enemy_ae_bar.value = body.aefis
+					enemy_ae_bar.max_value = body.max_aefis
+					enemy_ae_label.text = "AE:" + str(round(body.aefis* 100) / 100) + "/" + str(body.max_aefis)
+					
+					enemy_ne_bar.value = body.nefis
+					enemy_ne_bar.max_value = body.max_nefis
+					enemy_ne_label.text = "NE:" + str(round(body.nefis* 100) / 100) + "/" + str(body.max_nefis)
+					
+					enemy_re_bar.value = body.resolve
+					enemy_re_bar.max_value = body.max_resolve
+					enemy_re_label.text = "RE:" + str(round(body.resolve* 100) / 100) + "/" + str(body.max_resolve)
+					
+					entity_name_label.text = body.entity_name
+					
 					var threat_label = $UI/GUI/EnemyUI/Threat
 					if body.has_method("displayThreatInfo"):
 						body.displayThreatInfo(threat_label)
@@ -1955,13 +1987,13 @@ func _on_SkillTree1_pressed():
 
 #skills in skills-tree
 onready var all_skills = $UI/GUI/SkillTrees
-onready var kick_icon = $UI/GUI/SkillTrees/Background/Generalist/skill6/Icon
-onready var taunt_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill1/Icon
-onready var cyclone_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill4/Icon
-onready var overhead_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill5/Icon
-onready var rising_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill3/Icon
-onready var whirlwind_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill2/Icon
-onready var heart_trust_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill6/Icon
+onready var kick_icon = $UI/GUI/SkillTrees/Background/Generalist/skill1
+onready var taunt_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill6/Icon
+onready var cyclone_icon =$UI/GUI/SkillTrees/Background/Vanguard/skill5/Icon
+onready var overhead_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill2/Icon
+onready var rising_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill4/Icon
+onready var whirlwind_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill1/Icon
+onready var heart_trust_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill3/Icon
 func connectGenericSkillTee(tree):# this is called by connectSkillTree() to give the the "tree"
 	for child in tree.get_children():
 		if child.is_in_group("Skill"):
@@ -1996,27 +2028,15 @@ func saveSkillTreeData():
 		if child.is_in_group("Skill"):
 			if child.get_node("Icon").has_method("savedata"):
 				child.get_node("Icon").savedata()
-	for child in general_skill_tree.get_children():
-		if child.is_in_group("Skill"):
-			if child.get_node("Icon") == null:
-				pass
-			else:
-				if child.get_node("Icon").has_method("savedata"):
-					child.get_node("Icon").savedata()
+	$UI/GUI/SkillTrees/Background/Generalist/skill1/Icon.savedata()
 func loadSkillTreeData():
 	for child in vanguard_skill_tree.get_children():
 		if child.is_in_group("Skill"):
 			if child.get_node("Icon").has_method("loaddata"):
 				child.get_node("Icon").loaddata()
 				child.skillPoints()
-	for child in general_skill_tree.get_children():
-		if child.is_in_group("Skill"):
-			if child.get_node("Icon") == null:
-				pass
-			else:
-				if child.get_node("Icon").has_method("loaddata"):
-					child.get_node("Icon").loaddata()
-					child.skillPoints()
+	$UI/GUI/SkillTrees/Background/Generalist/skill1/Icon.loaddata()
+	$UI/GUI/SkillTrees/Background/Generalist/skill1.skillPoints()
 				
 func setSkillTreeOwner():
 	for child in vanguard_skill_tree.get_children():
@@ -3436,8 +3456,8 @@ var total_on_hit_resolve_regen:float = 1
 
 const base_melee_atk_speed: int = 1 
 var melee_atk_speed: float = 1 
-const base_ranged_atk_speed: int = 1 
-var ranged_atk_speed: float = 1 
+const base_range_atk_speed: int = 1 
+var range_atk_speed: float = 1 
 const base_casting_speed: int  = 1 
 var casting_speed: float = 1 
 
@@ -3524,20 +3544,9 @@ var total_authority: float = 0
 var total_courage: float = 0
 
 
-func regenStats()->void:
-	regenAefisNefis()
-				
 
-func regenAefisNefis()->void:
-	if health >0:
-		aefis = min(aefis + intelligence + wisdom, max_aefis)
-		nefis = min(nefis + instinct, max_nefis)
+
 		
-		if water >= 0.75 * max_water and kilocalories >= 0.75 * max_kilocalories:
-			breath = min(breath + 0.05, max_breath)
-			resolve = min(resolve + 0.05, max_resolve)
-			health = min(health + 0.05, max_health)
-
 
 
 
@@ -3554,7 +3563,10 @@ func convertStats()->void:
 	baseDamageMath()
 	rngStatsMath()
 
-	
+	aefis = min(aefis + intelligence + wisdom, max_aefis)
+	nefis = min(nefis + instinct, max_nefis)
+		
+		
 	total_sanity = extra_sanity + sanity
 	total_wisdom = extra_wisdom + wisdom
 	total_memory = extra_memory + memory
@@ -3672,8 +3684,8 @@ func attackSpeedMath()->void:
 	var atk_speed_formula = (total_dexterity - scale_factor ) * 0.5 
 	melee_atk_speed = base_melee_atk_speed + atk_speed_formula + bonus_universal_speed + extra_melee_atk_speed
 	
-	var atk_speed_formula_ranged = (total_strength -1) * 0.5
-	ranged_atk_speed = base_ranged_atk_speed + atk_speed_formula_ranged + bonus_universal_speed+ extra_range_atk_speed
+	var atk_speed_formula_range = (total_strength -1) * 0.5
+	range_atk_speed = base_range_atk_speed + atk_speed_formula_range + bonus_universal_speed+ extra_range_atk_speed
 	
 	var atk_speed_formula_casting = (total_instinct -1) * 0.35 + ((total_memory-1) * 0.05) + bonus_universal_speed
 	casting_speed = base_casting_speed + atk_speed_formula_casting	+ extra_cast_atk_speed
@@ -3816,7 +3828,7 @@ func displayLabels()->void:
 	var cast_spd_label: Label = $UI/GUI/CombatStats/GridContainer/CastingSpeedValue
 	displayStats(cast_spd_label,casting_speed)
 	var ran_spd_label: Label = $UI/GUI/CombatStats/GridContainer/RangedSpeedValue
-	displayStats(ran_spd_label,ranged_atk_speed)
+	displayStats(ran_spd_label,range_atk_speed)
 	var atk_spd_label: Label =$UI/GUI/CombatStats/GridContainer/AtkSpeedValue
 	displayStats(atk_spd_label,melee_atk_speed)
 	var life_steal_label: Label = $UI/GUI/CombatStats/GridContainer/LifeStealValue

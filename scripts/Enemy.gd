@@ -17,8 +17,8 @@ var random_atk:float
 
 export var spawn_point:Vector3 
 export var can_be_looted:bool = false ##loot system in entity_holder = $Mesh/EntityHolder
-export var is_made_of= autoload.gathering_type.furless
-export var is_randomized:bool = true
+var is_made_of= autoload.gathering_type.furless
+export var is_randomized:bool = false
 export var can_wear_armor:bool = true
 export var can_respawn:bool = true
 
@@ -60,7 +60,7 @@ func process()->void:
 	if health <0 or health ==0:
 		can_be_looted = true
 		if has_died == false:
-			death_time = 3.958
+
 			if has_died == true:
 				state = autoload.state_list.dead
 
@@ -68,7 +68,7 @@ func process()->void:
 func respawn()->void:
 	health = max_health
 	threat_system.resetThreats()
-	death_time = 0
+
 	has_died = false
 	can_be_looted = false
 	state = autoload.state_list.wander
@@ -85,6 +85,8 @@ func respawn()->void:
 			
 	
 func oneSecondTimer()->void:
+	damage_effect_manager.regenerate()
+	attackSpeedMath()
 	var state_enum = autoload.state_list  # Access the enum from the singleton
 	var state_value = state  # Get the current state value
 	var state_name = state_enum.keys()[state_value]  # Convert enum to string
@@ -102,25 +104,22 @@ func displayThreatInfo(label):
 
 
 var state = autoload.state_list.wander
-var death_time:float  = 0
+var death_duration:bool = false
 
+var has_died:bool = false
+
+var staggered_duration: bool = false
 var knockeddown_duration:bool = false
 var knockeddown_first_part:bool = false
 
 func behaviourTree()->void:
 	var target = threat_system.findHighestThreat()
 	if health <0:
-		if death_time >0:
-			death_time -= 1 * get_physics_process_delta_time()
-			animation.play("death",0.2)
-			if death_time <= 0:
-				has_died = true
-		else:	
-			animation.play("dead",0.6)
+		animation.play("dead",0.6)
 
 	elif stunned_duration > 0:
 		animationCancel()
-		animation.play("staggered",0.2)
+		animation.play("stunned",0.2)
 
 	elif knockeddown_duration == true:
 		animReset()
@@ -162,80 +161,8 @@ func matchState()->void:
 
 
 
-var staggered_duration: bool = false
-var has_died:bool = false
-
-var atk_1_duration:bool = false
-var atk1_spam:int = 0
-
-var atk_2_duration:bool = false
-var atk2_spam:int = 0
-
-var atk_3_duration:bool = false
-var atk3_spam:int = 0
-
-var atk_4_duration:bool = false
-var atk4_spam:int = 0
-
-func combat():
-	if staggered_duration == false:
-		var random_value = randf()
-		var  distance_to_target = findDistanceTarget()
-		attackAnimations()
-		if distance_to_target != null:
-			if distance_to_target <= 1.3:
-				randomizeAttacks()
-				print("This unit is attacking" + str(distance_to_target))
-			else:
-				if  atk_1_duration == false and atk_2_duration == false and atk_3_duration == false and atk_4_duration == false:
-					changeAttackType()
-					lookTarget(turn_speed)
-					followTarget(false)
-					animation.play("walk combat",0.2)
-				else:
-					print("This unit is maybe stuck ?" + str(distance_to_target))
-					
-				
-				
-						
-					
-
-func randomizeAttacks()->void:
-	if random_atk < 0.25:  # 25% 
-		atk_1_duration = true
-	if atk1_spam > 2:
-		lookTarget(turn_speed)
-	elif random_atk < 0.50:  # 25% 
-		atk_2_duration = true
-		if atk2_spam > 1:
-			lookTarget(turn_speed)
-	elif random_atk < 0.75:  # 25%
-		atk_3_duration = true
-		if atk3_spam > 1:
-			lookTarget(turn_speed)
-	else:  # 25% of the remaining 70% 
-		atk_4_duration = true
-		if atk4_spam > 1:
-			lookTarget(turn_speed)
 
 
-
-func attackAnimations()->void:
-	if atk_1_duration == true:
-		animation.play("atk1", 0.25)
-	elif atk_2_duration == true:
-		animation.play("atk2", 0.3)
-	elif atk_3_duration == true:
-		animation.play("atk3", 0.3)
-	elif atk_4_duration == true:
-		animation.play("atk4", 0.3)
-
-
-func animationCancel()->void:
-	atk_1_duration = false
-	atk_2_duration = false
-	atk_3_duration = false
-	atk_4_duration = false
 onready var wall_check_ray:RayCast = $RayStraightLonger
 onready var check_floor_ray: RayCast = $RayCheckFloor
 func forceDirectionChange() -> void:
@@ -267,38 +194,24 @@ func slideLeft():
 
 var direction: Vector3
 onready var tween = $Tween
+
 func slideForward() -> void:
-	var  distance_to_target = findDistanceTarget()
-	if distance_to_target != null:
+	if stored_instigator != null:
+		var  distance_to_target = findDistanceTarget()
 		if distance_to_target > 1.4:
-			var distance: float = 2.0  # Define a shorter distance of movement
-			var speed: float = 2.0  # Define a faster speed
-			var target_position: Vector3 = global_transform.origin + (direction.normalized() * distance)  # Calculate the target position
+			var distance: float = 2.0
+			var speed: float = 2.0
+			var direction: Vector3 = (stored_instigator.global_transform.origin - global_transform.origin).normalized()
+			var target_position: Vector3 = global_transform.origin + (direction * distance)
 
-			# Stop any ongoing tweens
 			tween.stop_all()
-
-			# Tween the position smoothly with an ease-out effect
 			tween.interpolate_property(self, "translation", global_transform.origin, target_position, 0.5, Tween.TRANS_QUAD, Tween.EASE_OUT)
 			tween.start()
 		else:
 			tween.stop_all()
-func slideForward2() -> void:
-	var  distance_to_target = findDistanceTarget()
-	if distance_to_target != null:
-		if distance_to_target > 1.4:
-			var distance: float = 0.5  # Define a shorter distance of movement
-			var speed: float = 1.0  # Define a faster speed
-			var target_position: Vector3 = global_transform.origin + (direction.normalized() * distance)  # Calculate the target position
 
-			# Stop any ongoing tweens
-			tween.stop_all()
+			
 
-			# Tween the position smoothly with an ease-out effect
-			tween.interpolate_property(self, "translation", global_transform.origin, target_position, 0.5, Tween.TRANS_QUAD, Tween.EASE_OUT)
-			tween.start()
-		else:
-			tween.stop_all()
 func stopSlidingForward()-> void:
 	tween.stop_all()
 onready var eyes = $Eyes
@@ -310,34 +223,8 @@ func lookTarget(turning_speed)->void:
 		rotate_y(deg2rad(eyes.rotation.y * turning_speed))
 		
 		
-func lookTargetTween(turning_speed: float) -> void:
-	var target = threat_system.findHighestThreat()
-	if target:
-		var target_position = target.player.global_transform.origin
-		var look_at_target_transform = eyes.global_transform.looking_at(target_position, Vector3.UP)
-		var target_rotation_y = look_at_target_transform.basis.get_euler().y
-
-		# Stop any existing tweening
-		tween.stop_all()
-
-		# Tween the rotation.y to target_rotation_y over a duration based on turning_speed
-		tween.interpolate_property(eyes, "rotation:y", eyes.rotation.y, target_rotation_y, turning_speed, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
-		tween.start()
 
 
-func lookTargetTweenFixedSpeed() -> void:
-	var target = threat_system.findHighestThreat()
-	if target:
-		var target_position = target.player.global_transform.origin
-		var look_at_target_transform = eyes.global_transform.looking_at(target_position, Vector3.UP)
-		var target_rotation_y = look_at_target_transform.basis.get_euler().y
-
-		# Stop any existing tweening
-		tween.stop_all()
-
-		# Tween the rotation.y to target_rotation_y over a duration based on turning_speed
-		tween.interpolate_property(eyes, "rotation:y", eyes.rotation.y, target_rotation_y, 9, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
-		tween.start()
 		
 		
 var walk_speed: float = 3
@@ -406,7 +293,7 @@ var absorbing: bool = false
 onready var damage_effect_manager = $"Damage&Effects"
 func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type)->void:
 	stored_instigator = instigator
-	damage_effect_manager.takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type)
+	damage_effect_manager.takeDamage(damage, aggro_power, instigator, damage_type)
 	damage_effect_manager.getKilled(instigator)
 	if health >0: 
 		lookTarget(turn_speed)
@@ -422,14 +309,14 @@ func getKnockedDown(instigator)-> void:#call this for skills that have a differe
 	animReset()
 	
 func animReset():
-	atk_1_duration = false
-	atk_2_duration = false
-	atk_3_duration = false
-	atk_4_duration = false
+	atk1_duration = false
+	atk2_duration = false
+	atk3_duration = false
+	atk4_duration = false
 	staggered_duration = false
 
 #stats______________________________________________________________________________________________
-var entity_name = "Demon"
+export var entity_name = "Goblin"
 var level: int = 1
 
 const base_weight = 60
@@ -477,9 +364,6 @@ var resolve = 100
 
 
 
-var scale_factor = 1
-
-
 var critical_chance: float = 33
 var critical_dmg: float = 2.05
 var knockdown_chance: float = 6
@@ -502,15 +386,150 @@ var bleed_resistance: int = 0
 var neuro_resistance: int = 0
 var radiant_resistance: int = 0
 
-var impact:float = 1
-var balance: float = 2
+var sanity: float  = 1
+var wisdom: float = 1
+var memory: float = 1
+var intelligence: float = 1
+var instinct: float = 1
 
+var force: float = 1
+var strength: float = 1
+var impact: float = 1
+var ferocity: float  = 1 
+var fury: float = 1 
+
+var accuracy: float = 1
+var dexterity: float = 1
+var poise: float = 1
+var balance: float = 1
+var focus: float = 1
+
+var haste: float = 1
+var agility: float = 1
+var celerity: float = 2
+var flexibility: float = 1
+var deflection: float = 1
+
+var endurance: float = 1
+var stamina: float = 1
+var vitality: float = 1
+var resistance: float = 1
+var tenacity: float = 1
+
+
+var charisma: float = 1
+var loyalty: float = 1 
+var diplomacy: float = 1
+var authority: float = 1
+var courage: float = 1 
+#equipment variables
+var extra_sanity: float  = 0
+var extra_wisdom: float = 0
+var extra_memory: float = 0
+var extra_intelligence: float = 0
+var extra_instinct: float = 0
+
+var extra_force: float = 0
+var extra_strength: float = 0
+var extra_impact: float = 0
+var extra_ferocity: float  = 0
+var extra_fury: float = 0
+
+var extra_accuracy: float = 0
+var extra_dexterity: float = 0
+var extra_poise: float = 0
+var extra_balance: float = 0
+var extra_focus: float = 0
+
+var extra_haste: float = 0
+var extra_agility: float = 0
+var extra_celerity: float = 0
+var extra_flexibility: float = 0
+var extra_deflection: float = 0
+
+var extra_endurance: float = 0
+var extra_stamina: float = 0
+var extra_vitality: float = 0
+var extra_resistance: float = 0
+var extra_tenacity: float = 0
+
+
+var extra_charisma : float = 0
+var extra_loyalty : float = 0
+var extra_diplomacy : float = 0
+var extra_authority : float = 0
+var extra_courage : float = 0
+
+
+var total_sanity: float = 0
+var total_wisdom: float = 0
+var total_memory: float = 0
+var total_intelligence: float = 0
+var total_instinct: float = 0
+
+var total_force: float = 0
+var total_strength: float = 0
+var total_impact: float = 0
+var total_ferocity: float = 0
+var total_fury: float = 0
+
+var total_accuracy: float = 0
+var total_dexterity: float = 0
+var total_poise: float = 0
+var total_balance: float = 0
+var total_focus: float = 0
+
+var total_haste: float = 0
+var total_agility: float = 0
+var total_celerity: float = 0
+var total_flexibility: float = 0
+var total_deflection: float = 0
+
+var total_endurance: float = 0
+var total_stamina: float = 0
+var total_vitality: float = 0
+var total_resistance: float = 0
+var total_tenacity: float = 0
+
+var total_charisma: float = 0
+var total_loyalty: float = 0
+var total_diplomacy: float = 0
+var total_authority: float = 0
+var total_courage: float = 0
 var guard_dmg_absorbition: float = 2.5
 
 
 var base_flank_dmg : float = 5.0
 var flank_dmg: float = 5.0 #extra damage to add to backstabs 
+
+const base_melee_atk_speed: int = 1 
+var melee_atk_speed: float = 1 
+const base_range_atk_speed: int = 1 
+var range_atk_speed: float = 1 
+const base_cast_speed: int  = 1 
+var cast_speed: float = 1 
+
+
 var extra_melee_atk_speed : float = 0
+var extra_range_atk_speed : float = 0
+var extra_cast_atk_speed : float = 0
+
+
+func attackSpeedMath()->void:
+	print(melee_atk_speed)
+	var bonus_universal_speed = (total_celerity -1) * 0.15
+	
+	total_dexterity = extra_dexterity + dexterity
+	melee_atk_speed = base_melee_atk_speed + (total_dexterity -1) + extra_melee_atk_speed
+	
+	var atk_speed_formula_range = (total_strength -1) * 0.5
+	range_atk_speed = base_range_atk_speed + atk_speed_formula_range + bonus_universal_speed+ extra_range_atk_speed
+	
+	var atk_speed_formula_cast = (total_instinct -1) * 0.35 + ((total_memory-1) * 0.05) + bonus_universal_speed
+	cast_speed = base_cast_speed + atk_speed_formula_cast	+ extra_cast_atk_speed
+
+	
+
 func isFacingSelf(enemy: Node, threshold: float) -> bool:
 	# Get the global transform of the enemy
 	var enemy_global_transform = enemy.global_transform
@@ -599,7 +618,6 @@ func showStatusIcon(
 #___________________________________________Status effects__________________________________________
 # Define effects and their corresponding stat changes
 var effects = {
-	"effect2": {"stats": { "extra_vitality": 2,"extra_agility": 0.05,}, "applied": false},
 #_______________________________________________Debuffs ____________________________________________
 	"overhydration": {"stats": { "extra_vitality": -0.02,"extra_agility": -0.05,}, "applied": false},
 	"dehydration": {"stats": { "extra_intelligence": -0.25,"extra_agility": -0.25,}, "applied": false},
@@ -630,7 +648,7 @@ var effects = {
 	"redpotion": {"stats": {}, "applied": false},
 	
 #_________________________________________________Buffs ____________________________________________
-	"berserk": {"stats": {"extra_intelligence": -0.5,"extra_balance": -0.5,"extra_agility": 0.5,"extra_melee_atk_speed": 1,"extra_ranged_atk_speed": 0.5,"extra_casting_atk_speed": 0.3,"extra_ferocity": 0.3,"extra_fury": 0.3,}, "applied": false},
+	"berserk": {"stats": {"extra_intelligence": -0.5,"extra_balance": -0.5,"extra_agility": 0.5,"extra_melee_atk_speed": 1,"extra_range_atk_speed": 0.5,"extra_cast_atk_speed": 0.3,"extra_ferocity": 0.3,"extra_fury": 0.3,}, "applied": false},
 	
 	#equipment effects______________________________________________________________________________
 	"helm1": {"stats": {"blunt_resistance": 3,"heat_resistance": 6,"cold_resistance": 3,"radiant_resistance": 6}, "applied": false},
@@ -671,12 +689,131 @@ func applyEffect(effect_name: String, active: bool)->void:
 
 
 
-func changeAttackType()->void:
-	random_atk = rand_range(0,1)
-
 func staggeredOver():
 	state = autoload.state_list.wander
 	staggered_duration = false
+	
+	
+var atk1_duration:bool = false
+var atk1_spam:int = 0
+
+var atk2_duration:bool = false
+var atk2_spam:int = 0
+
+var atk3_duration:bool = false
+var atk3_spam:int = 0
+
+var atk4_duration:bool = false
+var atk4_spam:int = 0
+
+
+var atk5_duration:bool = false
+var atk5_spam:int = 0
+
+func combat()->void:
+	if staggered_duration == false:
+		var  distance_to_target = findDistanceTarget()
+		attackAnimations()
+		if distance_to_target != null:
+			if distance_to_target <= 2:
+				randomizeAttacks()
+				print("This unit is attacking" + str(distance_to_target))
+			else:
+				if aefis == max_aefis:
+					print(random_atk)
+					if random_atk > 0.8:
+						animation.play("ultimate",0.1)
+						animationCancel()
+					else:
+						chase()
+					
+				else:
+					chase()
+
+
+func chase()->void:
+	if atk1_duration == false and atk2_duration == false and atk3_duration == false and atk4_duration == false and atk5_duration == false:
+		lookTarget(turn_speed)
+		followTarget(false)
+		animation.play("walk combat",0.1)
+func attackAnimations()->void:
+	if atk1_duration == true:
+		animation.play("atk1", 0.25,melee_atk_speed)
+	elif atk2_duration == true:
+		animation.play("atk2", 0.3,melee_atk_speed)
+	elif atk3_duration == true:
+		animation.play("atk3", 0.3,melee_atk_speed)
+	elif atk4_duration == true:
+		animation.play("atk4", 0.3,melee_atk_speed)
+	elif atk5_duration == true:
+		animation.play("atk5", 0.3,melee_atk_speed)
+
+func animationCancel()->void:
+	atk1_duration = false
+	atk2_duration = false
+	atk3_duration = false
+	atk4_duration = false
+	atk5_duration = false
+	
+func changeAttackType()->void:
+	random_atk = rand_range(0,1)
+	if atk1_duration  == true:
+		 atk1_duration = false
+	if atk2_duration == true:
+		 atk2_duration = false
+	if atk3_duration == true:
+		 atk3_duration = false
+	if atk4_duration == true:
+		 atk4_duration = false
+	if atk5_duration == true:
+		 atk5_duration = false
+
+var atk2_cost: float = 60
+
+var can_switch_atk:bool = true
+func randomizeAttacks() -> void:
+	if random_atk < 0.2:  # 20%
+		atk1_duration = true
+	elif random_atk < 0.4:  # 20%
+		if resolve > atk2_cost:
+			atk2_duration = true
+		else:
+			if random_atk <0.5:
+				atk3_duration = true
+			else:
+				atk5_duration = true
+	elif random_atk < 0.6:  # 20%
+		atk3_duration = true
+	elif random_atk < 0.8:  # 20%
+		atk4_duration = true
+	else:  # 20%
+		atk5_duration = true
+
+
+
+func die()->void:
+
+	has_died = true 
+func getUp()->void:
+	knockeddown_duration = false
+	state = autoload.state_list.wander
+func startGettingUp()->void:
+	knockeddown_first_part = false
+
+
+
+
+func consumeResolve(value)->void:
+	resolve -= value
+	
+
+
+func goBeserk()->void:
+	aefis -= 100
+	berserk_duration += 20
+	if health < max_health:
+		health += 15
+
 #________________________________________ATTACKS GO HERE____________________________________________
 func baseMeleeAtk()->void:
 	var damage_type:String = "slash"
@@ -685,6 +822,30 @@ func baseMeleeAtk()->void:
 	var enemies = $Area.get_overlapping_bodies()
 	for victim in enemies:
 		dealDMG(victim,aggro_power,damage_type,damage)
+		
+func strongMeleeAtk()->void:
+	var damage_type:String = "slash"
+	var damage = 12 * level 
+	var aggro_power = 0
+	var enemies = $Area.get_overlapping_bodies()
+	for victim in enemies:
+		dealDMG(victim,aggro_power,damage_type,damage)
+func knockdownMeleeAtk()->void:
+	var damage_type:String = "slash"
+	var damage = 12 * level 
+	var aggro_power = 0
+	var enemies = $Area2.get_overlapping_bodies()
+	for victim in enemies:
+		if victim != self:
+			if victim.is_in_group("Entity"):
+				if victim.is_in_group("Player"):
+					if victim.parry == false:
+						if victim.absorbing == false:
+							victim.getKnockedDown(self)
+						else:
+							if victim.resolve > 0:
+								victim.resolve -= damage
+		dealDMG(victim,aggro_power,damage_type,damage)
 func dealDMG(victim,aggro_power,damage_type,damage)-> void:
 		var random = rand_range(0,1)
 		if victim  != self:
@@ -692,37 +853,9 @@ func dealDMG(victim,aggro_power,damage_type,damage)-> void:
 				if victim.is_in_group("Player"):
 					if victim.has_method("takeDamage"):
 						victim.takeDamage(damage,aggro_power,self,stagger_chance,damage_type)
-
-
-func atk1Spam()->void:
-	atk1_spam += 1
-	if atk1_spam == 4:
-		atk1_spam = 0
-		changeAttackType()
-func atk2Spam()->void:
-	atk2_spam += 1
-	if atk2_spam == 4:
-		atk2_spam = 0
-		changeAttackType()
-func atk3Spam()->void:
-	atk3_spam += 1
-	if atk3_spam == 4:
-		atk3_spam = 0
-		changeAttackType()
-func atk4Spam()->void:
-	atk4_spam += 1
-	if atk4_spam == 4:
-		atk4_spam = 0
-		changeAttackType()
+						resolve += 10
+						if resolve > max_resolve:
+							resolve = max_resolve
 
 
 
-func die():
-	death_time = 0
-	has_died = true 
-	state = autoload.state_list.dead
-func getUp()->void:
-	knockeddown_duration = false
-	state = autoload.state_list.wander
-func startGettingUp()->void:
-	knockeddown_first_part = false

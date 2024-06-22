@@ -1,5 +1,5 @@
 extends TextureButton
-onready var player = $"../../..".player
+export (NodePath) var player
 onready var icon = $Icon
 onready var label = $Label
 var quantity = 99999999999

@@ -15,7 +15,11 @@ func effectDurations()->void:
 			pass
 		else:
 			var damage: float = autoload.bleed_dmg 
-			parent.takeDamage(damage,damage,parent.stored_instigator,0,"bleed")
+			if parent.is_in_group("Player"):
+				takeDOTPlayer(damage,parent.stored_instigator,"bleed")
+			else:
+				takeDamagePlayer(damage, 0,parent.stored_instigator, 0, "bleed")
+
 		parent.applyEffect("bleeding",true)
 		parent.bleeding_duration -= 1
 	else:
@@ -44,10 +48,171 @@ func stutterNow(damage, damage_type)->void:
 		
 onready var fall_sound =$GetKnockedDown
 
-func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type)->void:
+
+
+func takeDOT(damage, aggro_power, instigator, damage_type)->void:
 	if parent.health > -100:
 		var entity_holder = parent.entity_holder
-		entity_holder.handWeaponBackWeapon()
+		instigatorAggro = parent.threat_system.createFindThreat(instigator)
+		var random_range = rand_range(0,100)
+		var text = autoload.floatingtext_damage.instance()
+		if parent.has_method("lookTarget"):
+			if parent.health >0:
+				parent.lookTarget(parent.turn_speed*3)	
+		parent.stored_instigator = instigator
+		if parent.parry == false:
+			var damage_to_take = damage
+			if damage_type == "slash":
+				var mitigation = parent.slash_resistance / (parent.slash_resistance + 100.0)
+				damage_to_take *= (1.0 - mitigation)
+				if instigator.has_method("lifesteal"):
+					instigator.lifesteal(damage_to_take)
+			elif damage_type == "pierce":
+				var mitigation = parent.pierce_resistance / (parent.pierce_resistance + 100.0)
+				damage_to_take *= (1.0 - mitigation)
+				if instigator.has_method("lifesteal"):
+					instigator.lifesteal(damage_to_take)
+			elif damage_type == "blunt":
+				var mitigation = parent.blunt_resistance / (parent.blunt_resistance + 100.0)
+				damage_to_take *= (1.0 - mitigation)
+				if instigator.has_method("lifesteal"):
+					instigator.lifesteal(damage_to_take)
+			elif damage_type == "sonic":
+				var mitigation = parent.sonic_resistance / (parent.sonic_resistance + 100.0)
+				damage_to_take *= (1.0 - mitigation)
+				if instigator.has_method("lifesteal"):
+					instigator.lifesteal(damage_to_take)
+			elif damage_type == "heat":
+				var mitigation = parent.heat_resistance / (parent.heat_resistance + 100.0)
+				damage_to_take *= (1.0 - mitigation)
+				if instigator.has_method("lifesteal"):
+					instigator.lifesteal(damage_to_take)
+			elif damage_type == "cold":
+				var mitigation = parent.cold_resistance / (parent.cold_resistance + 100.0)
+				damage_to_take *= (1.0 - mitigation)
+				if instigator.has_method("lifesteal"):
+					instigator.lifesteal(damage_to_take)
+			elif damage_type == "jolt":
+				var mitigation = parent.jolt_resistance / (parent.jolt_resistance + 100.0)
+				damage_to_take *= (1.0 - mitigation)
+				if instigator.has_method("lifesteal"):
+					instigator.lifesteal(damage_to_take)
+			elif damage_type == "toxic":
+				var mitigation = parent.toxic_resistance / (parent.toxic_resistance + 100.0)
+				damage_to_take *= (1.0 - mitigation)
+				if instigator.has_method("lifesteal"):
+					instigator.lifesteal(damage_to_take)
+			elif damage_type == "acid":
+				var mitigation = parent.acid_resistance / (parent.acid_resistance + 100.0)
+				damage_to_take *= (1.0 - mitigation)
+				if instigator.has_method("lifesteal"):
+					instigator.lifesteal(damage_to_take)
+			elif damage_type == "bleed":
+				var mitigation = parent.bleed_resistance / (parent.bleed_resistance + 100.0)
+				damage_to_take *= (1.0 - mitigation)
+				if instigator.has_method("lifesteal"):
+					instigator.lifesteal(damage_to_take)
+			elif damage_type == "neuro":
+				var mitigation = parent.neuro_resistance / (parent.neuro_resistance + 100.0)
+				damage_to_take *= (1.0 - mitigation)
+				if instigator.has_method("lifesteal"):
+					instigator.lifesteal(damage_to_take)
+			elif damage_type == "radiant":
+				var mitigation = parent.radiant_resistance / (parent.radiant_resistance + 100.0)
+				damage_to_take *= (1.0 - mitigation)
+				if instigator.has_method("lifesteal"):
+					instigator.lifesteal(damage_to_take)
+
+			parent.health -= damage_to_take
+			instigatorAggro.threat += damage_to_take + aggro_power
+			text.amount =round(damage_to_take * 100)/ 100
+			text.state = damage_type
+			add_child(text)
+
+
+
+
+func takeDOTPlayer(damage,instigator, damage_type)->void:
+	if parent.health > -100:
+		var random_range = rand_range(0,100)
+		var text = autoload.floatingtext_damage.instance()
+		if parent.has_method("lookTarget"):
+			if parent.health >0:
+				parent.lookTarget(parent.turn_speed*3)	
+		if parent.parry == false:
+			var damage_to_take = damage
+			if damage_type == "slash":
+				var mitigation = parent.slash_resistance / (parent.slash_resistance + 100.0)
+				damage_to_take *= (1.0 - mitigation)
+				if instigator.has_method("lifesteal"):
+					instigator.lifesteal(damage_to_take)
+			elif damage_type == "pierce":
+				var mitigation = parent.pierce_resistance / (parent.pierce_resistance + 100.0)
+				damage_to_take *= (1.0 - mitigation)
+				if instigator.has_method("lifesteal"):
+					instigator.lifesteal(damage_to_take)
+			elif damage_type == "blunt":
+				var mitigation = parent.blunt_resistance / (parent.blunt_resistance + 100.0)
+				damage_to_take *= (1.0 - mitigation)
+				if instigator.has_method("lifesteal"):
+					instigator.lifesteal(damage_to_take)
+			elif damage_type == "sonic":
+				var mitigation = parent.sonic_resistance / (parent.sonic_resistance + 100.0)
+				damage_to_take *= (1.0 - mitigation)
+				if instigator.has_method("lifesteal"):
+					instigator.lifesteal(damage_to_take)
+			elif damage_type == "heat":
+				var mitigation = parent.heat_resistance / (parent.heat_resistance + 100.0)
+				damage_to_take *= (1.0 - mitigation)
+				if instigator.has_method("lifesteal"):
+					instigator.lifesteal(damage_to_take)
+			elif damage_type == "cold":
+				var mitigation = parent.cold_resistance / (parent.cold_resistance + 100.0)
+				damage_to_take *= (1.0 - mitigation)
+				if instigator.has_method("lifesteal"):
+					instigator.lifesteal(damage_to_take)
+			elif damage_type == "jolt":
+				var mitigation = parent.jolt_resistance / (parent.jolt_resistance + 100.0)
+				damage_to_take *= (1.0 - mitigation)
+				if instigator.has_method("lifesteal"):
+					instigator.lifesteal(damage_to_take)
+			elif damage_type == "toxic":
+				var mitigation = parent.toxic_resistance / (parent.toxic_resistance + 100.0)
+				damage_to_take *= (1.0 - mitigation)
+				if instigator.has_method("lifesteal"):
+					instigator.lifesteal(damage_to_take)
+			elif damage_type == "acid":
+				var mitigation = parent.acid_resistance / (parent.acid_resistance + 100.0)
+				damage_to_take *= (1.0 - mitigation)
+				if instigator.has_method("lifesteal"):
+					instigator.lifesteal(damage_to_take)
+			elif damage_type == "bleed":
+				var mitigation = parent.bleed_resistance / (parent.bleed_resistance + 100.0)
+				damage_to_take *= (1.0 - mitigation)
+				if instigator.has_method("lifesteal"):
+					instigator.lifesteal(damage_to_take)
+			elif damage_type == "neuro":
+				var mitigation = parent.neuro_resistance / (parent.neuro_resistance + 100.0)
+				damage_to_take *= (1.0 - mitigation)
+				if instigator.has_method("lifesteal"):
+					instigator.lifesteal(damage_to_take)
+			elif damage_type == "radiant":
+				var mitigation = parent.radiant_resistance / (parent.radiant_resistance + 100.0)
+				damage_to_take *= (1.0 - mitigation)
+				if instigator.has_method("lifesteal"):
+					instigator.lifesteal(damage_to_take)
+
+			parent.health -= damage_to_take
+			text.amount =round(damage_to_take * 100)/ 100
+			text.state = damage_type
+			viewport.add_child(text)
+
+
+
+
+func takeDamage(damage, aggro_power, instigator, damage_type)->void:
+	if parent.health > -100:
+		var entity_holder = parent.entity_holder
 		instigatorAggro = parent.threat_system.createFindThreat(instigator)
 		var random_range = rand_range(0,100)
 		var text = autoload.floatingtext_damage.instance()
@@ -213,9 +378,9 @@ func getKnockedDownPlayer(instigator)->void:
 		parent.stored_instigator = instigator
 
 
-
+onready var viewport:Viewport = $Viewport
 func takeDamagePlayer(damage, aggro_power, instigator, stagger_chance, damage_type)->void:
-	var viewport:Viewport = $Viewport
+
 	var random_range = rand_range(0,100)
 	var text = autoload.floatingtext_damage.instance()
 	if parent.has_method("lookTarget"):
@@ -411,7 +576,6 @@ func getKilled(instigator)->void:
 		var max_health = parent.max_health
 		if parent.has_died == false:
 			if health <= 0:
-				parent.death_time = 3.958
 				parent.state = autoload.state_list.dead
 				print(str(instigator.entity_name) +" has killed " +str(parent.entity_name))
 				if instigator.auto_loot == true:
@@ -424,3 +588,17 @@ func getKilled(instigator)->void:
 						has_got_killed_already = true
 						if instigator.has_method("takeExperience"):
 							instigator.takeExperience(round((max_health * 0.01)+ parent.experience_worth))
+
+
+
+func regenerate()->void:
+	if parent.health >0:
+		if parent.health < parent.max_health:
+			parent.health += 0.01
+		if parent.aefis < parent.max_aefis:
+			parent.aefis += 1
+		if parent.nefis < 	parent.max_nefis:
+			parent.nefis += 1
+		if parent.resolve < parent.resolve:
+			parent.resolve += 0.25
+		
