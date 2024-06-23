@@ -230,7 +230,7 @@ func skillCancel(string:String)->void:
 				if player.taunt_duration == true:
 					player.current_race_gender.tauntCD()
 					player.taunt_duration = false
-			"overhead_slash":
+			"sunder":
 				interruptBackstep()
 				interruptBaseAtk()
 				if player.throw_rock_duration == true:

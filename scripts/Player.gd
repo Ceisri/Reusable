@@ -796,7 +796,7 @@ func skills(slot)-> void:
 								overhead_slash_duration = true
 								is_in_combat = true
 								if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
-									skill_queue.skillCancel("overhead_slash")
+									skill_queue.skillCancel("sunder")
 							else:
 								returnToIdleBasedOnWeaponType()
 								overhead_slash_duration = false
@@ -807,7 +807,7 @@ func skills(slot)-> void:
 						returnToIdleBasedOnWeaponType()
 						overhead_slash_duration = false
 #___________________________________________________________________________________________________
-			elif slot.texture.resource_path == autoload.vanguard_icons["sunder"].get_path():
+			elif slot.texture.resource_path == autoload.vanguard_icons["taunt"].get_path():
 					if taunt_icon.points >0:
 						if all_skills.can_taunt == true:
 							if resolve > all_skills.taunt_cost:
@@ -2094,7 +2094,7 @@ func UniversalToolTip(icon_texture):
 
 		elif icon_texture.get_path() == autoload.weapset1_icons["shield"].get_path():
 			var title:String = "Wood Shield"
-			var stat1:String = "Melee attack speed: " +str(autoload.shield_wood_melee_speed)
+			var stat1:String = "Melee attack speed: " +str(autoload.weapset1_atk_speed["shield"])
 			var stat2:String = "Guard protection: + " + str(autoload.shield_wood_absorb)
 			var stat3:String = "slash/blunt/pierce resistance: + " + str(autoload.shield_wood_general_defense)
 			var description:String = "A very basic shield, yet study and dependable"
@@ -2103,14 +2103,15 @@ func UniversalToolTip(icon_texture):
 			var title:String = "Iron broad sword"
 			var stat1:String = "base damage: "+ "+ " + str(autoload.sword_beginner_dmg)
 			var stat2:String = "Guard protection: + " + str(autoload.sword_beginner_absorb)
+			var stat3:String = "Melee attack speed: " +str(autoload.weapset1_atk_speed["sword"])
 			var description:String = "Looks like something that was produced enmasse, will make do"
-			callToolTipEquip(instance_equipment,title, stat1, stat2, "","","","", "", "",description)
+			callToolTipEquip(instance_equipment,title, stat1, stat2,stat3,"","","", "", "",description)
 
 		elif icon_texture.get_path() == autoload.weapset1_icons["axe"].get_path():
 			var title:String = "Iron axe"
 			var stat1:String = "base damage: "+ "+ " + str(autoload.axe_beginner_dmg)
 			var stat2:String = "Guard protection: + " + str(autoload.axe_beginner_absorb)
-			var stat3:String = "Melee attack speed: " +str(autoload.axe_beginner_melee_speed)
+			var stat3:String = "Melee attack speed: " +str(autoload.weapset1_atk_speed["axe"])
 			var description:String = "A very good tool"
 			callToolTipEquip(instance_equipment,title, stat1, stat2, stat3,"","","", "", "",description)
 
@@ -2239,6 +2240,8 @@ func UniversalToolTip(icon_texture):
 onready var inventory_grid = $UI/GUI/Inventory/ScrollContainer/InventoryGrid
 onready var gui = $UI/GUI
 
+
+
 func setInventoryOwner():
 	for child in inventory_grid.get_children():
 		if child.is_in_group("Inventory"):
@@ -2322,25 +2325,45 @@ func combineSlots():
 	saveSkillBarData()
 	saveInventoryData()
 	var combined_items = {}  # Dictionary to store combined items
+# Define weapon set paths
+	var not_stackable = [
+		autoload.weapset1_icons["sword"].get_path(),
+		autoload.weapset1_icons["axe"].get_path(),
+		autoload.weapset1_icons["demo-hammer"].get_path(),
+		autoload.weapset1_icons["greatmace"].get_path(),
+		autoload.weapset1_icons["warhammer"].get_path(),
+		autoload.weapset1_icons["greataxe"].get_path(),
+		autoload.weapset1_icons["greatsword"].get_path(),
+		autoload.weapset1_icons["shield"].get_path(),
+	]
+	# Iterate over children of the inventory grid
 	for child in inventory_grid.get_children():
 		if child.is_in_group("Inventory"):
 			if child.stackable == true:
 				var icon = child.get_node("Icon")
 				if icon.texture != null:
 					var item_path = icon.texture.get_path()
-					if combined_items.has(item_path):
-						combined_items[item_path] += child.quantity
-						icon.texture = null  # Set texture to null for excess slots
-						child.quantity = 0  # Reset quantity
+					print("Checking item_path:", item_path)
+					# Check if the item_path is not in weapset1_paths
+					if not_stackable.has(item_path) == false:
+						print("Combining item:", item_path)
+						if combined_items.has(item_path):
+							combined_items[item_path] += child.quantity
+							icon.texture = null  # Set texture to null for excess slots
+							child.quantity = 0  # Reset quantity
+						else:
+							combined_items[item_path] = child.quantity
 					else:
-						combined_items[item_path] = child.quantity
+						print("Item is part of weapset1_paths:", item_path)
+
 	# Update quantities based on combined_items
 	for child in inventory_grid.get_children():
 		if child.is_in_group("Inventory"):
 			var icon = child.get_node("Icon")
 			var item_path = icon.texture.get_path() if icon.texture != null else null
-			if item_path in combined_items:
-				child.quantity = combined_items[item_path]
+			if item_path != autoload.weapset1_icons["sword"].get_path() or item_path != autoload.weapset1_icons["axe"].get_path():
+				if item_path in combined_items:
+					child.quantity = combined_items[item_path]
 
 func splitFirstSlot():#Activated by button press
 	savePlayerData()
@@ -2792,40 +2815,16 @@ var feet = autoload.boots_list.set_1
 
 
 
-func noPrimaryWeap():
-	var effects = [
-		"weapset1_sword",
-		"axe_beginner_png",
-		"greatsword_beginner_png",
-		"greataxe_beginner_png",
-
-		"demolition_hammer_beginner_png0",
-		"greatmace_beginner_png0",
-		"warhammer_beginner_png0"
-		# Add other effects as needed
-	]
-	for effect in effects:
-		applyEffect(effect, false)
-func noSecondaryWeap():
-	var effects = [
-		"weapset1_sword2",
-		"axe_beginner_png2",
-		"shield_wood_png",
-
-		# Add other effects as needed
-	]
-	for effect in effects:
-		applyEffect(effect, false)
 func primaryWeapEffect(Chosen):
 	var effects = [
 		"weapset1_sword",
-		"axe_beginner_png",
-		"greatsword_beginner_png",
-		"greataxe_beginner_png",
+		"weapset1_axe",
+		"weapset1_greatsword",
+		"weapset1_greataxe",
 
-		"demolition_hammer_beginner_png0",
-		"greatmace_beginner_png0",
-		"warhammer_beginner_png0"
+		"weapset1_demo-hammer",
+		"weapset1_greatmace",
+		"weapset1_warhammer"
 		# Add other effects as needed
 	]
 	for effect in effects:
@@ -2836,7 +2835,7 @@ func primaryWeapEffect(Chosen):
 func secondaryWeapEffect(Chosen):
 	var effects = [
 		"weapset1_sword2",
-		"axe_beginner_png2",
+		"weapset1_axe2",
 		"shield_wood_png",
 
 		# Add other effects as needed
@@ -2852,12 +2851,12 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 #main weapon____________________________________________________________________
 	if sec_weap_icon.texture == null:
 		sec_weapon = autoload.sec_weap_list.zero
-		noPrimaryWeap()
+		primaryWeapEffect("none")
 	if main_weap_icon != null:
 		if main_weap_icon.texture == null:
 			sec_wea_slot.visible = true
 			main_weapon = autoload.main_weap_list.zero
-			noPrimaryWeap()
+			primaryWeapEffect("none")
 			weapon_type = autoload.weapon_type_list.fist
 		else:
 			if main_weap_icon.texture.get_path() == autoload.weapset1_icons["sword"].get_path():
@@ -2871,16 +2870,15 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 			elif main_weap_icon.texture.get_path() == autoload.weapset1_icons["axe"].get_path():
 				sec_wea_slot.visible = true
 				main_weapon = autoload.main_weap_list.axe_beginner
-				primaryWeapEffect("axe_beginner_png")
+				primaryWeapEffect("weapset1_axe")
 				if sec_weap_icon.texture == null:
 					sec_weapon = autoload.sec_weap_list.zero
 					weapon_type = autoload.weapon_type_list.sword
-				
-
 		
 			elif main_weap_icon.texture.get_path() == autoload.weapset1_icons["greataxe"].get_path():
 					main_weapon =  autoload.main_weap_list.greataxe_beginner
-					noSecondaryWeap()
+					primaryWeapEffect("weapset1_greataxe")
+					secondaryWeapEffect("none")
 					weapon_type = autoload.weapon_type_list.heavy
 					sec_weapon = autoload.sec_weap_list.zero
 					sec_wea_slot.visible = false
@@ -2888,24 +2886,24 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 					
 			elif main_weap_icon.texture.get_path() == autoload.weapset1_icons["greatsword"].get_path():
 					main_weapon =  autoload.main_weap_list.greatsword_beginner
-					primaryWeapEffect("greatsword_beginner_png")
-					noSecondaryWeap()
+					primaryWeapEffect("weapset1_greatsword")
+					secondaryWeapEffect("none")
 					weapon_type = autoload.weapon_type_list.heavy
 					sec_weapon = autoload.sec_weap_list.zero
 					sec_wea_slot.visible = false
 
 			elif main_weap_icon.texture.get_path() == autoload.weapset1_icons["demo-hammer"].get_path():
 					main_weapon =  autoload.main_weap_list.demolition_hammer_beginner
-					primaryWeapEffect("demolition_hammer_beginner_png0")
-					noSecondaryWeap()
+					primaryWeapEffect("weapset1_demo-hammer")
+					secondaryWeapEffect("none")
 					weapon_type = autoload.weapon_type_list.heavy
 					sec_weapon = autoload.sec_weap_list.zero
 					sec_wea_slot.visible = false
 					
 			elif main_weap_icon.texture.get_path() == autoload.weapset1_icons["greatmace"].get_path():
 					main_weapon =  autoload.main_weap_list.greatmace_beginner
-					primaryWeapEffect("greatmace_beginner_png0")
-					noSecondaryWeap()
+					primaryWeapEffect("weapset1_greatmace")
+					secondaryWeapEffect("none")
 					weapon_type = autoload.weapon_type_list.heavy
 					sec_weapon = autoload.sec_weap_list.zero
 					sec_wea_slot.visible = false
@@ -2913,8 +2911,8 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 
 			elif main_weap_icon.texture.get_path() == autoload.weapset1_icons["warhammer"].get_path():
 					main_weapon =  autoload.main_weap_list.warhammer_beginner
-					primaryWeapEffect("warhammer_beginner_png0")
-					noSecondaryWeap()
+					primaryWeapEffect("weapset1_warhammer")
+					secondaryWeapEffect("none")
 					weapon_type = autoload.weapon_type_list.heavy
 					sec_weapon = autoload.sec_weap_list.zero
 					sec_wea_slot.visible = false
@@ -2924,22 +2922,22 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 				sec_wea_slot.visible = true
 				main_weapon = autoload.main_weap_list.zero
 				sec_weapon = autoload.sec_weap_list.zero
-				noPrimaryWeap()
+				primaryWeapEffect("none")
 				weapon_type = autoload.weapon_type_list.fist
 				
 			
 #sec weapon_____________________________________________________________________
 			if sec_weap_icon == null:
 				sec_weapon = autoload.sec_weap_list.zero
-				noSecondaryWeap()
+				secondaryWeapEffect("none")
 			else:
 				if sec_wea_slot.visible == false:
 					sec_weapon = autoload.sec_weap_list.zero
-					noSecondaryWeap()
+					secondaryWeapEffect("none")
 				else:
 					if sec_weap_icon.texture == null:
 						sec_weapon = autoload.sec_weap_list.zero
-						noSecondaryWeap()
+						secondaryWeapEffect("none")
 					else:
 						if sec_weap_icon.texture.get_path() == autoload.weapset1_icons["sword"].get_path():
 							sec_weapon = autoload.sec_weap_list.sword_beginner
@@ -2954,7 +2952,7 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 						
 						elif sec_weap_icon.texture.get_path() == autoload.weapset1_icons["axe"].get_path():
 							sec_weapon = autoload.sec_weap_list.axe_beginner
-							secondaryWeapEffect("axe_beginner_png2")
+							secondaryWeapEffect("weapset1_axe2")
 							weapon_type = autoload.weapon_type_list.dual_swords
 						
 #						elif sec_weap_icon.texture.get_path() == autoload.pickaxe_png.get_path():
@@ -3067,24 +3065,53 @@ var effects = {
 	#equipment effects______________________________________________________________________________
 	#Use thee respective names of item equipment png name in autoload, add a 2 at the end for secondary weapons
 	
-	"weapset1_sword": {"stats": {"extra_dmg": autoload.sword_beginner_dmg,"extra_guard_dmg_absorbition": autoload.sword_beginner_absorb}, "applied": false},
+	"weapset1_sword": {"stats": {"extra_dmg": autoload.sword_beginner_dmg,
+	"extra_guard_dmg_absorbition": autoload.sword_beginner_absorb},
+	"extra_melee_atk_speed":autoload.weapset1_atk_speed["sword"], "applied": false},
 	
-	"weapset1_sword2": {"stats": {"extra_dmg": autoload.sword_beginner_dmg,"extra_guard_dmg_absorbition": autoload.sword_beginner_absorb}, "applied": false},
+	"weapset1_sword2": {"stats": {"extra_dmg": autoload.sword_beginner_dmg,
+	"extra_guard_dmg_absorbition": autoload.sword_beginner_absorb,
+	"extra_melee_atk_speed":autoload.weapset1_atk_speed["sword"]}, "applied": false},
 	
-	"axe_beginner_png": {"stats": {"extra_dmg": autoload.axe_beginner_dmg,"extra_guard_dmg_absorbition": autoload.axe_beginner_absorb,"extra_melee_atk_speed": autoload.axe_beginner_melee_speed}, "applied": false},
-	"axe_beginner_png2": {"stats": {"extra_dmg": autoload.axe_beginner_dmg,"extra_guard_dmg_absorbition": autoload.axe_beginner_absorb,"extra_melee_atk_speed": autoload.axe_beginner_melee_speed}, "applied": false},
-	"greatsword_beginner_png": {"stats": {"extra_dmg": autoload.greatsword_beginner_dmg,"extra_guard_dmg_absorbition": autoload.greatsword_beginner_absorb,"extra_melee_atk_speed": autoload.greatsword_beginner_melee_speed}, "applied": false},
-	"greataxe_beginner_png": {"stats": {"extra_dmg": autoload.greataxe_beginner_dmg,"extra_guard_dmg_absorbition": autoload.greataxe_beginner_absorb,"extra_melee_atk_speed": autoload.greataxe_beginner_melee_speed}, "applied": false},
+	"weapset1_axe": {"stats": {"extra_dmg": autoload.axe_beginner_dmg,
+	"extra_guard_dmg_absorbition": autoload.axe_beginner_absorb,
+	"extra_melee_atk_speed":autoload.weapset1_atk_speed["axe"]}, "applied": false},
+	
+	"weapset1_axe2": {"stats": {"extra_dmg": autoload.axe_beginner_dmg,
+	"extra_guard_dmg_absorbition": autoload.axe_beginner_absorb,
+	"extra_melee_atk_speed":autoload.weapset1_atk_speed["axe"]}, "applied": false},
+	
+	"weapset1_greatsword": {"stats": {"extra_dmg": autoload.greatsword_beginner_dmg,
+	"extra_guard_dmg_absorbition": autoload.greatsword_beginner_absorb,
+	"extra_melee_atk_speed":autoload.weapset1_atk_speed["greatsword"]}, "applied": false},
+	
+	"weapset1_greataxe": {"stats": {"extra_dmg": autoload.greataxe_beginner_dmg,
+	"extra_guard_dmg_absorbition": autoload.greataxe_beginner_absorb,
+	"extra_melee_atk_speed":autoload.weapset1_atk_speed["greataxe"]}, "applied": false},
 	
 	
-	"demolition_hammer_beginner_png0": {"stats": {"extra_dmg": autoload.demolition_hammer_beg_dmg,"extra_guard_dmg_absorbition": autoload.demolition_hammer_beg_absorb,"extra_melee_atk_speed": autoload.demolition_hammer_beg_melee_speed, "extra_impact": autoload.demolition_hammer_beg_impact}, "applied": false},
+	"weapset1_demo-hammer": {"stats": {"extra_dmg": autoload.demolition_hammer_beg_dmg,
+	"extra_guard_dmg_absorbition": autoload.demolition_hammer_beg_absorb,
+	"extra_melee_atk_speed":autoload.weapset1_atk_speed["demo-hammer"],
+	"extra_impact": autoload.demolition_hammer_beg_impact}, "applied": false},
 	
-	"greatmace_beginner_png0": {"stats": {"extra_dmg": autoload.greatmace_beg_dmg,"extra_guard_dmg_absorbition": autoload.greatmace_beg_absorb,"extra_melee_atk_speed": autoload.greatmace_beg_melee_speed, "extra_impact": autoload.greatmace_beg_impact}, "applied": false},
-	"warhammer_beginner_png0": {"stats": {"extra_dmg": autoload.greatmace_beg_dmg,"extra_guard_dmg_absorbition": autoload.greatmace_beg_absorb,"extra_melee_atk_speed": autoload.greatmace_beg_melee_speed, "extra_impact": autoload.greatmace_beg_impact}, "applied": false},
+	"weapset1_greatmace": {"stats": {"extra_dmg": autoload.greatmace_beg_dmg,
+	"extra_guard_dmg_absorbition": autoload.greatmace_beg_absorb,
+	"extra_melee_atk_speed": autoload.weapset1_atk_speed["greatmace"],
+	"extra_impact": autoload.greatmace_beg_impact}, "applied": false},
+	
+	"weapset1_warhammer": {"stats": {"extra_dmg": autoload.greatmace_beg_dmg,
+	"extra_guard_dmg_absorbition": autoload.greatmace_beg_absorb,
+	"extra_melee_atk_speed":autoload.weapset1_atk_speed["warhammer"],
+	"extra_impact": autoload.greatmace_beg_impact}, "applied": false},
 	
 	
 	
-	"shield_wood_png": {"stats": {"extra_guard_dmg_absorbition": autoload.shield_wood_absorb,"extra_melee_atk_speed": autoload.shield_wood_melee_speed,"slash_resistance":autoload.shield_wood_general_defense,"blunt_resistance":autoload.shield_wood_general_defense,"pierce_resistance": autoload.shield_wood_general_defense,}, "applied": false},
+	"shield_wood_png": {"stats": {"extra_guard_dmg_absorbition": autoload.shield_wood_absorb,
+	"extra_melee_atk_speed":autoload.weapset1_atk_speed["shield"],
+	"slash_resistance":autoload.shield_wood_general_defense,
+	"blunt_resistance":autoload.shield_wood_general_defense,
+	"pierce_resistance": autoload.shield_wood_general_defense,}, "applied": false},
 
 
 
