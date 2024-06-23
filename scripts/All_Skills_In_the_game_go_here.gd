@@ -25,32 +25,8 @@ func updateCooldownLabel() -> void:
 	var current_time = OS.get_ticks_msec() / 1000.0
 	for child in $"../SkillBar/GridContainer".get_children():
 		var icon = child.get_node("Icon")
-		if icon != null and icon.texture != null and icon.texture.resource_path == autoload.summon_shadow.get_path():
-			var label: Label = child.get_node("CD")
-			if label != null:
-				updateLabel(label,summon_cooldown, current_time,summon_cooldown)
-		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.dominion.get_path():
-			var label: Label = child.get_node("CD")
-			if label != null:
-				updateLabel(label,switch_cooldown, current_time,last_switch_time)
-		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.tribute.get_path():
-			var label: Label = child.get_node("CD")
-			if label != null:
-				updateLabel(label,tribute_cooldown, current_time,last_tribute_time)
-		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.servitude.get_path():
-			var label: Label = child.get_node("CD")
-			if label != null:
-				updateLabel(label,spell_cooldown, current_time,last_spell_time)
-		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.arcane_blast.get_path():
-			var label: Label = child.get_node("CD")
-			if label != null:
-				 updateLabel(label, arcane_blast_cooldown, current_time, last_arcane_blast_time)
-		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.necromant_switch.get_path():
-			var label: Label = child.get_node("CD")
-			if label != null:
-				 updateLabel(label,necro_switch_cooldown, current_time, last_necro_switch_time)
 #______________________________________________Dash  cooldowns_____________________________________
-		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.dash.get_path():
+		if icon != null and icon.texture != null and icon.texture.resource_path == autoload.dash.get_path():
 			var label: Label = child.get_node("CD")
 			if label != null:
 				 updateDash(label,dash_cooldown, current_time,last_dash_time)
@@ -65,31 +41,31 @@ func updateCooldownLabel() -> void:
 			if label != null:
 				 updateBackstep(label,backstep_cooldown,current_time,last_backstep_time)
 #___________________________________________Overhead and rising slash cooldowns_________________
-		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.overhead_slash.get_path():
+		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.vanguard_icons["sunder"].get_path():
 			var label: Label = child.get_node("CD")
 			if label != null:
 				 updateOverheadSlash(label,overhead_slash_cooldown, current_time,last_overhead_slash_time)
-		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.rising_slash.get_path():
+		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.vanguard_icons["rising_slash"].get_path():
 			var label: Label = child.get_node("CD")
 			if label != null:
 				 updateRising(label,rising_slash_cooldown, current_time,last_rising_slash_time)
 #__________________________________________________Cyclone__________________________________________
-		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.cyclone.get_path():
+		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.vanguard_icons["cyclone"].get_path():
 			var label: Label = child.get_node("CD")
 			if label != null:
 				 updateLabelCyclone(label,cyclone_cooldown, current_time,last_cyclone_time)
 #___________________________________1_______________Whirlwind________________________________________
-		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.whirlwind.get_path():
+		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.vanguard_icons["whirlwind"].get_path():
 			var label: Label = child.get_node("CD")
 			if label != null:
 				 updateWhirlwind(label,whirlwind_cooldown, current_time,last_whirlwind_time)
 #__________________________________________________Heart Trust______________________________________
-		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.heart_trust.get_path():
+		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.vanguard_icons["heart_trust"].get_path():
 			var label: Label = child.get_node("CD")
 			if label != null:
 				 updateHeartTrust(label,heart_trust_cooldown, current_time,last_heart_trust_time)
 #__________________________________________________Taunt____________________________________________
-		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.taunt.get_path():
+		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.vanguard_icons["taunt"].get_path():
 			var label: Label = child.get_node("CD")
 			if label != null:
 				 updateTaunt(label,taunt_cooldown, current_time,last_taunt_time)
@@ -103,9 +79,6 @@ func updateCooldownLabel() -> void:
 			var label: Label = child.get_node("CD")
 			if label != null:
 				 updateKick(label,kick_cooldown,current_time,last_kick_time)
-				
-				
-				
 				
 				
 		

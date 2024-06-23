@@ -110,10 +110,15 @@ func _physics_process(delta: float) -> void:
 	experience_points += 999999
 
 	all_skills.updateCooldownLabel()
+	var weapon_enum =  autoload.weapon_type_list
+	var weapon_value = weapon_type
+	var weapon_name = weapon_enum.keys()[weapon_value]
+	
 	var state_enum = autoload.state_list  # Access the enum from the singleton
 	var state_value = state  # Get the current state value
 	var state_name = state_enum.keys()[state_value]  # Convert enum to string
-	$Debug.text = state_name  # Assuming $Debug is a reference to a Label node
+	$Debug.text = "state: " + state_name + "\n" + "weapon type: " + weapon_name
+	
 	convertStats()
 	limitStatsToMaximum()
 	cameraRotation()
@@ -192,6 +197,7 @@ var state = autoload.state_list.idle
 
 func behaviourTree()-> void:
 	if health < 0: 
+		is_in_combat = false
 		skill_queue.getInterrupted()
 		clearParryAbsorb()
 		stopBeingParlized()
@@ -444,7 +450,7 @@ func activeActions()->void:
 		moveDuringAnimation(0)
 		
 	elif base_atk_duration == true:
-		var compensation_speed = 0.05 #extra attack seed to compensate having to click multiple times 
+		var compensation_speed =0 #extra attack seed to compensate having to click multiple times 
 		match weapon_type:
 			autoload.weapon_type_list.fist:
 				animation.play("fist click1",blend,melee_atk_speed+compensation_speed)
@@ -465,24 +471,24 @@ func activeActions()->void:
 				moveDuringAnimation(1.75)
 
 	elif base_atk2_duration == true:
-		var compensation_speed = 0.05 #extra attack seed to compensate having to click multiple times 
+
 		match weapon_type:
 			autoload.weapon_type_list.fist:
-				animation.play("fist click2",0,melee_atk_speed+compensation_speed)
+				animation.play("fist click2",blend,melee_atk_speed)
 				moveDuringAnimation(2)
 			autoload.weapon_type_list.bow: 
 				pass
 			autoload.weapon_type_list.sword:
-				animation.play("sword click2",0, melee_atk_speed + compensation_speed)
+				animation.play("sword click2",blend, melee_atk_speed )
 				moveDuringAnimation(2)
 			autoload.weapon_type_list.sword_shield:
-				animation.play("sword click2",0, melee_atk_speed +compensation_speed)
+				animation.play("sword click2",blend, melee_atk_speed )
 				moveDuringAnimation(2)
 			autoload.weapon_type_list.dual_swords:
-				animation.play("dual click2",0, melee_atk_speed +compensation_speed)
+				animation.play("dual click2",blend, melee_atk_speed)
 				moveDuringAnimation(2.7)
 			autoload.weapon_type_list.heavy:
-				animation.play("heavy click2",0, melee_atk_speed +compensation_speed)
+				animation.play("heavy click2",blend, melee_atk_speed )
 				moveDuringAnimation(1.75)
 
 		
@@ -706,15 +712,15 @@ func skills(slot)-> void:
 #_________________________________________Kick______________________________________________________
 			elif slot.texture.resource_path == autoload.kick.get_path():
 				if all_skills.can_kick == false:
-					if resolve > all_skills.kick_cost:
-						kick_duration = false
-						returnToIdleBasedOnWeaponType()
+					kick_duration = false
+					returnToIdleBasedOnWeaponType()
 				else:
 					if kick_icon.points >0:
-						kick_duration = true
-						is_in_combat = true
-						switchToCombatStance()
-						skill_queue.skillCancel("kick")
+						if resolve > all_skills.kick_cost:
+							kick_duration = true
+							is_in_combat = true
+							switchToCombatStance()
+							skill_queue.skillCancel("kick")
 							
 #________________________________________THROW ROCKS________________________________________________
 			elif slot.texture.resource_path == autoload.throw_rock.get_path():
@@ -729,7 +735,7 @@ func skills(slot)-> void:
 					moveDuringAnimation(0)
 					animation.play("throw rock",blend,range_atk_speed + 0.15)
 #sword
-			elif slot.texture.resource_path == autoload.slash_sword.get_path():
+			elif slot.texture.resource_path == autoload.vanguard_icons["base_atk"].get_path():
 				if hold_to_base_atk == true:
 					directionToCamera()
 					match weapon_type:
@@ -747,10 +753,10 @@ func skills(slot)-> void:
 							moveDuringAnimation(1.75)
 				else:
 					base_atk_duration = true
-			elif slot.texture.resource_path == autoload.slash_sword2.get_path():
+			elif slot.texture.resource_path == autoload.vanguard_icons["base_atk2"].get_path():
 				if hold_to_base_atk == false:
 					base_atk2_duration = true
-			elif slot.texture.resource_path == autoload.guard_sword.get_path():
+			elif slot.texture.resource_path == autoload.vanguard_icons["guard_sword"].get_path():
 				if resolve > 0:
 					is_walking = false
 					can_walk = false
@@ -762,7 +768,7 @@ func skills(slot)-> void:
 						animation.play("sword block",blend)
 				else:
 					returnToIdleBasedOnWeaponType()
-			elif slot.texture.resource_path == autoload.block_shield.get_path():
+			elif slot.texture.resource_path == autoload.vanguard_icons["guard_shield"].get_path():
 				if resolve > 0:
 					is_walking = false
 					can_walk = false
@@ -782,7 +788,7 @@ func skills(slot)-> void:
 
 #melee weapon skills
 #__________________________________________  overhead slash    _____________________________________
-			elif slot.texture.resource_path == autoload.overhead_slash.get_path():
+			elif slot.texture.resource_path == autoload.vanguard_icons["sunder"].get_path():
 				if overhead_icon.points >0:
 					if all_skills.can_overhead_slash == true:
 						if resolve > all_skills.overhead_slash_cost:
@@ -801,7 +807,7 @@ func skills(slot)-> void:
 						returnToIdleBasedOnWeaponType()
 						overhead_slash_duration = false
 #___________________________________________________________________________________________________
-			elif slot.texture.resource_path == autoload.taunt.get_path():
+			elif slot.texture.resource_path == autoload.vanguard_icons["sunder"].get_path():
 					if taunt_icon.points >0:
 						if all_skills.can_taunt == true:
 							if resolve > all_skills.taunt_cost:
@@ -821,7 +827,7 @@ func skills(slot)-> void:
 						returnToIdleBasedOnWeaponType()
 						taunt_duration = false
 #_________________________________________ rising slash ____________________________________________
-			elif slot.texture.resource_path == autoload.rising_slash.get_path():
+			elif slot.texture.resource_path == autoload.vanguard_icons["rising_slash"].get_path():
 					if rising_icon.points >0:
 						if all_skills.can_rising_slash == true:
 							if resolve > all_skills.rising_slash_cost:
@@ -842,7 +848,7 @@ func skills(slot)-> void:
 						returnToIdleBasedOnWeaponType()
 						rising_slash_duration = false
 #_________________________________________  cyclone   ______________________________________________
-			elif slot.texture.resource_path == autoload.cyclone.get_path():
+			elif slot.texture.resource_path == autoload.vanguard_icons["cyclone"].get_path():
 					if cyclone_icon.points >0 :
 						if all_skills.can_cyclone == true:
 							if resolve > all_skills.cyclone_cost:
@@ -861,7 +867,7 @@ func skills(slot)-> void:
 						returnToIdleBasedOnWeaponType()
 						cyclone_duration = false
 #__________________________________________ Whirlwind _____________________________________________
-			elif slot.texture.resource_path == autoload.whirlwind.get_path():
+			elif slot.texture.resource_path == autoload.vanguard_icons["whirlwind"].get_path():
 					if whirlwind_icon.points >0 :
 						if all_skills.can_whirlwind == true:
 							if resolve > all_skills.whirlwind_cost:
@@ -880,7 +886,7 @@ func skills(slot)-> void:
 						returnToIdleBasedOnWeaponType()
 						whirlwind_duration = false
 #__________________________________________ Heart Trust ____________________________________________
-			elif slot.texture.resource_path == autoload.heart_trust.get_path():
+			elif slot.texture.resource_path == autoload.vanguard_icons["heart_trust"].get_path():
 					if heart_trust_icon.points >0 :
 						if all_skills.can_heart_trust == true:
 							if resolve > all_skills.heart_trust_cost:
@@ -905,14 +911,7 @@ func skills(slot)-> void:
 					can_walk = false
 					current_race_gender.can_move = false
 					animation.play("full draw",0.3,range_atk_speed)
-			elif slot.texture.resource_path == autoload.base_attack_necromant.get_path():
-				all_skills.baseAttack() # placeholder
-			elif slot.texture.resource_path == autoload.necro_guard.get_path():
-				pass #necromance guard placeholder
-			elif slot.texture.resource_path == autoload.necromant_switch.get_path():
-				all_skills.switchStance()# different stances or weapons switches base attacks
-				l_click_slot.switchAttackIcon()
-				r_click_slot.switchAttackIcon()
+
 #consumables________________________________________________________________________________________
 			elif slot.texture.resource_path == autoload.red_potion.get_path():
 				slot.get_parent().displayQuantity()
@@ -1785,6 +1784,7 @@ func skillUserInterfaceInputs():
 		saveGame()
 		is_in_combat = !is_in_combat
 		switchToCombatStance()
+		skill_queue.getInterrupted()
 
 		
 	elif Input.is_action_just_pressed("mousemode") or Input.is_action_just_pressed("ui_cancel"):	# Toggle mouse mode
@@ -1987,7 +1987,7 @@ func _on_SkillTree1_pressed():
 
 #skills in skills-tree
 onready var all_skills = $UI/GUI/SkillTrees
-onready var kick_icon = $UI/GUI/SkillTrees/Background/Generalist/skill1
+onready var kick_icon = $UI/GUI/SkillTrees/Background/Generalist/skill1/Icon
 onready var taunt_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill6/Icon
 onready var cyclone_icon =$UI/GUI/SkillTrees/Background/Vanguard/skill5/Icon
 onready var overhead_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill2/Icon
@@ -2092,21 +2092,21 @@ func UniversalToolTip(icon_texture):
 			#equipment icons
 #__________________________________EQUIPMENT DESCRIPTIONS HERE______________________________________
 
-		elif icon_texture.get_path() == autoload.shield_wood_png.get_path():
+		elif icon_texture.get_path() == autoload.weapset1_icons["shield"].get_path():
 			var title:String = "Wood Shield"
 			var stat1:String = "Melee attack speed: " +str(autoload.shield_wood_melee_speed)
 			var stat2:String = "Guard protection: + " + str(autoload.shield_wood_absorb)
 			var stat3:String = "slash/blunt/pierce resistance: + " + str(autoload.shield_wood_general_defense)
 			var description:String = "A very basic shield, yet study and dependable"
 			callToolTipEquip(instance_equipment,title, stat1, stat2, stat3,"","","", "", "",description)
-		elif icon_texture.get_path() == autoload.sword_beginner_png.get_path():
+		elif icon_texture.get_path() == autoload.weapset1_icons["sword"].get_path():
 			var title:String = "Iron broad sword"
 			var stat1:String = "base damage: "+ "+ " + str(autoload.sword_beginner_dmg)
 			var stat2:String = "Guard protection: + " + str(autoload.sword_beginner_absorb)
 			var description:String = "Looks like something that was produced enmasse, will make do"
 			callToolTipEquip(instance_equipment,title, stat1, stat2, "","","","", "", "",description)
 
-		elif icon_texture.get_path() == autoload.axe_beginner_png.get_path():
+		elif icon_texture.get_path() == autoload.weapset1_icons["axe"].get_path():
 			var title:String = "Iron axe"
 			var stat1:String = "base damage: "+ "+ " + str(autoload.axe_beginner_dmg)
 			var stat2:String = "Guard protection: + " + str(autoload.axe_beginner_absorb)
@@ -2116,7 +2116,7 @@ func UniversalToolTip(icon_texture):
 
 
 #______________________________________SKILL DESCRIPTIONS HERE______________________________________
-		elif icon_texture.get_path() == autoload.cyclone.get_path():
+		elif icon_texture.get_path() == autoload.vanguard_icons["cyclone"].get_path():
 			var base_damage: float = all_skills.cyclone_damage + total_dmg
 			var points: int = cyclone_icon.points
 			var damage_multiplier: float = 1.0
@@ -2132,7 +2132,7 @@ func UniversalToolTip(icon_texture):
 			callToolTipSegmented(instance_skills,"cyclone",total_value,cost,extra,cooldown,description)
 	
 	
-		elif icon_texture.get_path() == autoload.whirlwind.get_path():
+		elif icon_texture.get_path() == autoload.vanguard_icons["whirlwind"].get_path():
 			var base_damage: float = all_skills.whirlwind_damage + total_dmg
 			var points: int =  whirlwind_icon.points
 			var health_ratio: float = float(health) / float(max_health)
@@ -2153,7 +2153,7 @@ func UniversalToolTip(icon_texture):
 			callToolTipSegmented(instance_skills,"Desperate Slash",total_value,cost,extra,cooldown,description)
 		
 
-		elif icon_texture.get_path() == autoload.overhead_slash.get_path():
+		elif icon_texture.get_path() == autoload.vanguard_icons["sunder"].get_path():
 			var base_damage: float = all_skills.overhead_slash_damage + total_dmg
 			var points: int = overhead_icon.points
 			var damage_multiplier: float = 1.0
@@ -2166,9 +2166,9 @@ func UniversalToolTip(icon_texture):
 			var description: String = all_skills.overhead_slash_description
 			var cooldown = str("Cooldown: ") + str(all_skills.overhead_slash_cooldown)+ str(" seconds")
 			var extra:String = "Damage"
-			callToolTipSegmented(instance_skills,"Overhead Slash",total_value,cost,extra,cooldown,description)
+			callToolTipSegmented(instance_skills,"Sunder",total_value,cost,extra,cooldown,description)
 		
-		elif icon_texture.get_path() == autoload.rising_slash.get_path():
+		elif icon_texture.get_path() == autoload.vanguard_icons["rising_slash"].get_path():
 			var base_damage: float = all_skills.rising_slash_damage + total_dmg
 			var points: int = rising_icon.points
 			var damage_multiplier: float = 1.0
@@ -2184,7 +2184,7 @@ func UniversalToolTip(icon_texture):
 			callToolTipSegmented(instance_skills,"Rising Slash",total_value,cost,extra,cooldown,description)
 		
 		
-		elif icon_texture.get_path() == autoload.heart_trust.get_path():
+		elif icon_texture.get_path() == autoload.vanguard_icons["heart_trust"].get_path():
 			var base_damage: float = all_skills.heart_trust_dmg + total_dmg
 			var points: int = heart_trust_icon.points
 			var damage_multiplier: float = 1.0
@@ -2523,25 +2523,36 @@ func receiveDrops(item,quantity)->void:#This is called by enemeis when they die 
 	autoload.addFloatingIcon(take_damage_view,item,quantity)
 	
 
-func _on_GiveMeItems_pressed():
+func _on_GiveMeItems_pressed():#Only for debugging purposes
 	coins += 550
 
 	autoload.addStackableItem(inventory_grid,autoload.red_potion,50000)
 
-	autoload.addNotStackableItem(inventory_grid,autoload.sword_beginner_png)
+	autoload.addNotStackableItem(inventory_grid,autoload.weapset1_icons["sword"])
+	autoload.addNotStackableItem(inventory_grid,autoload.weapset1_icons["axe"])
+	autoload.addNotStackableItem(inventory_grid,autoload.weapset1_icons["greataxe"])
+	autoload.addNotStackableItem(inventory_grid,autoload.weapset1_icons["shield"])
+	autoload.addNotStackableItem(inventory_grid,autoload.weapset1_icons["greatsword"])
+	autoload.addNotStackableItem(inventory_grid,autoload.weapset1_icons["demo-hammer"])
+	autoload.addNotStackableItem(inventory_grid,autoload.weapset1_icons["greatmace"])
+	autoload.addNotStackableItem(inventory_grid,autoload.weapset1_icons["warhammer"])
+	
 	autoload.addNotStackableItem(inventory_grid,autoload.garment1)
 	autoload.addNotStackableItem(inventory_grid,autoload.boots1)
-	autoload.addNotStackableItem(inventory_grid,autoload.boots2)
+
 	autoload.addNotStackableItem(inventory_grid,autoload.torso_armor4)
 	autoload.addNotStackableItem(inventory_grid,autoload.torso_armor2)
 	autoload.addNotStackableItem(inventory_grid,autoload.torso_armor3)
 
-	autoload.addNotStackableItem(inventory_grid,autoload.axe_beginner_png)
-	autoload.addNotStackableItem(inventory_grid,autoload.pickaxe_png)
-	autoload.addNotStackableItem(inventory_grid,autoload.waraxe_beginner_png)
-	autoload.addNotStackableItem(inventory_grid,autoload.shield_wood_png)
-	autoload.addNotStackableItem(inventory_grid,autoload.greatsword_beginner_png)
-	autoload.addNotStackableItem(inventory_grid,autoload.beginner_demolition_hammer_png0)
+	
+
+
+	
+	
+	
+	
+	
+	
 	
 	
 #_____________________________________Currency______________________________________________________
@@ -2689,58 +2700,74 @@ func connectEquipment()->void:
 func equipmentBackgroundMouseEntered()->void:
 	gearUp()
 	deleteTooltip()
+	SwitchEquipmentBasedOnEquipmentIcons()
 func equipmentBackgroundMouseExited()->void:
 	gearUp()
 	deleteTooltip()
+	SwitchEquipmentBasedOnEquipmentIcons()
 #___________________________________________________________________________________________________
 func mainWeapMouseEntered()->void:
 	gearUp()
 	UniversalToolTip(main_weap_icon.texture)
+	SwitchEquipmentBasedOnEquipmentIcons()
 func mainWeapMouseExited()->void:
 	gearUp()
 	deleteTooltip()
+	SwitchEquipmentBasedOnEquipmentIcons()
 #___________________________________________________________________________________________________
 func secWeapMouseEntered()->void:
 	gearUp()
 	UniversalToolTip(sec_weap_icon.texture)
+	SwitchEquipmentBasedOnEquipmentIcons()
 func secWeapMouseExited():
 	gearUp()
 	deleteTooltip()
+	SwitchEquipmentBasedOnEquipmentIcons()
 #___________________________________________________________________________________________________
 func legsMouseEntered():
 	gearUp()
 	UniversalToolTip(legs_icon.texture)
+	SwitchEquipmentBasedOnEquipmentIcons()
 func legsMouseExited():
 	gearUp()
-	deleteTooltip()	
+	deleteTooltip()
+	SwitchEquipmentBasedOnEquipmentIcons()
 #___________________________________________________________________________________________________
 func chestMouseEntered():
 	gearUp()
 	UniversalToolTip(chest_icon.texture)
+	SwitchEquipmentBasedOnEquipmentIcons()
 func chestMouseExited():
 	gearUp()
-	deleteTooltip()	
+	deleteTooltip()
+	SwitchEquipmentBasedOnEquipmentIcons()
 #___________________________________________________________________________________________________
 func feetMouseEntered():
 	gearUp()
 	UniversalToolTip(feet_icon.texture)
+	SwitchEquipmentBasedOnEquipmentIcons()
 func feetMouseExited():
 	gearUp()
-	deleteTooltip()	
+	deleteTooltip()
+	SwitchEquipmentBasedOnEquipmentIcons()
 #___________________________________________________________________________________________________
 func helmMouseEntered():
 	gearUp()
 	UniversalToolTip(helm_icon.texture)
+	SwitchEquipmentBasedOnEquipmentIcons()
 func helmMouseExited():
 	gearUp()
-	deleteTooltip()	
+	deleteTooltip()
+	SwitchEquipmentBasedOnEquipmentIcons()
 #___________________________________________________________________________________________________
 func gloveMouseEntered():
 	gearUp()
 	UniversalToolTip(glove_icon.texture)
+	SwitchEquipmentBasedOnEquipmentIcons()
 func gloveMouseExited():
 	gearUp()
-	deleteTooltip()	
+	deleteTooltip()
+	SwitchEquipmentBasedOnEquipmentIcons()
 	
 
 	
@@ -2767,34 +2794,38 @@ var feet = autoload.boots_list.set_1
 
 func noPrimaryWeap():
 	var effects = [
-		"sword_beginner_png",
+		"weapset1_sword",
 		"axe_beginner_png",
 		"greatsword_beginner_png",
-		"waraxe_beginner_png",
-		"pickaxe_png",
-		"beginner_demolition_hammer_png0"
+		"greataxe_beginner_png",
+
+		"demolition_hammer_beginner_png0",
+		"greatmace_beginner_png0",
+		"warhammer_beginner_png0"
 		# Add other effects as needed
 	]
 	for effect in effects:
 		applyEffect(effect, false)
 func noSecondaryWeap():
 	var effects = [
-		"sword_beginner_png2",
+		"weapset1_sword2",
 		"axe_beginner_png2",
 		"shield_wood_png",
-		"pickaxe_png"
+
 		# Add other effects as needed
 	]
 	for effect in effects:
 		applyEffect(effect, false)
 func primaryWeapEffect(Chosen):
 	var effects = [
-		"sword_beginner_png",
+		"weapset1_sword",
 		"axe_beginner_png",
 		"greatsword_beginner_png",
-		"waraxe_beginner_png",
-		"pickaxe_png",
-		"beginner_demolition_hammer_png0"
+		"greataxe_beginner_png",
+
+		"demolition_hammer_beginner_png0",
+		"greatmace_beginner_png0",
+		"warhammer_beginner_png0"
 		# Add other effects as needed
 	]
 	for effect in effects:
@@ -2804,10 +2835,10 @@ func primaryWeapEffect(Chosen):
 	applyEffect(Chosen, true)
 func secondaryWeapEffect(Chosen):
 	var effects = [
-		"sword_beginner_png2",
+		"weapset1_sword2",
 		"axe_beginner_png2",
 		"shield_wood_png",
-		"pickaxe_png2"
+
 		# Add other effects as needed
 	]
 	for effect in effects:
@@ -2829,15 +2860,15 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 			noPrimaryWeap()
 			weapon_type = autoload.weapon_type_list.fist
 		else:
-			if main_weap_icon.texture.get_path() == autoload.sword_beginner_png.get_path():
+			if main_weap_icon.texture.get_path() == autoload.weapset1_icons["sword"].get_path():
 				sec_wea_slot.visible = true
 				main_weapon = autoload.main_weap_list.sword_beginner
-				primaryWeapEffect("sword_beginner_png")
+				primaryWeapEffect("weapset1_sword")
 				if sec_weap_icon.texture == null:
 					sec_weapon = autoload.sec_weap_list.zero
 					weapon_type = autoload.weapon_type_list.sword
 			
-			elif main_weap_icon.texture.get_path() == autoload.axe_beginner_png.get_path():
+			elif main_weap_icon.texture.get_path() == autoload.weapset1_icons["axe"].get_path():
 				sec_wea_slot.visible = true
 				main_weapon = autoload.main_weap_list.axe_beginner
 				primaryWeapEffect("axe_beginner_png")
@@ -2845,22 +2876,17 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 					sec_weapon = autoload.sec_weap_list.zero
 					weapon_type = autoload.weapon_type_list.sword
 				
-			elif main_weap_icon.texture.get_path() == autoload.pickaxe_png.get_path():
-				sec_wea_slot.visible = true
-				main_weapon = autoload.main_weap_list.pick_beginner
-				if sec_weap_icon.texture == null:
-					sec_weapon = autoload.sec_weap_list.zero
-					weapon_type = autoload.weapon_type_list.sword
+
 		
-			elif main_weap_icon.texture.get_path() == autoload.waraxe_beginner_png .get_path():
-					main_weapon =  autoload.main_weap_list.waraxe_beginner
+			elif main_weap_icon.texture.get_path() == autoload.weapset1_icons["greataxe"].get_path():
+					main_weapon =  autoload.main_weap_list.greataxe_beginner
 					noSecondaryWeap()
 					weapon_type = autoload.weapon_type_list.heavy
 					sec_weapon = autoload.sec_weap_list.zero
 					sec_wea_slot.visible = false
 
 					
-			elif main_weap_icon.texture.get_path() == autoload.greatsword_beginner_png.get_path():
+			elif main_weap_icon.texture.get_path() == autoload.weapset1_icons["greatsword"].get_path():
 					main_weapon =  autoload.main_weap_list.greatsword_beginner
 					primaryWeapEffect("greatsword_beginner_png")
 					noSecondaryWeap()
@@ -2868,13 +2894,31 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 					sec_weapon = autoload.sec_weap_list.zero
 					sec_wea_slot.visible = false
 
-			elif main_weap_icon.texture.get_path() == autoload.beginner_demolition_hammer_png0.get_path():
+			elif main_weap_icon.texture.get_path() == autoload.weapset1_icons["demo-hammer"].get_path():
 					main_weapon =  autoload.main_weap_list.demolition_hammer_beginner
-					primaryWeapEffect("beginner_demolition_hammer_png0")
+					primaryWeapEffect("demolition_hammer_beginner_png0")
 					noSecondaryWeap()
 					weapon_type = autoload.weapon_type_list.heavy
 					sec_weapon = autoload.sec_weap_list.zero
 					sec_wea_slot.visible = false
+					
+			elif main_weap_icon.texture.get_path() == autoload.weapset1_icons["greatmace"].get_path():
+					main_weapon =  autoload.main_weap_list.greatmace_beginner
+					primaryWeapEffect("greatmace_beginner_png0")
+					noSecondaryWeap()
+					weapon_type = autoload.weapon_type_list.heavy
+					sec_weapon = autoload.sec_weap_list.zero
+					sec_wea_slot.visible = false
+
+
+			elif main_weap_icon.texture.get_path() == autoload.weapset1_icons["warhammer"].get_path():
+					main_weapon =  autoload.main_weap_list.warhammer_beginner
+					primaryWeapEffect("warhammer_beginner_png0")
+					noSecondaryWeap()
+					weapon_type = autoload.weapon_type_list.heavy
+					sec_weapon = autoload.sec_weap_list.zero
+					sec_wea_slot.visible = false
+
 
 			else:
 				sec_wea_slot.visible = true
@@ -2897,28 +2941,28 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 						sec_weapon = autoload.sec_weap_list.zero
 						noSecondaryWeap()
 					else:
-						if sec_weap_icon.texture.get_path() == autoload.sword_beginner_png.get_path():
+						if sec_weap_icon.texture.get_path() == autoload.weapset1_icons["sword"].get_path():
 							sec_weapon = autoload.sec_weap_list.sword_beginner
-							secondaryWeapEffect("sword_beginner_png2")
+							secondaryWeapEffect("weapset1_sword2")
 							weapon_type = autoload.weapon_type_list.dual_swords
 					
-						elif sec_weap_icon.texture.get_path() == autoload.shield_wood_png.get_path():
+						elif sec_weap_icon.texture.get_path() == autoload.weapset1_icons["shield"].get_path():
 							sec_weapon = autoload.sec_weap_list.shield_beginner
 							secondaryWeapEffect("shield_wood_png")
 							weapon_type = autoload.weapon_type_list.sword_shield
 							
 						
-						elif sec_weap_icon.texture.get_path() == autoload.axe_beginner_png.get_path():
+						elif sec_weap_icon.texture.get_path() == autoload.weapset1_icons["axe"].get_path():
 							sec_weapon = autoload.sec_weap_list.axe_beginner
 							secondaryWeapEffect("axe_beginner_png2")
 							weapon_type = autoload.weapon_type_list.dual_swords
 						
-						elif sec_weap_icon.texture.get_path() == autoload.pickaxe_png.get_path():
-							sec_weapon = autoload.sec_weap_list.pick_beginner
-							weapon_type = autoload.weapon_type_list.dual_swords
-						else:
-							sec_weapon = autoload.sec_weap_list.zero
-							noSecondaryWeap()
+#						elif sec_weap_icon.texture.get_path() == autoload.pickaxe_png.get_path():
+#							sec_weapon = autoload.sec_weap_list.pick_beginner
+#							weapon_type = autoload.weapon_type_list.dual_swords
+#						else:
+#							sec_weapon = autoload.sec_weap_list.zero
+#							noSecondaryWeap()
 
 
 #head___________________________________________________________________________
@@ -3023,21 +3067,24 @@ var effects = {
 	#equipment effects______________________________________________________________________________
 	#Use thee respective names of item equipment png name in autoload, add a 2 at the end for secondary weapons
 	
-	"sword_beginner_png": {"stats": {"extra_dmg": autoload.sword_beginner_dmg,"extra_guard_dmg_absorbition": autoload.sword_beginner_absorb}, "applied": false},
-	"sword_beginner_png2": {"stats": {"extra_dmg": autoload.sword_beginner_dmg,"extra_guard_dmg_absorbition": autoload.sword_beginner_absorb}, "applied": false},
+	"weapset1_sword": {"stats": {"extra_dmg": autoload.sword_beginner_dmg,"extra_guard_dmg_absorbition": autoload.sword_beginner_absorb}, "applied": false},
+	
+	"weapset1_sword2": {"stats": {"extra_dmg": autoload.sword_beginner_dmg,"extra_guard_dmg_absorbition": autoload.sword_beginner_absorb}, "applied": false},
+	
 	"axe_beginner_png": {"stats": {"extra_dmg": autoload.axe_beginner_dmg,"extra_guard_dmg_absorbition": autoload.axe_beginner_absorb,"extra_melee_atk_speed": autoload.axe_beginner_melee_speed}, "applied": false},
 	"axe_beginner_png2": {"stats": {"extra_dmg": autoload.axe_beginner_dmg,"extra_guard_dmg_absorbition": autoload.axe_beginner_absorb,"extra_melee_atk_speed": autoload.axe_beginner_melee_speed}, "applied": false},
 	"greatsword_beginner_png": {"stats": {"extra_dmg": autoload.greatsword_beginner_dmg,"extra_guard_dmg_absorbition": autoload.greatsword_beginner_absorb,"extra_melee_atk_speed": autoload.greatsword_beginner_melee_speed}, "applied": false},
-	"waraxe_beginner_png": {"stats": {"extra_dmg": autoload.waraxe_beginner_dmg,"extra_guard_dmg_absorbition": autoload.waraxe_beginner_absorb,"extra_melee_atk_speed": autoload.waraxe_beginner_melee_speed}, "applied": false},
+	"greataxe_beginner_png": {"stats": {"extra_dmg": autoload.greataxe_beginner_dmg,"extra_guard_dmg_absorbition": autoload.greataxe_beginner_absorb,"extra_melee_atk_speed": autoload.greataxe_beginner_melee_speed}, "applied": false},
 	
 	
-	"beginner_demolition_hammer_png0": {"stats": {"extra_dmg": autoload.demolition_hammer_beg_dmg,"extra_guard_dmg_absorbition": autoload.demolition_hammer_beg_absorb,"extra_melee_atk_speed": autoload.demolition_hammer_beg_melee_speed, "extra_impact": autoload.demolition_hammer_beg_impact}, "applied": false},
+	"demolition_hammer_beginner_png0": {"stats": {"extra_dmg": autoload.demolition_hammer_beg_dmg,"extra_guard_dmg_absorbition": autoload.demolition_hammer_beg_absorb,"extra_melee_atk_speed": autoload.demolition_hammer_beg_melee_speed, "extra_impact": autoload.demolition_hammer_beg_impact}, "applied": false},
+	
+	"greatmace_beginner_png0": {"stats": {"extra_dmg": autoload.greatmace_beg_dmg,"extra_guard_dmg_absorbition": autoload.greatmace_beg_absorb,"extra_melee_atk_speed": autoload.greatmace_beg_melee_speed, "extra_impact": autoload.greatmace_beg_impact}, "applied": false},
+	"warhammer_beginner_png0": {"stats": {"extra_dmg": autoload.greatmace_beg_dmg,"extra_guard_dmg_absorbition": autoload.greatmace_beg_absorb,"extra_melee_atk_speed": autoload.greatmace_beg_melee_speed, "extra_impact": autoload.greatmace_beg_impact}, "applied": false},
 	
 	
 	
 	"shield_wood_png": {"stats": {"extra_guard_dmg_absorbition": autoload.shield_wood_absorb,"extra_melee_atk_speed": autoload.shield_wood_melee_speed,"slash_resistance":autoload.shield_wood_general_defense,"blunt_resistance":autoload.shield_wood_general_defense,"pierce_resistance": autoload.shield_wood_general_defense,}, "applied": false},
-	"pickaxe_png": {"stats": {"extra_dmg": autoload.pickaxe_dmg,"extra_guard_dmg_absorbition": autoload.pickaxe_absorb,"extra_melee_atk_speed": autoload.pickaxe_melee_speed}, "applied": false},
-	"pickaxe_png2": {"stats": {"extra_dmg": autoload.pickaxe_dmg,"extra_guard_dmg_absorbition": autoload.pickaxe_absorb,"extra_melee_atk_speed": autoload.pickaxe_melee_speed}, "applied": false},
 
 
 

@@ -56,6 +56,9 @@ func loadAnimations()->void:
 	animation.add_animation("heavy click1", load("res://player/universal animations/Animations Sword Heavy/heavy click1.anim"))
 	animation.add_animation("heavy click2", load("res://player/universal animations/Animations Sword Heavy/heavy click2.anim"))
 	
+	animation.add_animation("kick", load("res://player/universal animations/Animations Fist/kick.anim"))
+	
+	
 	#L-click animations
 	animation.add_animation("fist hold", load("res://player/universal animations/Animations Fist/combo fist.tres"))
 	animation.add_animation("shoot", load("res://player/universal animations/Animations Bow/shoot.anim"))
@@ -100,7 +103,6 @@ func equipArmor(clothing_to_equip,clothing_type_to_delete:String)->void:
 		print("Can't equip INVALID")
 	else:
 		var clothing_to_equip_instance = clothing_to_equip.instance()
-		clothing_to_equip_instance.scale = Vector3(1,1,1) # just in case you can't see the clothing, it might have been resized due to how mixamo works change this between 0.01 to 1 or 100 to test 
 		for child in skeleton.get_children():
 			if child.is_in_group(clothing_type_to_delete):
 				child.queue_free() # this will delete all the armors that share the same group, use names like "Legs, Torso,Hands,Feet"
@@ -108,6 +110,9 @@ func equipArmor(clothing_to_equip,clothing_type_to_delete:String)->void:
 				hair = child
 				player.colorBodyParts()
 		skeleton.add_child(clothing_to_equip_instance)
+		
+		
+		
 	
 onready var hair:MeshInstance
 func switchEquipment()->void:
@@ -187,69 +192,74 @@ func switchEquipment()->void:
 func switchWeapon()->void:
 		match player.main_weapon:
 			autoload.main_weap_list.zero:
-				equipArmor(autoload.null_main,"main")
-							
-			autoload.main_weap_list.pick_beginner:
-				if player.is_in_combat == true:
-					equipArmor(autoload.pickaxe_beginner_main_scene,"main")
-				else:
-					equipArmor(autoload.pickaxe_beginner_mainB_scene,"main")
+				equipArmor(autoload.weapset1_scenes["null"],"main")
+
 			autoload.main_weap_list.axe_beginner:
 				if player.is_in_combat == true:
-					equipArmor(autoload.axe_beginner_main_scene,"main")
+					equipArmor(autoload.weapset1_scenes["axe"],"main")
 				else:
-					equipArmor(autoload.axe_beginner_mainB_scene,"main")
+					equipArmor(autoload.weapset1_scenes["axeB"],"main")
 							
 			autoload.main_weap_list.sword_beginner:
 				if player.is_in_combat == true:
-					equipArmor(autoload.sword_beginner_main_scene,"main")
+					equipArmor(autoload.weapset1_scenes["sword"],"main")
 				else:
-					equipArmor(autoload.sword_beginner_mainB_scene,"main")
+					equipArmor(autoload.weapset1_scenes["swordB"],"main")
 					
-			autoload.main_weap_list.waraxe_beginner:
+			autoload.main_weap_list.greataxe_beginner:
 				if player.is_in_combat == true:
-					equipArmor(autoload.waraxe_beginner_scene,"main")
+					equipArmor(autoload.weapset1_scenes["greataxe"],"main")
 				else:
-					equipArmor(autoload.waraxe_beginnerB_scene,"main")
+					equipArmor(autoload.weapset1_scenes["greataxeB"],"main")
 					
 			autoload.main_weap_list.greatsword_beginner:
 				if player.is_in_combat == true:
-					equipArmor(autoload.greatsword_beginner_scene,"main")
+					equipArmor(autoload.weapset1_scenes["greatsword"],"main")
 				else:
-					equipArmor(autoload.greatsword_beginnerB_scene,"main")
+					equipArmor(autoload.weapset1_scenes["greatswordB"],"main")
 			autoload.main_weap_list.demolition_hammer_beginner:
 				if player.is_in_combat == true:
-					equipArmor(autoload.beginner_demolition_hammer_scene,"main")
+					equipArmor(autoload.weapset1_scenes["demo_hammer"],"main")
 				else:
-					equipArmor(autoload.beginner_demolition_hammer_B_scene,"main")
+					equipArmor(autoload.weapset1_scenes["demo_hammerB"],"main")
+
+			autoload.main_weap_list.greatmace_beginner:
+				if player.is_in_combat == true:
+					equipArmor(autoload.weapset1_scenes["greatmace"],"main")
+				else:
+					equipArmor(autoload.weapset1_scenes["greatmaceB"],"main")
+
+			autoload.main_weap_list.warhammer_beginner:
+				if player.is_in_combat == true:
+					equipArmor(autoload.weapset1_scenes["warhammer"],"main")
+				else:
+					equipArmor(autoload.weapset1_scenes["warhammerB"],"main")
+
 
 		
 		if player.main_weapon == autoload.weapon_type_list.heavy:
-				equipArmor(autoload.null_sec,"secondary")
+				equipArmor(autoload.weapset1_scenes["null_sec"],"secondary")
 		else:
 			match player.sec_weapon:
 				autoload.sec_weap_list.zero:
-					equipArmor(autoload.null_sec,"secondary")
-				autoload.sec_weap_list.pick_beginner:
-					if player.is_in_combat == true:
-						equipArmor(autoload.pickaxe_beginner_sec_scene,"secondary")
-					else:
-						equipArmor(autoload.pickaxe_beginner_secB_scene,"secondary")
-								
+					equipArmor(autoload.weapset1_scenes["null_sec"],"secondary")
+
 				autoload.sec_weap_list.axe_beginner:
 					if player.is_in_combat == true:
-						equipArmor(autoload.axe_beginner_sec_scene,"secondary")
+						equipArmor(autoload.weapset1_scenes["axe_sec"],"secondary")
 					else:
-						equipArmor(autoload.axe_beginner_secB_scene,"secondary")
+						equipArmor(autoload.weapset1_scenes["axe_secB"],"secondary")
 								
 				autoload.sec_weap_list.sword_beginner:
 					if player.is_in_combat == true:
-						equipArmor(autoload.sword_beginner_sec_scene,"secondary")
+						equipArmor(autoload.weapset1_scenes["sword_sec"],"secondary")
 					else:
-						equipArmor(autoload.sword_beginner_secB_scene,"secondary")
+						equipArmor(autoload.weapset1_scenes["sword_secB"],"secondary")
 								
 				autoload.sec_weap_list.shield_beginner:
-					equipArmor(autoload.shield_beginner_sec_scene,"secondary")
+					equipArmor(autoload.weapset1_scenes["shield"],"secondary")
+					
+					
 				
 var face_set:String = "1"
 #______________________________Switch Colors____________________________________

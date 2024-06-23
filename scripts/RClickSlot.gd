@@ -13,12 +13,14 @@ func switchAttackIcon():
 			autoload.weapon_type_list.fist:
 				icon.texture = autoload.throw_rock
 			autoload.weapon_type_list.sword:
-				icon.texture = autoload.guard_sword
+					icon.texture = autoload.vanguard_icons["guard_sword"]
 			autoload.weapon_type_list.sword_shield:
-				icon.texture = autoload.block_shield
+					icon.texture = autoload.vanguard_icons["guard_shield"]
 			autoload.weapon_type_list.dual_swords:
-				icon.texture = autoload.guard_sword
+					icon.texture = autoload.vanguard_icons["guard_sword"]
 			autoload.weapon_type_list.bow:
 				icon.texture = autoload.full_draw
 			autoload.weapon_type_list.heavy:
-				icon.texture = autoload.guard_sword
+				if player.base_atk_duration == false:
+					icon.texture = autoload.vanguard_icons["guard_sword"]
+

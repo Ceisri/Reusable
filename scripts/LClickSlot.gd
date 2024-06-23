@@ -17,23 +17,23 @@ func switchAttackIcon() -> void:
 					icon.texture = autoload.punch2
 			autoload.weapon_type_list.sword:
 				if player.base_atk_duration == false:
-					icon.texture = autoload.slash_sword
+					icon.texture = autoload.vanguard_icons["base_atk"]
 				else:
-					icon.texture = autoload.slash_sword2
+					icon.texture = autoload.vanguard_icons["base_atk2"]
 			autoload.weapon_type_list.dual_swords:
 				if player.base_atk_duration == false:
-					icon.texture = autoload.slash_sword
+					icon.texture = autoload.vanguard_icons["base_atk"]
 				else:
-					icon.texture = autoload.slash_sword2
+					icon.texture = autoload.vanguard_icons["base_atk2"]
 			autoload.weapon_type_list.sword_shield:
 				if player.base_atk_duration == false:
-					icon.texture = autoload.slash_sword
+					icon.texture = autoload.vanguard_icons["base_atk"]
 				else:
-					icon.texture = autoload.slash_sword2
+					icon.texture = autoload.vanguard_icons["base_atk2"]
 			autoload.weapon_type_list.bow:
 				icon.texture = autoload.quick_shot
 			autoload.weapon_type_list.heavy:
 				if player.base_atk_duration == false:
-					icon.texture = autoload.slash_sword
+					icon.texture = autoload.vanguard_icons["base_atk"]
 				else:
-					icon.texture = autoload.slash_sword2
+					icon.texture = autoload.vanguard_icons["base_atk2"]

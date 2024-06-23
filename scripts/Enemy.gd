@@ -62,11 +62,13 @@ func process()->void:
 
 				
 func respawn()->void:
+	how_long_have_i_been_dead = 0 
 	health = max_health
 	threat_system.resetThreats()
 	can_be_looted = false
 	state = autoload.state_list.wander
-	translation =  Vector3(0,5, 0)
+	translation =  Vector3(0,-10, 0)
+	translation =  Vector3(0,-10, 0)
 	damage_effect_manager.resetEffects()
 	health = max_health
 	health = max_health
@@ -80,6 +82,7 @@ func respawn()->void:
 			
 	
 func oneSecondTimer()->void:
+	letMeDie()
 	damage_effect_manager.regenerate()
 	attackSpeedMath()
 	var state_enum = autoload.state_list  # Access the enum from the singleton
@@ -797,7 +800,17 @@ func getUp()->void:
 func startGettingUp()->void:
 	knockeddown_first_part = false
 
-
+onready var collision_shape:CollisionShape = $CollisionShape
+var how_long_have_i_been_dead:float = 0
+func letMeDie()->void:
+	if health <= -98.9:
+		how_long_have_i_been_dead += 1
+		print(str(entity_name)+" has been dead for " + str(how_long_have_i_been_dead) + " seconds")
+		if how_long_have_i_been_dead >= 10:
+			respawn()
+			translation =  Vector3(0,-10, 0)
+			translation =  Vector3(0,-10, 0)
+			translation =  Vector3(0,-10, 0)
 
 
 func consumeResolve(value)->void:
@@ -810,6 +823,9 @@ func goBeserk()->void:
 	berserk_duration += 20
 	if health < max_health:
 		health += 15
+
+
+
 
 #________________________________________ATTACKS GO HERE____________________________________________
 func baseMeleeAtk()->void:

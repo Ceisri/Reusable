@@ -42,16 +42,16 @@ func handWeaponBackWeapon() -> void:#switch weapnons from the back or the sides 
 	match held_weapon:
 		autoload.main_weap_list.axe_beginner:
 			if owner_entity.state == autoload.state_list.engage:
-				equipArmorWeapons(autoload.axe_beginner_main_scene,"Weapon")
+				equipArmorWeapons(autoload.weapset1_scenes["axe"],"Weapon")
 			else:
-				equipArmorWeapons(autoload.axe_beginner_mainB_scene,"Weapon")
+				equipArmorWeapons(autoload.autoload.weapset1_scenes["axeB"],"Weapon")
 	
 	
 	
 func removeEquipment():
 	if owner_entity.can_wear_armor == true:
 		equipArmorWeapons(autoload.human_xy_naked_torso_0,"Torso")
-		equipArmorWeapons(autoload.null_main,"Weapon")
+		equipArmorWeapons(autoload.weapset1_scenes["null"],"Weapon")
 	
 	
 
@@ -77,9 +77,6 @@ func gather(player,value)->void:
 			player.receiveDrops(autoload.steak,value)
 			player.receiveDrops(autoload.ribs,value)
 			
-			
-
-
 
 #ON DEATH DROP THESE
 func dropItems(player)->void:#FOR AUTOLOOTING
@@ -87,7 +84,7 @@ func dropItems(player)->void:#FOR AUTOLOOTING
 	
 	match held_weapon:
 		autoload.main_weap_list.axe_beginner:
-			player.receiveDrops(autoload.axe_beginner_png,1)
+			player.receiveDrops(autoload.weapset1_icons["axe"],1)
 	
 	if armor == null:
 		pass
@@ -102,7 +99,7 @@ func dropItemsLootTable(player)->void: #FOR MANUAL LOOTING
 	
 	match held_weapon:
 		autoload.main_weap_list.axe_beginner:
-			player.receiveLootInLootTable(autoload.axe_beginner_png,1)
+			player.receiveLootInLootTable(autoload.weapset1_icons["axe"],1)
 	
 	if armor == null:
 		pass
