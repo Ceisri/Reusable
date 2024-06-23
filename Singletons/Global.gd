@@ -41,8 +41,10 @@ enum state_list{
 	orbit,# for AI
 	decimate,# for AI
 	wander,# for AI
+	move_aside,# for AI
 	staggered,
 	stunned,
+	downed,
 	dead,
 	skill1,
 	skill2,
@@ -114,64 +116,47 @@ onready var water = preload("res://Potions/water.png")
 
 #_________________________________Skill icons___________________________________
 
-#necromant
-onready var necromant_switch =  preload("res://Classes/Ability Icons/Magic Icons1/41.png")
-onready var base_attack_necromant =  preload("res://Classes/Ability Icons/Magic Icons1/1.png")
-onready var necro_guard =  preload("res://Classes/Ability Icons/Magic Icons1/14.png")
-onready var dominion =  preload("res://Classes/Necromant/Class Icons/Dominion.png")
-onready var summon_shadow =  preload("res://Classes/Necromant/Class Icons/SummonShadow.png")
-onready var tribute =  preload("res://Classes/Necromant/Class Icons/Tribute.png")
-onready var servitude =  preload("res://Classes/Necromant/Class Icons/Servitude in Death.png")
-onready var sacrifice =  preload("res://Classes/Necromant/Class Icons/Sacrifice.png")
-onready var arcane_blast =  preload("res://Classes/Ability Icons/Magic Icons1/5.png")
-
 
 #base attacks
 onready var punch = preload("res://Classes/Classless/punch.jpg")
 onready var punch2 = preload("res://Classes/Classless/punch2.jpg")
-onready var throw_rock = preload("res://Classes/Classless/throw rocks.jpg")
+onready var throw_rock = preload("res://Classes/Classless/throw rock.jpg")
+
+onready var stomp = preload("res://Classes/Classless/stomp.jpg")
+onready var kick = preload("res://Classes/Classless/kick.jpg")
+
+
+onready var slide = preload("res://Classes/Classless/slide.jpg")
+onready var dash = preload("res://Classes/Classless/dash.jpg")
+onready var backstep = preload("res://Classes/Classless/backstep.jpg")
 
 
 
-onready var dodge = preload("res://Classes/Classless/rush.jpg")
-
-
-var dodge_description: String = "Slide in the chosen direction to evade attacks, becoming invincible for the duration and pushing back foes you collide with.\n Sliding between their legs allows you to maneuver and get behind them.\n\n Double press DIRECTIONAL KEYS alternatively, drag and drop it onto the skill bar, then use your keyboard to activate."
-#sword______________________________________________________________________________________________
-onready var slash_sword =  preload("res://Classes/Swordsmen/slash.png")
-onready var slash_sword2 =  preload("res://Classes/Swordsmen/slash2.png")
-
-
-onready var guard_sword =  preload("res://Classes/Swordsmen/cross parry.png")
-onready var block_shield =  preload("res://Classes/Swordsmen/block.png")
-#greatsword/heavy
-onready var heavy_slash =  preload("res://Classes/Swordsmen/slash_great_sword.png")
-onready var cleave =  preload("res://Classes/Swordsmen/cleave.png")
 #bow________________________________________________________________________________________________
 onready var quick_shot =  preload("res://Classes/Sagitarius/quick_shot.png")
 var quick_shot_damage: float = 2.5
 onready var full_draw =  preload("res://Classes/Sagitarius/full_draw.png")
 var full_draw_damage: float = 5
 
-#sword_skills
-onready var overhead_slash =  preload("res://Classes/Swordsmen/overhand slash.png")
+onready var vanguard_icons: Dictionary = {
+	"base_atk": preload("res://Classes/Swordsmen/sword slash.jpg"),
+	"base_atk2": preload("res://Classes/Swordsmen/sword slash2.jpg"),
+	
+	"guard_sword": preload("res://Classes/Swordsmen/parry.jpg"),
+	"guard_shield": preload("res://Classes/Swordsmen/block.jpg"),
+	
+	"cleave":preload("res://Classes/Swordsmen/cleave.png"),
+	
+	"sunder": preload("res://Classes/Swordsmen/split vertically.jpg"),
+	
+	"rising_slash": preload("res://Classes/Swordsmen/underhand_slash.png"),
+	"heart_trust": preload("res://Classes/Swordsmen/trust.jpg"),
+	"taunt": preload("res://Classes/Swordsmen/scream.png"),
+	"cyclone": preload("res://Classes/Swordsmen/cyclone.png"),
+	"whirlwind": preload("res://Classes/Swordsmen/eviscerate.jpg"),
+	"fury_strike": preload("res://Classes/Swordsmen/fury strike.png"),
+}
 
-var overhead_slash_description: String = "Damage type: Slash\n+4% compounding extra damage per skill level\n +SLASH DAMAGE + BLUNT DAMAGE\n Strike foes in front of you with a downward stroke"
-#___________________________________________________________________________________________________
-onready var rising_slash =  preload("res://Classes/Swordsmen/underhand_slash.png")
-
-onready var heart_trust : Texture = preload("res://Classes/Swordsmen/thrust.png")
-onready var taunt : Texture = preload("res://Classes/Swordsmen/scream.png")
-#___________________________________________________________________________________________________
-onready var cyclone =  preload("res://Classes/Swordsmen/cyclone.png")
-#___________________________________________________________________________________________________
-onready var whirlwind =  preload("res://Classes/Swordsmen/whirlwind.png")
-#___________________________________________________________________________________________________
-onready var fury_strike =  preload("res://Classes/Swordsmen/fury strike.png")
-var base_fury_strike_damage: float = 5
-#___________________________________________________________________________________________________
-onready var rising_fury =  preload("res://Classes/Swordsmen/scream.png")
-var rising_fury_threat: float = 25
 
 
 #__________________________________EFFECTS AND RELATED STUFF________________________________________
@@ -210,87 +195,139 @@ var berserk_texture = preload("res://Classes/Swordsmen/scream.png")
 
 
 #______________________________________EQUIPMENT SYSTEM_____________________________________________
-onready var sword_beginner_png =  preload("res://WeaponIcons/sword_beginner.png")
+
 const sword_beginner_dmg = 2
 const sword_beginner_absorb = 1
 
-onready var axe_beginner_png =  preload("res://WeaponIcons/axe.png")
+
+onready var weapset1_icons : Dictionary = {
+	"axe": preload("res://Equipment/EquipmentIcon/WeaponIcons/BeginnerSet/axe.png"),
+	"sword": preload("res://Equipment/EquipmentIcon/WeaponIcons/BeginnerSet/Sword/level 0.jpg"),
+	"greataxe": preload("res://Equipment/EquipmentIcon/WeaponIcons/BeginnerSet/Greataxe/level 0.jpg"),
+	"greatsword":  preload("res://Equipment/EquipmentIcon/WeaponIcons/BeginnerSet/Greatsword/level 0.jpg"),
+	"shield": preload("res://Equipment/EquipmentIcon/WeaponIcons/BeginnerSet/Shield/shield.png"),
+	"demo-hammer": preload("res://Equipment/EquipmentIcon/WeaponIcons/BeginnerSet/DemolitionHammer/level 0.jpg"),
+	"greatmace": preload("res://Equipment/EquipmentIcon/WeaponIcons/BeginnerSet/Greatmace/level 0.jpg"),
+	"warhammer": preload("res://Equipment/EquipmentIcon/WeaponIcons/BeginnerSet/warhammer/warhammer.png"),
+}
+
+onready var weapset1_atk_speed: Dictionary = {
+	"axe": 0.02,
+	"sword": 0.025,
+	"greataxe": -0.04,
+	"greatsword": 0.15,
+	"shield": -0.01,
+	"demo-hammer": -0.13,
+	"greatmace": -0.04,
+	"warhammer":-0.03
+}
+
+
+onready var weapset1_scenes: Dictionary = {
+	"sword": preload("res://Equipment/EquipmentScenes/WeaponScenes/BeginnerSet/SwordR.tscn"),
+	"swordB": preload("res://Equipment/EquipmentScenes/WeaponScenes/BeginnerSet/SwordRB.tscn"),
+	"sword_sec": preload("res://Equipment/EquipmentScenes/WeaponScenes/BeginnerSet/SwordL.tscn"),
+	"sword_secB": preload("res://Equipment/EquipmentScenes/WeaponScenes/BeginnerSet/SwordLB.tscn"),
+	
+	"axe": preload("res://Equipment/EquipmentScenes/WeaponScenes/BeginnerSet/AxeR.tscn"),
+	"axeB": preload("res://Equipment/EquipmentScenes/WeaponScenes/BeginnerSet/AxeRB.tscn"),
+	"axe_sec": preload("res://Equipment/EquipmentScenes/WeaponScenes/BeginnerSet/AxeL.tscn"),
+	"axe_secB": preload("res://Equipment/EquipmentScenes/WeaponScenes/BeginnerSet/AxeLB.tscn"),
+	"demo_hammer": preload("res://Equipment/EquipmentScenes/WeaponScenes/BeginnerSet/DemolitionHammer.tscn"),
+	"demo_hammerB": preload("res://Equipment/EquipmentScenes/WeaponScenes/BeginnerSet/DemolitionHammerB.tscn"),
+	"greatmace": preload("res://Equipment/EquipmentScenes/WeaponScenes/BeginnerSet/GreatMace.tscn"),
+	"greatmaceB": preload("res://Equipment/EquipmentScenes/WeaponScenes/BeginnerSet/GreatMaceB.tscn"),
+	"warhammer": preload("res://Equipment/EquipmentScenes/WeaponScenes/BeginnerSet/WarHammer.tscn"),
+	"warhammerB": preload("res://Equipment/EquipmentScenes/WeaponScenes/BeginnerSet/WarHammerB.tscn"),
+
+	"greataxe": preload("res://Equipment/EquipmentScenes/WeaponScenes/BeginnerSet/GreatAxe.tscn"),
+	"greataxeB": preload("res://Equipment/EquipmentScenes/WeaponScenes/BeginnerSet/GreatAxeB.tscn"),
+	"greatsword": preload("res://Equipment/EquipmentScenes/WeaponScenes/BeginnerSet/GreatSword.tscn"),
+	"greatswordB": preload("res://Equipment/EquipmentScenes/WeaponScenes/BeginnerSet/GreatSwordB.tscn"),
+	"shield": preload("res://Equipment/EquipmentScenes/WeaponScenes/BeginnerSet/ShieldRound.tscn"),
+
+	"null": preload("res://Equipment/EquipmentScenes/WeaponScenes/Null.tscn"),
+	"null_sec": preload("res://Equipment/EquipmentScenes/WeaponScenes/NullSec.tscn"),
+}
+
+
+
+
+
+
+
 const axe_beginner_dmg = 2.5
 const axe_beginner_melee_speed = -0.05
 const axe_beginner_absorb = 1
 
 
-onready var pickaxe_png =  preload("res://WeaponIcons/picaxe.png")
-const pickaxe_dmg = 1.5
-const pickaxe_melee_speed = -0.09
-const pickaxe_absorb = 1
 
-onready var waraxe_beginner_png =  preload("res://WeaponIcons/waraxe.png")
-const waraxe_beginner_dmg = 4.5
-const waraxe_beginner_melee_speed = -0.15
-const waraxe_beginner_absorb = 1
+const greataxe_beginner_dmg = 4.5
+const greataxe_beginner_melee_speed = -0.15
+const greataxe_beginner_absorb = 1
 
 
-onready var greatsword_beginner_png =  preload("res://WeaponIcons/greatsword placeholder.png")
 const greatsword_beginner_dmg = 3.5
 const greatsword_beginner_melee_speed = -0.05
 const greatsword_beginner_absorb = 5
 
 
-onready var shield_wood_png =  preload("res://WeaponIcons/shield.png")
 const shield_wood_general_defense = 12 #increase some defenses defenses by  this value, remeber we are using the league's dmg formula so 50 equals 33.333% damage reduction 100 equals 50% damage reduction, 200 equals 66.666% damage reduction
 const shield_wood_melee_speed = -0.075
 const shield_wood_absorb = 100
+
+
+
+
+
+const demolition_hammer_beg_dmg = 5
+const demolition_hammer_beg_melee_speed = -0.12
+const demolition_hammer_beg_absorb = 12
+const demolition_hammer_beg_impact = 0.35
+
+
+
+
+const greatmace_beg_dmg = 5
+const greatmace_beg_melee_speed = -0.1
+const greatmace_beg_absorb = 10
+const greatmace_beg_impact = 0.30
+
+
+
+
+const warhammer_beg_dmg =  4.5
+const warhammer_beg_melee_speed = -0.05
+const warhammer_beg_absorb = 8
+const warhammer_beg_impact = 0.28
 
 
 enum main_weap_list{
 	sword_beginner,
 	axe_beginner,
 	pick_beginner,
-	waraxe_beginner,
+	greataxe_beginner,
 	greatsword_beginner,
+	demolition_hammer_beginner,
+	greatmace_beginner,
+	warhammer_beginner,
 	zero
 }
-onready var sword_beginner_main_scene: PackedScene = preload("res://WeaponScenes/RightHand/Swords/sword0.tscn")
-onready var sword_beginner_mainB_scene: PackedScene = preload("res://WeaponScenes/RightHand/Swords/sword0B.tscn")
 
 
-onready var axe_beginner_main_scene: PackedScene = preload("res://WeaponScenes/RightHand/Axes/Axe.tscn")
-onready var axe_beginner_mainB_scene: PackedScene = preload("res://WeaponScenes/RightHand/Axes/AxeB.tscn")
 
-onready var pickaxe_beginner_main_scene: PackedScene = preload("res://WeaponScenes/RightHand/Pickaxes/PickAxe.tscn")
-onready var pickaxe_beginner_mainB_scene: PackedScene = preload("res://WeaponScenes/RightHand/Pickaxes/PickAxeB.tscn")
 
-onready var waraxe_beginner_scene: PackedScene = preload("res://WeaponScenes/TwoHanded/Axes/Waraxe0.tscn")
-onready var waraxe_beginnerB_scene: PackedScene = preload("res://WeaponScenes/TwoHanded/Axes/Waraxe0Back.tscn")
 
-onready var greatsword_beginner_scene: PackedScene = preload("res://WeaponScenes/TwoHanded/Swords/greatsword0.tscn")
-onready var greatsword_beginnerB_scene: PackedScene = preload("res://WeaponScenes/TwoHanded/Swords/greatsword0B.tscn")
-
-onready var null_main: PackedScene = preload("res://WeaponScenes/RightHand/nullmain.tscn")
 #___________________________________________________________________________________________________
 
 enum sec_weap_list{
 	sword_beginner,
 	axe_beginner,
 	pick_beginner,
-	waraxe_beginner,
 	shield_beginner,
 	zero
 }
-onready var sword_beginner_sec_scene: PackedScene = preload("res://WeaponScenes/LeftHand/Swords/sword0.tscn")
-onready var sword_beginner_secB_scene: PackedScene = preload("res://WeaponScenes/LeftHand/Swords/sword0B.tscn")
 
-
-onready var shield_beginner_sec_scene: PackedScene = preload("res://WeaponScenes/LeftHand/Shields/shield0.tscn")
-
-onready var axe_beginner_sec_scene: PackedScene = preload("res://WeaponScenes/LeftHand/Axes/Axe.tscn")
-onready var axe_beginner_secB_scene: PackedScene = preload("res://WeaponScenes/LeftHand/Axes/AxeB.tscn")
-
-onready var pickaxe_beginner_sec_scene: PackedScene = preload("res://WeaponScenes/LeftHand/PickAxes/Pickaxe.tscn")
-onready var pickaxe_beginner_secB_scene: PackedScene = preload("res://WeaponScenes/LeftHand/PickAxes/PickaxeB.tscn")
-
-onready var null_sec: PackedScene = load("res://WeaponScenes/LeftHand/Shields/shieldnull.tscn")
 enum weapon_type_list {
 	fist,
 	sword,
@@ -305,7 +342,13 @@ enum weapon_type_list {
 }
 
 
+enum boots_list{
+	set_0,
+	set_1,
+	set_2,
+}
 
+onready var boots1 = preload("res://Equipment/EquipmentIcon/ArmorIcons/BeginnerSet/shoe1.png")
 
 
 
@@ -313,26 +356,18 @@ enum weapon_type_list {
 #equipment 2D icons__________________________________________________________________________________________
 
 
+onready var pants1 = preload("res://Equipment/EquipmentIcon/ArmorIcons/BeginnerSet/pants1.png")
 
-onready var hat1 = preload("res://Equipment icons/hat1.png")
-onready var pad1 = preload("res://Equipment icons/shoulder1.png")
 
-onready var pants1 = preload("res://Equipment icons/pants1.png")
-onready var shoe1 = preload("res://Equipment icons/shoe1.png")
-onready var glove1 = preload("res://Equipment icons/glove1.png")
-onready var belt1 = preload("res://Equipment icons/belt1.png")
+onready var glove1 = preload("res://Equipment/EquipmentIcon/ArmorIcons/BeginnerSet/glove1.png")
 
-onready var garment1 = preload("res://Equipment icons/garment1.png")
-onready var torso_armor2 = preload("res://Equipment icons/torso2.png")
-onready var torso_armor3 = preload("res://Equipment icons/torso3.png")
-onready var torso_armor4 = preload("res://Equipment icons/torso4.png")
 
-onready var shoulder1 = preload("res://Equipment icons/shouleder pads/shoulder plate metal.png")
+onready var garment1 = preload("res://Equipment/EquipmentIcon/ArmorIcons/BeginnerSet/garment1.png")
+onready var torso_armor2 = preload("res://Equipment/EquipmentIcon/ArmorIcons/BeginnerSet/torso2.png")
+onready var torso_armor3 = preload("res://Equipment/EquipmentIcon/ArmorIcons/BeginnerSet/torso3.png")
+onready var torso_armor4 = preload("res://Equipment/EquipmentIcon/ArmorIcons/BeginnerSet/torso4.png")
 
 #______________________________________3D equipable items___________________________________________
-onready var shoulder_scene0: PackedScene = preload("res://Equipment/Shoulder pads/shoulder plate metal.glb")
-
-
 
 
 #________________Armor and clothing 3Dscenes to instance as children of skeletons___________________
@@ -345,24 +380,21 @@ enum torso_list{
 	cuirass
 }
 #stored male armors
-onready var human_xy_naked_torso_0: PackedScene = preload("res://Equipment/Armors/Human_XY/Torso/Torso0.tscn")#save the mesh as a scene and make sure the skin property share's the same bone names as the skeleton
-onready var human_xy_tunic_0: PackedScene = preload("res://Equipment/Armors/Human_XY/Torso/Tunic0.tscn")
-onready var human_xy_gambeson_0: PackedScene = preload("res://Equipment/Armors/Human_XY/Torso/Gambeson0.tscn")
-onready var human_xy_chainmail_0: PackedScene = preload("res://Equipment/Armors/Human_XY/Torso/Chainmail0.tscn")
-onready var human_xy_cuirass_0: PackedScene = preload("res://Equipment/Armors/Human_XY/Torso/Cuirass0.tscn")
+onready var human_xy_naked_torso_0: PackedScene = preload("res://Equipment/EquipmentScenes/ArmorScenes/Human_XY/Torso/Torso0.tscn")
+onready var human_xy_tunic_0: PackedScene = preload("res://Equipment/EquipmentScenes/ArmorScenes/Human_XY/Torso/Tunic0.tscn")
 #stored female armors
-onready var human_xx_naked_torso_0: PackedScene = preload("res://Equipment/Armors/Human_XX/Torso/Torso0.tscn")
-onready var human_xx_tunic_0: PackedScene = preload("res://Equipment/Armors/Human_XX/Torso/Tunic0.tscn")
-onready var human_xx_tunic_1: PackedScene = preload("res://Equipment/Armors/Human_XX/Torso/Tunic1.tscn")
-onready var human_xx_gambeson_0: PackedScene = preload("res://Equipment/Armors/Human_XX/Torso/Gambeson0.tscn")
-onready var human_xx_chainmail_0: PackedScene = preload("res://Equipment/Armors/Human_XX/Torso/Chainmail0.tscn")
-onready var human_xx_cuirass_0: PackedScene = preload("res://Equipment/Armors/Human_XX/Torso/Cuirass0.tscn")
-#legs 
-onready var human_xx_legs_0: PackedScene = preload("res://Equipment/Armors/Human_XX/Legs/legs0.tscn")
-onready var human_xx_pants_0: PackedScene = preload("res://Equipment/Armors/Human_XX/Legs/Pants0.tscn")
-onready var human_xx_pants_1: PackedScene = preload("res://Equipment/Armors/Human_XX/Legs/Pants1.tscn")
-onready var human_xx_legs_gambeson_0: PackedScene = preload("res://Equipment/Armors/Human_XX/Legs/Gambeson0.tscn")
+onready var human_xx_naked_torso_0: PackedScene = preload("res://Equipment/EquipmentScenes/ArmorScenes/Human_XX/Torso/Torso0.tscn")
+onready var human_xx_tunic_0: PackedScene = preload("res://Equipment/EquipmentScenes/ArmorScenes/Human_XX/Torso/Tunic0.tscn")
+onready var human_xx_tunic_1: PackedScene = preload("res://Equipment/EquipmentScenes/ArmorScenes/Human_XX/Torso/Tunic1.tscn")
 
+#legs 
+onready var human_xx_legs_0: PackedScene = preload("res://Equipment/EquipmentScenes/ArmorScenes/Human_XX/Legs/legs0.tscn")
+onready var human_xx_pants_0: PackedScene = preload("res://Equipment/EquipmentScenes/ArmorScenes/Human_XX/Legs/Pants0.tscn")
+onready var human_xx_pants_1: PackedScene = preload("res://Equipment/EquipmentScenes/ArmorScenes/Human_XX/Legs/Pants1.tscn")
+
+#feet
+onready var human_xx_feet_0: PackedScene = preload("res://Equipment/EquipmentScenes/ArmorScenes/Human_XX/Feet/Naked.tscn")
+onready var human_xx_feet_1: PackedScene = preload("res://Equipment/EquipmentScenes/ArmorScenes/Human_XX/Feet/feet1.tscn")
 
 
 
@@ -409,8 +441,6 @@ func addFloatingIcon(parent,texture,quantity):
 
 
 
-
-
 func consumeRedPotion(player:KinematicBody, button: TextureButton,inventory_grid: GridContainer, skill_bar: bool, skill_slot: TextureButton):
 	player.resolve += 100#remove this
 	var icon_texture_rect = button.get_node("Icon")
@@ -442,7 +472,7 @@ func drawGlobalThreat(user):
 	var entities = get_tree().get_nodes_in_group("Enemy")
 	for enemy in entities:
 		if enemy.has_method("takeThreat"):
-			enemy.takeThreat(rand_range(-15,30),user)
+			enemy.takeThreat(rand_range(300,3000),user)
 
 var gravity_force: float = 20
 func gravity(user):#for seamless climbing first check if is_climbing
