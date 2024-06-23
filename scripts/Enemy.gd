@@ -13,7 +13,7 @@ var angular_acceleration = int()
 var acceleration = int()
 var random_atk:float
 
-
+var is_player:bool = false 
 
 export var spawn_point:Vector3 
 export var can_be_looted:bool = false ##loot system in entity_holder = $Mesh/EntityHolder
@@ -24,7 +24,6 @@ export var can_respawn:bool = true
 
 onready var process:Timer = $Process #This is a timer node called "Process"
 func _ready()->void:
-	spawn_point = translation
 	if is_randomized == true:
 		if can_wear_armor == true:
 			entity_holder.selectRandomEquipment()
@@ -59,24 +58,20 @@ func process()->void:
 		threat_system.loseThreat()
 	if health <0 or health ==0:
 		can_be_looted = true
-		if has_died == false:
 
-			if has_died == true:
-				state = autoload.state_list.dead
 
 				
 func respawn()->void:
 	health = max_health
 	threat_system.resetThreats()
-
-	has_died = false
 	can_be_looted = false
 	state = autoload.state_list.wander
-	translation = spawn_point
+	translation =  Vector3(0,5, 0)
 	damage_effect_manager.resetEffects()
 	health = max_health
 	health = max_health
 	health = max_health
+	death_duration = false
 	damage_effect_manager.has_got_killed_already = false
 	if is_randomized == true:
 		if can_wear_armor == true:
@@ -94,8 +89,7 @@ func oneSecondTimer()->void:
 	if staggered_duration == true:
 		staggered_duration = false
 	damage_effect_manager.effectDurations()
-	if health <-99:
-		respawn()
+
 
 func displayThreatInfo(label):
 	threat_system.threat_info = threat_system.getBestFive()
@@ -106,7 +100,6 @@ func displayThreatInfo(label):
 var state = autoload.state_list.wander
 var death_duration:bool = false
 
-var has_died:bool = false
 
 var staggered_duration: bool = false
 var knockeddown_duration:bool = false
@@ -114,8 +107,12 @@ var knockeddown_first_part:bool = false
 
 func behaviourTree()->void:
 	var target = threat_system.findHighestThreat()
+	
 	if health <0:
-		animation.play("dead",0.6)
+		if death_duration == true:
+			animation.play("death",0.6)
+		else:
+			animation.play("dead",0.6)
 
 	elif stunned_duration > 0:
 		animationCancel()
@@ -295,6 +292,7 @@ func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type)->v
 	stored_instigator = instigator
 	damage_effect_manager.takeDamage(damage, aggro_power, instigator, damage_type)
 	damage_effect_manager.getKilled(instigator)
+
 	if health >0: 
 		lookTarget(turn_speed)
 		lookTarget(turn_speed)
@@ -792,8 +790,7 @@ func randomizeAttacks() -> void:
 
 
 func die()->void:
-
-	has_died = true 
+	death_duration = false
 func getUp()->void:
 	knockeddown_duration = false
 	state = autoload.state_list.wander

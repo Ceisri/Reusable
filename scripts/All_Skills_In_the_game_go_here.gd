@@ -316,7 +316,7 @@ var heart_trust_dmg: float =  18
 var heart_trust_bleed_duration: float = 7
 var heart_trust_description: String = "5% compounding extra damage per skill level.\nstab foes in front, causing them to bleed for: "
 var heart_trust_dmg_proportion: float = 0.05
-func heartTrustSlashCD():
+func HeartTrustCD():
 	var current_time: float = OS.get_ticks_msec() / 1000.0
 	if current_time - last_heart_trust_time >= heart_trust_cooldown:
 		if player.resolve >=heart_trust_cost:

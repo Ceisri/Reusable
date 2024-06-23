@@ -217,7 +217,12 @@ func switchWeapon()->void:
 					equipArmor(autoload.greatsword_beginner_scene,"main")
 				else:
 					equipArmor(autoload.greatsword_beginnerB_scene,"main")
-							
+			autoload.main_weap_list.demolition_hammer_beginner:
+				if player.is_in_combat == true:
+					equipArmor(autoload.beginner_demolition_hammer_scene,"main")
+				else:
+					equipArmor(autoload.beginner_demolition_hammer_B_scene,"main")
+
 		
 		if player.main_weapon == autoload.weapon_type_list.heavy:
 				equipArmor(autoload.null_sec,"secondary")
@@ -627,7 +632,8 @@ func overheadSlashCD()-> void:
 	player.all_skills.overheadSlashCD()
 	player.overhead_slash_duration = false
 	player.overhead_slash_combo = false
-	player.all_skills.overheadSlashCD()
+	player.resolve -= player.all_skills.overhead_slash_cost
+
 func overheadSlashDMG()->void:
 	var damage_type:String = player.base_dmg_type
 	var base_damage: float = player.all_skills.overhead_slash_damage + player.total_dmg
@@ -655,7 +661,10 @@ func overheadSlashDMG()->void:
 #rising slash section
 #This skill is viable for all melee weapon types EXCEPT FIST WEAPONS
 func risingSlashCD()-> void:
+	player.resolve -= player.all_skills.rising_slash_cost
 	player.all_skills.risingSlashCD()
+	player.rising_slash_duration = false
+	
 	player.rising_slash_duration = false
 func risingSlashDMG()-> void:
 	var damage_type:String = player.base_dmg_type
@@ -687,6 +696,7 @@ func risingSlashDMG()-> void:
 onready var melee_aoe: Area = $MeleeAOE
 func cycloneCD()-> void:
 	player.all_skills.cycloneCD()
+	player.resolve -= player.all_skills.cyclone_cost
 	player.cyclone_duration = false
 	player.cyclone_combo = false
 func cycloneDMG() -> void:
@@ -722,6 +732,7 @@ func cycloneDMG() -> void:
 #This skill is viable for all melee weapon types 
 func whirlwindCD()-> void:
 	player.all_skills.whirlwindCD()
+	player.resolve -= player.all_skills.whirlwind_cost
 	player.whirlwind_duration = false
 	player.whirlwind_combo = false
 func whirlwindDMG() -> void:
@@ -761,7 +772,8 @@ func whirlwindDMG() -> void:
 #HeartTrust
 onready var trust_area: Area = $MeleeTrusting
 func HeartTrustCD()->void:
-	player.all_skills.heartTrustSlashCD()
+	player.all_skills.HeartTrustCD()
+	player.resolve -= player.all_skills.heart_trust_cost
 	player.heart_trust_duration = false
 func HeartTrustDMG()->void:
 	var damage_type:String = "pierce"
@@ -802,6 +814,7 @@ func tauntEffect()-> void:
 func tauntCD()->void:
 	player.taunt_duration = false
 	player.all_skills.tauntCD()
+	player.resolve -= player.all_skills.taunt_cost
 #___________________________________________________________________________________________________
 #General  Functions to call in the AnimationPlayer
 var can_move: bool = false
@@ -836,11 +849,17 @@ func getUp():
 
 onready var weapon_woosh = $WeaponWoosh
 func playSoundSwordWoosh()-> void:
-	weapon_woosh.play()
+	if weapon_woosh == null:
+		pass
+	else:
+		weapon_woosh.play()
 	
 onready var weapon_hit = $WeaponHit
 func playSoundSwordHit()-> void:
-	weapon_hit.play()
+	if weapon_hit == null:
+		pass
+	else:
+		weapon_hit.play()
 #___________________________________________________________________________________________________
 func dealDMG(victim,aggro_power,damage_type,damage)-> void:
 		var random = rand_range(0,1)

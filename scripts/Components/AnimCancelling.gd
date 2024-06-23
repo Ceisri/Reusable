@@ -26,34 +26,34 @@ func skillCancel(string:String)->void:
 				if player.throw_rock_duration == true:
 					player.throw_rock_duration = false
 				if player.slide_duration == true:
-					player.all_skills.slideCD()
+					player.current_race_gender.slideCD()
 					player.slide_duration = false
 				if player.dash_duration == true:
-					player.all_skills.dashCD()
+					player.current_race_gender.dashCD()
 					player.dash_duration = false
 				if player.stomp_duration == true:
 					player.stomp_duration = false
-					player.all_skills.stompCD()
+					player.current_race_gender.stompCD()
 				if player.kick_duration == true:
 					player.kick_duration = false
-					player.all_skills.kickCD()
+					player.current_race_gender.kickCD()
 				if player.overhead_slash_duration == true:
-					player.all_skills.overheadSlashCD()
+					player.current_race_gender.overheadSlashCD()
 					player.overhead_slash_duration = false
 				if player.rising_slash_duration == true:
 					player.rising_slash_duration = false
-					player.all_skills.risingSlashCD()
+					player.current_race_gender.risingSlashCD()
 				if player.heart_trust_duration == true:
-					player.all_skills.heartTrustSlashCD()
+					player.current_race_gender.HeartTrustCD()
 					player.heart_trust_duration = false
 				if player.cyclone_duration == true:
-					player.all_skills.cycloneCD()
+					player.current_race_gender.cycloneCD()
 					player.cyclone_duration = false
 				if player.whirlwind_duration == true:
-					player.all_skills.whirlwindCD()
+					player.current_race_gender.whirlwindCD()
 					player.whirlwind_duration = false
 				if player.taunt_duration == true:
-					player.all_skills.tauntCD()
+					player.current_race_gender.tauntCD()
 					player.taunt_duration = false
 			"throw_rock":
 				interruptBackstep()
@@ -61,34 +61,34 @@ func skillCancel(string:String)->void:
 #				if player.throw_rock_duration == true:
 #					player.throw_rock_duration = false
 				if player.slide_duration == true:
-					player.all_skills.slideCD()
+					player.current_race_gender.slideCD()
 					player.slide_duration = false
 				if player.dash_duration == true:
-					player.all_skills.dashCD()
+					player.current_race_gender.dashCD()
 					player.dash_duration = false
 				if player.stomp_duration == true:
 					player.stomp_duration = false
-					player.all_skills.stompCD()
+					player.current_race_gender.stompCD()
 				if player.kick_duration == true:
 					player.kick_duration = false
-					player.all_skills.kickCD()
+					player.current_race_gender.kickCD()
 				if player.overhead_slash_duration == true:
-					player.all_skills.overheadSlashCD()
+					player.current_race_gender.overheadSlashCD()
 					player.overhead_slash_duration = false
 				if player.rising_slash_duration == true:
 					player.rising_slash_duration = false
-					player.all_skills.risingSlashCD()
+					player.current_race_gender.risingSlashCD()
 				if player.heart_trust_duration == true:
-					player.all_skills.heartTrustSlashCD()
+					player.current_race_gender.HeartTrustCD()
 					player.heart_trust_duration = false
 				if player.cyclone_duration == true:
-					player.all_skills.cycloneCD()
+					player.current_race_gender.cycloneCD()
 					player.cyclone_duration = false
 				if player.whirlwind_duration == true:
-					player.all_skills.whirlwindCD()
+					player.current_race_gender.whirlwindCD()
 					player.whirlwind_duration = false
 				if player.taunt_duration == true:
-					player.all_skills.tauntCD()
+					player.current_race_gender.tauntCD()
 					player.taunt_duration = false
 			"dash":
 				interruptBackstep()
@@ -96,63 +96,69 @@ func skillCancel(string:String)->void:
 				if player.throw_rock_duration == true:
 					player.throw_rock_duration = false
 				if player.slide_duration == true:
-					player.all_skills.slideCD()
+					player.current_race_gender.slideCD()
 					player.slide_duration = false
-	#			if player.dash_duration == true:
-	#				player.all_skills.dashCD()
-	#				player.dash_duration = false
+#				if player.dash_duration == true:
+#					player.current_race_gender.dashCD()
+#					player.dash_duration = false
 				if player.stomp_duration == true:
 					player.stomp_duration = false
-					player.all_skills.stompCD()
+					player.current_race_gender.stompCD()
+				if player.kick_duration == true:
+					player.kick_duration = false
+					player.current_race_gender.kickCD()
 				if player.overhead_slash_duration == true:
-					player.all_skills.overheadSlashCD()
+					player.current_race_gender.overheadSlashCD()
 					player.overhead_slash_duration = false
 				if player.rising_slash_duration == true:
 					player.rising_slash_duration = false
-					player.all_skills.risingSlashCD()
+					player.current_race_gender.risingSlashCD()
 				if player.heart_trust_duration == true:
-					player.all_skills.heartTrustSlashCD()
+					player.current_race_gender.HeartTrustCD()
 					player.heart_trust_duration = false
 				if player.cyclone_duration == true:
-					player.all_skills.cycloneCD()
+					player.current_race_gender.cycloneCD()
 					player.cyclone_duration = false
 				if player.whirlwind_duration == true:
-					player.all_skills.whirlwindCD()
+					player.current_race_gender.whirlwindCD()
 					player.whirlwind_duration = false
 				if player.taunt_duration == true:
-					player.all_skills.tauntCD()
+					player.current_race_gender.tauntCD()
 					player.taunt_duration = false
 			"slide":
 				interruptBackstep()
 				interruptBaseAtk()
 				if player.throw_rock_duration == true:
 					player.throw_rock_duration = false
-	#			if player.slide_duration == true:
-	#				player.all_skills.slideCD()
-	#				player.slide_duration = false
+#				if player.slide_duration == true:
+#					player.current_race_gender.slideCD()
+#					player.slide_duration = false
 				if player.dash_duration == true:
-					player.all_skills.dashCD()
+					player.current_race_gender.dashCD()
 					player.dash_duration = false
 				if player.stomp_duration == true:
 					player.stomp_duration = false
-					player.all_skills.stompCD()
+					player.current_race_gender.stompCD()
+				if player.kick_duration == true:
+					player.kick_duration = false
+					player.current_race_gender.kickCD()
 				if player.overhead_slash_duration == true:
-					player.all_skills.overheadSlashCD()
+					player.current_race_gender.overheadSlashCD()
 					player.overhead_slash_duration = false
 				if player.rising_slash_duration == true:
 					player.rising_slash_duration = false
-					player.all_skills.risingSlashCD()
+					player.current_race_gender.risingSlashCD()
 				if player.heart_trust_duration == true:
-					player.all_skills.heartTrustSlashCD()
+					player.current_race_gender.HeartTrustCD()
 					player.heart_trust_duration = false
 				if player.cyclone_duration == true:
-					player.all_skills.cycloneCD()
+					player.current_race_gender.cycloneCD()
 					player.cyclone_duration = false
 				if player.whirlwind_duration == true:
-					player.all_skills.whirlwindCD()
+					player.current_race_gender.whirlwindCD()
 					player.whirlwind_duration = false
 				if player.taunt_duration == true:
-					player.all_skills.tauntCD()
+					player.current_race_gender.tauntCD()
 					player.taunt_duration = false
 			"backstep":
 	#			interruptBackstep()
@@ -160,31 +166,34 @@ func skillCancel(string:String)->void:
 				if player.throw_rock_duration == true:
 					player.throw_rock_duration = false
 				if player.slide_duration == true:
-					player.all_skills.slideCD()
+					player.current_race_gender.slideCD()
 					player.slide_duration = false
 				if player.dash_duration == true:
-					player.all_skills.dashCD()
+					player.current_race_gender.dashCD()
 					player.dash_duration = false
 				if player.stomp_duration == true:
 					player.stomp_duration = false
-					player.all_skills.stompCD()
+					player.current_race_gender.stompCD()
+				if player.kick_duration == true:
+					player.kick_duration = false
+					player.current_race_gender.kickCD()
 				if player.overhead_slash_duration == true:
-					player.all_skills.overheadSlashCD()
+					player.current_race_gender.overheadSlashCD()
 					player.overhead_slash_duration = false
 				if player.rising_slash_duration == true:
 					player.rising_slash_duration = false
-					player.all_skills.risingSlashCD()
+					player.current_race_gender.risingSlashCD()
 				if player.heart_trust_duration == true:
-					player.all_skills.heartTrustSlashCD()
+					player.current_race_gender.HeartTrustCD()
 					player.heart_trust_duration = false
 				if player.cyclone_duration == true:
-					player.all_skills.cycloneCD()
+					player.current_race_gender.cycloneCD()
 					player.cyclone_duration = false
 				if player.whirlwind_duration == true:
-					player.all_skills.whirlwindCD()
+					player.current_race_gender.whirlwindCD()
 					player.whirlwind_duration = false
 				if player.taunt_duration == true:
-					player.all_skills.tauntCD()
+					player.current_race_gender.tauntCD()
 					player.taunt_duration = false
 			"stomp":
 				interruptBackstep()
@@ -192,31 +201,34 @@ func skillCancel(string:String)->void:
 				if player.throw_rock_duration == true:
 					player.throw_rock_duration = false
 				if player.slide_duration == true:
-					player.all_skills.slideCD()
+					player.current_race_gender.slideCD()
 					player.slide_duration = false
 				if player.dash_duration == true:
-					player.all_skills.dashCD()
+					player.current_race_gender.dashCD()
 					player.dash_duration = false
-	#			if player.stomp_duration == true:
-	#				player.stomp_duration = false
-	#				player.all_skills.stompCD()
+#				if player.stomp_duration == true:
+#					player.stomp_duration = false
+#					player.current_race_gender.stompCD()
+				if player.kick_duration == true:
+					player.kick_duration = false
+					player.current_race_gender.kickCD()
 				if player.overhead_slash_duration == true:
-					player.all_skills.overheadSlashCD()
+					player.current_race_gender.overheadSlashCD()
 					player.overhead_slash_duration = false
 				if player.rising_slash_duration == true:
 					player.rising_slash_duration = false
-					player.all_skills.risingSlashCD()
+					player.current_race_gender.risingSlashCD()
 				if player.heart_trust_duration == true:
-					player.all_skills.heartTrustSlashCD()
+					player.current_race_gender.HeartTrustCD()
 					player.heart_trust_duration = false
 				if player.cyclone_duration == true:
-					player.all_skills.cycloneCD()
+					player.current_race_gender.cycloneCD()
 					player.cyclone_duration = false
 				if player.whirlwind_duration == true:
-					player.all_skills.whirlwindCD()
+					player.current_race_gender.whirlwindCD()
 					player.whirlwind_duration = false
 				if player.taunt_duration == true:
-					player.all_skills.tauntCD()
+					player.current_race_gender.tauntCD()
 					player.taunt_duration = false
 			"overhead_slash":
 				interruptBackstep()
@@ -224,31 +236,34 @@ func skillCancel(string:String)->void:
 				if player.throw_rock_duration == true:
 					player.throw_rock_duration = false
 				if player.slide_duration == true:
-					player.all_skills.slideCD()
+					player.current_race_gender.slideCD()
 					player.slide_duration = false
 				if player.dash_duration == true:
-					player.all_skills.dashCD()
+					player.current_race_gender.dashCD()
 					player.dash_duration = false
 				if player.stomp_duration == true:
 					player.stomp_duration = false
-					player.all_skills.stompCD()
-	#			if player.overhead_slash_duration == true:
-	#				player.all_skills.overheadSlashCD()
-	#				player.overhead_slash_duration = false
+					player.current_race_gender.stompCD()
+				if player.kick_duration == true:
+					player.kick_duration = false
+					player.current_race_gender.kickCD()
+#				if player.overhead_slash_duration == true:
+#					player.current_race_gender.overheadSlashCD()
+#					player.overhead_slash_duration = false
 				if player.rising_slash_duration == true:
 					player.rising_slash_duration = false
-					player.all_skills.risingSlashCD()
+					player.current_race_gender.risingSlashCD()
 				if player.heart_trust_duration == true:
-					player.all_skills.heartTrustSlashCD()
+					player.current_race_gender.HeartTrustCD()
 					player.heart_trust_duration = false
 				if player.cyclone_duration == true:
-					player.all_skills.cycloneCD()
+					player.current_race_gender.cycloneCD()
 					player.cyclone_duration = false
 				if player.whirlwind_duration == true:
-					player.all_skills.whirlwindCD()
+					player.current_race_gender.whirlwindCD()
 					player.whirlwind_duration = false
 				if player.taunt_duration == true:
-					player.all_skills.tauntCD()
+					player.current_race_gender.tauntCD()
 					player.taunt_duration = false
 			"rising_slash":
 				interruptBackstep()
@@ -256,31 +271,34 @@ func skillCancel(string:String)->void:
 				if player.throw_rock_duration == true:
 					player.throw_rock_duration = false
 				if player.slide_duration == true:
-					player.all_skills.slideCD()
+					player.current_race_gender.slideCD()
 					player.slide_duration = false
 				if player.dash_duration == true:
-					player.all_skills.dashCD()
+					player.current_race_gender.dashCD()
 					player.dash_duration = false
 				if player.stomp_duration == true:
 					player.stomp_duration = false
-					player.all_skills.stompCD()
+					player.current_race_gender.stompCD()
+				if player.kick_duration == true:
+					player.kick_duration = false
+					player.current_race_gender.kickCD()
 				if player.overhead_slash_duration == true:
-					player.all_skills.overheadSlashCD()
+					player.current_race_gender.overheadSlashCD()
 					player.overhead_slash_duration = false
-	#			if player.rising_slash_duration == true:
-	#				player.rising_slash_duration = false
-					player.all_skills.risingSlashCD()
+#				if player.rising_slash_duration == true:
+#					player.rising_slash_duration = false
+#					player.current_race_gender.risingSlashCD()
 				if player.heart_trust_duration == true:
-					player.all_skills.heartTrustSlashCD()
+					player.current_race_gender.HeartTrustCD()
 					player.heart_trust_duration = false
 				if player.cyclone_duration == true:
-					player.all_skills.cycloneCD()
+					player.current_race_gender.cycloneCD()
 					player.cyclone_duration = false
 				if player.whirlwind_duration == true:
-					player.all_skills.whirlwindCD()
+					player.current_race_gender.whirlwindCD()
 					player.whirlwind_duration = false
 				if player.taunt_duration == true:
-					player.all_skills.tauntCD()
+					player.current_race_gender.tauntCD()
 					player.taunt_duration = false
 			"cyclone":
 				interruptBackstep()
@@ -288,31 +306,34 @@ func skillCancel(string:String)->void:
 				if player.throw_rock_duration == true:
 					player.throw_rock_duration = false
 				if player.slide_duration == true:
-					player.all_skills.slideCD()
+					player.current_race_gender.slideCD()
 					player.slide_duration = false
 				if player.dash_duration == true:
-					player.all_skills.dashCD()
+					player.current_race_gender.dashCD()
 					player.dash_duration = false
 				if player.stomp_duration == true:
 					player.stomp_duration = false
-					player.all_skills.stompCD()
+					player.current_race_gender.stompCD()
+				if player.kick_duration == true:
+					player.kick_duration = false
+					player.current_race_gender.kickCD()
 				if player.overhead_slash_duration == true:
-					player.all_skills.overheadSlashCD()
+					player.current_race_gender.overheadSlashCD()
 					player.overhead_slash_duration = false
 				if player.rising_slash_duration == true:
 					player.rising_slash_duration = false
-					player.all_skills.risingSlashCD()
+					player.current_race_gender.risingSlashCD()
 				if player.heart_trust_duration == true:
-					player.all_skills.heartTrustSlashCD()
+					player.current_race_gender.HeartTrustCD()
 					player.heart_trust_duration = false
-	#			if player.cyclone_duration == true:
-	#				player.all_skills.cycloneCD()
-	#				player.cyclone_duration = false
+#				if player.cyclone_duration == true:
+#					player.current_race_gender.cycloneCD()
+#					player.cyclone_duration = false
 				if player.whirlwind_duration == true:
-					player.all_skills.whirlwindCD()
+					player.current_race_gender.whirlwindCD()
 					player.whirlwind_duration = false
 				if player.taunt_duration == true:
-					player.all_skills.tauntCD()
+					player.current_race_gender.tauntCD()
 					player.taunt_duration = false
 			"whirlwind":
 				interruptBackstep()
@@ -320,31 +341,34 @@ func skillCancel(string:String)->void:
 				if player.throw_rock_duration == true:
 					player.throw_rock_duration = false
 				if player.slide_duration == true:
-					player.all_skills.slideCD()
+					player.current_race_gender.slideCD()
 					player.slide_duration = false
 				if player.dash_duration == true:
-					player.all_skills.dashCD()
+					player.current_race_gender.dashCD()
 					player.dash_duration = false
 				if player.stomp_duration == true:
 					player.stomp_duration = false
-					player.all_skills.stompCD()
+					player.current_race_gender.stompCD()
+				if player.kick_duration == true:
+					player.kick_duration = false
+					player.current_race_gender.kickCD()
 				if player.overhead_slash_duration == true:
-					player.all_skills.overheadSlashCD()
+					player.current_race_gender.overheadSlashCD()
 					player.overhead_slash_duration = false
 				if player.rising_slash_duration == true:
 					player.rising_slash_duration = false
-					player.all_skills.risingSlashCD()
+					player.current_race_gender.risingSlashCD()
 				if player.heart_trust_duration == true:
-					player.all_skills.heartTrustSlashCD()
+					player.current_race_gender.HeartTrustCD()
 					player.heart_trust_duration = false
 				if player.cyclone_duration == true:
-					player.all_skills.cycloneCD()
+					player.current_race_gender.cycloneCD()
 					player.cyclone_duration = false
-	#			if player.whirlwind_duration == true:
-	#				player.all_skills.whirlwindCD()
-	#				player.whirlwind_duration = false
+#				if player.whirlwind_duration == true:
+#					player.current_race_gender.whirlwindCD()
+#					player.whirlwind_duration = false
 				if player.taunt_duration == true:
-					player.all_skills.tauntCD()
+					player.current_race_gender.tauntCD()
 					player.taunt_duration = false
 			"heart_trust":
 				interruptBackstep()
@@ -352,31 +376,34 @@ func skillCancel(string:String)->void:
 				if player.throw_rock_duration == true:
 					player.throw_rock_duration = false
 				if player.slide_duration == true:
-					player.all_skills.slideCD()
+					player.current_race_gender.slideCD()
 					player.slide_duration = false
 				if player.dash_duration == true:
-					player.all_skills.dashCD()
+					player.current_race_gender.dashCD()
 					player.dash_duration = false
 				if player.stomp_duration == true:
 					player.stomp_duration = false
-					player.all_skills.stompCD()
+					player.current_race_gender.stompCD()
+				if player.kick_duration == true:
+					player.kick_duration = false
+					player.current_race_gender.kickCD()
 				if player.overhead_slash_duration == true:
-					player.all_skills.overheadSlashCD()
+					player.current_race_gender.overheadSlashCD()
 					player.overhead_slash_duration = false
 				if player.rising_slash_duration == true:
 					player.rising_slash_duration = false
-					player.all_skills.risingSlashCD()
-	#			if player.heart_trust_duration == true:
-	#				player.all_skills.heartTrustSlashCD()
-	#				player.heart_trust_duration = false
+					player.current_race_gender.risingSlashCD()
+#				if player.heart_trust_duration == true:
+#					player.current_race_gender.HeartTrustCD()
+#					player.heart_trust_duration = false
 				if player.cyclone_duration == true:
-					player.all_skills.cycloneCD()
+					player.current_race_gender.cycloneCD()
 					player.cyclone_duration = false
 				if player.whirlwind_duration == true:
-					player.all_skills.whirlwindCD()
+					player.current_race_gender.whirlwindCD()
 					player.whirlwind_duration = false
 				if player.taunt_duration == true:
-					player.all_skills.tauntCD()
+					player.current_race_gender.tauntCD()
 					player.taunt_duration = false
 			"taunt":
 				interruptBackstep()
@@ -384,66 +411,69 @@ func skillCancel(string:String)->void:
 				if player.throw_rock_duration == true:
 					player.throw_rock_duration = false
 				if player.slide_duration == true:
-					player.all_skills.slideCD()
+					player.current_race_gender.slideCD()
 					player.slide_duration = false
 				if player.dash_duration == true:
-					player.all_skills.dashCD()
+					player.current_race_gender.dashCD()
 					player.dash_duration = false
 				if player.stomp_duration == true:
 					player.stomp_duration = false
-					player.all_skills.stompCD()
+					player.current_race_gender.stompCD()
+				if player.kick_duration == true:
+					player.kick_duration = false
+					player.current_race_gender.kickCD()
 				if player.overhead_slash_duration == true:
-					player.all_skills.overheadSlashCD()
+					player.current_race_gender.overheadSlashCD()
 					player.overhead_slash_duration = false
 				if player.rising_slash_duration == true:
 					player.rising_slash_duration = false
-					player.all_skills.risingSlashCD()
+					player.current_race_gender.risingSlashCD()
 				if player.heart_trust_duration == true:
-					player.all_skills.heartTrustSlashCD()
+					player.current_race_gender.HeartTrustCD()
 					player.heart_trust_duration = false
 				if player.cyclone_duration == true:
-					player.all_skills.cycloneCD()
+					player.current_race_gender.cycloneCD()
 					player.cyclone_duration = false
 				if player.whirlwind_duration == true:
-					player.all_skills.whirlwindCD()
+					player.current_race_gender.whirlwindCD()
 					player.whirlwind_duration = false
-	#			if player.taunt_duration == true:
-	#				player.all_skills.tauntCD()
-	#				player.taunt_duration = false
+#				if player.taunt_duration == true:
+#					player.current_race_gender.tauntCD()
+#					player.taunt_duration = false
 			"kick":
 				interruptBackstep()
 				interruptBaseAtk()
 				if player.throw_rock_duration == true:
 					player.throw_rock_duration = false
 				if player.slide_duration == true:
-					player.all_skills.slideCD()
+					player.current_race_gender.slideCD()
 					player.slide_duration = false
 				if player.dash_duration == true:
-					player.all_skills.dashCD()
+					player.current_race_gender.dashCD()
 					player.dash_duration = false
 				if player.stomp_duration == true:
 					player.stomp_duration = false
-					player.all_skills.stompCD()
+					player.current_race_gender.stompCD()
 #				if player.kick_duration == true:
 #					player.kick_duration = false
-#					player.all_skills.kickCD()
+#					player.current_race_gender.kickCD()
 				if player.overhead_slash_duration == true:
-					player.all_skills.overheadSlashCD()
+					player.current_race_gender.overheadSlashCD()
 					player.overhead_slash_duration = false
 				if player.rising_slash_duration == true:
 					player.rising_slash_duration = false
-					player.all_skills.risingSlashCD()
+					player.current_race_gender.risingSlashCD()
 				if player.heart_trust_duration == true:
-					player.all_skills.heartTrustSlashCD()
+					player.current_race_gender.HeartTrustCD()
 					player.heart_trust_duration = false
 				if player.cyclone_duration == true:
-					player.all_skills.cycloneCD()
+					player.current_race_gender.cycloneCD()
 					player.cyclone_duration = false
 				if player.whirlwind_duration == true:
-					player.all_skills.whirlwindCD()
+					player.current_race_gender.whirlwindCD()
 					player.whirlwind_duration = false
 				if player.taunt_duration == true:
-					player.all_skills.tauntCD()
+					player.current_race_gender.tauntCD()
 					player.taunt_duration = false
 			"none":
 				interruptBackstep()
@@ -451,34 +481,34 @@ func skillCancel(string:String)->void:
 				if player.throw_rock_duration == true:
 					player.throw_rock_duration = false
 				if player.slide_duration == true:
-					player.all_skills.slideCD()
+					player.current_race_gender.slideCD()
 					player.slide_duration = false
 				if player.dash_duration == true:
-					player.all_skills.dashCD()
+					player.current_race_gender.dashCD()
 					player.dash_duration = false
 				if player.stomp_duration == true:
 					player.stomp_duration = false
-					player.all_skills.stompCD()
+					player.current_race_gender.stompCD()
 				if player.kick_duration == true:
 					player.kick_duration = false
-					player.all_skills.kickCD()
+					player.current_race_gender.kickCD()
 				if player.overhead_slash_duration == true:
-					player.all_skills.overheadSlashCD()
+					player.current_race_gender.overheadSlashCD()
 					player.overhead_slash_duration = false
 				if player.rising_slash_duration == true:
 					player.rising_slash_duration = false
-					player.all_skills.risingSlashCD()
+					player.current_race_gender.risingSlashCD()
 				if player.heart_trust_duration == true:
-					player.all_skills.heartTrustSlashCD()
+					player.current_race_gender.HeartTrustCD()
 					player.heart_trust_duration = false
 				if player.cyclone_duration == true:
-					player.all_skills.cycloneCD()
+					player.current_race_gender.cycloneCD()
 					player.cyclone_duration = false
 				if player.whirlwind_duration == true:
-					player.all_skills.whirlwindCD()
+					player.current_race_gender.whirlwindCD()
 					player.whirlwind_duration = false
 				if player.taunt_duration == true:
-					player.all_skills.tauntCD()
+					player.current_race_gender.tauntCD()
 					player.taunt_duration = false
 
 func interruptBaseAtk():
@@ -487,31 +517,31 @@ func interruptBaseAtk():
 	
 func interruptBackstep()->void:
 	if player.leftstep_duration == true:
-		player.backstepCD()
+		player.all_skills.backstepCD()
 		player.backstep_duration = false
 		player.frontstep_duration = false
 		player.leftstep_duration = false
 		player.rightstep_duration = false
 	if player.backstep_duration == true:
-		player.backstepCD()
+		player.all_skills.backstepCD()
 		player.backstep_duration = false
 		player.frontstep_duration = false
 		player.leftstep_duration = false
 		player.rightstep_duration = false
 	if player.frontstep_duration == true :
-		player.backstepCD()
+		player.all_skills.backstepCD()
 		player.backstep_duration = false
 		player.frontstep_duration = false
 		player.leftstep_duration = false
 		player.rightstep_duration = false
 	if player.rightstep_duration == true:
-		player.backstepCD()
+		player.all_skills.backstepCD()
 		player.backstep_duration = false
 		player.frontstep_duration = false
 		player.leftstep_duration = false
 		player.rightstep_duration = false
 	if player.leftstep_duration == true:
-		player.backstepCD()
+		player.all_skills.backstepCD()
 		player.backstep_duration = false
 		player.frontstep_duration = false
 		player.leftstep_duration = false
@@ -530,29 +560,32 @@ func getInterrupted()->void:#Universal stop, call this when I'm stunned, stagger
 	if player.throw_rock_duration == true:
 		player.throw_rock_duration = false
 	if player.slide_duration == true:
-		player.all_skills.slideCD()
+		player.current_race_gender.slideCD()
 		player.slide_duration = false
 	if player.dash_duration == true:
-		player.all_skills.dashCD()
+		player.current_race_gender.dashCD()
 		player.dash_duration = false
 	if player.stomp_duration == true:
 		player.stomp_duration = false
-		player.all_skills.stompCD()
+		player.current_race_gender.stompCD()
+	if player.kick_duration == true:
+		player.kick_duration = false
+		player.current_race_gender.kickCD()
 	if player.overhead_slash_duration == true:
-		player.all_skills.overheadSlashCD()
+		player.current_race_gender.overheadSlashCD()
 		player.overhead_slash_duration = false
 	if player.rising_slash_duration == true:
 		player.rising_slash_duration = false
-		player.all_skills.risingSlashCD()
+		player.current_race_gender.risingSlashCD()
 	if player.heart_trust_duration == true:
-		player.all_skills.heartTrustSlashCD()
+		player.current_race_gender.HeartTrustCD()
 		player.heart_trust_duration = false
 	if player.cyclone_duration == true:
-		player.all_skills.cycloneCD()
+		player.current_race_gender.cycloneCD()
 		player.cyclone_duration = false
 	if player.whirlwind_duration == true:
-		player.all_skills.whirlwindCD()
+		player.current_race_gender.whirlwindCD()
 		player.whirlwind_duration = false
 	if player.taunt_duration == true:
-		player.all_skills.tauntCD()
+		player.current_race_gender.tauntCD()
 		player.taunt_duration = false

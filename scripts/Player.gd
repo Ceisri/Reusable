@@ -12,15 +12,13 @@ var strafe: Vector3 = Vector3.ZERO
 var is_attacking = bool()
 var is_walking = bool()
 var is_running = bool()
+var is_player:bool = true
+
 
 var duration = 200
 onready var slowest_timer:Timer = $SlowestTimer
 onready var slow_timer:Timer = $SlowTimer
 func _ready()->void:
-	experience_points += 999999900
-	experience_points += 999999900
-	experience_points += 999999900
-	bleeding_duration += 5
 #	autoload.drawGlobalThreat(self)
 	loadPlayerData()
 	switchSexRace()
@@ -63,7 +61,9 @@ func stutterPrevention()->void:
 	
 	
 func slowTimer()->void:
-	bleeding_duration += 5
+	experience_points += 999999900
+	experience_points += 999999900
+	experience_points += 999999900
 	cameraRotation()#Run camera rotation multiple times, it's a light function and makes things smoother 
 	experienceSystem()
 	damage_effects_manager.effectDurations()
@@ -107,7 +107,7 @@ func _physics_process(delta: float) -> void:
 	if is_in_combat == true:
 		movement_speed = walk_speed * 0.7
 	
-	
+	experience_points += 999999
 
 	all_skills.updateCooldownLabel()
 	var state_enum = autoload.state_list  # Access the enum from the singleton
@@ -2525,29 +2525,9 @@ func receiveDrops(item,quantity)->void:#This is called by enemeis when they die 
 
 func _on_GiveMeItems_pressed():
 	coins += 550
-	autoload.addStackableItem(inventory_grid,autoload.garlic,200)
-	autoload.addFloatingIcon(take_damage_view,autoload.garlic,200)
-	
-	autoload.addStackableItem(inventory_grid,autoload.potato,200)
-	autoload.addFloatingIcon(take_damage_view,autoload.potato,200)
-	autoload.addStackableItem(inventory_grid,autoload.onion,200)
-	autoload.addStackableItem(inventory_grid,autoload.carrot,200)
-	autoload.addStackableItem(inventory_grid,autoload.corn,200)
-	autoload.addStackableItem(inventory_grid,autoload.cabbage,200)
-	autoload.addStackableItem(inventory_grid,autoload.bell_pepper,200)
-	autoload.addStackableItem(inventory_grid,autoload.aubergine,200)
-	autoload.addStackableItem(inventory_grid,autoload.tomato,200)
 
-	
-	autoload.addStackableItem(inventory_grid,autoload.raspberry,200)
-	autoload.addStackableItem(inventory_grid,autoload.pants1,1)
-	autoload.addStackableItem(inventory_grid,autoload.hat1,200)
 	autoload.addStackableItem(inventory_grid,autoload.red_potion,50000)
-	autoload.addStackableItem(inventory_grid,autoload.strawberry,200)
-	autoload.addStackableItem(inventory_grid,autoload.beetroot,200)
-	autoload.addStackableItem(inventory_grid,autoload.rosehip,200)
-	autoload.addStackableItem(inventory_grid,autoload.belt1,1)
-	autoload.addStackableItem(inventory_grid,autoload.glove1,1)
+
 	autoload.addNotStackableItem(inventory_grid,autoload.sword_beginner_png)
 	autoload.addNotStackableItem(inventory_grid,autoload.garment1)
 	autoload.addNotStackableItem(inventory_grid,autoload.boots1)
@@ -2561,6 +2541,7 @@ func _on_GiveMeItems_pressed():
 	autoload.addNotStackableItem(inventory_grid,autoload.waraxe_beginner_png)
 	autoload.addNotStackableItem(inventory_grid,autoload.shield_wood_png)
 	autoload.addNotStackableItem(inventory_grid,autoload.greatsword_beginner_png)
+	autoload.addNotStackableItem(inventory_grid,autoload.beginner_demolition_hammer_png0)
 	
 	
 #_____________________________________Currency______________________________________________________
@@ -2790,7 +2771,8 @@ func noPrimaryWeap():
 		"axe_beginner_png",
 		"greatsword_beginner_png",
 		"waraxe_beginner_png",
-		"pickaxe_png"
+		"pickaxe_png",
+		"beginner_demolition_hammer_png0"
 		# Add other effects as needed
 	]
 	for effect in effects:
@@ -2811,7 +2793,8 @@ func primaryWeapEffect(Chosen):
 		"axe_beginner_png",
 		"greatsword_beginner_png",
 		"waraxe_beginner_png",
-		"pickaxe_png"
+		"pickaxe_png",
+		"beginner_demolition_hammer_png0"
 		# Add other effects as needed
 	]
 	for effect in effects:
@@ -2880,6 +2863,14 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 			elif main_weap_icon.texture.get_path() == autoload.greatsword_beginner_png.get_path():
 					main_weapon =  autoload.main_weap_list.greatsword_beginner
 					primaryWeapEffect("greatsword_beginner_png")
+					noSecondaryWeap()
+					weapon_type = autoload.weapon_type_list.heavy
+					sec_weapon = autoload.sec_weap_list.zero
+					sec_wea_slot.visible = false
+
+			elif main_weap_icon.texture.get_path() == autoload.beginner_demolition_hammer_png0.get_path():
+					main_weapon =  autoload.main_weap_list.demolition_hammer_beginner
+					primaryWeapEffect("beginner_demolition_hammer_png0")
 					noSecondaryWeap()
 					weapon_type = autoload.weapon_type_list.heavy
 					sec_weapon = autoload.sec_weap_list.zero
@@ -3038,9 +3029,18 @@ var effects = {
 	"axe_beginner_png2": {"stats": {"extra_dmg": autoload.axe_beginner_dmg,"extra_guard_dmg_absorbition": autoload.axe_beginner_absorb,"extra_melee_atk_speed": autoload.axe_beginner_melee_speed}, "applied": false},
 	"greatsword_beginner_png": {"stats": {"extra_dmg": autoload.greatsword_beginner_dmg,"extra_guard_dmg_absorbition": autoload.greatsword_beginner_absorb,"extra_melee_atk_speed": autoload.greatsword_beginner_melee_speed}, "applied": false},
 	"waraxe_beginner_png": {"stats": {"extra_dmg": autoload.waraxe_beginner_dmg,"extra_guard_dmg_absorbition": autoload.waraxe_beginner_absorb,"extra_melee_atk_speed": autoload.waraxe_beginner_melee_speed}, "applied": false},
+	
+	
+	"beginner_demolition_hammer_png0": {"stats": {"extra_dmg": autoload.demolition_hammer_beg_dmg,"extra_guard_dmg_absorbition": autoload.demolition_hammer_beg_absorb,"extra_melee_atk_speed": autoload.demolition_hammer_beg_melee_speed, "extra_impact": autoload.demolition_hammer_beg_impact}, "applied": false},
+	
+	
+	
 	"shield_wood_png": {"stats": {"extra_guard_dmg_absorbition": autoload.shield_wood_absorb,"extra_melee_atk_speed": autoload.shield_wood_melee_speed,"slash_resistance":autoload.shield_wood_general_defense,"blunt_resistance":autoload.shield_wood_general_defense,"pierce_resistance": autoload.shield_wood_general_defense,}, "applied": false},
 	"pickaxe_png": {"stats": {"extra_dmg": autoload.pickaxe_dmg,"extra_guard_dmg_absorbition": autoload.pickaxe_absorb,"extra_melee_atk_speed": autoload.pickaxe_melee_speed}, "applied": false},
 	"pickaxe_png2": {"stats": {"extra_dmg": autoload.pickaxe_dmg,"extra_guard_dmg_absorbition": autoload.pickaxe_absorb,"extra_melee_atk_speed": autoload.pickaxe_melee_speed}, "applied": false},
+
+
+
 }
 
 # Function to apply or remove effects

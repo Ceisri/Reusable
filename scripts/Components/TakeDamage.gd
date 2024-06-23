@@ -15,11 +15,10 @@ func effectDurations()->void:
 			pass
 		else:
 			var damage: float = autoload.bleed_dmg 
-			if parent.is_in_group("Player"):
+			if parent.is_player == true:
 				takeDOTPlayer(damage,parent.stored_instigator,"bleed")
 			else:
-				takeDamagePlayer(damage, 0,parent.stored_instigator, 0, "bleed")
-
+				takeDOT(damage,damage, parent.stored_instigator, "bleed")
 		parent.applyEffect("bleeding",true)
 		parent.bleeding_duration -= 1
 	else:
@@ -472,7 +471,10 @@ func takeDamagePlayer(damage, aggro_power, instigator, stagger_chance, damage_ty
 					if parent.health >0:
 						parent.staggered_duration = true
 						text.status = "Staggered!"
-						viewport.add_child(text)
+						if viewport == null:
+							add_child(text)
+						else:
+							viewport.add_child(text)
 					else:
 						parent.staggered_duration = false
 						parent.knockeddown_duration = false
@@ -505,7 +507,10 @@ func takeDamagePlayer(damage, aggro_power, instigator, stagger_chance, damage_ty
 					parent.health -= damage_to_take	
 					text.amount =round(damage_to_take * 100)/ 100
 					text.state = damage_type
-					viewport.add_child(text)
+					if viewport == null:
+						add_child(text)
+					else:
+						viewport.add_child(text)
 		
 		
 		else: #Backstabs or Flank Attacks
@@ -515,14 +520,20 @@ func takeDamagePlayer(damage, aggro_power, instigator, stagger_chance, damage_ty
 					text.amount =round(total_dmg_to_take * 100)/ 100
 					text.status = "Critical + Flank!"
 					text.state = damage_type
-					viewport.add_child(text)
+					if viewport == null:
+						add_child(text)
+					else:
+						viewport.add_child(text)
 				else:
 					var total_dmg_to_take = damage_to_take + instigator.flank_dmg
 					parent.health -= total_dmg_to_take
 					text.amount =round(total_dmg_to_take * 100)/ 100
 					text.state = damage_type
 					text.status = "Flanked!"
-					viewport.add_child(text)
+					if viewport == null:
+						add_child(text)
+					else:
+						viewport.add_child(text)
 
 		if random_range < stagger_chance - parent.stagger_resistance:
 			if parent.health >0:
@@ -531,7 +542,10 @@ func takeDamagePlayer(damage, aggro_power, instigator, stagger_chance, damage_ty
 	else:
 		text.status = "Parried"
 		text.state = damage_type
-		viewport.add_child(text)
+		if viewport == null:
+			add_child(text)
+		else:
+			viewport.add_child(text)
 		
 
 func takeStagger(stagger_chance: float) -> void:
@@ -570,24 +584,21 @@ func lifesteal(damage_to_take)-> void:#This is called by the enemy's script when
 
 var has_got_killed_already:bool = false
 func getKilled(instigator)->void:
-	if has_got_killed_already == false:
-		var entity_holder = parent.entity_holder
-		var health = parent.health
-		var max_health = parent.max_health
-		if parent.has_died == false:
-			if health <= 0:
-				parent.state = autoload.state_list.dead
+	if parent.health <= 0:
+		if parent.death_duration == false:
+			if has_got_killed_already == false:
+				parent.death_duration = true
 				print(str(instigator.entity_name) +" has killed " +str(parent.entity_name))
 				if instigator.auto_loot == true:
-						entity_holder.dropItems(instigator)
+						parent.entity_holder.dropItems(instigator)
 						if instigator.has_method("takeExperience"):
-							instigator.takeExperience(round((max_health * 0.01)+ parent.experience_worth))
+							instigator.takeExperience(round((parent.max_health * 0.01)+ parent.experience_worth))
 							has_got_killed_already = true
 				else:
-						entity_holder.dropItemsLootTable(instigator)
+						parent.entity_holder.dropItemsLootTable(instigator)
 						has_got_killed_already = true
 						if instigator.has_method("takeExperience"):
-							instigator.takeExperience(round((max_health * 0.01)+ parent.experience_worth))
+							instigator.takeExperience(round((parent.max_health * 0.01)+ parent.experience_worth))
 
 
 
