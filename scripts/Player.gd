@@ -258,7 +258,7 @@ func passiveActions()-> void:
 func activeActions()->void:
 	SkillQueueSystem()#DO NOT REMOVE THIS! it is neccessary to allow skill cancelling, skill cancelling doesn't work without skill queue, it has a toggle on off anyway for players that don't like it 
 	if Input.is_action_pressed("rclick"):
-		switchToCombatStance()
+		switchWeaponFromHandToSideOrBack()
 		state == autoload.state_list.guard
 		skill_queue.skillCancel("throw_rock")
 
@@ -300,7 +300,7 @@ func activeActions()->void:
 	elif overhead_slash_duration == true:
 		if all_skills.can_overhead_slash == true:
 			if resolve > all_skills.overhead_slash_cost:
-				switchToCombatStance()
+				switchWeaponFromHandToSideOrBack()
 				directionToCamera()
 				clearParryAbsorb()
 				moveDuringAnimation(all_skills.overhead_slash_distance)
@@ -334,7 +334,7 @@ func activeActions()->void:
 #Whirlwind__________________________________________________________________________________________
 	elif whirlwind_duration == true :
 		directionToCamera()
-		switchToCombatStance()
+		switchWeaponFromHandToSideOrBack()
 		clearParryAbsorb()
 		if all_skills.can_whirlwind == true:
 			if resolve > all_skills.whirlwind_cost:
@@ -361,7 +361,7 @@ func activeActions()->void:
 #Rising slash____________________________________________________________________________________
 	elif rising_slash_duration == true:
 		directionToCamera()
-		switchToCombatStance()
+		switchWeaponFromHandToSideOrBack()
 		clearParryAbsorb()
 		moveDuringAnimation(6)
 		match weapon_type:
@@ -376,7 +376,7 @@ func activeActions()->void:
 #Cyclone____________________________________________________________________________________________
 	elif cyclone_duration == true:
 		directionToCamera()
-		switchToCombatStance()
+		switchWeaponFromHandToSideOrBack()
 		clearParryAbsorb()
 		if all_skills.can_cyclone == true:
 			if resolve > all_skills.cyclone_cost:
@@ -411,7 +411,7 @@ func activeActions()->void:
 #Heart trust____________________________________________________________________________________________
 	elif heart_trust_duration == true:
 		directionToCamera()
-		switchToCombatStance()
+		switchWeaponFromHandToSideOrBack()
 		clearParryAbsorb()
 		if all_skills.can_heart_trust == true:
 				match weapon_type:
@@ -434,7 +434,7 @@ func activeActions()->void:
 	elif taunt_duration == true:
 		directionToCamera()
 		can_walk = false
-		switchToCombatStance()
+		switchWeaponFromHandToSideOrBack()
 		is_walking = false
 		clearParryAbsorb()
 		if weapon_type == autoload.weapon_type_list.heavy:
@@ -509,7 +509,7 @@ func matchState()->void:
 					autoload.state_list.base_attack:
 						is_in_combat = true
 						directionToCamera()
-						switchToCombatStance()
+						switchWeaponFromHandToSideOrBack()
 						if weapon_type == autoload.weapon_type_list.bow:
 							can_walk = false
 						else:
@@ -517,7 +517,7 @@ func matchState()->void:
 						var slot = $UI/GUI/SkillBar/GridContainer/LClickSlot/Icon
 						skills(slot)
 					autoload.state_list.guard:
-						switchToCombatStance()
+						switchWeaponFromHandToSideOrBack()
 						var slot = $UI/GUI/SkillBar/GridContainer/RClickSlot/Icon
 						skills(slot)
 	#________________________________________movement states____________________________________________
@@ -707,7 +707,7 @@ func skills(slot)-> void:
 				else:
 					stomp_duration = true
 				is_in_combat = true
-				switchToCombatStance()
+				switchWeaponFromHandToSideOrBack()
 				skill_queue.skillCancel("stomp")
 #_________________________________________Kick______________________________________________________
 			elif slot.texture.resource_path == autoload.kick.get_path():
@@ -719,7 +719,7 @@ func skills(slot)-> void:
 						if resolve > all_skills.kick_cost:
 							kick_duration = true
 							is_in_combat = true
-							switchToCombatStance()
+							switchWeaponFromHandToSideOrBack()
 							skill_queue.skillCancel("kick")
 							
 #________________________________________THROW ROCKS________________________________________________
@@ -1302,6 +1302,7 @@ func struggle()->void:
 		revival_wait_time -= rng.randi_range(1,6)
 		struggles -= 1 
 	struggle_button.text = "Struggle:" + str(struggles)+ " remaining"
+	
 func reviveInTown()->void:
 	state  = autoload.state_list.idle
 	health = max_health 
@@ -1321,7 +1322,11 @@ func reviveInTown()->void:
 
 
 
-#_______________________________________________Basic Movement______________________________________
+#Catprisbrey's open source template
+#The template is pretty much the same, except there's no  auto-rotation, I personally don't like 
+#Dark's souls movement system, also setting the direction based on camera is better for when 
+#strafing/aiming mode is on, still left the original on even I never use anyway 
+
 var h_rot 
 var is_in_combat = false
 var enabled_climbing = false
@@ -1775,7 +1780,6 @@ func _on_Unstuck_pressed():
 	
 	
 func skillUserInterfaceInputs():
-	
 	$UI/GUI/CombatStats.visible = $UI/GUI/Equipment.visible
 	if Input.is_action_just_pressed("skills"):
 		closeSwitchOpen(skill_trees)
@@ -1783,7 +1787,7 @@ func skillUserInterfaceInputs():
 	elif Input.is_action_just_pressed("tab"):
 		saveGame()
 		is_in_combat = !is_in_combat
-		switchToCombatStance()
+		switchWeaponFromHandToSideOrBack()
 		skill_queue.getInterrupted()
 
 		
@@ -2795,14 +2799,27 @@ func gloveMouseExited():
 
 	
 ####################################################################################################
-var instanced_weapon_in_hand:bool = false
-func switchToCombatStance():
-	if is_instance_valid(current_race_gender):
-		current_race_gender.switchWeapon()
 
 
 
-#Equipment 2D___________________________________________________________________
+
+# @Ceisri 
+# Equipment System
+# We check if the icon.texture of a specific equipment slot matches the texture path
+# of an item. All the paths are found in Global.gd and accessed with autoload, which is a singleton.
+# If the texture of the slot's icon matches, we activate an effect and deactivate other effects of similar equipment type.
+# For example, if the primary weapon type is autoload.weapset1_icons["sword"], we set the primary weapon effect of that 
+# specific weapon to true and turn off all the other primary weapon effects but not the secondary weapon effects,
+# chest effects, boots effects, and so on.
+# The 3D meshes are added directly as children of the skeleton. Where is the skeleton? At current_race_gender.skeleton.
+# I tried adding the weapons as children of a bone attachment and setting it as current_weap_instance,
+# then checking if it was null or not, checking the stats directly in the weapon instance, and so on, which also allowed
+# for a system where the player could drop and pick up items from and on the ground. It wasn't very complicated,
+# but this new system allows for "freedom." I can potentially hold as many weapons on me as possible,
+# and have them on my back, side, or mix and match.
+# Anyways for this to work, just make sure every equipment piece is rigged to that skelton,
+# and when importing into the engine make sure it has the skin properties with the matching skeleton in the inspector
+
 var weapon_type = autoload.weapon_type_list.fist
 var main_weapon = autoload.main_weap_list.zero
 var sec_weapon = autoload.sec_weap_list.zero
@@ -3027,9 +3044,18 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 	main_weap_icon.savedata()
 
 
-#Use these for both equipment stats and for buffs or debuffs
+
+func switchWeaponFromHandToSideOrBack():
+	if is_instance_valid(current_race_gender):
+		current_race_gender.switchWeapon()
+
+
+
+#@Ceisri
+
+
 #___________________________________Status effects______________________________
-var effects = {
+var effects:Dictionary = {
 #_______________________________________________Debuffs ____________________________________________
 	"overhydration": {"stats": { "extra_vitality": -0.02,"extra_agility": -0.05,}, "applied": false},
 	"dehydration": {"stats": { "extra_intelligence": -0.25,"extra_agility": -0.25,}, "applied": false},
