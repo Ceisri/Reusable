@@ -36,7 +36,6 @@ func can_drop_data(position, data):
 	else:
 		return false
 
-
 func drop_data(position, data):
 	var origin_texture = data["origin_texture"]
 	var target_texture = icon.texture

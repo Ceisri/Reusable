@@ -193,18 +193,32 @@ func switchWeapon()->void:
 		match player.main_weapon:
 			autoload.main_weap_list.zero:
 				equipArmor(autoload.weapset1_scenes["null"],"main")
-
+				
+			autoload.main_weap_list.sword_beginner:
+				if player.is_in_combat == true:
+					equipArmor(autoload.weapset1_scenes["sword"],"main")
+				else:
+					equipArmor(autoload.weapset1_scenes["swordB"],"main")
+					
+			autoload.main_weap_list.hammer_beginner:
+				if player.is_in_combat == true:
+					equipArmor(autoload.weapset1_scenes["hammer"],"main")
+				else:
+					equipArmor(autoload.weapset1_scenes["hammerB"],"main")
+					
+			autoload.main_weap_list.mace_beginner:
+				if player.is_in_combat == true:
+					equipArmor(autoload.weapset1_scenes["mace"],"main")
+				else:
+					equipArmor(autoload.weapset1_scenes["maceB"],"main")
+					
 			autoload.main_weap_list.axe_beginner:
 				if player.is_in_combat == true:
 					equipArmor(autoload.weapset1_scenes["axe"],"main")
 				else:
 					equipArmor(autoload.weapset1_scenes["axeB"],"main")
 							
-			autoload.main_weap_list.sword_beginner:
-				if player.is_in_combat == true:
-					equipArmor(autoload.weapset1_scenes["sword"],"main")
-				else:
-					equipArmor(autoload.weapset1_scenes["swordB"],"main")
+
 					
 			autoload.main_weap_list.greataxe_beginner:
 				if player.is_in_combat == true:
@@ -244,26 +258,40 @@ func switchWeapon()->void:
 				autoload.sec_weap_list.zero:
 					equipArmor(autoload.weapset1_scenes["null_sec"],"secondary")
 
+
+
+				autoload.sec_weap_list.sword_beginner:
+					if player.is_in_combat == true:
+						equipArmor(autoload.weapset1_scenes["sword_sec"],"secondary")
+					else:
+						equipArmor(autoload.weapset1_scenes["sword_secB"],"secondary")
+
+				autoload.sec_weap_list.hammer_beginner:
+					if player.is_in_combat == true:
+						equipArmor(autoload.weapset1_scenes["hammer_sec"],"secondary")
+					else:
+						equipArmor(autoload.weapset1_scenes["hammer_secB"],"secondary")
+						
+				autoload.sec_weap_list.mace_beginner:
+					if player.is_in_combat == true:
+						equipArmor(autoload.weapset1_scenes["mace_sec"],"secondary")
+					else:
+						equipArmor(autoload.weapset1_scenes["mace_secB"],"secondary")
+						
+						
 				autoload.sec_weap_list.axe_beginner:
 					if player.is_in_combat == true:
 						equipArmor(autoload.weapset1_scenes["axe_sec"],"secondary")
 					else:
 						equipArmor(autoload.weapset1_scenes["axe_secB"],"secondary")
 								
-				autoload.sec_weap_list.sword_beginner:
-					if player.is_in_combat == true:
-						equipArmor(autoload.weapset1_scenes["sword_sec"],"secondary")
-					else:
-						equipArmor(autoload.weapset1_scenes["sword_secB"],"secondary")
-								
+
 				autoload.sec_weap_list.shield_beginner:
 					equipArmor(autoload.weapset1_scenes["shield"],"secondary")
 					
-					
-				
+
 var face_set:String = "1"
 #______________________________Switch Colors____________________________________
-
 var skin_color = "1"
 var armor_color = "white"
 # cloth texture 
@@ -291,11 +319,11 @@ func _on_Button_pressed():
 	var next_index = (current_index + 1) % skin_types.size()# Calculate the index of the next skin type
 	skin_color = skin_types[next_index]# Update the skin type
 	switchSkin()# Apply the new skin
-	savePlayerData()# Save the player data			
+	savePlayerData()# Save the player data
 			
 			
 			
-func changeHeadTorsoColor(materail_number, new_material, color):
+func changeHeadTorsoColor(materail_number, new_material, color):#Deprecated
 	pass
 #	new_material.albedo_texture = color
 #	new_material.flags_unshaded = true
@@ -311,7 +339,7 @@ func changeHeadTorsoColor(materail_number, new_material, color):
 #		feet0.set_surface_material(materail_number, new_material)
 
 
-func switchSkin():
+func switchSkin():#Needs more assets to finish
 	var new_material = SpatialMaterial.new()
 	match player.sex:
 		"xy":
@@ -351,7 +379,7 @@ func switchSkin():
 var skin_types = ["1","2","3","4","5","6","7"]	
 
 	
-
+	
 func randomizeArmor():
 	var jacket_types = ["blue", "white"]
 	# Find the index of the current skin type
@@ -399,7 +427,11 @@ func loadPlayerData()-> void:
 				face_set = player_data["face_set"]
 			if "smile" in player_data:
 				smile = player_data["smile"]
-#Face blend shapes__________________________________________________________________________________
+				
+				
+#Face blend shapes
+# Complete in another project, I'll just copy and past it there eventually when I make the UI for
+# the character customization here too 
 
 var Bimaxillaryprotrusion = 0 #done
 var BrowProtrusion = 0 #done
@@ -424,7 +456,7 @@ var NoseRotation = 0 #done
 var NoseSize = 0 #doen
 var smile = 0 # done
 
-func  applyBlendShapes():
+func  applyBlendShapes()->void:
 	for child in $Armature/Skeleton.get_children():
 		if child.is_in_group("face"):
 			child.set("blend_shapes/Smile",smile)

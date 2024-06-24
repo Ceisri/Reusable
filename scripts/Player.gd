@@ -1,3 +1,16 @@
+# @Ceisri 
+# My functions are writtenLikeThis(), while the ones default to the game engine are written_like_this().
+# Almost everything in the game is in this script, except preloads, dictionaries, skill cooldowns, etc.
+# Keybind editing and similar features are in their specific scripts. However, this script still includes 
+# thousands of lines for everything from combat to movement to UI. I only move things into different 
+# scripts if strictly necessary.
+# I use very_long_variable_names_that_are_very_descriptive but feel free to name your's how you prefer
+# as long as they are snake case
+# If you are using any of this in your project keep in my that due to Global.gd using a lot of preloads
+# the game doesn't have the fastest loading time so try to avoid game games that are too "instanced" 
+# and rely more on "open world" unless you find a better way and can make loading times faster
+
+
 extends KinematicBody
 onready var player_mesh: Node = $Mesh
 onready var damage_effects_manager = $"Damage&Effects"
@@ -92,6 +105,7 @@ func slowestTimer()->void:
 	SwitchEquipmentBasedOnEquipmentIcons()
 		
 func _on_3FPS_timeout()->void:
+	debug()
 	cameraRotation()#Run camera rotation multiple times, it's a light function and makes things smoother 
 	if health >0:
 		$UI/GUI/Equipment/Attributes/AttributePoints.text = "Attributes points left: " + str(attribute)
@@ -108,16 +122,8 @@ func _physics_process(delta: float) -> void:
 		movement_speed = walk_speed * 0.7
 	
 	experience_points += 999999
-
 	all_skills.updateCooldownLabel()
-	var weapon_enum =  autoload.weapon_type_list
-	var weapon_value = weapon_type
-	var weapon_name = weapon_enum.keys()[weapon_value]
 	
-	var state_enum = autoload.state_list  # Access the enum from the singleton
-	var state_value = state  # Get the current state value
-	var state_name = state_enum.keys()[state_value]  # Convert enum to string
-	$Debug.text = "state: " + state_name + "\n" + "weapon type: " + weapon_name
 	
 	convertStats()
 	limitStatsToMaximum()
@@ -148,6 +154,25 @@ func _physics_process(delta: float) -> void:
 					if taunt_duration == false:
 						walk() 
 	
+func debug() -> void:
+	var state_enum = autoload.state_list  # Access the enum from the singleton
+	var state_value = state  # Get the current state value
+	var state_name = state_enum.keys()[state_value]  # Convert enum to string
+
+	var weapon_enum = autoload.weapon_type_list
+	var weapon_value = weapon_type
+	var weapon_name = weapon_enum.keys()[weapon_value]
+
+	var main_weapon_enum = autoload.main_weap_list
+	var main_weapon_value = main_weapon
+	var main_weapon_name = main_weapon_enum.keys()[main_weapon_value]
+
+	var sec_weapon_enum = autoload.sec_weap_list
+	var sec_weapon_value = sec_weapon
+	var sec_weapon_name = sec_weapon_enum.keys()[sec_weapon_value]
+
+
+	$Debug.text = "state: " + state_name + "\n" + "weapon stance: " + weapon_name + "\n" + "right hand: " + main_weapon_name + "\n" + "left hand: " + sec_weapon_name + "\n" + "stunned: " + str(stunned_duration) + "\n" + "knocked down:" + str(knockeddown_duration) + "\n" +  "staggered: " + str(staggered_duration)
 
 #________________________________Input-State-Animation-SkillBar System______________________________
 var animation: AnimationPlayer
@@ -1146,6 +1171,12 @@ func attack():
 		is_attacking = true
 	else:
 		is_attacking = false
+		
+# @Ceisri 
+# we check 
+
+
+
 func pushEnemyAway(push_distance, enemy, push_speed):
 	var direction_to_enemy = enemy.global_transform.origin - global_transform.origin
 	direction_to_enemy.y = 0  # No vertical push
@@ -2557,6 +2588,9 @@ func _on_GiveMeItems_pressed():#Only for debugging purposes
 
 	autoload.addNotStackableItem(inventory_grid,autoload.weapset1_icons["sword"])
 	autoload.addNotStackableItem(inventory_grid,autoload.weapset1_icons["axe"])
+	autoload.addNotStackableItem(inventory_grid,autoload.weapset1_icons["hammer"])
+	autoload.addNotStackableItem(inventory_grid,autoload.weapset1_icons["mace"])
+	
 	autoload.addNotStackableItem(inventory_grid,autoload.weapset1_icons["greataxe"])
 	autoload.addNotStackableItem(inventory_grid,autoload.weapset1_icons["shield"])
 	autoload.addNotStackableItem(inventory_grid,autoload.weapset1_icons["greatsword"])
@@ -2797,12 +2831,6 @@ func gloveMouseExited():
 	SwitchEquipmentBasedOnEquipmentIcons()
 	
 
-	
-####################################################################################################
-
-
-
-
 # @Ceisri 
 # Equipment System
 # We check if the icon.texture of a specific equipment slot matches the texture path
@@ -2830,11 +2858,11 @@ var hand_l = "naked"
 var hand_r = "naked"
 var feet = autoload.boots_list.set_1
 
-
-
-func primaryWeapEffect(Chosen):
-	var effects = [
+func primaryWeapEffect(chosen: String) -> void:
+	var effects: Array = [
 		"weapset1_sword",
+		"weapset1_hammer",
+		"weapset1_mace2",
 		"weapset1_axe",
 		"weapset1_greatsword",
 		"weapset1_greataxe",
@@ -2845,26 +2873,27 @@ func primaryWeapEffect(Chosen):
 		# Add other effects as needed
 	]
 	for effect in effects:
-		if effect != Chosen:
+		if effect != chosen:
 			applyEffect(effect, false)
+	applyEffect(chosen, true)
 	
-	applyEffect(Chosen, true)
-func secondaryWeapEffect(Chosen):
-	var effects = [
+func secondaryWeapEffect(chosen: String) -> void:
+	var effects: Array = [
 		"weapset1_sword2",
+		"weapset1_hammer2",
+		"weapset1_mace2",
 		"weapset1_axe2",
 		"shield_wood_png",
-
 		# Add other effects as needed
 	]
 	for effect in effects:
-		if effect != Chosen:
+		if effect != chosen:
 			applyEffect(effect, false)
-	applyEffect(Chosen, true)
+	applyEffect(chosen, true)
 	
 
 
-func SwitchEquipmentBasedOnEquipmentIcons():
+func SwitchEquipmentBasedOnEquipmentIcons()-> void:
 #main weapon____________________________________________________________________
 	if sec_weap_icon.texture == null:
 		sec_weapon = autoload.sec_weap_list.zero
@@ -2880,6 +2909,22 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 				sec_wea_slot.visible = true
 				main_weapon = autoload.main_weap_list.sword_beginner
 				primaryWeapEffect("weapset1_sword")
+				if sec_weap_icon.texture == null:
+					sec_weapon = autoload.sec_weap_list.zero
+					weapon_type = autoload.weapon_type_list.sword
+			
+			elif main_weap_icon.texture.get_path() == autoload.weapset1_icons["hammer"].get_path():
+				sec_wea_slot.visible = true
+				main_weapon = autoload.main_weap_list.hammer_beginner
+				primaryWeapEffect("weapset1_hammer")
+				if sec_weap_icon.texture == null:
+					sec_weapon = autoload.sec_weap_list.zero
+					weapon_type = autoload.weapon_type_list.sword
+					
+			elif main_weap_icon.texture.get_path() == autoload.weapset1_icons["mace"].get_path():
+				sec_wea_slot.visible = true
+				main_weapon = autoload.main_weap_list.mace_beginner
+				primaryWeapEffect("weapset1_mace")
 				if sec_weap_icon.texture == null:
 					sec_weapon = autoload.sec_weap_list.zero
 					weapon_type = autoload.weapon_type_list.sword
@@ -2960,6 +3005,21 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 							sec_weapon = autoload.sec_weap_list.sword_beginner
 							secondaryWeapEffect("weapset1_sword2")
 							weapon_type = autoload.weapon_type_list.dual_swords
+						
+						elif sec_weap_icon.texture.get_path() == autoload.weapset1_icons["hammer"].get_path():
+							sec_weapon = autoload.sec_weap_list.hammer_beginner
+							secondaryWeapEffect("weapset1_hammer2")
+							weapon_type = autoload.weapon_type_list.dual_swords
+							
+						elif sec_weap_icon.texture.get_path() == autoload.weapset1_icons["mace"].get_path():
+							sec_weapon = autoload.sec_weap_list.mace_beginner
+							secondaryWeapEffect("weapset1_mace2")
+							weapon_type = autoload.weapon_type_list.dual_swords	
+					
+						elif sec_weap_icon.texture.get_path() == autoload.weapset1_icons["axe"].get_path():
+							sec_weapon = autoload.sec_weap_list.axe_beginner
+							secondaryWeapEffect("weapset1_axe2")
+							weapon_type = autoload.weapon_type_list.dual_swords	
 					
 						elif sec_weap_icon.texture.get_path() == autoload.weapset1_icons["shield"].get_path():
 							sec_weapon = autoload.sec_weap_list.shield_beginner
@@ -2967,17 +3027,6 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 							weapon_type = autoload.weapon_type_list.sword_shield
 							
 						
-						elif sec_weap_icon.texture.get_path() == autoload.weapset1_icons["axe"].get_path():
-							sec_weapon = autoload.sec_weap_list.axe_beginner
-							secondaryWeapEffect("weapset1_axe2")
-							weapon_type = autoload.weapon_type_list.dual_swords
-						
-#						elif sec_weap_icon.texture.get_path() == autoload.pickaxe_png.get_path():
-#							sec_weapon = autoload.sec_weap_list.pick_beginner
-#							weapon_type = autoload.weapon_type_list.dual_swords
-#						else:
-#							sec_weapon = autoload.sec_weap_list.zero
-#							noSecondaryWeap()
 
 
 #head___________________________________________________________________________
@@ -3045,16 +3094,15 @@ func SwitchEquipmentBasedOnEquipmentIcons():
 
 
 
-func switchWeaponFromHandToSideOrBack():
+func switchWeaponFromHandToSideOrBack()->void:
 	if is_instance_valid(current_race_gender):
 		current_race_gender.switchWeapon()
 
 
 
 #@Ceisri
-
-
-#___________________________________Status effects______________________________
+# This is used both for buffs, debuffs, item stats, consumable effects and whatelse...why is this not in a component? 
+# because I'm delaying moving it to a component, other stuff to do now
 var effects:Dictionary = {
 #_______________________________________________Debuffs ____________________________________________
 	"overhydration": {"stats": { "extra_vitality": -0.02,"extra_agility": -0.05,}, "applied": false},
@@ -3095,9 +3143,29 @@ var effects:Dictionary = {
 	"extra_guard_dmg_absorbition": autoload.sword_beginner_absorb},
 	"extra_melee_atk_speed":autoload.weapset1_atk_speed["sword"], "applied": false},
 	
+
 	"weapset1_sword2": {"stats": {"extra_dmg": autoload.sword_beginner_dmg,
 	"extra_guard_dmg_absorbition": autoload.sword_beginner_absorb,
 	"extra_melee_atk_speed":autoload.weapset1_atk_speed["sword"]}, "applied": false},
+	
+	"weapset1_hammer": {"stats": {"extra_dmg": autoload.sword_beginner_dmg,
+	"extra_guard_dmg_absorbition": autoload.sword_beginner_absorb,
+	"extra_melee_atk_speed":autoload.weapset1_atk_speed["hammer"]}, "applied": false},
+	
+	"weapset1_hammer2": {"stats": {"extra_dmg": autoload.sword_beginner_dmg,
+	"extra_guard_dmg_absorbition": autoload.sword_beginner_absorb,
+	"extra_melee_atk_speed":autoload.weapset1_atk_speed["hammer"]}, "applied": false},
+	
+	
+	"weapset1_mace": {"stats": {"extra_dmg": autoload.sword_beginner_dmg,
+	"extra_guard_dmg_absorbition": autoload.sword_beginner_absorb,
+	"extra_melee_atk_speed":autoload.weapset1_atk_speed["mace"]}, "applied": false},
+	
+	
+	"weapset1_mace2": {"stats": {"extra_dmg": autoload.sword_beginner_dmg,
+	"extra_guard_dmg_absorbition": autoload.sword_beginner_absorb,
+	"extra_melee_atk_speed":autoload.weapset1_atk_speed["mace"]}, "applied": false},
+	
 	
 	"weapset1_axe": {"stats": {"extra_dmg": autoload.axe_beginner_dmg,
 	"extra_guard_dmg_absorbition": autoload.axe_beginner_absorb,
@@ -3130,7 +3198,6 @@ var effects:Dictionary = {
 	"extra_guard_dmg_absorbition": autoload.greatmace_beg_absorb,
 	"extra_melee_atk_speed":autoload.weapset1_atk_speed["warhammer"],
 	"extra_impact": autoload.greatmace_beg_impact}, "applied": false},
-	
 	
 	
 	"shield_wood_png": {"stats": {"extra_guard_dmg_absorbition": autoload.shield_wood_absorb,
@@ -3172,7 +3239,7 @@ var berserk_duration:float = 0
 
 
 
-func showStatusIcon():
+func showStatusIcon()->void:
 #	applyEffect(self, "bleeding", true)
 #	applyEffect(self, "hungry", true)
 #	applyEffect(self, "frozen", true)
