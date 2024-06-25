@@ -139,28 +139,8 @@ func _physics_process(delta: float) -> void:
 				if staggered_duration == false:
 					if taunt_duration == false:
 						walk() 
-	if  grapling_time >0:
-		grapling_time -= delta
-		$LineHelper.visible == true
-		move(delta)
-		collide_with_rigidbodies()
-		handle_hook()
-	elif grapling_time < 0:
-		grapling_time = 0
-	else:
-		$LineHelper.visible == false
 
 
-
-	
-	
-	if is_dead == false:
-		if stunned_duration == 0:
-			if knockeddown_duration == false:
-				if staggered_duration == false:
-					if taunt_duration == false:
-						walk() 
-	
 func debug() -> void:
 	var state_enum = autoload.state_list  # Access the enum from the singleton
 	var state_value = state  # Get the current state value
@@ -177,160 +157,7 @@ func debug() -> void:
 	var sec_weapon_enum = autoload.sec_weap_list
 	var sec_weapon_value = sec_weapon
 	var sec_weapon_name = sec_weapon_enum.keys()[sec_weapon_value]
-	$Debug.text = "state: " + state_name + "\n" + "weapon stance: " + weapon_name + "\n" + "right hand: " + main_weapon_name + "\n" + "left hand: " + sec_weapon_name + "\n" + "stunned: " + str(stunned_duration) + "\n" + "knocked down:" + str(knockeddown_duration) + "\n" +  "staggered: " + str(staggered_duration)+ "\n" +  "air speed: " + str(air_speed)+ "\n" +  "friction: " + str(friction)+ "\n" +  "max grpl speed: " + str(max_grapple_speed)+ "\n" +  "grapling_time: " + str(grapling_time)
-
-
-
-# Convenience Nodes
-onready var cam_helper := $CamHelper
-onready var hook := $Camroot/h/v/Camera/Hook
-onready var line_helper := $LineHelper
-onready var line := $LineHelper/Line
-export var grapple_point : NodePath 
-
-# Player Controller
-export var MOUSE_SENSITIVITY := .001
-export var speed := 4.0
-export var air_speed := .25
-export var friction := .25  # Higher -> more friction
-
-var velocity := Vector3()
-
-# Grappling
-export var max_grapple_speed := 2.75 # Self explanatory
-export var grapple_speed := .5
-""" Also known as the spring constant, this is how stiff your rope is. 
-	For this demo, doesn't actually do too much, but you can play with
-	the numbers
-"""
-export var rest_length := 1.0
-"""How far the player should rest from the grapple point"""
-var hooked: bool= false
-var grapple_position:= Vector3()
-
-var grapling_time:float = 0
-
-func _on_frictionplus_pressed():
-	friction += 0.05
-func _on_frictionmin_pressed():
-	friction -= 0.05
-func _on_airplus_pressed():
-	air_speed += 0.05
-func _on_airmin_pressed():
-	air_speed -= 0.05
-func _on_graplemin_pressed():
-	max_grapple_speed -= 0.10
-
-
-func _on_grapleplus_pressed():
-	max_grapple_speed += 0.10
-
-# HOOK STUFF ---------------------------------------------------------
-
-func handle_hook() -> void:
-	check_hook_activation()
-	var length := calculate_path()
-	draw_hook(length)
-	look_for_point()
-
-func check_hook_activation() -> void:
-	# Activate hook
-	if grapling_time >0:
-		if hook.is_colliding():
-			hooked = true
-			grapple_position = hook.get_collision_point()
-			line.show()
-		else:
-			hooked = false
-			line.hide()
-	else:
-		hooked = false
-		line.hide()
-
-# Adds to player velocity and returns the length of the hook rope
-func calculate_path() -> float:
-	var player2hook := grapple_position - translation # vector from player to hook
-	var length := player2hook.length()
-	if hooked:
-		# if we more than 4 away from line, don't dampen speed as much
-		if length > 4:
-			velocity *= .999
-		# Otherwise dampen speed more
-		else:
-			velocity *= .9
-		
-		# Hook's law equation
-		var force := grapple_speed * (length - rest_length)
-		
-		# Clamp force to be less than max_grapple_speed
-		if abs(force) > max_grapple_speed:
-			force = max_grapple_speed
-		
-		# Preserve direction, but scale by force
-		velocity += player2hook.normalized() * force
-	
-	return length
-
-# Makes the line have length LENGTH
-func draw_hook(length: float) -> void:
-	line_helper.look_at(grapple_position, Vector3.UP)
-	line.height = length
-	line.translation.z = length / -2
-
-func look_for_point() -> void:
-	var grapple_pt := get_node_or_null(grapple_point)
-	if grapple_pt and hook.is_colliding():
-		grapple_pt.translation = hook.get_collision_point()
-
-
-func collide_with_rigidbodies() -> void:
-	for index in get_slide_count():
-		var collision := get_slide_collision(index)
-		if collision.collider is RigidBody:
-			collision.collider.apply_central_impulse(
-				-collision.normal * .05 * velocity.length()
-			)
-
-
-# CHARACTER CONTROLLER -------------------------------------------------
-
-func move(delta: float) -> void:
-	# Get player input (forwards/back/side)
-	var input := get_forward_acceleration() + get_side_acceleration()
-	
-	# if on ground
-	if is_on_floor():
-		# Use player input
-		velocity += input * speed
-		
-		# Apply friction on ground
-		velocity.x *= 1 - friction
-		velocity.z *= 1 - friction
-	
-	
-	# Else we are in the air
-	else:
-		velocity += input * air_speed
-	
-
-	
-	# Move player using velocity, we want to have the UP vector as our up,
-	# the false at the end allows us to have better collisions
-	# with Rigidbodies, the rest are default arguments
-	velocity = move_and_slide(velocity, Vector3.UP, false, 4, .8, false)
-
-
-func get_side_acceleration() -> Vector3:
-	return global_transform.basis.x * (
-		Input.get_action_strength("right") - Input.get_action_strength("left")
-	)
-
-func get_forward_acceleration() -> Vector3:
-	return global_transform.basis.z * (
-		Input.get_action_strength("backward") - Input.get_action_strength("forward")
-	)
-
-
+	$Debug.text = "state: " + state_name + "\n" + "weapon stance: " + weapon_name + "\n" + "right hand: " + main_weapon_name + "\n" + "left hand: " + sec_weapon_name + "\n" + "stunned: " + str(stunned_duration) + "\n" + "knocked down:" + str(knockeddown_duration) + "\n" +  "staggered: " + str(staggered_duration)
 
 
 
@@ -1098,10 +925,11 @@ func skills(slot)-> void:
 					
 					
 					
-			elif slot.texture.resource_path == autoload.grapling_hook.get_path():
-				if grapling_time == 0:
+			elif slot.texture.resource_path == autoload.grappling_hook.get_path():
+				if all_skills.can_grappling_hook == true:
 					direction = -camera.global_transform.basis.z
-					grapling_time = 4
+					hookEnemies()
+					all_skills.grapplingHookCD()
 					
 					
 
@@ -1119,9 +947,6 @@ func skills(slot)-> void:
 							
 var skill_cancelling:bool = true#this only works with the SkillQueueSystem() and serves to interupt skills with other skills 
 
-
-
-			
 func stopBeingParlized()-> void:
 	staggered_duration = false
 	knockeddown_duration = false
@@ -1212,13 +1037,10 @@ func moveDuringAnimation(speed):
 		elif current_race_gender.can_move == false:
 			horizontal_velocity = direction * 0
 			movement_speed = 0
-			
 func moveSidewaysDuringAnimation(speed):
 	if !is_on_wall():
 		horizontal_velocity = -camera.global_transform.basis.x * speed 
-			
-			
-			
+
 var sprint_animation_speed: float = 1
 var anim_cancel:bool = true #If true using abilities and skills interupts base attacks or other animations
 func inputToState():
@@ -1340,9 +1162,53 @@ func attack():
 	else:
 		is_attacking = false
 		
-# @Ceisri 
-# we check 
+func pullEnemy(pull_distance, enemy, pull_speed):
+	var direction_to_enemy = global_transform.origin - enemy.global_transform.origin
+	direction_to_enemy = direction_to_enemy.normalized()
+	var motion = direction_to_enemy * pull_speed
+	var acceleration_time = pull_speed / 2.0
+	var deceleration_distance = motion.length() * acceleration_time * 0.5
+	var collision = enemy.move_and_collide(motion)
+	
+	hook_mesh.visible = true
+	
+	if collision: # this checks if the enemy hits a wall after being pulled
+		enemy.takeDamage(10, 10, self, 1, "bleed") # the enemy takes damage from being pulled into something
+		# Calculate bounce-back direction
+		var normal = collision.normal
+		var bounce_motion = -4 * normal * normal.dot(motion) + motion
+		# Move the enemy slightly away from the wall to avoid sticking
+		enemy.translation += normal * 0.1 * collision.travel # afterwards they are pushed back
+		# Tween the bounce-back motion
+		tween.interpolate_property(enemy, "translation", enemy.translation, enemy.translation + bounce_motion * pull_distance, acceleration_time, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
+		tween.start()
+	else:
+		# Tween the movement over time with initial acceleration followed by instant stop
+		tween.interpolate_property(enemy, "translation", enemy.translation, enemy.translation + motion * pull_distance, acceleration_time, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
+		tween.interpolate_property(enemy, "translation", enemy.translation + motion * pull_distance, enemy.translation + motion * (pull_distance - deceleration_distance), acceleration_time, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT, acceleration_time)
+		tween.start()
 
+func _on_Tween_tween_completed(object, key):
+	hook_mesh.visible = false
+
+
+onready var hook_mesh:MeshInstance = $Camroot/h/v/Camera/Aim/hook
+func hookEnemies() -> void:
+	var instigator:KinematicBody = self 
+	if ray.is_colliding():
+		var body = ray.get_collider()
+		if body != null:
+			if body != self:
+				if body.is_in_group("Entity"):
+					# Get the distance between self and body
+					var distance = global_transform.origin.distance_to(body.global_transform.origin)
+					if body.has_method("getKnockedDown"):
+						if body.has_method("lookTarget"):
+							body.lookTarget(12)
+							if body.health >  body.max_health *  0.1:
+								if body.balance < 3:
+									body.getKnockedDown(instigator)
+					pullEnemy(distance, body, 0.5 + (distance * 0.01))
 
 
 func pushEnemyAway(push_distance, enemy, push_speed):
@@ -1368,6 +1234,8 @@ func pushEnemyAway(push_distance, enemy, push_speed):
 		tween.interpolate_property(enemy, "translation", enemy.translation, enemy.translation + motion * push_distance, acceleration_time, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
 		tween.interpolate_property(enemy, "translation", enemy.translation + motion * push_distance, enemy.translation + motion * (push_distance - deceleration_distance), acceleration_time, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT, acceleration_time)
 		tween.start()
+		
+		
 func isFacingSelf(enemy: Node, threshold: float) -> bool:
 	# Get the global transform of the enemy
 	var enemy_global_transform = enemy.global_transform
@@ -1392,10 +1260,10 @@ func isFacingSelf(enemy: Node, threshold: float) -> bool:
 var parry: bool =  false
 var absorbing: bool = false
 func clearParryAbsorb():
-	grapling_time = 0 
 	parry = false
 	absorbing = false
 	is_aiming = false
+
 	
 func takeStagger(stagger_chance: float) -> void:
 	damage_effects_manager.takeStagger(stagger_chance)
@@ -1820,6 +1688,10 @@ func _input(event)-> void:
 		elif event is InputEventMouseButton and event.button_index == BUTTON_WHEEL_DOWN:
 			# Zoom out when scrolling down
 			Zoom(1)
+			
+			
+			
+
 func stiffCamera()-> void:
 	if is_aiming and !is_climbing:
 		player_mesh.rotation.y = lerp_angle(player_mesh.rotation.y, $Camroot/h.rotation.y, get_physics_process_delta_time() * angular_acceleration)
@@ -5991,6 +5863,3 @@ func experienceSystem():
 # Calculate the percentage of experience points
 	var percentage: float = (float(experience_points) / float(experience_to_next_level)) * 100.0
 	exper_label.text = "Level " + str(level) + "\nXP: " + str(experience_points) + "/" + str(experience_to_next_level) + " (" + str(round((percentage* 1)/1)) + "%)"
-
-
-

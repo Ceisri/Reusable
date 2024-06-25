@@ -79,9 +79,11 @@ func updateCooldownLabel() -> void:
 			var label: Label = child.get_node("CD")
 			if label != null:
 				 updateKick(label,kick_cooldown,current_time,last_kick_time)
-				
-				
-		
+#_________________________________________________hook_____________________________________________
+		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.grappling_hook.get_path():
+			var label: Label = child.get_node("CD")
+			if label != null:
+				 updateGrapplingHook(label,grappling_hook_cooldown,current_time,last_grappling_hook_time)
 		
 var can_drink_potion: bool = true
 func updateLabelPotion(label: Label, cooldown: float, current_time: float, last_time: float) -> void:
@@ -387,7 +389,27 @@ func counterStrike()->void:
 	var current_time: float = OS.get_ticks_msec() / 1000.0
 	if current_time - last_counter_time >= counter_cooldown:
 		last_counter_time = current_time
-#___________________________________________________________________________________________________
+		
+		
+var grappling_hook_cooldown: float = 15
+var last_grappling_hook_time: float = 0.0 
+var can_grappling_hook:bool = false
+func grapplingHookCD()->void:
+	var current_time: float = OS.get_ticks_msec() / 1000.0
+	if current_time - last_grappling_hook_time >= grappling_hook_cooldown:
+		last_grappling_hook_time = current_time
+		
+		
+func updateGrapplingHook(label: Label, cooldown: float, current_time: float, last_time: float) -> void:
+	var elapsed_time: float = current_time - last_time
+	var remaining_cooldown: float = max(0, cooldown - elapsed_time)
+	if remaining_cooldown!= 0:
+		can_grappling_hook = false
+		label.text = str(round(remaining_cooldown) )
+	else:
+		label.text = ""
+		can_grappling_hook = true
+
 		
 #___________________________________________________________________________________________________
 
