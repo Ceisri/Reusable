@@ -18,21 +18,16 @@ onready var damage_effects_manager = $"Damage&Effects"
 var rng = RandomNumberGenerator.new()
 
 var blend: float = 0.22
-
-var strafe_dir: Vector3 = Vector3.ZERO
-var strafe: Vector3 = Vector3.ZERO
 # Condition States
 var is_attacking = bool()
 var is_walking = bool()
 var is_running = bool()
 var is_player:bool = true
 
-
-var duration = 200
 onready var slowest_timer:Timer = $SlowestTimer
 onready var slow_timer:Timer = $SlowTimer
 func _ready()->void:
-#	autoload.drawGlobalThreat(self)
+#	autoload.drawGlobalThreat(self)#For DEbugging purposes only, draws aggro from everything 
 	loadPlayerData()
 	switchSexRace()
 	setInventoryOwner()
@@ -74,9 +69,6 @@ func stutterPrevention()->void:
 	
 	
 func slowTimer()->void:
-	experience_points += 999999900
-	experience_points += 999999900
-	experience_points += 999999900
 	cameraRotation()#Run camera rotation multiple times, it's a light function and makes things smoother 
 	experienceSystem()
 	damage_effects_manager.effectDurations()
@@ -106,6 +98,8 @@ func slowestTimer()->void:
 		
 func _on_3FPS_timeout()->void:
 	debug()
+	limitStatsToMaximum()
+	lootBodies()
 	cameraRotation()#Run camera rotation multiple times, it's a light function and makes things smoother 
 	if health >0:
 		$UI/GUI/Equipment/Attributes/AttributePoints.text = "Attributes points left: " + str(attribute)
@@ -118,22 +112,15 @@ func _on_3FPS_timeout()->void:
 
 
 func _physics_process(delta: float) -> void:
-	if is_in_combat == true:
-		movement_speed = walk_speed * 0.7
-	
-	experience_points += 999999
+	autoload.gravity(self)#Gravity stays first in the order else jumping doesn't work 
 	all_skills.updateCooldownLabel()
 	
-	
-	convertStats()
-	limitStatsToMaximum()
 	cameraRotation()
 	crossHair()
 	crossHairResize()
 	minimapFollow()
 	miniMapVisibility()
 	stiffCamera()
-	autoload.gravity(self)
 	dodgeIframe()
 	doublePressToDash()
 	fullscreen()
@@ -143,9 +130,29 @@ func _physics_process(delta: float) -> void:
 	attack()
 	skillUserInterfaceInputs()
 	positionCoordinates()
-	lootBodies()
 	jump()
 	deathLife(delta)#Main function
+	
+	if is_dead == false:
+		if stunned_duration == 0:
+			if knockeddown_duration == false:
+				if staggered_duration == false:
+					if taunt_duration == false:
+						walk() 
+	if  grapling_time >0:
+		grapling_time -= delta
+		$LineHelper.visible == true
+		move(delta)
+		collide_with_rigidbodies()
+		handle_hook()
+	elif grapling_time < 0:
+		grapling_time = 0
+	else:
+		$LineHelper.visible == false
+
+
+
+	
 	
 	if is_dead == false:
 		if stunned_duration == 0:
@@ -170,9 +177,162 @@ func debug() -> void:
 	var sec_weapon_enum = autoload.sec_weap_list
 	var sec_weapon_value = sec_weapon
 	var sec_weapon_name = sec_weapon_enum.keys()[sec_weapon_value]
+	$Debug.text = "state: " + state_name + "\n" + "weapon stance: " + weapon_name + "\n" + "right hand: " + main_weapon_name + "\n" + "left hand: " + sec_weapon_name + "\n" + "stunned: " + str(stunned_duration) + "\n" + "knocked down:" + str(knockeddown_duration) + "\n" +  "staggered: " + str(staggered_duration)+ "\n" +  "air speed: " + str(air_speed)+ "\n" +  "friction: " + str(friction)+ "\n" +  "max grpl speed: " + str(max_grapple_speed)+ "\n" +  "grapling_time: " + str(grapling_time)
 
 
-	$Debug.text = "state: " + state_name + "\n" + "weapon stance: " + weapon_name + "\n" + "right hand: " + main_weapon_name + "\n" + "left hand: " + sec_weapon_name + "\n" + "stunned: " + str(stunned_duration) + "\n" + "knocked down:" + str(knockeddown_duration) + "\n" +  "staggered: " + str(staggered_duration)
+
+# Convenience Nodes
+onready var cam_helper := $CamHelper
+onready var hook := $Camroot/h/v/Camera/Hook
+onready var line_helper := $LineHelper
+onready var line := $LineHelper/Line
+export var grapple_point : NodePath 
+
+# Player Controller
+export var MOUSE_SENSITIVITY := .001
+export var speed := 4.0
+export var air_speed := .25
+export var friction := .25  # Higher -> more friction
+
+var velocity := Vector3()
+
+# Grappling
+export var max_grapple_speed := 2.75 # Self explanatory
+export var grapple_speed := .5
+""" Also known as the spring constant, this is how stiff your rope is. 
+	For this demo, doesn't actually do too much, but you can play with
+	the numbers
+"""
+export var rest_length := 1.0
+"""How far the player should rest from the grapple point"""
+var hooked: bool= false
+var grapple_position:= Vector3()
+
+var grapling_time:float = 0
+
+func _on_frictionplus_pressed():
+	friction += 0.05
+func _on_frictionmin_pressed():
+	friction -= 0.05
+func _on_airplus_pressed():
+	air_speed += 0.05
+func _on_airmin_pressed():
+	air_speed -= 0.05
+func _on_graplemin_pressed():
+	max_grapple_speed -= 0.10
+
+
+func _on_grapleplus_pressed():
+	max_grapple_speed += 0.10
+
+# HOOK STUFF ---------------------------------------------------------
+
+func handle_hook() -> void:
+	check_hook_activation()
+	var length := calculate_path()
+	draw_hook(length)
+	look_for_point()
+
+func check_hook_activation() -> void:
+	# Activate hook
+	if grapling_time >0:
+		if hook.is_colliding():
+			hooked = true
+			grapple_position = hook.get_collision_point()
+			line.show()
+		else:
+			hooked = false
+			line.hide()
+	else:
+		hooked = false
+		line.hide()
+
+# Adds to player velocity and returns the length of the hook rope
+func calculate_path() -> float:
+	var player2hook := grapple_position - translation # vector from player to hook
+	var length := player2hook.length()
+	if hooked:
+		# if we more than 4 away from line, don't dampen speed as much
+		if length > 4:
+			velocity *= .999
+		# Otherwise dampen speed more
+		else:
+			velocity *= .9
+		
+		# Hook's law equation
+		var force := grapple_speed * (length - rest_length)
+		
+		# Clamp force to be less than max_grapple_speed
+		if abs(force) > max_grapple_speed:
+			force = max_grapple_speed
+		
+		# Preserve direction, but scale by force
+		velocity += player2hook.normalized() * force
+	
+	return length
+
+# Makes the line have length LENGTH
+func draw_hook(length: float) -> void:
+	line_helper.look_at(grapple_position, Vector3.UP)
+	line.height = length
+	line.translation.z = length / -2
+
+func look_for_point() -> void:
+	var grapple_pt := get_node_or_null(grapple_point)
+	if grapple_pt and hook.is_colliding():
+		grapple_pt.translation = hook.get_collision_point()
+
+
+func collide_with_rigidbodies() -> void:
+	for index in get_slide_count():
+		var collision := get_slide_collision(index)
+		if collision.collider is RigidBody:
+			collision.collider.apply_central_impulse(
+				-collision.normal * .05 * velocity.length()
+			)
+
+
+# CHARACTER CONTROLLER -------------------------------------------------
+
+func move(delta: float) -> void:
+	# Get player input (forwards/back/side)
+	var input := get_forward_acceleration() + get_side_acceleration()
+	
+	# if on ground
+	if is_on_floor():
+		# Use player input
+		velocity += input * speed
+		
+		# Apply friction on ground
+		velocity.x *= 1 - friction
+		velocity.z *= 1 - friction
+	
+	
+	# Else we are in the air
+	else:
+		velocity += input * air_speed
+	
+
+	
+	# Move player using velocity, we want to have the UP vector as our up,
+	# the false at the end allows us to have better collisions
+	# with Rigidbodies, the rest are default arguments
+	velocity = move_and_slide(velocity, Vector3.UP, false, 4, .8, false)
+
+
+func get_side_acceleration() -> Vector3:
+	return global_transform.basis.x * (
+		Input.get_action_strength("right") - Input.get_action_strength("left")
+	)
+
+func get_forward_acceleration() -> Vector3:
+	return global_transform.basis.z * (
+		Input.get_action_strength("backward") - Input.get_action_strength("forward")
+	)
+
+
+
+
 
 #________________________________Input-State-Animation-SkillBar System______________________________
 var animation: AnimationPlayer
@@ -192,9 +352,6 @@ var rightstep_duration:bool= false
 var dash_duration:bool= false
 
 var slide_duration:bool= false
-
-
-
 
 
 var death_duration:bool = false
@@ -679,6 +836,8 @@ func skills(slot)-> void:
 							dash_duration = true
 							if skill_cancelling == true:
 								skill_queue.skillCancel("dash")
+							
+								
 #Slide______________________________________________________________________________________________
 			if slot.texture.resource_path == autoload.slide.get_path():
 				if all_skills.can_slide == false:
@@ -936,6 +1095,15 @@ func skills(slot)-> void:
 					can_walk = false
 					current_race_gender.can_move = false
 					animation.play("full draw",0.3,range_atk_speed)
+					
+					
+					
+			elif slot.texture.resource_path == autoload.grapling_hook.get_path():
+				if grapling_time == 0:
+					direction = -camera.global_transform.basis.z
+					grapling_time = 4
+					
+					
 
 #consumables________________________________________________________________________________________
 			elif slot.texture.resource_path == autoload.red_potion.get_path():
@@ -1224,6 +1392,7 @@ func isFacingSelf(enemy: Node, threshold: float) -> bool:
 var parry: bool =  false
 var absorbing: bool = false
 func clearParryAbsorb():
+	grapling_time = 0 
 	parry = false
 	absorbing = false
 	is_aiming = false
@@ -5822,3 +5991,6 @@ func experienceSystem():
 # Calculate the percentage of experience points
 	var percentage: float = (float(experience_points) / float(experience_to_next_level)) * 100.0
 	exper_label.text = "Level " + str(level) + "\nXP: " + str(experience_points) + "/" + str(experience_to_next_level) + " (" + str(round((percentage* 1)/1)) + "%)"
+
+
+

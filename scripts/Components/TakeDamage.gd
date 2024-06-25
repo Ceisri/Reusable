@@ -8,6 +8,7 @@ func resetEffects()->void:#For cleanses or respawns
 	parent.bleeding_duration = 0
 	parent.berserk_duration = 0
 	
+
 	
 func effectDurations()->void:
 	if parent.bleeding_duration > 0:
