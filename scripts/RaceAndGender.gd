@@ -520,11 +520,6 @@ func punch()->void:
 	var damage_type:String = "blunt"
 	var damage:float = player.total_dmg
 	var damage_flank:float = damage + player.flank_dmg 
-	var critical_damage : float  =0
-	var critical_flank_damage : float  =0
-	#extra damage when the victim is trying to block but is facing the wrong way 
-	var punishment_damage : float = 7 
-	var punishment_damage_type :String = "blunt"
 	var aggro_power:float = player.threat_power
 	var push_distance:float = 0.25 * player.total_impact
 	var enemies:Array = trust_area.get_overlapping_bodies()
@@ -750,10 +745,7 @@ func cycloneDMG() -> void:
 		damage_multiplier += (points - 1) * 0.05
 	var damage: float = base_damage * damage_multiplier
 	var damage_flank = damage + player.flank_dmg 
-	var critical_damage : float  =0
-	var critical_flank_damage : float  = 0
-	var punishment_damage : float = 7 #extra damage for when the victim is trying to block but is facing the wrong way 
-	var punishment_damage_type :String = "slash"
+
 	var aggro_power =  20
 	var push_distance:float = 0.25 * player.total_impact
 	var stagger_chance: float 

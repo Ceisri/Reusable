@@ -1,6 +1,6 @@
 extends Node
 
-onready var skeleton =$"../Mesh/Race/Armature/Skeleton"
+onready var skeleton =$Skeleton
 var head_default_transform = Transform()
 var scale = 1
 onready var head_index = skeleton.find_bone("mixamorig_left_arm")# Get the index of the "head" bone

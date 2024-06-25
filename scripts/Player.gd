@@ -9,8 +9,6 @@
 # If you are using any of this in your project keep in my that due to Global.gd using a lot of preloads
 # the game doesn't have the fastest loading time so try to avoid game games that are too "instanced" 
 # and rely more on "open world" unless you find a better way and can make loading times faster
-
-
 extends KinematicBody
 onready var player_mesh: Node = $Mesh
 onready var damage_effects_manager = $"Damage&Effects"
@@ -23,80 +21,89 @@ var is_attacking = bool()
 var is_walking = bool()
 var is_running = bool()
 var is_player:bool = true
+var username:String = ""
 
+
+onready var network_tween:Tween =$NetworkTickRate/Tween
 onready var slowest_timer:Timer = $SlowestTimer
 onready var slow_timer:Timer = $SlowTimer
+onready var fast_timer:Timer = $"3FPS"
+onready var network_timer:Timer = $NetworkTickRate
+# lower values make the load on the server heavier, 
+# 0.0667 is good for performance and 0.03 is supposedly better for precision
+var lag_compensation_framerate:float = 0.03
 func _ready()->void:
-#	autoload.drawGlobalThreat(self)#For DEbugging purposes only, draws aggro from everything 
-	loadPlayerData()
-	switchSexRace()
-	setInventoryOwner()
-	setSkillTreeOwner()
-	add_to_group("Player")
-	add_to_group("Entity")
-	connectUIButtons()
-	connectInventoryButtons()
-	connectSkillBarButtons()
-	connectSkillTree()
-	connectAttributeButtons()
-	connectAttributeHovering()
-	connectHoveredResistanceLabels()
-	convertStats()
-	closeAllUI()
-	loadInventoryData()
-	loadSkillTreeData()
-	SwitchEquipmentBasedOnEquipmentIcons()
-	direction = Vector3.BACK.rotated(Vector3.UP, $Camroot/h.global_transform.basis.get_euler().y)
-	aim_label.text = aiming_mode
-	current_race_gender.EquipmentSwitch()
-	l_click_slot.switchAttackIcon()
-	colorBodyParts()
-	switchButtonTextures()
-	slow_timer.connect("timeout", self, "slowTimer")
-	slow_timer.start(1)
-	slowest_timer.connect("timeout", self, "slowestTimer")
-	slowest_timer.start(3)
-	connectEquipment()
-	stutterPrevention()
-	struggle_button.text = "Struggle:" + str(struggles)+ " remaining"
-
-	
+	if is_network_master():
+	#	autoload.drawGlobalThreat(self)#For Debugging purposes only, draws aggro from everything 
+		loadPlayerData()
+		switchSexRace()
+		setInventoryOwner()
+		setSkillTreeOwner()
+		add_to_group("Player")
+		add_to_group("Entity")
+		connectUIButtons()
+		connectInventoryButtons()
+		connectSkillBarButtons()
+		connectSkillTree()
+		connectAttributeButtons()
+		connectAttributeHovering()
+		connectHoveredResistanceLabels()
+		convertStats()
+		closeAllUI()
+		loadInventoryData()
+		loadSkillTreeData()
+		SwitchEquipmentBasedOnEquipmentIcons()
+		direction = Vector3.BACK.rotated(Vector3.UP, $Camroot/h.global_transform.basis.get_euler().y)
+		aim_label.text = aiming_mode
+		current_race_gender.EquipmentSwitch()
+		l_click_slot.switchAttackIcon()
+		colorBodyParts()
+		switchButtonTextures()
+		slow_timer.connect("timeout", self, "slowTimer")
+		slowest_timer.connect("timeout", self, "slowestTimer")
+		fast_timer.connect("timeout", self, "fastTimer")
+		network_timer.connect("timeout", self, "NetworkTickRate")
+		slow_timer.start(1)
+		slowest_timer.start(3)
+		fast_timer.start(0.35)
+		network_timer.start(lag_compensation_framerate)
+		
+		connectEquipment()
+		stutterPrevention()
+		struggle_button.text = "Struggle:" + str(struggles)+ " remaining"
 func stutterPrevention()->void:
 	var text = autoload.floatingtext_damage.instance()
 	text.status = "STUTTER PREVENTION"
 	take_damage_view.add_child(text)
-
-	
-	
 func slowTimer()->void:
-	cameraRotation()#Run camera rotation multiple times, it's a light function and makes things smoother 
-	experienceSystem()
-	damage_effects_manager.effectDurations()
-	allResourcesBarsAndLabels()
-	money()
-	if health >0:
-		potionEffects()
-		all_skills.ComboSystem()
-		showStatusIcon()	
-		crafting()
-		damage_effects_manager.regenerate()
-		l_click_slot.switchAttackIcon()
-		r_click_slot.switchAttackIcon()
-		$UI/GUI/SkillTrees/Label.text = str("skill points: ")+ str(skill_points)
-		$UI/GUI/SkillTrees/Label2.text =  str("points spent: ")+ str(skill_points_spent)
-	displayClock()
-	if health <= 0 :
-		revival_wait_time -= 1
+	if is_network_master():
+		cameraRotation()#Run camera rotation multiple times, it's a light function and makes things smoother 
+		experienceSystem()
+		damage_effects_manager.effectDurations()
+		allResourcesBarsAndLabels()
+		money()
+		if health >0:
+			potionEffects()
+			all_skills.ComboSystem()
+			showStatusIcon()	
+			crafting()
+			damage_effects_manager.regenerate()
+			l_click_slot.switchAttackIcon()
+			r_click_slot.switchAttackIcon()
+			$UI/GUI/SkillTrees/Label.text = str("skill points: ")+ str(skill_points)
+			$UI/GUI/SkillTrees/Label2.text =  str("points spent: ")+ str(skill_points_spent)
+		displayClock()
+		if health <= 0 :
+			revival_wait_time -= 1
 func slowestTimer()->void:
-	cameraRotation()#Run camera rotation multiple times, it's a light function and makes things smoother 
-	frameRate()
-	hydration()
-	hunger()
-	convertStats()
-	displayLabels()
-	SwitchEquipmentBasedOnEquipmentIcons()
-		
-func _on_3FPS_timeout()->void:
+	if is_network_master():
+		frameRate()
+		hydration()
+		hunger()
+		convertStats()
+		displayLabels()
+		SwitchEquipmentBasedOnEquipmentIcons()
+func fastTimer()->void:#This is here only for a mild performance boost, it runs functions at 3FPS
 	debug()
 	limitStatsToMaximum()
 	lootBodies()
@@ -109,37 +116,35 @@ func _on_3FPS_timeout()->void:
 		$UI/GUI/Equipment/Attributes/AttributeSpent.text = "Attributes points Spent: " + str(total_spent_attribute_points)
 		curtainsDown()
 		updateAllStats()
-
-
 func _physics_process(delta: float) -> void:
-	autoload.gravity(self)#Gravity stays first in the order else jumping doesn't work 
-	all_skills.updateCooldownLabel()
+	if is_network_master():
+		networkMasterFunctions(delta)
+	else:
+		if puppet_rotation != null:
+			rotation_degrees = lerp(rotation_degrees, puppet_rotation, delta * 8)
+		else:
+			print("Puppet Rotation missing ")
+		if not network_tween.is_active():
+			move_and_slide(puppet_velocity * movement_speed)
+			#lagCompensation() FINISH THIS LATER
+			
+puppet var puppet_position:Vector3 = Vector3(0, 0,0) setget puppet_position_set
+puppet var puppet_velocity:Vector3 = Vector3()
+puppet var puppet_rotation:float = 0
+#puppet var puppet_username:String = "" setget puppet_username_set
+func puppet_position_set(new_value) -> void:
+	puppet_position = new_value
+	network_tween.interpolate_property(self, "global_position", global_transform, puppet_position, 0.1)
+	network_tween.start()
 	
-	cameraRotation()
-	crossHair()
-	crossHairResize()
-	minimapFollow()
-	miniMapVisibility()
-	stiffCamera()
-	dodgeIframe()
-	doublePressToDash()
-	fullscreen()
-	showEnemyStats()
-	behaviourTree()
-	inputToState()
-	attack()
-	skillUserInterfaceInputs()
-	positionCoordinates()
-	jump()
-	deathLife(delta)#Main function
-	
-	if is_dead == false:
-		if stunned_duration == 0:
-			if knockeddown_duration == false:
-				if staggered_duration == false:
-					if taunt_duration == false:
-						walk() 
+func NetworkTickRate()->void:
+	if get_tree().has_network_peer():
+		if is_network_master():
+			rset_unreliable("puppet_position", global_translation)
+			rset_unreliable("puppet_velocity", horizontal_velocity)
+			rset_unreliable("puppet_rotation", rotation)
 
+		
 
 func debug() -> void:
 	var state_enum = autoload.state_list  # Access the enum from the singleton
@@ -159,7 +164,32 @@ func debug() -> void:
 	var sec_weapon_name = sec_weapon_enum.keys()[sec_weapon_value]
 	$Debug.text = "state: " + state_name + "\n" + "weapon stance: " + weapon_name + "\n" + "right hand: " + main_weapon_name + "\n" + "left hand: " + sec_weapon_name + "\n" + "stunned: " + str(stunned_duration) + "\n" + "knocked down:" + str(knockeddown_duration) + "\n" +  "staggered: " + str(staggered_duration)
 
-
+func networkMasterFunctions(delta:float) -> void:
+	autoload.gravity(self)#Gravity stays first in the order else jumping doesn't work 
+	all_skills.updateCooldownLabel()
+	cameraRotation()
+	crossHair()
+	crossHairResize()
+	minimapFollow()
+	miniMapVisibility()
+	stiffCamera()
+	dodgeIframe()
+	doublePressToDash()
+	fullscreen()
+	showEnemyStats()
+	behaviourTree()
+	inputToState()
+	attack()
+	skillUserInterfaceInputs()
+	positionCoordinates()
+	jump()
+	deathLife(delta)#Main function
+	if is_dead == false:
+		if stunned_duration == 0:
+			if knockeddown_duration == false:
+				if staggered_duration == false:
+					if taunt_duration == false:
+						walk() 
 
 #________________________________Input-State-Animation-SkillBar System______________________________
 var animation: AnimationPlayer
@@ -1149,11 +1179,7 @@ func inputToState():
 				state =  autoload.state_list.idle
 #_______________________________________________Sound_______________________________________________
 onready var walk_sound =$Walk
-func walkSound()->void:
-	if is_walking and !is_running and !is_sprinting and !is_attacking:
-		walk_sound.playing = true
-	else:
-		walk_sound.playing = false
+
 		
 #_______________________________________________Combat______________________________________________
 func attack():
@@ -1215,11 +1241,12 @@ func hookEnemies() -> void:
 								if body.balance < 3:
 									body.getKnockedDown(instigator)
 					pullEnemy(distance, body, 0.5 + (distance * 0.01))
-# @Ceisri 
-# Managed to make this work, except sometimes the hook pulls the player thru collisions
-# not gonna bother with it for now, the function is found at "res://scripts/DeprecatedScripts/GrapplingHook.gd"
+				# @Ceisri 
+				# Managed to make this work, except sometimes the hook pulls the player thru collisions
+				# not gonna bother with it for now, the function is found at "res://scripts/DeprecatedScripts/GrapplingHook.gd"
 				#else:
 					#pullPlayer((distance * 0.01),(distance * 0.01))
+
 
 
 func pushEnemyAway(push_distance, enemy, push_speed):
@@ -1486,7 +1513,15 @@ func walk()->void:
 		is_running = false
 		is_crouching = false
 
-	autoload.movement(self)
+	movement()
+func physicsSauce()-> void:
+	movement.z = horizontal_velocity.z + vertical_velocity.z
+	movement.x = horizontal_velocity.x + vertical_velocity.x
+	movement.y = vertical_velocity.y
+	move_and_slide(movement, Vector3.UP)
+func movement()-> void:
+	physicsSauce()
+	horizontal_velocity = horizontal_velocity.linear_interpolate(direction.normalized() * movement_speed, acceleration * get_process_delta_time())
 
 #climbing section
 var is_swimming:bool = false
@@ -1549,13 +1584,13 @@ var old_vel : float = 0.0
 
 # Physics value
 var direction : Vector3 = Vector3()
-var horizontal_velocity : Vector3 = Vector3()
-var aim_turn = float()
-var movement = Vector3()
-var vertical_velocity = Vector3()
-var movement_speed = int()
-var angular_acceleration = int()
-var acceleration = int()
+var horizontal_velocity: Vector3 = Vector3()
+var aim_turn:float = float()
+var movement:Vector3 = Vector3()
+var vertical_velocity:Vector3 = Vector3()
+var movement_speed:int = int()
+var angular_acceleration:int= int()
+var acceleration:int = int()
 #__________________________________________More action based movement_______________________________
 # Dodge
 var double_press_time: float = 0.18
@@ -3163,6 +3198,7 @@ func switchWeaponFromHandToSideOrBack()->void:
 # This is used both for buffs, debuffs, item stats, consumable effects and whatelse...why is this not in a component? 
 # because I'm delaying moving it to a component, other stuff to do now
 var effects:Dictionary = {
+	"none":  {"stats": {}, "applied": false},
 #_______________________________________________Debuffs ____________________________________________
 	"overhydration": {"stats": { "extra_vitality": -0.02,"extra_agility": -0.05,}, "applied": false},
 	"dehydration": {"stats": { "extra_intelligence": -0.25,"extra_agility": -0.25,}, "applied": false},
