@@ -29,7 +29,6 @@ onready var slow_timer:Timer = $SlowTimer
 func _ready()->void:
 #	autoload.drawGlobalThreat(self)#For DEbugging purposes only, draws aggro from everything 
 	loadPlayerData()
-	convertStats()
 	switchSexRace()
 	setInventoryOwner()
 	setSkillTreeOwner()
@@ -89,16 +88,15 @@ func slowTimer()->void:
 	if health <= 0 :
 		revival_wait_time -= 1
 func slowestTimer()->void:
-	cameraRotation()#Run camera rotation multiple times, it's a light function and makes things smoother 
 	frameRate()
 	hydration()
 	hunger()
-	convertStats()
 	displayLabels()
 	SwitchEquipmentBasedOnEquipmentIcons()
 		
 func _on_3FPS_timeout()->void:
 	debug()
+	convertStats()
 	lootBodies()
 	cameraRotation()#Run camera rotation multiple times, it's a light function and makes things smoother 
 	if health >0:
@@ -114,7 +112,6 @@ func _on_3FPS_timeout()->void:
 func _physics_process(delta: float) -> void:
 	autoload.gravity(self)#Gravity stays first in the order else jumping doesn't work 
 	all_skills.updateCooldownLabel()
-	
 	cameraRotation()
 	crossHair()
 	crossHairResize()
@@ -213,6 +210,9 @@ func behaviourTree()-> void:
 		skill_queue.getInterrupted()
 		clearParryAbsorb()
 		stopBeingParlized()
+		warning_screen.modulate = Color(0, 0, 0, 1)
+		warning_screen.modulate.a = 1
+		
 		if health >= -100:
 			if is_walking:
 				animation.play("downed walk",0.35)
@@ -227,6 +227,7 @@ func behaviourTree()-> void:
 			animation.play("dead",0.35)
 			is_dead = true
 	else:
+		warning_screen.modulate.a = 0.0
 		if current_race_gender == null or animation == null:
 			print("mesh not instanced or animationPlayer not found")
 		else:
@@ -935,7 +936,9 @@ func skills(slot)-> void:
 						button = inventory_grid.get_node("InventorySlot" + str(index))
 						if health < max_health:
 							autoload.consumeRedPotion(self,button,inventory_grid,true,slot.get_parent())
-							limitStatsToMaximum()
+						if health > max_health:
+							health = max_health 
+
 							
 							
 func baseAtkAnim()-> void:
@@ -945,7 +948,7 @@ func baseAtkAnim()-> void:
 				animation.play("combo sword",blend,melee_atk_speed + all_skills.combo_extr_speed)
 				moveDuringAnimation(all_skills.combo_distance)
 			else:
-				animation.play("cleave",blend,melee_atk_speed)
+				animation.play("cleave sword",blend,melee_atk_speed)
 				moveDuringAnimation(all_skills.cleave_distance)
 		autoload.weapon_type_list.dual_swords:
 			var dual_wield_compensation:float = 1.105 #People have the feeling that two swords should be faster, not realistic, but it breaks their "game feel" 
@@ -1290,7 +1293,7 @@ func isFacingSelf(enemy: Node, threshold: float) -> bool:
 	return dot_product >= threshold
 var parry: bool =  false
 var absorbing: bool = false
-func clearParryAbsorb():
+func clearParryAbsorb()-> void:
 	parry = false
 	absorbing = false
 	is_aiming = false
@@ -1298,29 +1301,38 @@ func clearParryAbsorb():
 	
 func takeStagger(stagger_chance: float) -> void:
 	damage_effects_manager.takeStagger(stagger_chance)
-	limitStatsToMaximum()
-
-
-func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
-	limitStatsToMaximum()
+onready var damage_tween:Tween = $"Damage&Effects/Tween"
+onready var warning_screen:TextureRect = $UI/GUI/WarningScreen
+func damageEffects() -> void:
+	# Set the initial transparency of the damage screen
+	warning_screen.modulate.a = 0.0
+	warning_screen.modulate = Color(1, 0, 0, 0)
+	# Start the tween for the damage screen transparency
+	damage_tween.interpolate_property(warning_screen, "modulate:a", 0.0, 1.0, 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
+	damage_tween.interpolate_property(warning_screen, "modulate:a", 1.0, 0.0, 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT, 0.5) 
+	# Start the tween
+	damage_tween.start()
+	
+func takeDamage(damage:float, aggro_power:float, instigator:Node, stagger_chance:float, damage_type:String)-> void:
 	allResourcesBarsAndLabels()
 	damage_effects_manager.takeDamagePlayer(damage, aggro_power, instigator, stagger_chance, damage_type)
+	if damage > max_health * 0.15:
+		damageEffects()
 
-func getKnockedDown(instigator)-> void:#call this for skills that have a different knock down chance
-	limitStatsToMaximum()
+func getKnockedDown(instigator)-> void:#call this for skills that have a different knockdown chance
 	var text = autoload.floatingtext_damage.instance()
 	damage_effects_manager. getKnockedDownPlayer(instigator)
 	text.status = "Knocked Down!"
 	add_child(text)
 
 
-func takeHealing(healing,healer):
-	limitStatsToMaximum()
+func takeHealing(healing:float,healer:Node)-> void:
 	damage_effects_manager.takeHealing(healing,healer)
 	
 var lifesteal_pop = preload("res://UI/lifestealandhealing.tscn")	
 func lifesteal(damage_to_take)-> void:#This is called by the enemy's script when they take damage
-	limitStatsToMaximum()
+	if health > max_health:
+		health = max_health 
 	damage_effects_manager.lifesteal(damage_to_take)
 
 #_____________________________________DEATH AND LIFE STATE__________________________________________
@@ -3190,7 +3202,8 @@ func switchWeaponFromHandToSideOrBack()->void:
 #@Ceisri
 # This is used both for buffs, debuffs, item stats, consumable effects and whatelse...why is this not in a component? 
 # because I'm delaying moving it to a component, other stuff to do now
-var effects:Dictionary = {
+var effects:Dictionary = { #Reminder to add extra_on_hit_resolve_regen to weapons
+	"none": {"stats": {}, "applied": false},
 #_______________________________________________Debuffs ____________________________________________
 	"overhydration": {"stats": { "extra_vitality": -0.02,"extra_agility": -0.05,}, "applied": false},
 	"dehydration": {"stats": { "extra_intelligence": -0.25,"extra_agility": -0.25,}, "applied": false},
@@ -3228,62 +3241,75 @@ var effects:Dictionary = {
 	
 	"weapset1_sword": {"stats": {"extra_dmg": autoload.sword_beginner_dmg,
 	"extra_guard_dmg_absorbition": autoload.sword_beginner_absorb},
+	"extra_on_hit_resolve_regen": 1,
 	"extra_melee_atk_speed":autoload.weapset1_atk_speed["sword"], "applied": false},
 	
 
 	"weapset1_sword2": {"stats": {"extra_dmg": autoload.sword_beginner_dmg,
 	"extra_guard_dmg_absorbition": autoload.sword_beginner_absorb,
+	"extra_on_hit_resolve_regen": 1,
 	"extra_melee_atk_speed":autoload.weapset1_atk_speed["sword"]}, "applied": false},
 	
 	"weapset1_hammer": {"stats": {"extra_dmg": autoload.sword_beginner_dmg,
 	"extra_guard_dmg_absorbition": autoload.sword_beginner_absorb,
+	"extra_on_hit_resolve_regen": 1,
 	"extra_melee_atk_speed":autoload.weapset1_atk_speed["hammer"]}, "applied": false},
 	
 	"weapset1_hammer2": {"stats": {"extra_dmg": autoload.sword_beginner_dmg,
 	"extra_guard_dmg_absorbition": autoload.sword_beginner_absorb,
+	"extra_on_hit_resolve_regen": 1,
 	"extra_melee_atk_speed":autoload.weapset1_atk_speed["hammer"]}, "applied": false},
 	
 	
 	"weapset1_mace": {"stats": {"extra_dmg": autoload.sword_beginner_dmg,
 	"extra_guard_dmg_absorbition": autoload.sword_beginner_absorb,
+	"extra_on_hit_resolve_regen": 1,
 	"extra_melee_atk_speed":autoload.weapset1_atk_speed["mace"]}, "applied": false},
 	
 	
 	"weapset1_mace2": {"stats": {"extra_dmg": autoload.sword_beginner_dmg,
 	"extra_guard_dmg_absorbition": autoload.sword_beginner_absorb,
+	"extra_on_hit_resolve_regen": 1,
 	"extra_melee_atk_speed":autoload.weapset1_atk_speed["mace"]}, "applied": false},
 	
 	
 	"weapset1_axe": {"stats": {"extra_dmg": autoload.axe_beginner_dmg,
 	"extra_guard_dmg_absorbition": autoload.axe_beginner_absorb,
+	"extra_on_hit_resolve_regen": 1,
 	"extra_melee_atk_speed":autoload.weapset1_atk_speed["axe"]}, "applied": false},
 	
 	"weapset1_axe2": {"stats": {"extra_dmg": autoload.axe_beginner_dmg,
 	"extra_guard_dmg_absorbition": autoload.axe_beginner_absorb,
+	"extra_on_hit_resolve_regen": 1,
 	"extra_melee_atk_speed":autoload.weapset1_atk_speed["axe"]}, "applied": false},
 	
 	"weapset1_greatsword": {"stats": {"extra_dmg": autoload.greatsword_beginner_dmg,
 	"extra_guard_dmg_absorbition": autoload.greatsword_beginner_absorb,
+	"extra_on_hit_resolve_regen": 2.5,
 	"extra_melee_atk_speed":autoload.weapset1_atk_speed["greatsword"]}, "applied": false},
 	
 	"weapset1_greataxe": {"stats": {"extra_dmg": autoload.greataxe_beginner_dmg,
 	"extra_guard_dmg_absorbition": autoload.greataxe_beginner_absorb,
+	"extra_on_hit_resolve_regen": 1,
 	"extra_melee_atk_speed":autoload.weapset1_atk_speed["greataxe"]}, "applied": false},
 	
 	
 	"weapset1_demo-hammer": {"stats": {"extra_dmg": autoload.demolition_hammer_beg_dmg,
 	"extra_guard_dmg_absorbition": autoload.demolition_hammer_beg_absorb,
 	"extra_melee_atk_speed":autoload.weapset1_atk_speed["demo-hammer"],
+	"extra_on_hit_resolve_regen": 1,
 	"extra_impact": autoload.demolition_hammer_beg_impact}, "applied": false},
 	
 	"weapset1_greatmace": {"stats": {"extra_dmg": autoload.greatmace_beg_dmg,
 	"extra_guard_dmg_absorbition": autoload.greatmace_beg_absorb,
 	"extra_melee_atk_speed": autoload.weapset1_atk_speed["greatmace"],
+	"extra_on_hit_resolve_regen": 1,
 	"extra_impact": autoload.greatmace_beg_impact}, "applied": false},
 	
 	"weapset1_warhammer": {"stats": {"extra_dmg": autoload.greatmace_beg_dmg,
 	"extra_guard_dmg_absorbition": autoload.greatmace_beg_absorb,
 	"extra_melee_atk_speed":autoload.weapset1_atk_speed["warhammer"],
+	"extra_on_hit_resolve_regen": 1,
 	"extra_impact": autoload.greatmace_beg_impact}, "applied": false},
 	
 	
@@ -3800,27 +3826,13 @@ var total_courage: float = 0
 
 
 
-		
-
-
-
-func limitStatsToMaximum()->void:
-	if health > max_health:
-		health = max_health
-	if resolve > max_resolve:
-		resolve = max_resolve
-	if aefis > max_aefis:
-		aefis = max_aefis
-	if nefis > max_nefis:
-		nefis = max_nefis
 
 func convertStats()->void:
-	resistanceMath()
 	attackSpeedMath()
 	flankDamageMath()
 	baseDamageMath()
 	rngStatsMath()
-
+	resistanceMath()
 	aefis = min(aefis + intelligence + wisdom, max_aefis)
 	nefis = min(nefis + instinct, max_nefis)
 		
@@ -3874,7 +3886,6 @@ func convertStats()->void:
 	
 	total_on_hit_resolve_regen = on_hit_resolve_regen+ extra_on_hit_resolve_regen
 
-	
 	
 var base_critical_chance: float = 12.5
 var extra_critical_chance: float 
@@ -4963,51 +4974,62 @@ func connectAttributeButtons():
 	plus_loy.connect("pressed", self, "plusLoy")
 	min_loy.connect("pressed", self, "minusLoy")
 func plusInt():#intelligence
+	convertStats()
 	var result: Array = increaseAttribute(spent_attribute_points_int,intelligence)
 	spent_attribute_points_int = result[0]
 	intelligence = result[1]
 	print(spent_attribute_points_int)
 func minusInt():
+	convertStats()
 	var result: Array = decreaseAttribute(spent_attribute_points_int,intelligence)
 	spent_attribute_points_int = result[0]
 	intelligence = result[1]
 func plusIns():#instinct
+	convertStats()
 	var result: Array = increaseAttribute(spent_attribute_points_ins,instinct)
 	spent_attribute_points_ins = result[0]
 	instinct = result[1]
 	print(spent_attribute_points_ins)
 func minusIns():
+	convertStats()
 	var result: Array = decreaseAttribute(spent_attribute_points_ins,instinct)
 	spent_attribute_points_ins = result[0]
 	instinct = result[1]
 func plusWis():#wisdom
+	convertStats()
 	var result: Array = increaseAttribute(spent_attribute_points_wis,wisdom)
 	spent_attribute_points_wis = result[0]
 	wisdom = result[1]
 	print(spent_attribute_points_wis)
 func minusWis():
+	convertStats()
 	var result: Array = decreaseAttribute(spent_attribute_points_wis,wisdom)
 	spent_attribute_points_wis = result[0]
 	wisdom = result[1]
 func plusMem():#memory
+	convertStats()
 	var result: Array = increaseAttribute(spent_attribute_points_mem,memory)
 	spent_attribute_points_mem = result[0]
 	memory = result[1]
 	print(spent_attribute_points_mem)
 func minusMem():
+	convertStats()
 	var result: Array = decreaseAttribute(spent_attribute_points_mem,memory)
 	spent_attribute_points_mem = result[0]
 	memory = result[1]
 func plusSan():#sanity
+	convertStats()
 	var result: Array = increaseAttribute(spent_attribute_points_san,sanity)
 	spent_attribute_points_san = result[0]
 	sanity = result[1]
 	print(spent_attribute_points_san)
 func minusSan():
+	convertStats()
 	var result: Array = decreaseAttribute(spent_attribute_points_san,sanity)
 	spent_attribute_points_san = result[0]
 	sanity = result[1]
 func plusStr():#strength
+	convertStats()
 	var result: Array = increaseAttribute(spent_attribute_points_str,strength)
 	spent_attribute_points_str = result[0]
 	strength = result[1]

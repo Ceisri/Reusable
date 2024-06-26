@@ -465,6 +465,8 @@ func  applyBlendShapes()->void:
 func onHit()->void:#Put this on base attacks
 	if player.resolve < player.max_resolve:
 		player.resolve += player.total_on_hit_resolve_regen
+	else:
+		player.resolve = player.max_resolve
 
 func throwRocks()->void:
 	player.all_skills.throwRock(player.total_dmg)

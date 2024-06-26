@@ -1,7 +1,7 @@
 extends TextureButton
 
 
-func can_drop_data(position, data):
+func can_drop_data(position,data):
 	return true
 
 
