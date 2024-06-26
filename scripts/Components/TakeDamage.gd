@@ -603,5 +603,5 @@ func regenerate()->void:
 		if parent.nefis < 	parent.max_nefis:
 			parent.nefis += 1
 		if parent.resolve < parent.resolve:
-			parent.resolve += 0.25
+			parent.resolve += 1
 		

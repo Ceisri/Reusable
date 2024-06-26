@@ -9,6 +9,8 @@
 # If you are using any of this in your project keep in my that due to Global.gd using a lot of preloads
 # the game doesn't have the fastest loading time so try to avoid game games that are too "instanced" 
 # and rely more on "open world" unless you find a better way and can make loading times faster
+
+
 extends KinematicBody
 onready var player_mesh: Node = $Mesh
 onready var damage_effects_manager = $"Damage&Effects"
@@ -21,89 +23,81 @@ var is_attacking = bool()
 var is_walking = bool()
 var is_running = bool()
 var is_player:bool = true
-var username:String = ""
 
-
-onready var network_tween:Tween =$NetworkTickRate/Tween
 onready var slowest_timer:Timer = $SlowestTimer
 onready var slow_timer:Timer = $SlowTimer
-onready var fast_timer:Timer = $"3FPS"
-onready var network_timer:Timer = $NetworkTickRate
-# lower values make the load on the server heavier, 
-# 0.0667 is good for performance and 0.03 is supposedly better for precision
-var lag_compensation_framerate:float = 0.03
 func _ready()->void:
-	if is_network_master():
-	#	autoload.drawGlobalThreat(self)#For Debugging purposes only, draws aggro from everything 
-		loadPlayerData()
-		switchSexRace()
-		setInventoryOwner()
-		setSkillTreeOwner()
-		add_to_group("Player")
-		add_to_group("Entity")
-		connectUIButtons()
-		connectInventoryButtons()
-		connectSkillBarButtons()
-		connectSkillTree()
-		connectAttributeButtons()
-		connectAttributeHovering()
-		connectHoveredResistanceLabels()
-		convertStats()
-		closeAllUI()
-		loadInventoryData()
-		loadSkillTreeData()
-		SwitchEquipmentBasedOnEquipmentIcons()
-		direction = Vector3.BACK.rotated(Vector3.UP, $Camroot/h.global_transform.basis.get_euler().y)
-		aim_label.text = aiming_mode
-		current_race_gender.EquipmentSwitch()
-		l_click_slot.switchAttackIcon()
-		colorBodyParts()
-		switchButtonTextures()
-		slow_timer.connect("timeout", self, "slowTimer")
-		slowest_timer.connect("timeout", self, "slowestTimer")
-		fast_timer.connect("timeout", self, "fastTimer")
-		network_timer.connect("timeout", self, "NetworkTickRate")
-		slow_timer.start(1)
-		slowest_timer.start(3)
-		fast_timer.start(0.35)
-		network_timer.start(lag_compensation_framerate)
-		
-		connectEquipment()
-		stutterPrevention()
-		struggle_button.text = "Struggle:" + str(struggles)+ " remaining"
+#	autoload.drawGlobalThreat(self)#For DEbugging purposes only, draws aggro from everything 
+	loadPlayerData()
+	convertStats()
+	switchSexRace()
+	setInventoryOwner()
+	setSkillTreeOwner()
+	add_to_group("Player")
+	add_to_group("Entity")
+	connectUIButtons()
+	connectInventoryButtons()
+	connectSkillBarButtons()
+	connectSkillTree()
+	connectAttributeButtons()
+	connectAttributeHovering()
+	connectHoveredResistanceLabels()
+	closeAllUI()
+	loadInventoryData()
+	loadSkillTreeData()
+	SwitchEquipmentBasedOnEquipmentIcons()
+	direction = Vector3.BACK.rotated(Vector3.UP, $Camroot/h.global_transform.basis.get_euler().y)
+	aim_label.text = aiming_mode
+	current_race_gender.EquipmentSwitch()
+	l_click_slot.switchAttackIcon()
+	colorBodyParts()
+	switchButtonTextures()
+	slow_timer.connect("timeout", self, "slowTimer")
+	slow_timer.start(1)
+	slowest_timer.connect("timeout", self, "slowestTimer")
+	slowest_timer.start(3)
+	connectEquipment()
+	stutterPrevention()
+	struggle_button.text = "Struggle:" + str(struggles)+ " remaining"
+	
+
+	
 func stutterPrevention()->void:
 	var text = autoload.floatingtext_damage.instance()
 	text.status = "STUTTER PREVENTION"
 	take_damage_view.add_child(text)
+
+	
+	
 func slowTimer()->void:
-	if is_network_master():
-		cameraRotation()#Run camera rotation multiple times, it's a light function and makes things smoother 
-		experienceSystem()
-		damage_effects_manager.effectDurations()
-		allResourcesBarsAndLabels()
-		money()
-		if health >0:
-			potionEffects()
-			all_skills.ComboSystem()
-			showStatusIcon()	
-			crafting()
-			damage_effects_manager.regenerate()
-			l_click_slot.switchAttackIcon()
-			r_click_slot.switchAttackIcon()
-			$UI/GUI/SkillTrees/Label.text = str("skill points: ")+ str(skill_points)
-			$UI/GUI/SkillTrees/Label2.text =  str("points spent: ")+ str(skill_points_spent)
-		displayClock()
-		if health <= 0 :
-			revival_wait_time -= 1
+	cameraRotation()#Run camera rotation multiple times, it's a light function and makes things smoother 
+	experienceSystem()
+	damage_effects_manager.effectDurations()
+	allResourcesBarsAndLabels()
+	money()
+	if health >0:
+		potionEffects()
+		all_skills.ComboSystem()
+		showStatusIcon()	
+		crafting()
+		damage_effects_manager.regenerate()
+		l_click_slot.switchAttackIcon()
+		r_click_slot.switchAttackIcon()
+		$UI/GUI/SkillTrees/Label.text = str("skill points: ")+ str(skill_points)
+		$UI/GUI/SkillTrees/Label2.text =  str("points spent: ")+ str(skill_points_spent)
+	displayClock()
+	if health <= 0 :
+		revival_wait_time -= 1
 func slowestTimer()->void:
-	if is_network_master():
-		frameRate()
-		hydration()
-		hunger()
-		convertStats()
-		displayLabels()
-		SwitchEquipmentBasedOnEquipmentIcons()
-func fastTimer()->void:#This is here only for a mild performance boost, it runs functions at 3FPS
+	cameraRotation()#Run camera rotation multiple times, it's a light function and makes things smoother 
+	frameRate()
+	hydration()
+	hunger()
+	convertStats()
+	displayLabels()
+	SwitchEquipmentBasedOnEquipmentIcons()
+		
+func _on_3FPS_timeout()->void:
 	debug()
 	limitStatsToMaximum()
 	lootBodies()
@@ -116,57 +110,12 @@ func fastTimer()->void:#This is here only for a mild performance boost, it runs 
 		$UI/GUI/Equipment/Attributes/AttributeSpent.text = "Attributes points Spent: " + str(total_spent_attribute_points)
 		curtainsDown()
 		updateAllStats()
+
+
 func _physics_process(delta: float) -> void:
-	if is_network_master():
-		networkMasterFunctions(delta)
-	else:
-		if puppet_rotation != null:
-			rotation_degrees = lerp(rotation_degrees, puppet_rotation, delta * 8)
-		else:
-			print("Puppet Rotation missing ")
-		if not network_tween.is_active():
-			move_and_slide(puppet_velocity * movement_speed)
-			#lagCompensation() FINISH THIS LATER
-			
-puppet var puppet_position:Vector3 = Vector3(0, 0,0) setget puppet_position_set
-puppet var puppet_velocity:Vector3 = Vector3()
-puppet var puppet_rotation:float = 0
-#puppet var puppet_username:String = "" setget puppet_username_set
-func puppet_position_set(new_value) -> void:
-	puppet_position = new_value
-	network_tween.interpolate_property(self, "global_position", global_transform, puppet_position, 0.1)
-	network_tween.start()
-	
-func NetworkTickRate()->void:
-	if get_tree().has_network_peer():
-		if is_network_master():
-			rset_unreliable("puppet_position", global_translation)
-			rset_unreliable("puppet_velocity", horizontal_velocity)
-			rset_unreliable("puppet_rotation", rotation)
-
-		
-
-func debug() -> void:
-	var state_enum = autoload.state_list  # Access the enum from the singleton
-	var state_value = state  # Get the current state value
-	var state_name = state_enum.keys()[state_value]  # Convert enum to string
-
-	var weapon_enum = autoload.weapon_type_list
-	var weapon_value = weapon_type
-	var weapon_name = weapon_enum.keys()[weapon_value]
-
-	var main_weapon_enum = autoload.main_weap_list
-	var main_weapon_value = main_weapon
-	var main_weapon_name = main_weapon_enum.keys()[main_weapon_value]
-
-	var sec_weapon_enum = autoload.sec_weap_list
-	var sec_weapon_value = sec_weapon
-	var sec_weapon_name = sec_weapon_enum.keys()[sec_weapon_value]
-	$Debug.text = "state: " + state_name + "\n" + "weapon stance: " + weapon_name + "\n" + "right hand: " + main_weapon_name + "\n" + "left hand: " + sec_weapon_name + "\n" + "stunned: " + str(stunned_duration) + "\n" + "knocked down:" + str(knockeddown_duration) + "\n" +  "staggered: " + str(staggered_duration)
-
-func networkMasterFunctions(delta:float) -> void:
 	autoload.gravity(self)#Gravity stays first in the order else jumping doesn't work 
 	all_skills.updateCooldownLabel()
+	
 	cameraRotation()
 	crossHair()
 	crossHairResize()
@@ -184,6 +133,7 @@ func networkMasterFunctions(delta:float) -> void:
 	positionCoordinates()
 	jump()
 	deathLife(delta)#Main function
+	
 	if is_dead == false:
 		if stunned_duration == 0:
 			if knockeddown_duration == false:
@@ -191,12 +141,36 @@ func networkMasterFunctions(delta:float) -> void:
 					if taunt_duration == false:
 						walk() 
 
+
+func debug() -> void:
+	var state_enum = autoload.state_list  # Access the enum from the singleton
+	var state_value = state  # Get the current state value
+	var state_name = state_enum.keys()[state_value]  # Convert enum to string
+
+	var weapon_enum = autoload.weapon_type_list
+	var weapon_value = weapon_type
+	var weapon_name = weapon_enum.keys()[weapon_value]
+
+	var main_weapon_enum = autoload.main_weap_list
+	var main_weapon_value = main_weapon
+	var main_weapon_name = main_weapon_enum.keys()[main_weapon_value]
+
+	var sec_weapon_enum = autoload.sec_weap_list
+	var sec_weapon_value = sec_weapon
+	var sec_weapon_name = sec_weapon_enum.keys()[sec_weapon_value]
+	$Debug.text = "state: " + state_name + "\n" + "weapon stance: " + weapon_name + "\n" + "right hand: " + main_weapon_name + "\n" + "left hand: " + sec_weapon_name + "\n" + "stunned: " + str(stunned_duration) + "\n" + "knocked down:" + str(knockeddown_duration) + "\n" +  "staggered: " + str(staggered_duration) + "\n" +  "long base attack: " + str(long_base_atk)
+
+
+
 #________________________________Input-State-Animation-SkillBar System______________________________
 var animation: AnimationPlayer
 
 var hold_to_base_atk:bool = false #if true holding the base attack buttons continues a combo of attacks, releasing the button stops the attacks midway, if false it will just play the attack animation as if it was a normal skill
 var base_atk_duration:bool = false
 var base_atk2_duration:bool = false
+var base_atk3_duration:bool = false
+var base_atk4_duration:bool = false
+
 var throw_rock_duration:bool= false
 var stomp_duration:bool= false
 var kick_duration:bool= false
@@ -380,16 +354,16 @@ func activeActions()->void:
 				match weapon_type:
 					autoload.weapon_type_list.sword:
 						animation.play("whirlwind sword",blend*1.5,melee_atk_speed+ 0.15)
-						moveDuringAnimation(6)
+						moveDuringAnimation(all_skills.whirlwind_distance)
 					autoload.weapon_type_list.sword_shield:
 						animation.play("whirlwind sword",blend*1.5,melee_atk_speed+ 0.15)
-						moveDuringAnimation(5)
+						moveDuringAnimation(all_skills.whirlwind_distance)
 					autoload.weapon_type_list.dual_swords:
 						animation.play("whirlwind sword",blend*1.5,melee_atk_speed + 0.1)
-						moveDuringAnimation(6.6)
+						moveDuringAnimation(all_skills.whirlwind_distance)
 					autoload.weapon_type_list.heavy:
 						animation.play("whirlwind heavy",blend*1.5,melee_atk_speed+ 0.15)
-						moveDuringAnimation(5)
+						moveDuringAnimation(all_skills.whirlwind_distance)
 			else:
 				whirlwind_duration = false
 				returnToIdleBasedOnWeaponType()
@@ -489,28 +463,30 @@ func activeActions()->void:
 		moveDuringAnimation(0)
 		
 	elif base_atk_duration == true:
-		var compensation_speed =0 #extra attack seed to compensate having to click multiple times 
 		match weapon_type:
 			autoload.weapon_type_list.fist:
-				animation.play("fist click1",blend,melee_atk_speed+compensation_speed)
+				animation.play("fist click1",blend,melee_atk_speed)
 				moveDuringAnimation(2.5)
 			autoload.weapon_type_list.bow: 
 				pass
 			autoload.weapon_type_list.sword:
-				animation.play("sword click1",blend, melee_atk_speed +compensation_speed)
+				animation.play("sword click1",blend, melee_atk_speed)
 				moveDuringAnimation(2.5)
 			autoload.weapon_type_list.sword_shield:
-				animation.play("sword click1",blend, melee_atk_speed +compensation_speed)
+				animation.play("sword click1",blend, melee_atk_speed)
 				moveDuringAnimation(2.5)
 			autoload.weapon_type_list.dual_swords:
-				animation.play("dual click1",0, melee_atk_speed +compensation_speed)
+				animation.play("dual click1",0, melee_atk_speed)
 				moveDuringAnimation(2.7)
 			autoload.weapon_type_list.heavy:
-				animation.play("heavy click1",0, melee_atk_speed +compensation_speed)
-				moveDuringAnimation(1.75)
+				if long_base_atk == true:
+					animation.play("combo(heavy)",blend,melee_atk_speed + all_skills.combo_extr_speed)
+					moveDuringAnimation(all_skills.combo_distance)
+				else:
+					animation.play("cleave",0.1, melee_atk_speed)
+					moveDuringAnimation(all_skills.cleave_distance)
 
 	elif base_atk2_duration == true:
-
 		match weapon_type:
 			autoload.weapon_type_list.fist:
 				animation.play("fist click2",blend,melee_atk_speed)
@@ -527,10 +503,27 @@ func activeActions()->void:
 				animation.play("dual click2",blend, melee_atk_speed)
 				moveDuringAnimation(2.7)
 			autoload.weapon_type_list.heavy:
-				animation.play("heavy click2",blend, melee_atk_speed )
-				moveDuringAnimation(1.75)
+				if long_base_atk == true:
+					animation.play("combo(heavy)",blend,melee_atk_speed + all_skills.combo_extr_speed)
+					moveDuringAnimation(all_skills.combo_distance)
+				else:
+					animation.play("cleave",0.1, melee_atk_speed)
+					moveDuringAnimation(all_skills.cleave_distance)
 
-		
+	elif base_atk3_duration == true:
+		match weapon_type:
+			autoload.weapon_type_list.heavy:
+				if long_base_atk == true:
+					animation.play("combo(heavy)",blend,melee_atk_speed + all_skills.combo_extr_speed)
+					moveDuringAnimation(all_skills.combo_distance)
+
+	elif base_atk4_duration == true:
+		match weapon_type:
+			autoload.weapon_type_list.heavy:
+				if long_base_atk == true:
+					animation.play("combo(heavy)",blend,melee_atk_speed + all_skills.combo_extr_speed)
+					moveDuringAnimation(all_skills.combo_distance)
+
 	elif stomp_duration == true:
 		directionToCamera()
 		animation.play("stomp",blend,melee_atk_speed * 1.2)
@@ -542,7 +535,6 @@ func activeActions()->void:
 	else:
 		matchState()
 		
-			
 func matchState()->void:
 				match state:
 					autoload.state_list.base_attack:
@@ -675,6 +667,14 @@ func matchState()->void:
 onready var l_click_slot = $UI/GUI/SkillBar/GridContainer/LClickSlot
 onready var r_click_slot = $UI/GUI/SkillBar/GridContainer/RClickSlot
 onready var skill_queue = $UI/GUI/SkillBar/SkillQueue
+
+
+var long_base_atk:bool = false
+
+
+func _on_baseatkswitch_pressed():
+	long_base_atk = !long_base_atk
+
 func skills(slot)-> void:
 	if slot != null:
 		if slot.texture != null:
@@ -776,6 +776,13 @@ func skills(slot)-> void:
 					moveDuringAnimation(0)
 					animation.play("throw rock",blend,range_atk_speed + 0.15)
 #sword
+
+			elif slot.texture.resource_path == autoload.vanguard_icons["combo_switch"].get_path():
+				if all_skills.can_combo_switch == true: 
+					all_skills.comboSwitchCD()
+
+
+
 			elif slot.texture.resource_path == autoload.vanguard_icons["base_atk"].get_path():
 				if hold_to_base_atk == true:
 					directionToCamera()
@@ -790,13 +797,20 @@ func skills(slot)-> void:
 							animation.play("dual hold",blend,melee_atk_speed)
 							moveDuringAnimation(2.7)
 						autoload.weapon_type_list.heavy:
-							animation.play("heavy hold",blend,melee_atk_speed)
-							moveDuringAnimation(1.75)
+							if long_base_atk == true:
+								animation.play("combo(heavy)",blend,melee_atk_speed + all_skills.combo_extr_speed)
+								moveDuringAnimation(all_skills.combo_distance)
+							else:
+								animation.play("cleave",blend,melee_atk_speed)
+								moveDuringAnimation(all_skills.cleave_distance)
 				else:
 					base_atk_duration = true
 			elif slot.texture.resource_path == autoload.vanguard_icons["base_atk2"].get_path():
 				if hold_to_base_atk == false:
 					base_atk2_duration = true
+					base_atk3_duration = true
+					base_atk4_duration = true
+					
 			elif slot.texture.resource_path == autoload.vanguard_icons["guard_sword"].get_path():
 				if resolve > 0:
 					is_walking = false
@@ -1058,7 +1072,7 @@ func returnToIdleBasedOnWeaponType():
 			autoload.weapon_type_list.bow:
 				animation.play("idle bow",0.3)
 			autoload.weapon_type_list.heavy:
-				animation.play("idle heavy",0.3)
+				animation.play("idle heavy")
 func moveDuringAnimation(speed):
 	if !is_on_wall():
 		if current_race_gender.can_move == true:
@@ -1179,7 +1193,11 @@ func inputToState():
 				state =  autoload.state_list.idle
 #_______________________________________________Sound_______________________________________________
 onready var walk_sound =$Walk
-
+func walkSound()->void:
+	if is_walking and !is_running and !is_sprinting and !is_attacking:
+		walk_sound.playing = true
+	else:
+		walk_sound.playing = false
 		
 #_______________________________________________Combat______________________________________________
 func attack():
@@ -1513,15 +1531,7 @@ func walk()->void:
 		is_running = false
 		is_crouching = false
 
-	movement()
-func physicsSauce()-> void:
-	movement.z = horizontal_velocity.z + vertical_velocity.z
-	movement.x = horizontal_velocity.x + vertical_velocity.x
-	movement.y = vertical_velocity.y
-	move_and_slide(movement, Vector3.UP)
-func movement()-> void:
-	physicsSauce()
-	horizontal_velocity = horizontal_velocity.linear_interpolate(direction.normalized() * movement_speed, acceleration * get_process_delta_time())
+	autoload.movement(self)
 
 #climbing section
 var is_swimming:bool = false
@@ -1584,13 +1594,13 @@ var old_vel : float = 0.0
 
 # Physics value
 var direction : Vector3 = Vector3()
-var horizontal_velocity: Vector3 = Vector3()
-var aim_turn:float = float()
-var movement:Vector3 = Vector3()
-var vertical_velocity:Vector3 = Vector3()
-var movement_speed:int = int()
-var angular_acceleration:int= int()
-var acceleration:int = int()
+var horizontal_velocity : Vector3 = Vector3()
+var aim_turn = float()
+var movement = Vector3()
+var vertical_velocity = Vector3()
+var movement_speed = int()
+var angular_acceleration = int()
+var acceleration = int()
 #__________________________________________More action based movement_______________________________
 # Dodge
 var double_press_time: float = 0.18
@@ -2359,8 +2369,11 @@ func UniversalToolTip(icon_texture):
 			var extra:String = "Damage"
 			callToolTipSegmented(instance_skills,"Kick",total_value,cost,extra,cooldown,description)
 
-			
-			
+		elif icon_texture.get_path() == autoload.vanguard_icons["combo_switch"].get_path():
+			var description: String = all_skills.combo_switch_description
+			var cooldown = str("Cooldown: ") + str(all_skills.combo_switch_cooldown)+ str(" seconds")
+			var extra:String = "Stance Switch"
+			callToolTipSegmented(instance_skills,"Switch it up","","",extra,cooldown,description)
 #_______________________________________Inventory system____________________________________________
 #for this to work either preload all the item icons here or add the "Global.gd"
 #as an autoload, i called it add_item in my project, and i used it to to compre the path 
@@ -3198,7 +3211,6 @@ func switchWeaponFromHandToSideOrBack()->void:
 # This is used both for buffs, debuffs, item stats, consumable effects and whatelse...why is this not in a component? 
 # because I'm delaying moving it to a component, other stuff to do now
 var effects:Dictionary = {
-	"none":  {"stats": {}, "applied": false},
 #_______________________________________________Debuffs ____________________________________________
 	"overhydration": {"stats": { "extra_vitality": -0.02,"extra_agility": -0.05,}, "applied": false},
 	"dehydration": {"stats": { "extra_intelligence": -0.25,"extra_agility": -0.25,}, "applied": false},
@@ -3813,10 +3825,11 @@ var total_courage: float = 0
 
 
 func limitStatsToMaximum()->void:
-	if health > max_health:
-		health = max_health
-	if resolve > max_resolve:
-		resolve = max_resolve
+	pass
+#	if health > max_health:
+#		health = max_health
+#	if resolve > max_resolve:
+#		resolve = max_resolve
 
 func convertStats()->void:
 	resistanceMath()
@@ -5917,3 +5930,8 @@ func experienceSystem():
 # Calculate the percentage of experience points
 	var percentage: float = (float(experience_points) / float(experience_to_next_level)) * 100.0
 	exper_label.text = "Level " + str(level) + "\nXP: " + str(experience_points) + "/" + str(experience_to_next_level) + " (" + str(round((percentage* 1)/1)) + "%)"
+
+
+func _on_levelmeup_pressed():
+	experience_points += 500000000000000
+	experience_points += 500000000000000

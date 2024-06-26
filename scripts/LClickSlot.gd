@@ -6,9 +6,9 @@ onready var all_skills: Node = $"../../../SkillTrees"
 func _ready() -> void:
 	switchAttackIcon()
 func switchAttackIcon() -> void:
-	if all_skills.necro_switch == true:
-		icon.texture = autoload.base_attack_necromant
-	else:
+#	if all_skills.necro_switch == true:
+#		icon.texture = autoload.base_attack_necromant
+#	else:
 		match player.weapon_type:
 			autoload.weapon_type_list.fist:
 				if player.base_atk_duration == false:

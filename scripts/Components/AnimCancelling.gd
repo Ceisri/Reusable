@@ -514,7 +514,8 @@ func skillCancel(string:String)->void:
 func interruptBaseAtk():
 	player.base_atk_duration = false
 	player.base_atk2_duration = false
-	
+	player.base_atk3_duration = false
+	player.base_atk4_duration = false
 func interruptBackstep()->void:
 	if player.leftstep_duration == true:
 		player.all_skills.backstepCD()

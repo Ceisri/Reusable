@@ -53,8 +53,8 @@ func loadAnimations()->void:
 	animation.add_animation("dual click2", load("res://player/universal animations/Animations Sword Dual Wield/dual click2.anim"))
 	
 	
-	animation.add_animation("heavy click1", load("res://player/universal animations/Animations Sword Heavy/heavy click1.anim"))
-	animation.add_animation("heavy click2", load("res://player/universal animations/Animations Sword Heavy/heavy click2.anim"))
+#	animation.add_animation("heavy click1", load("res://player/universal animations/Animations Sword Heavy/heavy click1.anim"))
+#	animation.add_animation("heavy click2", load("res://player/universal animations/Animations Sword Heavy/heavy click2.anim"))
 	
 	animation.add_animation("kick", load("res://player/universal animations/Animations Fist/kick.anim"))
 	
@@ -466,28 +466,12 @@ func onHit()->void:#Put this on base attacks
 	if player.resolve < player.max_resolve:
 		player.resolve += player.total_on_hit_resolve_regen
 
-
-
 func throwRocks()->void:
 	player.all_skills.throwRock(player.total_dmg)
 
 func throwRocksStop()->void:
 	player.throw_rock_duration = false
 	player.can_walk = true
-
-
-
-func basAtkCD()->void:
-	player.base_atk_duration = false
-
-	
-func basAtk2CD()->void:
-	player.base_atk2_duration = false
-
-
-
-
-
 func backstepCD()->void:
 	player.all_skills.backstepCD()
 	player.backstep_duration = false
@@ -520,6 +504,11 @@ func punch()->void:
 	var damage_type:String = "blunt"
 	var damage:float = player.total_dmg
 	var damage_flank:float = damage + player.flank_dmg 
+	var critical_damage : float  =0
+	var critical_flank_damage : float  =0
+	#extra damage when the victim is trying to block but is facing the wrong way 
+	var punishment_damage : float = 7 
+	var punishment_damage_type :String = "blunt"
 	var aggro_power:float = player.threat_power
 	var push_distance:float = 0.25 * player.total_impact
 	var enemies:Array = trust_area.get_overlapping_bodies()
@@ -558,12 +547,6 @@ func kickDMG()-> void:
 				if victim.health > damage:
 					if victim.balance < 3:
 						victim.getKnockedDown(player)
-
-
-
-
-
-
 func stompCD()->void:
 	player.stomp_duration = false
 	player.all_skills.stompCD()
@@ -587,6 +570,11 @@ func stompHit()->void:
 					dealDMG(victim,aggro_power,damage_type,damage)
 
 
+func baseAtkCD()->void:
+	player.base_atk_duration = false
+	player.base_atk2_duration = false
+	player.base_atk3_duration = false
+	player.base_atk4_duration = false
 
 onready var area_melee_front:Area = $MeleeFront
 func baseAtktHit()->void:#Heavy
@@ -595,8 +583,6 @@ func baseAtktHit()->void:#Heavy
 	var damage_flank:float = damage + player.flank_dmg 
 	var critical_damage : float  =0
 	var critical_flank_damage : float  = damage_flank * player.critical_dmg
-	#extra damage when the victim is trying to block but is facing the wrong way 
-	var punishment_damage : float = 7 
 	var aggro_power:float = player.threat_power
 	var push_distance:float = 0.25 * player.total_impact
 	var enemies:Array = area_melee_front.get_overlapping_bodies()
@@ -642,26 +628,57 @@ func baseAtkLastHit()->void:#Heavy
 					playSoundSwordHit()
 					if victim.state != autoload.state_list.dead:
 						player.pushEnemyAway(push_distance, victim,0.25)
-#Cleave
-func cleaveDMG()->void:#Heavy
-	var damage_type:String = player.base_dmg_type
-	var damage:float = player.total_dmg * 1.8
-	var damage_flank = damage + player.flank_dmg 
-	var critical_damage : float  = 0
-	var critical_flank_damage : float  = damage_flank * player.critical_dmg
-	#extra damage when the victim is trying to block but is facing the wrong way 
-	var punishment_damage : float = 7 
-	var punishment_damage_type :String = "slash"
-	var aggro_power:float = player.threat_power + 15
-	var push_distance:float = 0.35 * player.total_impact
-	var enemies:Array = area_melee_front.get_overlapping_bodies()
-	for victim in enemies:
-		if victim.is_in_group("enemy"):
-			if victim != self:
-				if victim.state != autoload.state_list.dead:
-					player.pushEnemyAway(push_distance, victim,0.25)
-		dealDMG(victim,aggro_power,damage_type,damage)
 
+onready var cleave_area = $CleavingArea
+func cleavetHit()->void:#First base attack for heavy weapons
+	var damage_type:String = player.base_dmg_type
+	var damage:float = player.total_dmg 
+	var damage_flank:float = damage + player.flank_dmg 
+	var critical_damage : float  =0
+	var critical_flank_damage : float  = damage_flank * player.critical_dmg
+	var aggro_power:float = player.threat_power
+	var push_distance:float = 0.25 * player.total_impact
+	var enemies:Array = cleave_area.get_overlapping_bodies()
+	for victim in enemies:
+		if victim == self:
+			playSoundSwordWoosh()
+		elif victim == player:
+			playSoundSwordWoosh()
+		elif victim == null:
+			playSoundSwordWoosh()
+		else:
+			if !victim.is_in_group("Player"):
+				if victim.is_in_group("Entity"):
+					dealDMG(victim,aggro_power,damage_type,damage)
+					onHit()
+					playSoundSwordHit()
+					if victim.state != autoload.state_list.dead:
+						player.pushEnemyAway(push_distance, victim,0.25)
+
+func cleaveLastHitHeavy()->void:#Second base attack for heavy weapons
+	player.all_skills.activateComboCyclone()
+	player.all_skills.activateComboOverheadslash()
+	player.all_skills.activateComboWhirlwind()
+	var damage_type:String = player.base_dmg_type
+	var damage:float = player.total_dmg * 2.25
+	var aggro_power:float = player.threat_power
+	var push_distance:float = 0.3 * player.total_impact
+	var enemies:Array = cleave_area.get_overlapping_bodies()
+	for victim in enemies:
+		if victim == self:
+			playSoundSwordWoosh()
+		elif victim == player:
+			playSoundSwordWoosh()
+		elif victim == null:
+			playSoundSwordWoosh()
+		else:
+			if !victim.is_in_group("Player"):
+				if victim.is_in_group("Entity"):
+					dealDMG(victim,aggro_power,damage_type,damage)
+					onHit()
+					playSoundSwordHit()
+					if victim.state != autoload.state_list.dead:
+						player.pushEnemyAway(push_distance, victim,0.25)
 
 #Overhead Slash section
 #This skill is viable for all melee weapon types EXCEPT FIST WEAPONS
@@ -745,7 +762,10 @@ func cycloneDMG() -> void:
 		damage_multiplier += (points - 1) * 0.05
 	var damage: float = base_damage * damage_multiplier
 	var damage_flank = damage + player.flank_dmg 
-
+	var critical_damage : float  =0
+	var critical_flank_damage : float  = 0
+	var punishment_damage : float = 7 #extra damage for when the victim is trying to block but is facing the wrong way 
+	var punishment_damage_type :String = "slash"
 	var aggro_power =  20
 	var push_distance:float = 0.25 * player.total_impact
 	var stagger_chance: float 
