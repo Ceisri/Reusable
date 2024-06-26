@@ -99,7 +99,6 @@ func slowestTimer()->void:
 		
 func _on_3FPS_timeout()->void:
 	debug()
-	limitStatsToMaximum()
 	lootBodies()
 	cameraRotation()#Run camera rotation multiple times, it's a light function and makes things smoother 
 	if health >0:
@@ -463,55 +462,16 @@ func activeActions()->void:
 		moveDuringAnimation(0)
 		
 	elif base_atk_duration == true:
-		match weapon_type:
-			autoload.weapon_type_list.fist:
-				animation.play("fist click1",blend,melee_atk_speed)
-				moveDuringAnimation(2.5)
-			autoload.weapon_type_list.bow: 
-				pass
-			autoload.weapon_type_list.sword:
-				animation.play("sword click1",blend, melee_atk_speed)
-				moveDuringAnimation(2.5)
-			autoload.weapon_type_list.sword_shield:
-				animation.play("sword click1",blend, melee_atk_speed)
-				moveDuringAnimation(2.5)
-			autoload.weapon_type_list.dual_swords:
-				animation.play("dual click1",0, melee_atk_speed)
-				moveDuringAnimation(2.7)
-			autoload.weapon_type_list.heavy:
-				if long_base_atk == true:
-					animation.play("combo(heavy)",blend,melee_atk_speed + all_skills.combo_extr_speed)
-					moveDuringAnimation(all_skills.combo_distance)
-				else:
-					animation.play("cleave",0.1, melee_atk_speed)
-					moveDuringAnimation(all_skills.cleave_distance)
+		baseAtkAnim()
 
 	elif base_atk2_duration == true:
-		match weapon_type:
-			autoload.weapon_type_list.fist:
-				animation.play("fist click2",blend,melee_atk_speed)
-				moveDuringAnimation(2)
-			autoload.weapon_type_list.bow: 
-				pass
-			autoload.weapon_type_list.sword:
-				animation.play("sword click2",blend, melee_atk_speed )
-				moveDuringAnimation(2)
-			autoload.weapon_type_list.sword_shield:
-				animation.play("sword click2",blend, melee_atk_speed )
-				moveDuringAnimation(2)
-			autoload.weapon_type_list.dual_swords:
-				animation.play("dual click2",blend, melee_atk_speed)
-				moveDuringAnimation(2.7)
-			autoload.weapon_type_list.heavy:
-				if long_base_atk == true:
-					animation.play("combo(heavy)",blend,melee_atk_speed + all_skills.combo_extr_speed)
-					moveDuringAnimation(all_skills.combo_distance)
-				else:
-					animation.play("cleave",0.1, melee_atk_speed)
-					moveDuringAnimation(all_skills.cleave_distance)
+		baseAtkAnim()
 
 	elif base_atk3_duration == true:
 		match weapon_type:
+			autoload.weapon_type_list.dual_swords:
+				animation.play("combo(dual)",blend,melee_atk_speed + all_skills.combo_extr_speed)
+				moveDuringAnimation(all_skills.combo_distance)
 			autoload.weapon_type_list.heavy:
 				if long_base_atk == true:
 					animation.play("combo(heavy)",blend,melee_atk_speed + all_skills.combo_extr_speed)
@@ -519,6 +479,9 @@ func activeActions()->void:
 
 	elif base_atk4_duration == true:
 		match weapon_type:
+			autoload.weapon_type_list.dual_swords:
+				animation.play("combo(dual)",blend,melee_atk_speed + all_skills.combo_extr_speed)
+				moveDuringAnimation(all_skills.combo_distance)
 			autoload.weapon_type_list.heavy:
 				if long_base_atk == true:
 					animation.play("combo(heavy)",blend,melee_atk_speed + all_skills.combo_extr_speed)
@@ -786,23 +749,7 @@ func skills(slot)-> void:
 			elif slot.texture.resource_path == autoload.vanguard_icons["base_atk"].get_path():
 				if hold_to_base_atk == true:
 					directionToCamera()
-					match weapon_type:
-						autoload.weapon_type_list.sword:
-							animation.play("sword hold",blend,melee_atk_speed)
-							moveDuringAnimation(2.5)
-						autoload.weapon_type_list.sword_shield:
-							animation.play("sword hold",blend,melee_atk_speed)
-							moveDuringAnimation(2.5)
-						autoload.weapon_type_list.dual_swords:
-							animation.play("dual hold",blend,melee_atk_speed)
-							moveDuringAnimation(2.7)
-						autoload.weapon_type_list.heavy:
-							if long_base_atk == true:
-								animation.play("combo(heavy)",blend,melee_atk_speed + all_skills.combo_extr_speed)
-								moveDuringAnimation(all_skills.combo_distance)
-							else:
-								animation.play("cleave",blend,melee_atk_speed)
-								moveDuringAnimation(all_skills.cleave_distance)
+					baseAtkAnim()
 				else:
 					base_atk_duration = true
 			elif slot.texture.resource_path == autoload.vanguard_icons["base_atk2"].get_path():
@@ -988,6 +935,34 @@ func skills(slot)-> void:
 						button = inventory_grid.get_node("InventorySlot" + str(index))
 						if health < max_health:
 							autoload.consumeRedPotion(self,button,inventory_grid,true,slot.get_parent())
+							limitStatsToMaximum()
+							
+							
+func baseAtkAnim()-> void:
+	match weapon_type:
+		autoload.weapon_type_list.sword:
+			if long_base_atk == true:
+				animation.play("combo sword",blend,melee_atk_speed + all_skills.combo_extr_speed)
+				moveDuringAnimation(all_skills.combo_distance)
+			else:
+				animation.play("cleave",blend,melee_atk_speed)
+				moveDuringAnimation(all_skills.cleave_distance)
+		autoload.weapon_type_list.dual_swords:
+			var dual_wield_compensation:float = 1.105 #People have the feeling that two swords should be faster, not realistic, but it breaks their "game feel" 
+			if long_base_atk == true:
+				animation.play("combo(dual)",blend,melee_atk_speed + all_skills.combo_extr_speed * dual_wield_compensation)
+				moveDuringAnimation(all_skills.combo_distance)
+			else:
+				animation.play("cleave dual",blend,melee_atk_speed * dual_wield_compensation)
+				moveDuringAnimation(all_skills.cleave_distance)
+		autoload.weapon_type_list.heavy:
+			if long_base_atk == true:
+				animation.play("combo(heavy)",blend,melee_atk_speed + all_skills.combo_extr_speed)
+				moveDuringAnimation(all_skills.combo_distance)
+			else:
+				animation.play("cleave",blend,melee_atk_speed)
+				moveDuringAnimation(all_skills.cleave_distance)
+							
 							
 var skill_cancelling:bool = true#this only works with the SkillQueueSystem() and serves to interupt skills with other skills 
 
@@ -1323,13 +1298,16 @@ func clearParryAbsorb():
 	
 func takeStagger(stagger_chance: float) -> void:
 	damage_effects_manager.takeStagger(stagger_chance)
+	limitStatsToMaximum()
 
 
 func takeDamage(damage, aggro_power, instigator, stagger_chance, damage_type):
-		allResourcesBarsAndLabels()
-		damage_effects_manager.takeDamagePlayer(damage, aggro_power, instigator, stagger_chance, damage_type)
+	limitStatsToMaximum()
+	allResourcesBarsAndLabels()
+	damage_effects_manager.takeDamagePlayer(damage, aggro_power, instigator, stagger_chance, damage_type)
 
 func getKnockedDown(instigator)-> void:#call this for skills that have a different knock down chance
+	limitStatsToMaximum()
 	var text = autoload.floatingtext_damage.instance()
 	damage_effects_manager. getKnockedDownPlayer(instigator)
 	text.status = "Knocked Down!"
@@ -1337,10 +1315,12 @@ func getKnockedDown(instigator)-> void:#call this for skills that have a differe
 
 
 func takeHealing(healing,healer):
+	limitStatsToMaximum()
 	damage_effects_manager.takeHealing(healing,healer)
 	
 var lifesteal_pop = preload("res://UI/lifestealandhealing.tscn")	
 func lifesteal(damage_to_take)-> void:#This is called by the enemy's script when they take damage
+	limitStatsToMaximum()
 	damage_effects_manager.lifesteal(damage_to_take)
 
 #_____________________________________DEATH AND LIFE STATE__________________________________________
@@ -3825,11 +3805,14 @@ var total_courage: float = 0
 
 
 func limitStatsToMaximum()->void:
-	pass
-#	if health > max_health:
-#		health = max_health
-#	if resolve > max_resolve:
-#		resolve = max_resolve
+	if health > max_health:
+		health = max_health
+	if resolve > max_resolve:
+		resolve = max_resolve
+	if aefis > max_aefis:
+		aefis = max_aefis
+	if nefis > max_nefis:
+		nefis = max_nefis
 
 func convertStats()->void:
 	resistanceMath()
@@ -4018,7 +4001,7 @@ func _on_NeBar_mouse_exited():
 
 func updateAefisNefis()->void:
 	var intelligence_portion = total_intelligence * 0.5
-	var instinct_portion = total_instinct * 0.25
+	var instinct_portion = total_instinct * 0.5
 	var wisdom_portion = total_wisdom * 0.25
 	var sanity_portion = total_sanity * 0.25
 	var fury_portion = total_fury * 0.25 

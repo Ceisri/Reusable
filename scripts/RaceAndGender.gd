@@ -655,7 +655,7 @@ func cleavetHit()->void:#First base attack for heavy weapons
 					if victim.state != autoload.state_list.dead:
 						player.pushEnemyAway(push_distance, victim,0.25)
 
-func cleaveLastHitHeavy()->void:#Second base attack for heavy weapons
+func cleaveLastHit()->void:#Second base attack for heavy weapons
 	player.all_skills.activateComboCyclone()
 	player.all_skills.activateComboOverheadslash()
 	player.all_skills.activateComboWhirlwind()

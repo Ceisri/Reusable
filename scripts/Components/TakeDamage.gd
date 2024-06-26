@@ -595,13 +595,12 @@ func getKilled(instigator)->void:
 
 
 func regenerate()->void:
-	if parent.health >0:
-		if parent.health < parent.max_health:
-			parent.health += 0.01
-		if parent.aefis < parent.max_aefis:
-			parent.aefis += 1
-		if parent.nefis < 	parent.max_nefis:
-			parent.nefis += 1
-		if parent.resolve < parent.resolve:
-			parent.resolve += 1
+	if parent.health < parent.max_health:
+		parent.health += 0.01
+	if parent.aefis < parent.max_aefis:
+		parent.aefis += 1
+	if parent.nefis < 	parent.max_nefis:
+		parent.nefis += 1
+	if parent.resolve < parent.resolve:
+		parent.resolve += 1
 		
