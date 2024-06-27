@@ -98,6 +98,7 @@ func _physics_process(delta: float) -> void:
 	rotateShadow()
 	canIWalk()
 	uiColorShit()
+	manualTargetAssit()
 	if Engine.get_physics_frames() % 2 == 0: #12 frames per second
 		miniMapVisibility()
 		showEnemyStats()
@@ -1238,17 +1239,47 @@ func inputToState():
 
 		
 #_______________________________________________Combat______________________________________________
-func attack():
+"""
+@Ceisri
+Documentation String: 
+	rotateTowardsEnemy() is a very simple and straight forward function that finds the closest entity in the entire game 
+	and rtoates the player towards that entity when the function is called, the rotation is done using direction 
+	the variable direction_assist is not going to be used directly in rotateTowardsEnemy() but inside all attacks. 
+	if enabled, all attacks will automatically call rotateTowardsEnemy()
+"""
+
+var direction_assist:bool = false # we use this in attacks to auto rotate the direction towards enemies 
+func rotateTowardsEnemy() -> void:
+	var closest_target = null
+	var closest_distance:float = 20.0
+	# Get all nodes in the "Entity" group
+	var entities = get_tree().get_nodes_in_group("Entity")
+	# Find the closest target
+	for entity in entities:
+		if entity != self:
+			var distance = global_transform.origin.distance_to(entity.global_transform.origin)
+			if distance < closest_distance:
+				closest_distance = distance
+				closest_target = entity
+	# Rotate towards the closest target 
+	if closest_target:
+		#global_transform.origin is used to get the players and target positions 
+		direction = (closest_target.global_transform.origin - global_transform.origin).normalized()
+
+func manualTargetAssit() -> void:
+	if Input.is_action_pressed("autoturn"):
+		rotateTowardsEnemy()
+
+
+
+func attack()->void:
 	if Input.is_action_pressed("attack"):
 		is_attacking = true
 	else:
 		is_attacking = false
 
 
-
-
-
-func pullEnemy(pull_distance, enemy, pull_speed):
+func pullEnemy(pull_distance, enemy, pull_speed)->void:
 	var direction_to_enemy = global_transform.origin - enemy.global_transform.origin
 	direction_to_enemy = direction_to_enemy.normalized()
 	var motion = direction_to_enemy * pull_speed
@@ -1277,7 +1308,7 @@ func pullEnemy(pull_distance, enemy, pull_speed):
 
 
 
-func _on_Tween_tween_completed(object, key):
+func _on_Tween_tween_completed(object, key)->void:
 	hook_mesh.visible = false
 
 onready var hook_ray:RayCast = $Camroot/h/v/Camera/Aim/hook_ray
@@ -1305,7 +1336,7 @@ func hookEnemies() -> void:
 
 
 
-func pushEnemyAway(push_distance, enemy, push_speed):
+func pushEnemyAway(push_distance, enemy, push_speed)->void:
 	var direction_to_enemy = enemy.global_transform.origin - global_transform.origin
 	direction_to_enemy.y = 0  # No vertical push
 	direction_to_enemy = direction_to_enemy.normalized()
@@ -1358,7 +1389,7 @@ func clearParryAbsorb()-> void:
 	absorbing = false
 	is_aiming = false
 
-onready var damage_effects_manager = $"Damage&Effects"	
+onready var damage_effects_manager = $"Damage&Effects"
 func takeStagger(stagger_chance: float) -> void:
 	damage_effects_manager.takeStagger(stagger_chance)
 onready var damage_tween:Tween = $"Damage&Effects/Tween"
@@ -1880,7 +1911,7 @@ func fullscreen()-> void:
 		is_fullscreen = !is_fullscreen
 		OS.set_window_fullscreen(is_fullscreen)
 		saveGame()
-#__________________________________Entitygraphical interface________________________________________
+#__________________________________Entity Graphical interface________________________________________
 onready var entity_graphic_interface:Control = $UI/GUI/EnemyUI
 onready var enemy_ui_tween:Tween =$UI/GUI/EnemyUI/Tween
 onready var enemy_health_bar:TextureProgress = $UI/GUI/EnemyUI/HP
@@ -2624,8 +2655,6 @@ func skillBarMouseEntered(index)->void:
 func skillBarMouseExited(index)->void:
 	deleteTooltip()
 	
-
-
 func _on_BaseAtkMode_mouse_entered()->void:
 	var title:String = "Chain/Mechanical"
 	var text:String = "Click to switch between modes:\nChain Mode: hold the click button to base attack\nMechanical mode:  tap the click button to base attack"
@@ -2791,10 +2820,6 @@ func _on_GiveMeItems_pressed()->void:#Only for debugging purposes
 	autoload.addNotStackableItem(inventory_grid,autoload.torso_armor3)
 
 	
-
-
-	
-	
 	
 	
 	
@@ -2821,6 +2846,59 @@ func money()->void:
 
 
 #____________________________________GRAPHICAL INTERFACE AND SETTINGS_______________________________
+var ui_color = Color(1, 1, 1, 1) # Default to white
+
+# Function to update UI colors based on color
+func colorUI(color: Color) -> void:
+	inv_background.modulate = color
+	menu_frame.modulate = color
+	skill_banner.modulate = color
+	skill_background.modulate = color
+	skill_tree_background.modulate = color
+	equipment_bg.modulate = color
+	attributes_background.modulate = color
+	def_val_background.modulate = color
+	loot_background.modulate = color
+	enemy_background.modulate = color
+	craft_background.modulate = color
+	# Update stored color
+	ui_color = color
+
+var shifting_ui_colors:bool = true
+func _on_ShiftColors_pressed():
+	shifting_ui_colors = !shifting_ui_colors
+func uiColorShit() -> void:
+	var color = ui_color
+	if shifting_ui_colors == true:
+		# Example: Slowly change color continuously from red to blue to green and back to red
+		var time = OS.get_ticks_msec() / 1000.0
+		var r = 0.5 + 0.5 * sin(time)
+		var g = 0.5 + 0.5 * sin(time + PI / 3)
+		var b = 0.5 + 0.5 * sin(time + 2 * PI / 3)
+		color = Color(r, g, b)
+		
+		inv_background.modulate = color
+		menu_frame.modulate = color
+		skill_banner.modulate = color
+		skill_background.modulate = color
+		skill_tree_background.modulate = color
+		equipment_bg.modulate = color
+		attributes_background.modulate = color
+		def_val_background.modulate = color
+		loot_background.modulate = color
+		enemy_background.modulate = color
+		craft_background.modulate = color
+	else:
+		colorUI(ui_color)
+
+# Handle color change event from the color picker
+func _on_UIColor_color_changed(color):
+	colorUI(color)
+
+onready var gui_color_picker = $UI/GUI/Menu/UIColor
+func _on_ColorButton_pressed():
+	gui_color_picker.visible  = !gui_color_picker.visible 
+
 
 func switchButtonTextures()->void:
 	var button= $UI/GUI/SkillBar/BaseAtkMode
@@ -6101,59 +6179,4 @@ onready var def_val_background  = $UI/GUI/Equipment/DmgDef/CharacterBackground
 onready var loot_background  = $UI/GUI/LootTable/Background
 onready var enemy_background  = $UI/GUI/EnemyUI/BG
 onready var craft_background  = $UI/GUI/Crafting/CraftingBackground
-
-
-
-var ui_color = Color(1, 1, 1, 1) # Default to white
-
-# Function to update UI colors based on color
-func colorUI(color: Color) -> void:
-	inv_background.modulate = color
-	menu_frame.modulate = color
-	skill_banner.modulate = color
-	skill_background.modulate = color
-	skill_tree_background.modulate = color
-	equipment_bg.modulate = color
-	attributes_background.modulate = color
-	def_val_background.modulate = color
-	loot_background.modulate = color
-	enemy_background.modulate = color
-	craft_background.modulate = color
-	# Update stored color
-	ui_color = color
-
-var shifting_ui_colors:bool = true
-func _on_ShiftColors_pressed():
-	shifting_ui_colors = !shifting_ui_colors
-func uiColorShit() -> void:
-	var color = ui_color
-	if shifting_ui_colors == true:
-		# Example: Slowly change color continuously from red to blue to green and back to red
-		var time = OS.get_ticks_msec() / 1000.0
-		var r = 0.5 + 0.5 * sin(time)
-		var g = 0.5 + 0.5 * sin(time + PI / 3)
-		var b = 0.5 + 0.5 * sin(time + 2 * PI / 3)
-		color = Color(r, g, b)
-		
-		inv_background.modulate = color
-		menu_frame.modulate = color
-		skill_banner.modulate = color
-		skill_background.modulate = color
-		skill_tree_background.modulate = color
-		equipment_bg.modulate = color
-		attributes_background.modulate = color
-		def_val_background.modulate = color
-		loot_background.modulate = color
-		enemy_background.modulate = color
-		craft_background.modulate = color
-	else:
-		colorUI(ui_color)
-
-# Handle color change event from the color picker
-func _on_UIColor_color_changed(color):
-	colorUI(color)
-
-onready var gui_color_picker = $UI/GUI/Menu/UIColor
-func _on_ColorButton_pressed():
-	gui_color_picker.visible  = !gui_color_picker.visible 
 
