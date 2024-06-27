@@ -377,8 +377,8 @@ var resolve = 100
 
 var critical_chance: float = 33
 var critical_dmg: float = 2.05
-var knockdown_chance: float = 6
-var stagger_chance: float = 13 #0 to 100 in percentage
+var knockdown_chance: float = 4
+var stagger_chance: float = 6 #0 to 100 in percentage
 
 
 var life_steal: float = 0

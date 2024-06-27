@@ -363,18 +363,20 @@ func takeDamage(damage, aggro_power, instigator, damage_type)->void:
 func getKnockedDown(instigator)->void:
 	instigatorAggro = parent.threat_system.createFindThreat(instigator)
 	parent.animReset()
-	parent.knockeddown_duration = true
-	parent.knockeddown_first_part = true
-	parent.staggered_duration = false
-	parent.stored_instigator = instigator
-	instigatorAggro.threat += 50
-	fall_sound.play()
-	parent.changeAttackType()
+	if parent.knockeddown_duration == false:
+		parent.knockeddown_duration = true
+		parent.knockeddown_first_part = true
+		parent.staggered_duration = false
+		parent.stored_instigator = instigator
+		instigatorAggro.threat += 50
+		fall_sound.play()
+		parent.changeAttackType()
 	
 func getKnockedDownPlayer(instigator)->void:
-	parent.knockeddown_duration = true
-	parent.staggered_duration = false
-	parent.stored_instigator = instigator
+	if parent.knockeddown_duration == false:
+		parent.knockeddown_duration = true
+		parent.staggered_duration = false
+		parent.stored_instigator = instigator
 
 
 onready var viewport:Viewport = $Viewport
@@ -450,10 +452,9 @@ func takeDamagePlayer(damage, aggro_power, instigator, stagger_chance, damage_ty
 		if random_range < instigator.knockdown_chance / parent.balance:
 			if parent.absorbing == false:
 				if parent.parry == false:
-#					if parent.health < damage_to_take * 3:#This is important to avoid enemies getting up while they are dead just to then die instantly soon after
-#						parent.knockeddown_duration = false
-#
-#					else:
+					if parent.health < damage_to_take:
+						parent.knockeddown_duration = false
+					else:
 						parent.staggered_duration = false
 						text.status = "Knocked Down!"
 						getKnockedDownPlayer(instigator)
@@ -463,12 +464,16 @@ func takeDamagePlayer(damage, aggro_power, instigator, stagger_chance, damage_ty
 			if parent.absorbing == false:
 				if parent.parry == false:
 					if parent.health >0:
-						parent.staggered_duration = true
-						text.status = "Staggered!"
-						if viewport == null:
-							add_child(text)
+						if parent.knockeddown_duration == false:
+							parent.staggered_duration = true
+							text.status = "Staggered!"
+							if viewport == null:
+								add_child(text)
+							else:
+								viewport.add_child(text)
 						else:
-							viewport.add_child(text)
+							parent.staggered_duration = false
+							parent.knockeddown_duration = false
 					else:
 						parent.staggered_duration = false
 						parent.knockeddown_duration = false
@@ -476,7 +481,6 @@ func takeDamagePlayer(damage, aggro_power, instigator, stagger_chance, damage_ty
 		if parent.health <0:
 			parent.staggered_duration = false
 			parent.knockeddown_duration = false
-			parent.state = autoload.state_list.downed
 			parent.is_in_combat = false
 						
 		if instigator.isFacingSelf(parent,0.30): #Frontal attacks

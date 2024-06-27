@@ -48,6 +48,10 @@ func _ready()->void:
 	stutterPrevention()
 	struggle_button.text = "Struggle:" + str(struggles)+ " remaining"
 	colorUI(ui_color)
+	if direction_assist == true:
+		$UI/GUI/Menu/DirectionAssist.pressed = true
+	else:
+		$UI/GUI/Menu/DirectionAssist.pressed = false
 	
 
 """
@@ -100,6 +104,7 @@ func _physics_process(delta: float) -> void:
 	uiColorShit()
 	manualTargetAssit()
 	if Engine.get_physics_frames() % 2 == 0: #12 frames per second
+		lootBodies()
 		miniMapVisibility()
 		showEnemyStats()
 		all_skills.updateCooldownLabel()
@@ -110,7 +115,6 @@ func _physics_process(delta: float) -> void:
 			print("2 frames passed")
 	if Engine.get_physics_frames() % 6 == 0:#4 frames per second, 0.25 seconds between frames
 		convertStats()
-		lootBodies()
 		curtainsDown()
 		if debug_mode == true:
 			print("6 frames passed")
@@ -177,6 +181,7 @@ func debug() -> void:
 	var stunned_line = "\nStunned: " + str(stunned_duration)
 	var knockeddown_line = "\nKnocked Down: " + str(knockeddown_duration)
 	var staggered_line = "\nStaggered: " + str(staggered_duration)
+	var dir_assist = "\nDirection Assist: " + str(direction_assist)
 	var long_base_atk_line = "\nLong Base Attack: " + str(long_base_atk) +"\n"+"\n"+"\n"
 	# Add maximum engine physics frames and process frames
 	var engine_frames_passed = "\nEngine ticks passed: " + str(Engine.get_physics_frames())
@@ -209,6 +214,7 @@ func debug() -> void:
 					stunned_line+\
 					knockeddown_line+\
 					staggered_line+\
+					dir_assist+\
 					long_base_atk_line+\
 					max_process_frames_line+\
 					num_nodes_line+\
@@ -307,6 +313,9 @@ func behaviourTree()-> void:
 func passiveActions()-> void:
 	if knockeddown_duration == true:
 		clearParryAbsorb()
+		if health <= 0 :
+			knockeddown_duration = false
+			staggered_duration = false
 		if parry == true:
 			knockeddown_duration = false
 			staggered_duration = false
@@ -350,6 +359,7 @@ func activeActions()->void:
 		animation.play("dash",0.3,1.25)
 
 	elif slide_duration == true:
+		automaticTargetAssist()
 		directionToCamera()
 		moveDuringAnimation(all_skills.backstep_distance)
 		animation.play("slide",blend)
@@ -380,6 +390,7 @@ func activeActions()->void:
 		
 #Overhead Slash_________________________________________________________________________________
 	elif overhead_slash_duration == true:
+		automaticTargetAssist()
 		if all_skills.can_overhead_slash == true:
 			if resolve > all_skills.overhead_slash_cost:
 				switchWeaponFromHandToSideOrBack()
@@ -415,6 +426,7 @@ func activeActions()->void:
 			returnToIdleBasedOnWeaponType()
 #Whirlwind__________________________________________________________________________________________
 	elif whirlwind_duration == true :
+		automaticTargetAssist()
 		directionToCamera()
 		switchWeaponFromHandToSideOrBack()
 		clearParryAbsorb()
@@ -442,6 +454,7 @@ func activeActions()->void:
 		
 #Rising slash____________________________________________________________________________________
 	elif rising_slash_duration == true:
+		automaticTargetAssist()
 		directionToCamera()
 		switchWeaponFromHandToSideOrBack()
 		clearParryAbsorb()
@@ -457,6 +470,7 @@ func activeActions()->void:
 						animation.play("rising slash heavy",blend,melee_atk_speed + 0.35)
 #Cyclone____________________________________________________________________________________________
 	elif cyclone_duration == true:
+		automaticTargetAssist()
 		directionToCamera()
 		switchWeaponFromHandToSideOrBack()
 		clearParryAbsorb()
@@ -492,6 +506,7 @@ func activeActions()->void:
 			returnToIdleBasedOnWeaponType()
 #Heart trust____________________________________________________________________________________________
 	elif heart_trust_duration == true:
+		automaticTargetAssist()
 		directionToCamera()
 		switchWeaponFromHandToSideOrBack()
 		clearParryAbsorb()
@@ -514,11 +529,12 @@ func activeActions()->void:
 			returnToIdleBasedOnWeaponType()
 #___________________________________________________________________________________________________
 	elif taunt_duration == true:
+		automaticTargetAssist()
 		directionToCamera()
-		can_walk = false
-		switchWeaponFromHandToSideOrBack()
-		is_walking = false
 		clearParryAbsorb()
+		switchWeaponFromHandToSideOrBack()
+		can_walk = false
+		is_walking = false
 		if weapon_type == autoload.weapon_type_list.heavy:
 			animation.play("taunt heavy",blend + 0.1,ferocity)
 		else:
@@ -532,12 +548,21 @@ func activeActions()->void:
 		moveDuringAnimation(0)
 		
 	elif base_atk_duration == true:
+		automaticTargetAssist()
+		directionToCamera()
+		clearParryAbsorb()
 		baseAtkAnim()
 
 	elif base_atk2_duration == true:
+		automaticTargetAssist()
+		directionToCamera()
+		clearParryAbsorb()
 		baseAtkAnim()
 
 	elif base_atk3_duration == true:
+		automaticTargetAssist()
+		directionToCamera()
+		clearParryAbsorb()
 		match weapon_type:
 			autoload.weapon_type_list.dual_swords:
 				animation.play("combo(dual)",blend,melee_atk_speed + all_skills.combo_extr_speed)
@@ -548,6 +573,9 @@ func activeActions()->void:
 					moveDuringAnimation(all_skills.combo_distance)
 
 	elif base_atk4_duration == true:
+		automaticTargetAssist()
+		directionToCamera()
+		clearParryAbsorb()
 		match weapon_type:
 			autoload.weapon_type_list.dual_swords:
 				animation.play("combo(dual)",blend,melee_atk_speed + all_skills.combo_extr_speed)
@@ -558,11 +586,16 @@ func activeActions()->void:
 					moveDuringAnimation(all_skills.combo_distance)
 
 	elif stomp_duration == true:
+		automaticTargetAssist()
 		directionToCamera()
+		clearParryAbsorb()
+		
 		animation.play("stomp",blend,melee_atk_speed * 1.2)
 		moveDuringAnimation(2)
 	elif kick_duration == true:
+		automaticTargetAssist()
 		directionToCamera()
+		clearParryAbsorb()
 		animation.play("kick",blend,agility)
 		moveDuringAnimation(0)
 	else:
@@ -573,6 +606,7 @@ func matchState()->void:
 					autoload.state_list.base_attack:
 						is_in_combat = true
 						directionToCamera()
+						automaticTargetAssist()
 						switchWeaponFromHandToSideOrBack()
 						if weapon_type == autoload.weapon_type_list.bow:
 							can_walk = false
@@ -1245,32 +1279,64 @@ Documentation String:
 	rotateTowardsEnemy() is a very simple and straight forward function that finds the closest entity in the entire game 
 	and rtoates the player towards that entity when the function is called, the rotation is done using direction 
 	the variable direction_assist is not going to be used directly in rotateTowardsEnemy() but inside all attacks. 
-	if enabled, all attacks will automatically call rotateTowardsEnemy()
+	if enabled, all attacks will automatically call automaticTargetAssist()
 """
 
-var direction_assist:bool = false # we use this in attacks to auto rotate the direction towards enemies 
+
 func rotateTowardsEnemy() -> void:
 	var closest_target = null
-	var closest_distance:float = 20.0
+	var closest_distance: float = 20.0
+
 	# Get all nodes in the "Entity" group
 	var entities = get_tree().get_nodes_in_group("Entity")
-	# Find the closest target
+
+	# List to hold entities and their health within range
+	var targets_in_range = []
+
+	# Find targets within the closest distance and add to list
 	for entity in entities:
 		if entity != self:
 			var distance = global_transform.origin.distance_to(entity.global_transform.origin)
-			if distance < closest_distance:
-				closest_distance = distance
-				closest_target = entity
-	# Rotate towards the closest target 
+			if distance < closest_distance and entity.health > 0:
+				targets_in_range.append(entity)
+
+	# Find the target with the lowest health or closest distance if health is the same
+	for target in targets_in_range:
+		if closest_target == null:
+			closest_target = target
+		elif target.health < closest_target.health:
+			closest_target = target
+		elif target.health == closest_target.health:
+			var distance_to_target = global_transform.origin.distance_to(target.global_transform.origin)
+			var distance_to_closest = global_transform.origin.distance_to(closest_target.global_transform.origin)
+			if distance_to_target < distance_to_closest:
+				closest_target = target
+
+	# Set direction towards the target with the lowest health or closest distance
 	if closest_target:
-		#global_transform.origin is used to get the players and target positions 
 		direction = (closest_target.global_transform.origin - global_transform.origin).normalized()
+
+
+
 
 func manualTargetAssit() -> void:
 	if Input.is_action_pressed("autoturn"):
 		rotateTowardsEnemy()
-
-
+		
+		
+var direction_assist:bool = false # we use this in attacks to auto rotate the direction towards enemies 
+onready var dir_assist_check:CheckBox = $UI/GUI/Menu/DirectionAssist
+func _on_DirectionAssist_toggled(button_pressed):
+	if dir_assist_check.pressed == true:
+		direction_assist = true
+	else:
+		direction_assist = false
+	
+	
+func automaticTargetAssist() ->void:
+	if direction_assist == true:
+		rotateTowardsEnemy()
+		
 
 func attack()->void:
 	if Input.is_action_pressed("attack"):
@@ -1406,9 +1472,11 @@ func damageEffects() -> void:
 
 
 func takeDamage(damage:float, aggro_power:float, instigator:Node, stagger_chance:float, damage_type:String)-> void:
+	knockeddown_duration = false #don't remove, it's here for "prevention", sometimes the enemies can permantly get you stuck in knockdown duration, no, using this here doesn't make the player immune
+	staggered_duration = false#don't remove, it's here for "prevention", sometimes the enemies can permantly get you stuck in staggered duration, no, using this here doesn't make the player immune
 	allResourcesBarsAndLabels()
 	damage_effects_manager.takeDamagePlayer(damage, aggro_power, instigator, stagger_chance, damage_type)
-	if damage > max_health * 0.15:
+	if damage > health * 0.10:
 		damageEffects()
 
 func getKnockedDown(instigator)-> void:#call this for skills that have a different knockdown chance
@@ -5535,6 +5603,7 @@ func savePlayerData():
 	current_race_gender.savePlayerData()
 	var data = {
 		"aiming_mode":aiming_mode,
+		"direction_assist":direction_assist,
 		"hold_to_base_atk":hold_to_base_atk,
 		
 		"ui_color":ui_color,
@@ -5672,6 +5741,10 @@ func loadPlayerData():
 			file.close()
 			if "aiming_mode" in player_data:
 				aiming_mode = player_data["aiming_mode"]
+			if "direction_assist" in player_data:
+				direction_assist = player_data["direction_assist"]
+
+
 			if "hold_to_base_atk" in player_data:
 				hold_to_base_atk = player_data["hold_to_base_atk"]
 				
@@ -6179,4 +6252,7 @@ onready var def_val_background  = $UI/GUI/Equipment/DmgDef/CharacterBackground
 onready var loot_background  = $UI/GUI/LootTable/Background
 onready var enemy_background  = $UI/GUI/EnemyUI/BG
 onready var craft_background  = $UI/GUI/Crafting/CraftingBackground
+
+
+
 
