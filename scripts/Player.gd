@@ -49,7 +49,16 @@ func _ready()->void:
 	struggle_button.text = "Struggle:" + str(struggles)+ " remaining"
 	
 
-	
+"""
+@Ceisri
+Documentation String:
+The first time something transparent or heavy shaders are suddenly instanced, it lags this game; they call it shader stutter,
+and it seems to be a problem that every game ever has. There are various solutions to prevent this. Sometimes,
+it works if you instance the laggy things once before the player starts the game or as soon as the player starts.
+As of now, the only things that cause perceivable stutter in this game are floating texts for damage, healing, and loot.
+Hence, why stutterPrevention() so far is pretty empty.
+"""
+
 func stutterPrevention()->void:
 	var text = autoload.floatingtext_damage.instance()
 	text.status = "STUTTER PREVENTION"
@@ -152,10 +161,22 @@ func debug() -> void:
 	var long_base_atk_line = "\nLong Base Attack: " + str(long_base_atk)
 	
 	# Add maximum engine physics frames and process frames
-	var engine_frames_passed = "\nEngine Frames passed: " + str(Engine.get_physics_frames())
+	var engine_frames_passed = "\nEngine ticks passed: " + str(Engine.get_physics_frames())
 	var max_process_frames_line = "\nMax Process Frames: " + str(Engine.get_target_fps())
 	var max_physics_frames_line = "\nPhysics ticks" + str(Engine.get_physics_interpolation_fraction())
 	var num_nodes_line = "\nNumber of Nodes: " + str(get_tree().get_node_count())
+	# Get dynamic memory usage using OS.get_dynamic_memory_usage()
+	var dynamic_memory_line = "\nDynamic Memory: " + str(OS.get_dynamic_memory_usage())
+	# Get static memory usage using GDNative or external libraries
+	var battery_line = "\nBattery left: " +str((OS.get_power_state()*100)) + "%"
+	#Returns the number of logical CPU cores available on the host machine. 
+	#On CPUs with HyperThreading enabled, this number will be greater than the number of physical CPU cores.
+	var processor_count = "\nCPU cores free: " +str(OS.get_processor_count())
+	var processor_name = "\nProcessor Name: " +str(OS.get_processor_name())
+	#Returns the total number of available audio drivers.
+	var audio_proc_count = "\nAudio drivers free: " +str(OS.get_audio_driver_count())
+	var audio_name = "\nAudio drivers name: " +str(OS.get_audio_driver_name(1))
+	
 	
 	# Concatenate all lines into debug_text
 	var debug_text = state_line  + \
@@ -166,10 +187,16 @@ func debug() -> void:
 					knockeddown_line + \
 					staggered_line + \
 					long_base_atk_line + \
-					engine_frames_passed+ \
 					max_process_frames_line+ \
 					num_nodes_line+ \
-					max_physics_frames_line
+					max_physics_frames_line+ \
+					engine_frames_passed+ \
+					dynamic_memory_line+ \
+					battery_line+ \
+					processor_count+ \
+					processor_name+ \
+					audio_proc_count+ \
+					audio_name
 					
 					
 	
