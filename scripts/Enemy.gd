@@ -51,16 +51,26 @@ func stutterPrevention()->void:#This prevents lag happening when first hitting a
 	
 var dropped_loot:bool = false
 func process()->void:
-	if health >0:
-		autoload.entityGravity(self)
+	skipFrames()
 	behaviourTree()
 	if health >0:
 		threat_system.loseThreat()
 	if health <0 or health ==0:
 		can_be_looted = true
 
-
-				
+var frame_count: int = 0
+func skipFrames() -> void:
+	# Increment a counter each frame
+	frame_count += 1
+	# Check if the counter is odd or even to decide whether to call moveShadow()
+	if frame_count % 2 == 1:
+		rotateShadow()
+		moveShadow()
+		autoload.entityGravity(self)
+	# Reset the counter after every second frame
+	if frame_count > 1:
+		frame_count = 0
+		
 func respawn()->void:
 	how_long_have_i_been_dead = 0 
 	health = max_health
@@ -872,3 +882,42 @@ func dealDMG(victim,aggro_power,damage_type,damage)-> void:
 
 
 
+"""
+@Ceisri
+Documentation String: 
+The following two functions 'rotateShadow()' and  'moveShadow()' check the x and z rotation
+of the floor and the distance between it and the player then it corects the rotation and height of 
+shadow_mesh so it matches the floor, which avoids jarring situations where the shadow phases thru the floor.
+shadow_mesh is basically a plane with a transparent black spot texture to mimic a shadow.
+The reason of this fake shadow system is to simply avoid performance costs that come with real shadows
+"""
+onready var shadow_mesh:MeshInstance = $shadow
+onready var floor_ray_cast:RayCast = $CheckFloor
+
+func rotateShadow() -> void:
+	# Check if the object is currently on the floor
+	if is_on_floor():
+		# Force update the RayCast to ensure it's up-to-date with collisions
+		floor_ray_cast.force_raycast_update()
+		# Check if the RayCast is currently colliding with an object
+		if floor_ray_cast.is_colliding():
+			# Get the normal vector of the collision surface
+			var floor_normal: Vector3 = floor_ray_cast.get_collision_normal()
+			# Calculate the rotation axis to align with the floor normal
+			var up_dir: Vector3 = Vector3.UP
+			var rotation_axis: Vector3 = up_dir.cross(floor_normal).normalized()
+			# Calculate the rotation angle to match the floor's inclination
+			var rotation_angle: float = acos(up_dir.dot(floor_normal))
+			# Create a quaternion for rotation based on axis and angle
+			var rotation_quat: Quat = Quat(rotation_axis, rotation_angle)
+			# Convert the quaternion rotation to Euler angles and apply it to the shadow_mesh
+			shadow_mesh.rotation = rotation_quat.get_euler()
+
+func moveShadow() -> void:
+	if floor_ray_cast.is_colliding():
+		# Get the collision point and set the shadow's position just above the ground
+		var collision_point = floor_ray_cast.get_collision_point()
+		if !is_on_floor():
+			shadow_mesh.global_transform.origin = Vector3(collision_point.x, collision_point.y + 0.1, collision_point.z)
+		else:
+			shadow_mesh.global_transform.origin = Vector3(collision_point.x, collision_point.y + 0.055, collision_point.z)  

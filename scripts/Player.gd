@@ -1,31 +1,24 @@
-# @Ceisri 
-# My functions are writtenLikeThis(), while the ones default to the game engine are written_like_this().
-# Almost everything in the game is in this script, except preloads, dictionaries, skill cooldowns, etc.
-# Keybind editing and similar features are in their specific scripts. However, this script still includes 
-# thousands of lines for everything from combat to movement to UI. I only move things into different 
-# scripts if strictly necessary.
-# I use very_long_variable_names_that_are_very_descriptive but feel free to name your's how you prefer
-# as long as they are snake case
-# If you are using any of this in your project keep in my that due to Global.gd using a lot of preloads
-# the game doesn't have the fastest loading time so try to avoid game games that are too "instanced" 
-# and rely more on "open world" unless you find a better way and can make loading times faster
+"""
+@Ceisri
+Documentation String: 
+My functions are writtenLikeThis(), while the ones default to the game engine are written_like_this().
+Almost everything in the game is in this script, except preloads, dictionaries, skill cooldowns, etc.
+Keybind editing and similar features are in their specific scripts. However, this script still includes 
+thousands of lines for everything from combat to movement to UI. I only move things into different 
+scripts if strictly necessary.
+I use very_long_variable_names_that_are_very_descriptive but feel free to name yours how you prefer
+as long as they are snake case.
+If you are using any of this in your project keep in mind that due to Global.gd using a lot of preloads,
+the game doesn't have the fastest loading time so try to avoid game games that are too 'instanced'
+and rely more on 'open world' unless you find a better way and can make loading times faster.
+"""
+
 
 
 extends KinematicBody
-onready var player_mesh: Node = $Mesh
-onready var damage_effects_manager = $"Damage&Effects"
-
 var rng = RandomNumberGenerator.new()
-
-var blend: float = 0.22
-# Condition States
-var is_attacking = bool()
-var is_walking = bool()
-var is_running = bool()
 var is_player:bool = true
 
-onready var slowest_timer:Timer = $SlowestTimer
-onready var slow_timer:Timer = $SlowTimer
 func _ready()->void:
 #	autoload.drawGlobalThreat(self)#For DEbugging purposes only, draws aggro from everything 
 	loadPlayerData()
@@ -51,10 +44,6 @@ func _ready()->void:
 	l_click_slot.switchAttackIcon()
 	colorBodyParts()
 	switchButtonTextures()
-	slow_timer.connect("timeout", self, "slowTimer")
-	slow_timer.start(1)
-	slowest_timer.connect("timeout", self, "slowestTimer")
-	slowest_timer.start(3)
 	connectEquipment()
 	stutterPrevention()
 	struggle_button.text = "Struggle:" + str(struggles)+ " remaining"
@@ -68,56 +57,26 @@ func stutterPrevention()->void:
 
 	
 	
-func slowTimer()->void:
-	cameraRotation()#Run camera rotation multiple times, it's a light function and makes things smoother 
-	experienceSystem()
-	damage_effects_manager.effectDurations()
-	allResourcesBarsAndLabels()
-	money()
-	if health >0:
-		potionEffects()
-		all_skills.ComboSystem()
-		showStatusIcon()	
-		crafting()
-		damage_effects_manager.regenerate()
-		l_click_slot.switchAttackIcon()
-		r_click_slot.switchAttackIcon()
-		$UI/GUI/SkillTrees/Label.text = str("skill points: ")+ str(skill_points)
-		$UI/GUI/SkillTrees/Label2.text =  str("points spent: ")+ str(skill_points_spent)
-	displayClock()
-	if health <= 0 :
-		revival_wait_time -= 1
-func slowestTimer()->void:
-	frameRate()
-	hydration()
-	hunger()
-	displayLabels()
-	SwitchEquipmentBasedOnEquipmentIcons()
-		
-func _on_3FPS_timeout()->void:
-	debug()
-	convertStats()
-	lootBodies()
-	cameraRotation()#Run camera rotation multiple times, it's a light function and makes things smoother 
-	if health >0:
-		$UI/GUI/Equipment/Attributes/AttributePoints.text = "Attributes points left: " + str(attribute)
-	# Calculate the sum of all spent attribute points
-		var total_spent_attribute_points = spent_attribute_points_san + spent_attribute_points_wis + spent_attribute_points_mem + spent_attribute_points_int + spent_attribute_points_ins +spent_attribute_points_for + spent_attribute_points_str + spent_attribute_points_fur + spent_attribute_points_imp + spent_attribute_points_fer + spent_attribute_points_foc + spent_attribute_points_bal + spent_attribute_points_dex + spent_attribute_points_acc + spent_attribute_points_poi +spent_attribute_points_has + spent_attribute_points_agi + spent_attribute_points_cel + spent_attribute_points_fle + spent_attribute_points_def + spent_attribute_points_end + spent_attribute_points_sta + spent_attribute_points_vit + spent_attribute_points_res + spent_attribute_points_ten + spent_attribute_points_cha + spent_attribute_points_loy + spent_attribute_points_dip + spent_attribute_points_aut + spent_attribute_points_cou
-		# Update the text in the UI/GUI
-		$UI/GUI/Equipment/Attributes/AttributeSpent.text = "Attributes points Spent: " + str(total_spent_attribute_points)
-		curtainsDown()
-		updateAllStats()
 
 
+"""
+@Ceisri
+Documentation String: 
+use if Engine.get_physics_frames() % frames_to_skip == 0: to decided where to put functions based on 
+how often do you need refreshed, my engine physics are 24 by default, I guess because it is the minimum
+to make the game feel good whilist matching the framerate of Hollywood movies there 
+if Engine.get_physics_frames() % 2 == 0:
+	functionToDo()
+means that this specific function will be ran 12 times per second instead of 24 
+"""
 func _physics_process(delta: float) -> void:
 	autoload.gravity(self)#Gravity stays first in the order else jumping doesn't work 
 	all_skills.updateCooldownLabel()
 	cameraRotation()
 	crossHair()
 	crossHairResize()
-	minimapFollow()
 	miniMapVisibility()
-	stiffCamera()
+	rotateMesh()
 	dodgeIframe()
 	doublePressToDash()
 	fullscreen()
@@ -126,18 +85,46 @@ func _physics_process(delta: float) -> void:
 	inputToState()
 	attack()
 	skillUserInterfaceInputs()
-	positionCoordinates()
 	jump()
 	deathLife(delta)#Main function
+	moveShadow()
+	rotateShadow()
+	canIWalk()
+	if Engine.get_physics_frames() % 2 == 0: #12 frames per second
+		miniMapVisibility()
+		showEnemyStats()
+		all_skills.updateCooldownLabel()
+		debug()
+		l_click_slot.switchAttackIcon()
+		r_click_slot.switchAttackIcon()
+	elif Engine.get_physics_frames() % 6 == 0: #4 frames per second
+		convertStats()
+		lootBodies()
+		curtainsDown()
+	elif Engine.get_physics_frames() % 12 == 0: #2 frames per second
+		positionCoordinates()
+		updateAllStats()
+		showAttributePoints()
+		potionEffects()
+		all_skills.ComboSystem()
+		showStatusIcon()
+		crafting()
+		SwitchEquipmentBasedOnEquipmentIcons()
+	elif Engine.get_physics_frames() % 24 == 0: #1 frames per second
+		hydration()
+		hunger()
+		displayLabels()
+		experienceSystem()
+		damage_effects_manager.effectDurations()
+		allResourcesBarsAndLabels()
+		money()
+		displayClock()
+		waitTorReive()
+		damage_effects_manager.regenerate()
+	elif Engine.get_physics_frames() % 48 == 0: #0.5 frames per second
+		frameRate()
+
 	
-	if is_dead == false:
-		if stunned_duration == 0:
-			if knockeddown_duration == false:
-				if staggered_duration == false:
-					if taunt_duration == false:
-						walk() 
-
-
 func debug() -> void:
 	var state_enum = autoload.state_list  # Access the enum from the singleton
 	var state_value = state  # Get the current state value
@@ -154,12 +141,45 @@ func debug() -> void:
 	var sec_weapon_enum = autoload.sec_weap_list
 	var sec_weapon_value = sec_weapon
 	var sec_weapon_name = sec_weapon_enum.keys()[sec_weapon_value]
-	$Debug.text = "state: " + state_name + "\n" + "weapon stance: " + weapon_name + "\n" + "right hand: " + main_weapon_name + "\n" + "left hand: " + sec_weapon_name + "\n" + "stunned: " + str(stunned_duration) + "\n" + "knocked down:" + str(knockeddown_duration) + "\n" +  "staggered: " + str(staggered_duration) + "\n" +  "long base attack: " + str(long_base_atk)
-
-
+	# Prepare each line of the debug text separately
+	var state_line = "\nState: " + state_name
+	var weapon_line = "\nWeapon Stance: " + weapon_name
+	var main_weapon_line = "\nRight Hand: " + main_weapon_name
+	var sec_weapon_line = "\nLeft Hand: " + sec_weapon_name
+	var stunned_line = "\nStunned: " + str(stunned_duration)
+	var knockeddown_line = "\nKnocked Down: " + str(knockeddown_duration)
+	var staggered_line = "\nStaggered: " + str(staggered_duration)
+	var long_base_atk_line = "\nLong Base Attack: " + str(long_base_atk)
+	
+	# Add maximum engine physics frames and process frames
+	var engine_frames_passed = "\nEngine Frames passed: " + str(Engine.get_physics_frames())
+	var max_process_frames_line = "\nMax Process Frames: " + str(Engine.get_target_fps())
+	var max_physics_frames_line = "\nPhysics ticks" + str(Engine.get_physics_interpolation_fraction())
+	var num_nodes_line = "\nNumber of Nodes: " + str(get_tree().get_node_count())
+	
+	# Concatenate all lines into debug_text
+	var debug_text = state_line  + \
+					weapon_line + \
+					main_weapon_line + \
+					sec_weapon_line + \
+					stunned_line + \
+					knockeddown_line + \
+					staggered_line + \
+					long_base_atk_line + \
+					engine_frames_passed+ \
+					max_process_frames_line+ \
+					num_nodes_line+ \
+					max_physics_frames_line
+					
+					
+	
+	# Assign the constructed debug text to the Debug node's text property
+	$Debug.text = debug_text
+				
 
 #________________________________Input-State-Animation-SkillBar System______________________________
 var animation: AnimationPlayer
+var blend: float = 0.22
 
 var hold_to_base_atk:bool = false #if true holding the base attack buttons continues a combo of attacks, releasing the button stops the attacks midway, if false it will just play the attack animation as if it was a normal skill
 var base_atk_duration:bool = false
@@ -1138,7 +1158,7 @@ func inputToState():
 				
 		elif Input.is_action_pressed("attack") and !cursor_visible: 
 			state = autoload.state_list.base_attack
-			walk_sound.playing = false
+
 
 				
 				
@@ -1162,20 +1182,12 @@ func inputToState():
 				else:
 					state =  autoload.state_list.walk
 					can_walk = true
-					walk_sound.playing = true
 		elif Input.is_action_pressed("crouch"):
 			state =  autoload.state_list.crouch
 		else:
 			if health >0:
-				walk_sound.playing = false
 				state =  autoload.state_list.idle
-#_______________________________________________Sound_______________________________________________
-onready var walk_sound =$Walk
-func walkSound()->void:
-	if is_walking and !is_running and !is_sprinting and !is_attacking:
-		walk_sound.playing = true
-	else:
-		walk_sound.playing = false
+
 		
 #_______________________________________________Combat______________________________________________
 func attack():
@@ -1298,7 +1310,7 @@ func clearParryAbsorb()-> void:
 	absorbing = false
 	is_aiming = false
 
-	
+onready var damage_effects_manager = $"Damage&Effects"	
 func takeStagger(stagger_chance: float) -> void:
 	damage_effects_manager.takeStagger(stagger_chance)
 onready var damage_tween:Tween = $"Damage&Effects/Tween"
@@ -1312,7 +1324,8 @@ func damageEffects() -> void:
 	damage_tween.interpolate_property(warning_screen, "modulate:a", 1.0, 0.0, 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT, 0.5) 
 	# Start the tween
 	damage_tween.start()
-	
+
+
 func takeDamage(damage:float, aggro_power:float, instigator:Node, stagger_chance:float, damage_type:String)-> void:
 	allResourcesBarsAndLabels()
 	damage_effects_manager.takeDamagePlayer(damage, aggro_power, instigator, stagger_chance, damage_type)
@@ -1346,6 +1359,9 @@ var is_dead:bool = false
 var revival_wait_time:int = 300
 var struggles:int = 15
 var revival_cost:int =  500
+func waitTorReive()->void:
+	if health <= 0 :
+		revival_wait_time -= 1
 func deathLife(delta)->void:
 	hideShowDeath()
 	if health >0:
@@ -1438,11 +1454,18 @@ func reviveInTown()->void:
 
 
 
+
+func canIWalk()->void:
+	if is_dead == false:
+		if stunned_duration == 0:
+			if knockeddown_duration == false:
+				if staggered_duration == false:
+					if taunt_duration == false:
+						walk() 
 #Catprisbrey's open source template
 #The template is pretty much the same, except there's no  auto-rotation, I personally don't like 
 #Dark's souls movement system, also setting the direction based on camera is better for when 
-#strafing/aiming mode is on, still left the original on even I never use anyway 
-
+#strafing/aiming mode is on, still left the original on even I never use anyway 						
 var h_rot 
 var is_in_combat = false
 var enabled_climbing = false
@@ -1454,7 +1477,9 @@ var max_sprint_speed = 25
 var max_sprint_animation_speed = 2.5
 
 var can_walk:bool = true 
-
+var is_attacking = bool()
+var is_walking = bool()
+var is_running = bool()
 func walk()->void:
 	h_rot = $Camroot/h.global_transform.basis.get_euler().y
 	movement_speed = 0
@@ -1746,8 +1771,8 @@ func _input(event)-> void:
 			
 			
 			
-
-func stiffCamera()-> void:
+onready var player_mesh: Node = $Mesh
+func rotateMesh()-> void:
 	if is_aiming and !is_climbing:
 		player_mesh.rotation.y = lerp_angle(player_mesh.rotation.y, $Camroot/h.rotation.y, get_physics_process_delta_time() * angular_acceleration)
 #	elif is_climbing:
@@ -1755,8 +1780,8 @@ func stiffCamera()-> void:
 #			player_mesh.rotation.y = -(atan2($ClimbRay.get_collision_normal().z,$ClimbRay.get_collision_normal().x) - PI/2)
 	else: # Normal turn movement mechanics
 		player_mesh.rotation.y = lerp_angle(player_mesh.rotation.y, atan2(direction.x, direction.z) - rotation.y, get_physics_process_delta_time() * angular_acceleration)
-func minimapFollow()-> void:# Update the position of the minimap camera
-	minimap_camera.translation = Vector3(translation.x, translation.y + 30,translation.z)
+
+
 onready var crosshair = $Camroot/h/v/Camera/Aim/Cross
 onready var crosshair_tween = $Camroot/h/v/Camera/Aim/Cross/Tween
 func crossHair()-> void:
@@ -2102,16 +2127,22 @@ func saveSkillBarData():
 
 
 #______________________________________skill tree system____________________________________________
+
+func showSkillPoints()->void:
+	if health >0:
+		$UI/GUI/SkillTrees/Label.text = str("skill points: ")+ str(skill_points)
+		$UI/GUI/SkillTrees/Label2.text =  str("points spent: ")+ str(skill_points_spent)
+
 onready var vanguard_skill_tree: Control = $UI/GUI/SkillTrees/Background/Vanguard
 onready var general_skill_tree: Control = $UI/GUI/SkillTrees/Background/Generalist
 onready var reset_skills: Control = $UI/GUI/SkillTrees/ResetSkills
 
 
-func _on_SkillTree0_pressed():
+func _on_SkillTree0_pressed()->void:
 	vanguard_skill_tree.visible = false
 	general_skill_tree.visible = true
 	
-func _on_SkillTree1_pressed():
+func _on_SkillTree1_pressed()->void:
 	vanguard_skill_tree.visible = true
 	general_skill_tree.visible = false
 
@@ -2125,7 +2156,7 @@ onready var overhead_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill2/Icon
 onready var rising_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill4/Icon
 onready var whirlwind_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill1/Icon
 onready var heart_trust_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill3/Icon
-func connectGenericSkillTee(tree):# this is called by connectSkillTree() to give the the "tree"
+func connectGenericSkillTee(tree)->void:# this is called by connectSkillTree() to give the the "tree"
 	for child in tree.get_children():
 		if child.is_in_group("Skill"):
 			var index_str = child.get_name().split("skill")[1]
@@ -2135,7 +2166,7 @@ func connectGenericSkillTee(tree):# this is called by connectSkillTree() to give
 			child.connect("mouse_exited", self, "skillMouseExited", [index])
 	 # Correcting the connection for ResetSkills button
 	reset_skills.connect("pressed", self, "resetSkills")
-func connectSkillTree():# connects all skill trees
+func connectSkillTree()->void:# connects all skill trees
 	connectGenericSkillTee(vanguard_skill_tree)
 	connectGenericSkillTee(general_skill_tree)
 var skill_points_spent:int = 0 
@@ -2147,20 +2178,20 @@ func skillPressed(tree,index)->void:
 		spendSkillPoints(icon_texture_rect,button)
 	saveGame()
 	
-func spendSkillPoints(icon_texture_rect,button):
+func spendSkillPoints(icon_texture_rect,button)->void:
 	if icon_texture_rect.points < 5:
 		if skill_points >0:
 			icon_texture_rect.points += 1 
 			button.skillPoints()
 			skill_points -= 1
 			skill_points_spent +=  1
-func saveSkillTreeData():
+func saveSkillTreeData()->void:
 	for child in vanguard_skill_tree.get_children():
 		if child.is_in_group("Skill"):
 			if child.get_node("Icon").has_method("savedata"):
 				child.get_node("Icon").savedata()
 	$UI/GUI/SkillTrees/Background/Generalist/skill1/Icon.savedata()
-func loadSkillTreeData():
+func loadSkillTreeData()->void:
 	for child in vanguard_skill_tree.get_children():
 		if child.is_in_group("Skill"):
 			if child.get_node("Icon").has_method("loaddata"):
@@ -2169,23 +2200,23 @@ func loadSkillTreeData():
 	$UI/GUI/SkillTrees/Background/Generalist/skill1/Icon.loaddata()
 	$UI/GUI/SkillTrees/Background/Generalist/skill1.skillPoints()
 				
-func setSkillTreeOwner():
+func setSkillTreeOwner()->void:
 	for child in vanguard_skill_tree.get_children():
 		if child.is_in_group("Skill"):
 			if child.get_node("Icon") == null:
 				pass
 			else:
 				child.get_node("Icon").player = self 
-func skillMouseEntered(tree, index):
+func skillMouseEntered(tree, index)->void:
 	var button = tree.get_node("skill" + str(index))
 	if button.get_node("Icon") == null:
 		pass
 	else:
 		var icon_texture = button.get_node("Icon").texture
 		UniversalToolTip(icon_texture)
-func skillMouseExited(index):
+func skillMouseExited(index)->void:
 	deleteTooltip()
-func resetSkills():
+func resetSkills()->void:
 	for child in vanguard_skill_tree.get_children():
 		if child.is_in_group("Skill"):
 			child.get_node("Icon").points = 0 
@@ -2204,7 +2235,7 @@ func resetSkills():
 			
 			
 			
-func UniversalToolTip(icon_texture):
+func UniversalToolTip(icon_texture)->void:
 	var instance = preload("res://Tooltips/tooltip.tscn").instance()
 	var instance_skills = preload("res://Tooltips/tooltipSkills.tscn").instance()
 	var instance_leftdown = preload("res://Tooltips/tooltipLeftDown.tscn").instance()
@@ -2376,7 +2407,7 @@ onready var gui = $UI/GUI
 
 
 
-func setInventoryOwner():
+func setInventoryOwner()->void:
 	for child in inventory_grid.get_children():
 		if child.is_in_group("Inventory"):
 			child.get_node("Icon").player = self 
@@ -2394,7 +2425,7 @@ func connectInventoryButtons():
 var last_pressed_index: int = -1
 var last_press_time: float = 0.0
 var double_press_time_inv: float = 0.4
-func inventorySlotPressed(index):
+func inventorySlotPressed(index)->void:
 	var button = inventory_grid.get_node("InventorySlot" + str(index))
 	var icon_texture_rect = button.get_node("Icon")
 	var icon_texture = icon_texture_rect.texture
@@ -2430,31 +2461,31 @@ func inventorySlotPressed(index):
 		last_press_time = current_time
 		savePlayerData()
 #__Hover inventory slots
-func inventoryMouseEntered(index):
+func inventoryMouseEntered(index)->void:
 	gearUp()
 	var button = inventory_grid.get_node("InventorySlot" + str(index))
 	var icon_texture = button.get_node("Icon").texture
 	var instance = preload("res://Tooltips/tooltip.tscn").instance()
 	UniversalToolTip(icon_texture)
 
-func inventoryMouseExited(index):
+func inventoryMouseExited(index)->void:
 	gearUp()
 	deleteTooltip()
 
-func callToolTipSegmented(instance,title,total_value,base_value,cost,cooldown,description):
+func callToolTipSegmented(instance,title,total_value,base_value,cost,cooldown,description)->void:
 		gui.add_child(instance)
 		instance.showTooltip(title,total_value,base_value,cost,cooldown,description)
 		
-func callToolTipEquip(instance,title, stat1, stat2, stat3, stat4, stat5, stat6, stat7, stat8, stat9):
+func callToolTipEquip(instance,title, stat1, stat2, stat3, stat4, stat5, stat6, stat7, stat8, stat9)->void:
 		gui.add_child(instance)
 		instance.showTooltip(title, stat1, stat2, stat3, stat4, stat5, stat6, stat7, stat8, stat9)
 		
 		
-func callToolTip(instance,title,text):
+func callToolTip(instance,title,text)->void:
 		gui.add_child(instance)
 		instance.showTooltip(title,text)
 # Function to combine slots when pressed
-func combineSlots():
+func combineSlots()->void:
 	savePlayerData()
 	saveSkillBarData()
 	saveInventoryData()
@@ -2499,7 +2530,7 @@ func combineSlots():
 				if item_path in combined_items:
 					child.quantity = combined_items[item_path]
 
-func splitFirstSlot():#Activated by button press
+func splitFirstSlot()->void:#Activated by button press
 	savePlayerData()
 	saveInventoryData()
 	var first_slot = $UI/GUI/Inventory/ScrollContainer/InventoryGrid/InventorySlot1
@@ -2520,7 +2551,7 @@ func splitFirstSlot():#Activated by button press
 
 #_____________________________________Skill_Bar_________________________________
 onready var skill_bar_grid: GridContainer = $UI/GUI/SkillBar/GridContainer
-func connectSkillBarButtons():
+func connectSkillBarButtons()->void:
 	for child in skill_bar_grid.get_children():
 		if child.is_in_group("Shortcut"):
 			var index_str = child.get_name().split("Slot")[1]
@@ -2529,94 +2560,94 @@ func connectSkillBarButtons():
 			child.connect("mouse_entered", self, "skillBarMouseEntered", [index])
 			child.connect("mouse_exited", self, "skillBarMouseExited", [index])
 			
-func skillBarMouseEntered(index):
+func skillBarMouseEntered(index)->void:
 	var button = skill_bar_grid.get_node("Slot" + str(index))
 	var icon_texture = button.get_node("Icon").texture
 	var instance = preload("res://Tooltips/tooltip.tscn").instance()
 	UniversalToolTip(icon_texture)
 	
-func skillBarMouseExited(index):
+func skillBarMouseExited(index)->void:
 	deleteTooltip()
 	
 
 
-func _on_BaseAtkMode_mouse_entered():
+func _on_BaseAtkMode_mouse_entered()->void:
 	var title:String = "Chain/Mechanical"
 	var text:String = "Click to switch between modes:\nChain Mode: hold the click button to base attack\nMechanical mode:  tap the click button to base attack"
 	var instance = preload("res://Tooltips/tooltip.tscn").instance()
 	callToolTip(instance,title,text)
-func _on_BaseAtkMode_mouse_exited():
+func _on_BaseAtkMode_mouse_exited()->void:
 	deleteTooltip()
 	
-func _on_SkillQueue_mouse_entered():
+func _on_SkillQueue_mouse_entered()->void:
 	var title:String = "Skill Cancel System"
 	var text:String = "Click to switch between ON/OFF:\nWhen ON  you can interrupt your skills by activating other skills, the ones that get interrupted go on cooldown\nWhen OFF pressing other skills won't interrupt you, but external factors such as stuns, staggers, knockdowns or other effects might."
 	var instance = preload("res://Tooltips/tooltip.tscn").instance()
 	callToolTip(instance,title,text)
-func _on_SkillQueue_mouse_exited():
+func _on_SkillQueue_mouse_exited()->void:
 	deleteTooltip()
 	
 
 
-func _on_OpenAllUI_mouse_entered():
+func _on_OpenAllUI_mouse_entered()->void:
 	var title:String = "Open All Screens"
 	var text:String = "Click to open:\nInventory,Character Sheet, Skill Trees,Crafting"
 	var instance = preload("res://Tooltips/tooltipSkillbar.tscn").instance()
 	callToolTip(instance,title,text)
-func _on_OpenAllUI_mouse_exited():
+func _on_OpenAllUI_mouse_exited()->void:
 	gearUp()
 	deleteTooltip()
 	
 	
-func _on_Edit_mouse_entered():
+func _on_Edit_mouse_entered()->void:
 	var title:String = "Edit Skillbar Keybinds"
 	var text:String = "Click to switch ON/OFF:\nWhen ON, clickin any skillbar slot will let you change the keybind for that slot,just click the slot you want once and then press any key\nMake sure to turn this OFF or you might change your keybinds by mistake"
 	var instance = preload("res://Tooltips/tooltipSkillbar.tscn").instance()
 	callToolTip(instance,title,text)
-func _on_Edit_mouse_exited():
+func _on_Edit_mouse_exited()->void:
 	deleteTooltip()
 
 	
-func _on_Character_mouse_entered():
+func _on_Character_mouse_entered()->void:
 	gearUp()
 	var title:String = "Character Sheet"
 	var text:String = "Click to open:\nYour character sheet with your equipment, stats and attributes"
 	var instance = preload("res://Tooltips/tooltipSkillbar.tscn").instance()
 	callToolTip(instance,title,text)
-func _on_Character_mouse_exited():
+func _on_Character_mouse_exited()->void:
 	deleteTooltip()
 	
-func _on_Menu_mouse_entered():
+func _on_Menu_mouse_entered()->void:
 	var title:String = "Menu"
 	var text:String = "Opens Settins menu and Quitting interface"
 	var instance = preload("res://Tooltips/tooltipSkillbar.tscn").instance()
 	
 	callToolTip(instance,title,text)
-func _on_Menu_mouse_exited():
+func _on_Menu_mouse_exited()->void:
 	deleteTooltip()
 
-func _on_Skills_mouse_entered():
+func _on_Skills_mouse_entered()->void:
 	var title:String = "Skill Trees"
 	var text:String = "Click to open skill trees, and pick any skill from any skill tree to create your unique class archetype"
 	var instance = preload("res://Tooltips/tooltipSkillbar.tscn").instance()
 	callToolTip(instance,title,text)
-func _on_Skills_mouse_exited():
+func _on_Skills_mouse_exited()->void:
 	deleteTooltip()
 
-func _on_InventoryOpenCraftingSystemButton_mouse_entered():
+func _on_InventoryOpenCraftingSystemButton_mouse_entered()->void:
 	var title:String = "Crafting"
 	var text:String = "Click to open crafting menu\nDrag and drop items from acrosss your inventory into the crafting menu's slot in specific combinations to create new items"
 	var instance = preload("res://Tooltips/tooltipSkillbar.tscn").instance()
 	callToolTip(instance,title,text)
-func _on_InventoryOpenCraftingSystemButton_mouse_exited():
+func _on_InventoryOpenCraftingSystemButton_mouse_exited()->void:
 	deleteTooltip()
 
-func _on_Inventory_mouse_entered():
+func _on_Inventory_mouse_entered()->void:
 	var title:String = "Inventory"
 	var text:String = "Click to open Inventory\nThe inventory has many slots containing items which you can move around, or click to activate.\nItems might be placed in the skillbar and can be consumed or activated from there using the specific keybinds.Use the Inventory buttons to delete items you don't need by  dragging them in the trash can, or click the split item's button to split in half the quantity of the items in the first slot, or press the combine button to merge all items similar items into a single stack"
 	var instance = preload("res://Tooltips/tooltipSkillbar.tscn").instance()
 	callToolTip(instance,title,text)
-func _on_Inventory_mouse_exited():
+func _on_Inventory_mouse_exited()->void:
 	deleteTooltip()
 
 
@@ -2641,7 +2672,7 @@ onready var crafting_slot16 = $UI/GUI/Crafting/CraftingGrid/craftingSlot16/Icon
 onready var crafting_result = $UI/GUI/Crafting/CraftingResultSlot/Icon
 onready var icon = $UI/GUI/Crafting/CraftingResultSlot/Icon
 
-func crafting():
+func crafting()->void:
 	if crafting_slot1.texture != null:
 		if crafting_slot1.texture.get_path() == "res://Alchemy ingredients/2.png":
 			crafting_result.texture = preload("res://Processed ingredients/ground rosehip.png")
@@ -2680,7 +2711,7 @@ func receiveDrops(item,quantity)->void:#This is called by enemeis when they die 
 	autoload.addFloatingIcon(take_damage_view,item,quantity)
 	
 
-func _on_GiveMeItems_pressed():#Only for debugging purposes
+func _on_GiveMeItems_pressed()->void:#Only for debugging purposes
 	coins += 550
 
 	autoload.addStackableItem(inventory_grid,autoload.red_potion,50000)
@@ -2722,7 +2753,7 @@ onready var copper_label = $UI/GUI/Inventory/copperLabel
 
 var coins = 0 
 
-func money():
+func money()->void:
 	var ethernium_coins = str(coins / 10000)  # 100 silver = 1 ethernium
 	var silver_coins = str((coins % 10000) / 100)  # 100 copper = 1 silver
 	var copper_coins = str(coins % 100)  # Remaining copper coins
@@ -2736,7 +2767,7 @@ func money():
 
 #____________________________________GRAPHICAL INTERFACE AND SETTINGS_______________________________
 
-func switchButtonTextures():
+func switchButtonTextures()->void:
 	var button= $UI/GUI/SkillBar/BaseAtkMode
 	var new_texture_path = "res://Game button icons/hold_to_atk.png" if hold_to_base_atk else "res://Game button icons/click_to_atk.png"
 	var new_texture = load(new_texture_path)
@@ -2753,7 +2784,7 @@ func switchButtonTextures():
 
 
 onready var fps_label: Label = $UI/GUI/Portrait/MinimapHolder/FPS
-func frameRate():
+func frameRate()->void:
 	var current_fps = Engine.get_frames_per_second()
 	var new_fps: float
 	if current_fps > 59:
@@ -2768,7 +2799,7 @@ func frameRate():
 		new_fps = current_fps
 	fps_label.text = str(new_fps)
 
-func _on_FPS_pressed():
+func _on_FPS_pressed()->void:
 	savePlayerData()
 	var current_fps = Engine.get_target_fps()
 	# Define FPS mapping
@@ -2793,12 +2824,12 @@ func _on_FPS_pressed():
 
 #_____________________________________Display Time/Location______________________________
 onready var time_label = $UI/GUI/SkillBar/Time
-func displayClock():
+func displayClock()->void:
 	# Get the current date and time
 	var datetime = OS.get_datetime()
 	time_label.text = "Time: %02d:%02d" % [datetime.hour, datetime.minute]
 onready var coordinates = $UI/GUI/Portrait/MinimapHolder/Coordinates
-func positionCoordinates():
+func positionCoordinates()->void:
 	var rounded_position = Vector3(
 		round(global_transform.origin.x * 10) / 10,
 		round(global_transform.origin.y * 10) / 10,
@@ -2879,52 +2910,52 @@ func secWeapMouseEntered()->void:
 	gearUp()
 	UniversalToolTip(sec_weap_icon.texture)
 	SwitchEquipmentBasedOnEquipmentIcons()
-func secWeapMouseExited():
+func secWeapMouseExited()->void:
 	gearUp()
 	deleteTooltip()
 	SwitchEquipmentBasedOnEquipmentIcons()
 #___________________________________________________________________________________________________
-func legsMouseEntered():
+func legsMouseEntered()->void:
 	gearUp()
 	UniversalToolTip(legs_icon.texture)
 	SwitchEquipmentBasedOnEquipmentIcons()
-func legsMouseExited():
+func legsMouseExited()->void:
 	gearUp()
 	deleteTooltip()
 	SwitchEquipmentBasedOnEquipmentIcons()
 #___________________________________________________________________________________________________
-func chestMouseEntered():
+func chestMouseEntered()->void:
 	gearUp()
 	UniversalToolTip(chest_icon.texture)
 	SwitchEquipmentBasedOnEquipmentIcons()
-func chestMouseExited():
+func chestMouseExited()->void:
 	gearUp()
 	deleteTooltip()
 	SwitchEquipmentBasedOnEquipmentIcons()
 #___________________________________________________________________________________________________
-func feetMouseEntered():
+func feetMouseEntered()->void:
 	gearUp()
 	UniversalToolTip(feet_icon.texture)
 	SwitchEquipmentBasedOnEquipmentIcons()
-func feetMouseExited():
+func feetMouseExited()->void:
 	gearUp()
 	deleteTooltip()
 	SwitchEquipmentBasedOnEquipmentIcons()
 #___________________________________________________________________________________________________
-func helmMouseEntered():
+func helmMouseEntered()->void:
 	gearUp()
 	UniversalToolTip(helm_icon.texture)
 	SwitchEquipmentBasedOnEquipmentIcons()
-func helmMouseExited():
+func helmMouseExited()->void:
 	gearUp()
 	deleteTooltip()
 	SwitchEquipmentBasedOnEquipmentIcons()
 #___________________________________________________________________________________________________
-func gloveMouseEntered():
+func gloveMouseEntered()->void:
 	gearUp()
 	UniversalToolTip(glove_icon.texture)
 	SwitchEquipmentBasedOnEquipmentIcons()
-func gloveMouseExited():
+func gloveMouseExited()->void:
 	gearUp()
 	deleteTooltip()
 	SwitchEquipmentBasedOnEquipmentIcons()
@@ -4213,6 +4244,14 @@ func displayLabels()->void:
 	displayStats(val_neuro, neuro_resistance)
 	var val_radiant : Label = $UI/GUI/Equipment/DmgDef/Defenses/Radiantval
 	displayStats(val_radiant, radiant_resistance)
+
+
+func showAttributePoints():
+		$UI/GUI/Equipment/Attributes/AttributePoints.text = "Attributes points left: " + str(attribute)
+	# Calculate the sum of all spent attribute points
+		var total_spent_attribute_points = spent_attribute_points_san + spent_attribute_points_wis + spent_attribute_points_mem + spent_attribute_points_int + spent_attribute_points_ins +spent_attribute_points_for + spent_attribute_points_str + spent_attribute_points_fur + spent_attribute_points_imp + spent_attribute_points_fer + spent_attribute_points_foc + spent_attribute_points_bal + spent_attribute_points_dex + spent_attribute_points_acc + spent_attribute_points_poi +spent_attribute_points_has + spent_attribute_points_agi + spent_attribute_points_cel + spent_attribute_points_fle + spent_attribute_points_def + spent_attribute_points_end + spent_attribute_points_sta + spent_attribute_points_vit + spent_attribute_points_res + spent_attribute_points_ten + spent_attribute_points_cha + spent_attribute_points_loy + spent_attribute_points_dip + spent_attribute_points_aut + spent_attribute_points_cou
+		# Update the text in the UI/GUI
+		$UI/GUI/Equipment/Attributes/AttributeSpent.text = "Attributes points Spent: " + str(total_spent_attribute_points)
 
 
 func displayStats(label, value)->void:
@@ -5905,7 +5944,7 @@ func colorBodyParts() -> void:
 					var material = child.mesh.surface_get_material(0) # Assuming only one surface
 					material.albedo_color = hair_color
 
-func _on_BlendshapeTest_pressed():
+func _on_BlendshapeTest_pressed()->void:
 	current_race_gender.smile = rand_range(-2,+2)
 	current_race_gender.applyBlendShapes()
 
@@ -5924,7 +5963,7 @@ func takeExperience(points)->void:
 	experience_points += points * intelligence
 	$"Damage&Effects/Viewport".add_child(text)
 	
-func experienceSystem():
+func experienceSystem()->void:
 	while experience_points >= experience_to_next_level:
 		experience_points -= experience_to_next_level
 		level += 1
@@ -5937,6 +5976,49 @@ func experienceSystem():
 	exper_label.text = "Level " + str(level) + "\nXP: " + str(experience_points) + "/" + str(experience_to_next_level) + " (" + str(round((percentage* 1)/1)) + "%)"
 
 
-func _on_levelmeup_pressed():
+func _on_levelmeup_pressed()->void:
 	experience_points += 500000000000000
 	experience_points += 500000000000000
+
+
+
+
+"""
+@Ceisri
+Documentation String: 
+The following two functions 'rotateShadow()' and  'moveShadow()' check the x and z rotation
+of the floor and the distance between it and the player then it corects the rotation and height of 
+shadow_mesh so it matches the floor, which avoids jarring situations where the shadow phases thru the floor.
+shadow_mesh is basically a plane with a transparent black spot texture to mimic a shadow.
+The reason of this fake shadow system is to simply avoid performance costs that come with real shadows
+"""
+onready var shadow_mesh:MeshInstance = $shadow
+onready var floor_ray_cast:RayCast = $CheckFloor
+
+func rotateShadow() -> void:
+	# Check if the object is currently on the floor
+	if is_on_floor():
+		# Force update the RayCast to ensure it's up-to-date with collisions
+		floor_ray_cast.force_raycast_update()
+		# Check if the RayCast is currently colliding with an object
+		if floor_ray_cast.is_colliding():
+			# Get the normal vector of the collision surface
+			var floor_normal: Vector3 = floor_ray_cast.get_collision_normal()
+			# Calculate the rotation axis to align with the floor normal
+			var up_dir: Vector3 = Vector3.UP
+			var rotation_axis: Vector3 = up_dir.cross(floor_normal).normalized()
+			# Calculate the rotation angle to match the floor's inclination
+			var rotation_angle: float = acos(up_dir.dot(floor_normal))
+			# Create a quaternion for rotation based on axis and angle
+			var rotation_quat: Quat = Quat(rotation_axis, rotation_angle)
+			# Convert the quaternion rotation to Euler angles and apply it to the shadow_mesh
+			shadow_mesh.rotation = rotation_quat.get_euler()
+
+func moveShadow() -> void:
+	if floor_ray_cast.is_colliding():
+		# Get the collision point and set the shadow's position just above the ground
+		var collision_point = floor_ray_cast.get_collision_point()
+		if !is_on_floor():
+			shadow_mesh.global_transform.origin = Vector3(collision_point.x, collision_point.y + 0.1, collision_point.z)
+		else:
+			shadow_mesh.global_transform.origin = Vector3(collision_point.x, collision_point.y + 0.055, collision_point.z)  
