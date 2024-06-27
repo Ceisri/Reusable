@@ -64,10 +64,6 @@ func stutterPrevention()->void:
 	text.status = "STUTTER PREVENTION"
 	take_damage_view.add_child(text)
 
-	
-	
-
-
 """
 @Ceisri
 Documentation String: 
@@ -76,7 +72,8 @@ how often do you need refreshed, my engine physics are 24 by default, I guess be
 to make the game feel good whilist matching the framerate of Hollywood movies there 
 if Engine.get_physics_frames() % 2 == 0:
 	functionToDo()
-means that this specific function will be ran 12 times per second instead of 24 
+means that this specific function will be ran 12 times per second instead of 24.
+By all means avoid elif in this specific case only use if statments 
 """
 func _physics_process(delta: float) -> void:
 	autoload.gravity(self)#Gravity stays first in the order else jumping doesn't work 
@@ -106,11 +103,15 @@ func _physics_process(delta: float) -> void:
 		debug()
 		l_click_slot.switchAttackIcon()
 		r_click_slot.switchAttackIcon()
-	elif Engine.get_physics_frames() % 6 == 0: #4 frames per second
+		if debug_mode == true:
+			print("2 frames passed")
+	if Engine.get_physics_frames() % 6 == 0:#4 frames per second, 0.25 seconds between frames
 		convertStats()
 		lootBodies()
 		curtainsDown()
-	elif Engine.get_physics_frames() % 12 == 0: #2 frames per second
+		if debug_mode == true:
+			print("6 frames passed")
+	if Engine.get_physics_frames() % 12 == 0: #2 frames per second, 0.5 seconds between frames 
 		positionCoordinates()
 		updateAllStats()
 		showAttributePoints()
@@ -119,21 +120,36 @@ func _physics_process(delta: float) -> void:
 		showStatusIcon()
 		crafting()
 		SwitchEquipmentBasedOnEquipmentIcons()
-	elif Engine.get_physics_frames() % 24 == 0: #1 frames per second
-		hydration()
-		hunger()
+		if debug_mode == true:
+			print("12 frames passed")
+	if Engine.get_physics_frames() % 24 == 0: #1 frames per second, 1 second between frames
 		displayLabels()
 		experienceSystem()
 		damage_effects_manager.effectDurations()
 		allResourcesBarsAndLabels()
 		money()
-		displayClock()
 		waitTorReive()
 		damage_effects_manager.regenerate()
-	elif Engine.get_physics_frames() % 48 == 0: #0.5 frames per second
-		frameRate()
-
+		if debug_mode == true:
+			print("24 frames passed")
+	if Engine.get_physics_frames() % 48 == 0: #0.5 frames per second, 2 seconds between frames 
+		frameRate()		
+		if debug_mode == true:
+			print("48 frames passed")
+	if Engine.get_physics_frames() % 96 == 0: #0.25 frames per second, 4 seconds between frames
+		hydration()
+		hunger()
+		displayClock()
+		if debug_mode == true:
+			print("96 frames passed")
 	
+	
+
+onready var debug = $Debug
+var debug_mode:bool = true
+func _on_Debug_pressed():
+	debug_mode = !debug_mode
+	debug.visible = !debug.visible
 func debug() -> void:
 	var state_enum = autoload.state_list  # Access the enum from the singleton
 	var state_value = state  # Get the current state value
@@ -158,17 +174,20 @@ func debug() -> void:
 	var stunned_line = "\nStunned: " + str(stunned_duration)
 	var knockeddown_line = "\nKnocked Down: " + str(knockeddown_duration)
 	var staggered_line = "\nStaggered: " + str(staggered_duration)
-	var long_base_atk_line = "\nLong Base Attack: " + str(long_base_atk)
-	
+	var long_base_atk_line = "\nLong Base Attack: " + str(long_base_atk) +"\n"+"\n"+"\n"
 	# Add maximum engine physics frames and process frames
 	var engine_frames_passed = "\nEngine ticks passed: " + str(Engine.get_physics_frames())
 	var max_process_frames_line = "\nMax Process Frames: " + str(Engine.get_target_fps())
 	var max_physics_frames_line = "\nPhysics ticks" + str(Engine.get_physics_interpolation_fraction())
 	var num_nodes_line = "\nNumber of Nodes: " + str(get_tree().get_node_count())
 	# Get dynamic memory usage using OS.get_dynamic_memory_usage()
-	var dynamic_memory_line = "\nDynamic Memory: " + str(OS.get_dynamic_memory_usage())
+	var dynamic_memory_bytes = OS.get_dynamic_memory_usage()
+	# Convert bytes to megabytes (MB) and format to show values after the decimal point
+	var dynamic_memory_mb = dynamic_memory_bytes / 1024.0 / 1024.0
+	# Convert to string with two decimal places
+	var dynamic_memory = "\nDynamic Memory: " + str(round(dynamic_memory_mb * 100) / 100) + " MB"
 	# Get static memory usage using GDNative or external libraries
-	var battery_line = "\nBattery left: " +str((OS.get_power_state()*100)) + "%"
+	var battery_line = "\nBattery left: " +str(OS.get_power_percent_left()) + "%"
 	#Returns the number of logical CPU cores available on the host machine. 
 	#On CPUs with HyperThreading enabled, this number will be greater than the number of physical CPU cores.
 	var processor_count = "\nCPU cores free: " +str(OS.get_processor_count())
@@ -176,33 +195,33 @@ func debug() -> void:
 	#Returns the total number of available audio drivers.
 	var audio_proc_count = "\nAudio drivers free: " +str(OS.get_audio_driver_count())
 	var audio_name = "\nAudio drivers name: " +str(OS.get_audio_driver_name(1))
-	
+	var device_id = "\nDevice ID: " +str(OS.get_unique_id())
+	var time_zone = "\nTimeZone: " + str(OS.get_time_zone_info())
 	
 	# Concatenate all lines into debug_text
-	var debug_text = state_line  + \
-					weapon_line + \
-					main_weapon_line + \
-					sec_weapon_line + \
-					stunned_line + \
-					knockeddown_line + \
-					staggered_line + \
-					long_base_atk_line + \
-					max_process_frames_line+ \
-					num_nodes_line+ \
-					max_physics_frames_line+ \
-					engine_frames_passed+ \
-					dynamic_memory_line+ \
-					battery_line+ \
-					processor_count+ \
-					processor_name+ \
-					audio_proc_count+ \
-					audio_name
-					
-					
+	var debug_text = state_line+\
+					weapon_line+\
+					main_weapon_line+\
+					sec_weapon_line+\
+					stunned_line+\
+					knockeddown_line+\
+					staggered_line+\
+					long_base_atk_line+\
+					max_process_frames_line+\
+					num_nodes_line+\
+					max_physics_frames_line+\
+					engine_frames_passed+\
+					dynamic_memory+\
+					battery_line+\
+					processor_count+\
+					processor_name+\
+					audio_proc_count+\
+					audio_name+\
+					device_id+\
+					time_zone
 	
 	# Assign the constructed debug text to the Debug node's text property
-	$Debug.text = debug_text
-				
+	debug.text = debug_text
 
 #________________________________Input-State-Animation-SkillBar System______________________________
 var animation: AnimationPlayer
@@ -1585,29 +1604,33 @@ var is_climbing:bool = false
 onready var head_ray = $Mesh/HeadRay
 onready var climb_ray = $Mesh/ClimbRay
 func climbing()-> void:
-	if not is_swimming and strength > 0.99:
-		if climb_ray.is_colliding() and is_on_wall():
-			if Input.is_action_pressed("forward"):
-					checkWallInclination()
-					is_climbing = true
-					is_swimming = false
-					if not head_ray.is_colliding() and not is_wall_in_range:#vaulting
-						state = autoload.state_list.vault
-						vertical_velocity = Vector3.UP * 3 
-					elif not is_wall_in_range:#normal climb
-						state = autoload.state_list.climb
-						vertical_velocity = Vector3.UP * 3 
+	if is_sprinting == false:
+		if is_running == false:
+			if not is_swimming and strength > 0.99:
+				if climb_ray.is_colliding() and is_on_wall():
+					if Input.is_action_pressed("forward"):
+							checkWallInclination()
+							is_climbing = true
+							is_swimming = false
+							if not head_ray.is_colliding() and not is_wall_in_range:#vaulting
+								state = autoload.state_list.vault
+								vertical_velocity = Vector3.UP * 3 
+							elif not is_wall_in_range:#normal climb
+								state = autoload.state_list.climb
+								vertical_velocity = Vector3.UP * 3 
+							else:
+								vertical_velocity = Vector3.UP * (strength * 1.25 + (agility * 0.15))
+								horizontal_velocity = direction * walk_speed
+								if strength < 2:
+									pass
+									#animation_player_top.play("crawl incline cycle", blend)
+								else:
+									pass
+									#animation_player_top.play("walk cycle", blend)
 					else:
-						vertical_velocity = Vector3.UP * (strength * 1.25 + (agility * 0.15))
-						horizontal_velocity = direction * walk_speed
-						if strength < 2:
-							pass
-							#animation_player_top.play("crawl incline cycle", blend)
-						else:
-							pass
-							#animation_player_top.play("walk cycle", blend)
-			else:
-				is_climbing = false
+						is_climbing = false
+				else:
+					is_climbing = false
 		else:
 			is_climbing = false
 func checkWallInclination()-> void:
@@ -2827,7 +2850,6 @@ func frameRate()->void:
 	fps_label.text = str(new_fps)
 
 func _on_FPS_pressed()->void:
-	savePlayerData()
 	var current_fps = Engine.get_target_fps()
 	# Define FPS mapping
 	var fps_mapping = {
@@ -2851,10 +2873,23 @@ func _on_FPS_pressed()->void:
 
 #_____________________________________Display Time/Location______________________________
 onready var time_label = $UI/GUI/SkillBar/Time
-func displayClock()->void:
+
+func displayClock() -> void:
 	# Get the current date and time
-	var datetime = OS.get_datetime()
-	time_label.text = "Time: %02d:%02d" % [datetime.hour, datetime.minute]
+	var date_time = OS.get_datetime()
+	
+	# Format the time string
+	var formatted_time = "%02d:%02d" % [date_time.hour, date_time.minute]
+	
+	# Format the date string
+	var formatted_date = "%02d/%02d/%d" % [date_time.day, date_time.month, date_time.year]
+	
+	# Update the label text with time on top and date below, align left
+	time_label.text = formatted_time + "\n" + formatted_date
+
+
+
+
 onready var coordinates = $UI/GUI/Portrait/MinimapHolder/Coordinates
 func positionCoordinates()->void:
 	var rounded_position = Vector3(
@@ -5497,7 +5532,7 @@ func savePlayerData():
 		"spent_attribute_points_mem": spent_attribute_points_mem,
 		"spent_attribute_points_ins": spent_attribute_points_ins,
 		"spent_attribute_points_for": spent_attribute_points_for,
-#skills
+
 		
 #Brain attributes
 		"sanity": sanity,
@@ -6049,3 +6084,5 @@ func moveShadow() -> void:
 			shadow_mesh.global_transform.origin = Vector3(collision_point.x, collision_point.y + 0.1, collision_point.z)
 		else:
 			shadow_mesh.global_transform.origin = Vector3(collision_point.x, collision_point.y + 0.055, collision_point.z)  
+
+

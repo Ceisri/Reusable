@@ -527,7 +527,6 @@ var extra_cast_atk_speed : float = 0
 
 
 func attackSpeedMath()->void:
-	print(melee_atk_speed)
 	var bonus_universal_speed = (total_celerity -1) * 0.15
 	
 	total_dexterity = extra_dexterity + dexterity
