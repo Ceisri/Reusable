@@ -1,6 +1,6 @@
 extends TextureRect
 
-onready var player = $"../../../../../.."
+onready var player = $"../../../../.."
 var savedTexture : Texture
 var savedQuantity : int
 

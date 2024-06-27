@@ -1,7 +1,7 @@
 extends TextureRect
 
 
-onready var player = $"../../../../../../.."
+onready var player = $"../../../../../.."
 
 
 var points: int = 0

@@ -47,6 +47,7 @@ func _ready()->void:
 	connectEquipment()
 	stutterPrevention()
 	struggle_button.text = "Struggle:" + str(struggles)+ " remaining"
+	colorUI(ui_color)
 	
 
 """
@@ -96,6 +97,7 @@ func _physics_process(delta: float) -> void:
 	moveShadow()
 	rotateShadow()
 	canIWalk()
+	uiColorShit()
 	if Engine.get_physics_frames() % 2 == 0: #12 frames per second
 		miniMapVisibility()
 		showEnemyStats()
@@ -2183,8 +2185,8 @@ func showSkillPoints()->void:
 		$UI/GUI/SkillTrees/Label.text = str("skill points: ")+ str(skill_points)
 		$UI/GUI/SkillTrees/Label2.text =  str("points spent: ")+ str(skill_points_spent)
 
-onready var vanguard_skill_tree: Control = $UI/GUI/SkillTrees/Background/Vanguard
-onready var general_skill_tree: Control = $UI/GUI/SkillTrees/Background/Generalist
+onready var vanguard_skill_tree: Control =  $UI/GUI/SkillTrees/Vanguard
+onready var general_skill_tree: Control =  $UI/GUI/SkillTrees/Generalist
 onready var reset_skills: Control = $UI/GUI/SkillTrees/ResetSkills
 
 
@@ -2199,13 +2201,13 @@ func _on_SkillTree1_pressed()->void:
 
 #skills in skills-tree
 onready var all_skills = $UI/GUI/SkillTrees
-onready var kick_icon = $UI/GUI/SkillTrees/Background/Generalist/skill1/Icon
-onready var taunt_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill6/Icon
-onready var cyclone_icon =$UI/GUI/SkillTrees/Background/Vanguard/skill5/Icon
-onready var overhead_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill2/Icon
-onready var rising_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill4/Icon
-onready var whirlwind_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill1/Icon
-onready var heart_trust_icon = $UI/GUI/SkillTrees/Background/Vanguard/skill3/Icon
+onready var kick_icon = $UI/GUI/SkillTrees/Generalist/skill1/Icon
+onready var taunt_icon = $UI/GUI/SkillTrees/Vanguard/skill6/Icon
+onready var cyclone_icon = $UI/GUI/SkillTrees/Vanguard/skill5/Icon
+onready var overhead_icon = $UI/GUI/SkillTrees/Vanguard/skill2/Icon
+onready var rising_icon = $UI/GUI/SkillTrees/Vanguard/skill4/Icon
+onready var whirlwind_icon = $UI/GUI/SkillTrees/Vanguard/skill1/Icon
+onready var heart_trust_icon = $UI/GUI/SkillTrees/Vanguard/skill3/Icon
 func connectGenericSkillTee(tree)->void:# this is called by connectSkillTree() to give the the "tree"
 	for child in tree.get_children():
 		if child.is_in_group("Skill"):
@@ -2235,20 +2237,23 @@ func spendSkillPoints(icon_texture_rect,button)->void:
 			button.skillPoints()
 			skill_points -= 1
 			skill_points_spent +=  1
+			
+onready var gen_skill1 = $UI/GUI/SkillTrees/Generalist/skill1
+onready var gen_skill_icon1 = $UI/GUI/SkillTrees/Generalist/skill1/Icon
 func saveSkillTreeData()->void:
 	for child in vanguard_skill_tree.get_children():
 		if child.is_in_group("Skill"):
 			if child.get_node("Icon").has_method("savedata"):
 				child.get_node("Icon").savedata()
-	$UI/GUI/SkillTrees/Background/Generalist/skill1/Icon.savedata()
+	gen_skill_icon1.savedata()
 func loadSkillTreeData()->void:
 	for child in vanguard_skill_tree.get_children():
 		if child.is_in_group("Skill"):
 			if child.get_node("Icon").has_method("loaddata"):
 				child.get_node("Icon").loaddata()
 				child.skillPoints()
-	$UI/GUI/SkillTrees/Background/Generalist/skill1/Icon.loaddata()
-	$UI/GUI/SkillTrees/Background/Generalist/skill1.skillPoints()
+	gen_skill_icon1.loaddata()
+	gen_skill1.skillPoints()
 				
 func setSkillTreeOwner()->void:
 	for child in vanguard_skill_tree.get_children():
@@ -2912,16 +2917,15 @@ func gearUp()->void:
 		current_race_gender.EquipmentSwitch()
 
 		
-onready var main_weap_icon =$UI/GUI/Equipment/EquipmentBG/MainWeap/Icon
-onready var sec_weap_icon = $UI/GUI/Equipment/EquipmentBG/SecWeap/Icon
-onready var sec_wea_slot = $UI/GUI/Equipment/EquipmentBG/SecWeap
-onready var legs_icon = $UI/GUI/Equipment/EquipmentBG/Pants/Icon
-onready var helm_icon = $UI/GUI/Equipment/EquipmentBG/Helm/Icon
+onready var main_weap_icon = $UI/GUI/Equipment/MainWeap/Icon
+onready var sec_weap_icon = $UI/GUI/Equipment/SecWeap/Icon
+onready var sec_wea_slot =$UI/GUI/Equipment/SecWeap
+onready var legs_icon = $UI/GUI/Equipment/Pants/Icon
+onready var helm_icon = $UI/GUI/Equipment/Helm/Icon
 
-onready var hand_r_icon = $UI/GUI/Equipment/EquipmentBG/GloveR/Icon
-onready var chest_icon = $UI/GUI/Equipment/EquipmentBG/Chest/Icon
-onready var feet_icon = $UI/GUI/Equipment/EquipmentBG/Feet/Icon
-onready var glove_icon = $UI/GUI/Equipment/EquipmentBG/GloveR/Icon
+onready var chest_icon = $UI/GUI/Equipment/Chest/Icon
+onready var feet_icon =$UI/GUI/Equipment/Feet/Icon
+onready var glove_icon = $UI/GUI/Equipment/GloveR/Icon
 
 onready var equipment_bg:TextureRect = $UI/GUI/Equipment/EquipmentBG
 func connectEquipment()->void:
@@ -3253,13 +3257,8 @@ func SwitchEquipmentBasedOnEquipmentIcons()-> void:
 				legs = "pants0"
 		elif legs_icon.texture == null:
 			legs = "naked"
-#_______________________________hands___________________________________________
-	if hand_r_icon != null:
-		if hand_r_icon.texture != null:
-			if hand_r_icon.texture.get_path() == autoload.glove1.get_path():
-				hand_r = "cloth1"
-		elif hand_r_icon.texture == null:
-			hand_r = "naked"
+
+
 #_______________________________feet____________________________________________
 	
 	if feet_icon == null:
@@ -5460,7 +5459,8 @@ func savePlayerData():
 		"aiming_mode":aiming_mode,
 		"hold_to_base_atk":hold_to_base_atk,
 		
-		
+		"ui_color":ui_color,
+		"shifting_ui_colors":shifting_ui_colors,
 		
 		"sex": sex,
 		"species":species,
@@ -5596,8 +5596,14 @@ func loadPlayerData():
 				aiming_mode = player_data["aiming_mode"]
 			if "hold_to_base_atk" in player_data:
 				hold_to_base_atk = player_data["hold_to_base_atk"]
-
-
+				
+				
+			if "ui_color" in player_data:
+				ui_color = player_data["ui_color"]
+			if "shifting_ui_colors" in player_data:
+				shifting_ui_colors = player_data["shifting_ui_colors"]
+				
+				
 			if "sex" in player_data:
 				sex = player_data["sex"]
 			if "species" in player_data:
@@ -6085,4 +6091,69 @@ func moveShadow() -> void:
 		else:
 			shadow_mesh.global_transform.origin = Vector3(collision_point.x, collision_point.y + 0.055, collision_point.z)  
 
+onready var inv_background = $UI/GUI/Inventory/InventoryBackground
+onready var menu_frame  = $UI/GUI/Menu/MenuFrame
+onready var skill_banner  = $UI/GUI/SkillBar/Banner
+onready var skill_background  = $UI/GUI/SkillBar/background
+onready var skill_tree_background  = $UI/GUI/SkillTrees/Background
+onready var attributes_background = $UI/GUI/Equipment/Attributes/CharacterBackground
+onready var def_val_background  = $UI/GUI/Equipment/DmgDef/CharacterBackground
+onready var loot_background  = $UI/GUI/LootTable/Background
+onready var enemy_background  = $UI/GUI/EnemyUI/BG
+onready var craft_background  = $UI/GUI/Crafting/CraftingBackground
+
+
+
+var ui_color = Color(1, 1, 1, 1) # Default to white
+
+# Function to update UI colors based on color
+func colorUI(color: Color) -> void:
+	inv_background.modulate = color
+	menu_frame.modulate = color
+	skill_banner.modulate = color
+	skill_background.modulate = color
+	skill_tree_background.modulate = color
+	equipment_bg.modulate = color
+	attributes_background.modulate = color
+	def_val_background.modulate = color
+	loot_background.modulate = color
+	enemy_background.modulate = color
+	craft_background.modulate = color
+	# Update stored color
+	ui_color = color
+
+var shifting_ui_colors:bool = true
+func _on_ShiftColors_pressed():
+	shifting_ui_colors = !shifting_ui_colors
+func uiColorShit() -> void:
+	var color = ui_color
+	if shifting_ui_colors == true:
+		# Example: Slowly change color continuously from red to blue to green and back to red
+		var time = OS.get_ticks_msec() / 1000.0
+		var r = 0.5 + 0.5 * sin(time)
+		var g = 0.5 + 0.5 * sin(time + PI / 3)
+		var b = 0.5 + 0.5 * sin(time + 2 * PI / 3)
+		color = Color(r, g, b)
+		
+		inv_background.modulate = color
+		menu_frame.modulate = color
+		skill_banner.modulate = color
+		skill_background.modulate = color
+		skill_tree_background.modulate = color
+		equipment_bg.modulate = color
+		attributes_background.modulate = color
+		def_val_background.modulate = color
+		loot_background.modulate = color
+		enemy_background.modulate = color
+		craft_background.modulate = color
+	else:
+		colorUI(ui_color)
+
+# Handle color change event from the color picker
+func _on_UIColor_color_changed(color):
+	colorUI(color)
+
+onready var gui_color_picker = $UI/GUI/Menu/UIColor
+func _on_ColorButton_pressed():
+	gui_color_picker.visible  = !gui_color_picker.visible 
 
