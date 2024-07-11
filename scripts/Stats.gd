@@ -10,7 +10,7 @@ func  _ready() -> void:
 #	if parent.is_in_group("Player"):
 #		addFloatingText(33,Autoload.damage_type.cold,true)
 	
-func getHit(attacker: KinematicBody, damage: float, damage_type: int, extra_penetrate_chance: float) -> void:
+func getHit(attacker: Node, damage: float, damage_type: int, extra_penetrate_chance: float) -> void:
 	var damage_to_take: float = damage
 	var mitigation: float = 0.0  # Initialize mitigation to 0.0
 	var deflected:bool = false
@@ -103,8 +103,8 @@ func getHit(attacker: KinematicBody, damage: float, damage_type: int, extra_pene
 			else:
 				damage_after_front = damage_to_take * (1.0 - front_mitigation)
 				final_damage = damage_after_front 
-				
-	debugHit(attacker, damage,final_damage, damage_type,deflected, penetrating_blow,flank_attack,backstab)
+	if attacker.is_in_group("Player"):
+		debugHit(attacker, damage,final_damage, damage_type,deflected, penetrating_blow,flank_attack,backstab)
 	addFloatingText(attacker,final_damage, damage_type, penetrating_blow)
 	health -= round(final_damage* 100) / 100
 
@@ -136,6 +136,16 @@ var radiant_resistance: int = 0
 
 var health:float = 1600
 var max_health:float = 1600
+
+
+const base_max_resolve = 100
+var max_resolve = 100
+var resolve = 100
+const base_max_breath = 100
+var max_breath = 100
+var breath = 100
+
+
 #Chance to take less damage and avoid critical hits or penetrating hits
 var base_deflect_chance:float = 25
 var extr_deflect_chance:float = 0.0
@@ -212,7 +222,21 @@ var courage: float = 1
 
 
 
+var on_hit_resolve_regen:float = 1
+var extra_on_hit_resolve_regen:float = 0
+var total_on_hit_resolve_regen:float = 1
 
+const base_melee_atk_speed: int = 1 
+var melee_atk_speed: float = 1 
+const base_range_atk_speed: int = 1 
+var range_atk_speed: float = 1 
+const base_casting_speed: int  = 1 
+var casting_speed: float = 1 
+
+
+var extra_melee_atk_speed : float = 0
+var extra_range_atk_speed : float = 0
+var extra_cast_atk_speed : float = 0
 
 
 
@@ -227,11 +251,7 @@ func addFloatingText(attacker:Node,damage:float, damage_type:int,penetrating:boo
 				attacker.canvas.add_child(floating_text)
 		else:
 			if parent.popup_viewport:
-				if parent.is_network_master():
 					parent.popup_viewport.add_child(floating_text)
-				else:
-					if attacker.is_player == true:
-						attacker.canvas.add_child(floating_text)
 
 # Use this function to debug combat in-game without having to look at the print outputs of the engine.
 # It also helps with playtesting across multiple platforms or with multiplayer.
