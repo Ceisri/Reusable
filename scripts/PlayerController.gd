@@ -204,7 +204,9 @@ var dash_duration:bool= false
 var slide_duration:bool= false
 
 
-var death_duration:bool = false
+var dying:bool = false
+var dead:bool = false
+
 
 var staggered:bool = false
 var knockeddown:bool = false
@@ -223,6 +225,7 @@ var whirlwind_duration:bool = false
 var whirlwind_combo:bool = false
 
 
+var silent_stab_active:bool = false
 var garrote_active:bool = false
 
 
@@ -252,6 +255,11 @@ func activeActions()->void:
 		moveTowardsDirection(1)
 		animation.play("garrote",0.3,1)
 	
+	elif silent_stab_active == true:
+		directionToCamera()
+		moveTowardsDirection(1)
+		animation.play("punch",0.3,1)
+		
 	
 	elif slide_duration == true:
 		automaticTargetAssist()
@@ -722,10 +730,20 @@ func skills(slot)-> void:
 #						skills.skillCancel("slide")
 #Backstep______________________________________________________________________________________________
 			if slot.texture.resource_path == Icons.garrote.get_path():
-				garrote_active = true
-				garroteTarget()
-			
-			
+				if slot.get_parent().get_node("CD").text == "":
+					garrote_active = true
+					garroteTarget()
+				else:
+					garrote_active = false
+					returnToIdleBasedOnWeaponType()
+
+			if slot.texture.resource_path == Icons.silent_stab.get_path():
+				if slot.get_parent().get_node("CD").text == "":
+					silent_stab_active = true
+				else:
+					returnToIdleBasedOnWeaponType()
+					
+					
 #			if slot.texture.resource_path == Icons.backstep.get_path():
 #				if skills.can_backstep == false:
 #					returnToIdleBasedOnWeaponType()
@@ -1901,13 +1919,18 @@ func carryObject() -> void:
 
 		# Calculate the forward vector from direction_control
 		var forward_vector = direction_control.global_transform.basis.z
+		var right_vector = direction_control.global_transform.basis.x  # Right direction
 
 		# Set the position of garrote_victim
 		var desired_distance = 0.4  # Adjust the desired distance as needed
-		garrote_victim.translation = direction_control.global_transform.origin + forward_vector * desired_distance + Vector3(0, 0, 0)
+		var side_offset = -0.2  # Adjust the side offset as needed
+
+		# Apply the forward and side offsets
+		garrote_victim.translation = direction_control.global_transform.origin + forward_vector * desired_distance + right_vector * side_offset + Vector3(0, 0, 0)
 		
 		# Set the rotation of garrote_victim to match direction_control
 		garrote_victim.rotation = direction_control.rotation
+
 
 
 
@@ -1917,13 +1940,17 @@ func garroteTarget() -> void:
 	if garrote_victim == null:
 		var bodies = detector_area.get_overlapping_bodies()
 		for body in bodies:
-			if body.stats.health >0: 
-				if body and body != self and body.is_in_group("Entity"):
+			if body and body != self and body.is_in_group("Entity"):
+				if body.stats.health > 0:
 					if isFacingSelf(body, 0.5):
 						body.set_collision_layer(1) 
 						body.set_collision_mask(1) 
 						garrote_victim = body
 						garrote_victim.garroted = true
+						if body != garrote_victim:
+							body.garroted = false
+						return  # Exit the function once a victim is found
+
 
 
 

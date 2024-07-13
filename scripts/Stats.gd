@@ -106,7 +106,8 @@ func getHit(attacker: Node, damage: float, damage_type: int, extra_penetrate_cha
 		debugHit(attacker, damage,final_damage, damage_type,deflected, penetrating_blow,flank_attack,backstab)
 	addFloatingText(attacker,final_damage, damage_type, penetrating_blow)
 	health -= round(final_damage* 100) / 100
-
+	if health <=0:
+		parent.dying = true
 
 func convertStats():
 	deflect_chance = base_deflect_chance + extr_deflect_chance 

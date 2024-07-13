@@ -24,24 +24,33 @@ func kickEnd()->void:
 	player.kick_duration = false
 
 func garroteEnd()->void:
+	player.skills.garroteCD()
 	player.garrote_active = false
 	if player.garrote_victim != null:
-		player.garrote_victim.knockeddown = true
+	#	player.garrote_victim.knockeddown = true
 		player.garrote_victim.garroted = false
 		player.garrote_victim.set_collision_layer(1) 
 		player.garrote_victim.set_collision_mask(1) 
 		player.garrote_victim = null
 		
+func silentStabEnd()->void:
+	player.skills.silentStabCD()
+	player.silent_stab_active = false
+
+
+
+	
+	
 func garroteDMG()->void:
 	var dmg:float 
 	var extr_pen_chance:float 
 	if player.garrote_victim != null:
 		if not player.garrote_victim.is_in_group("Boss"):
-			dmg = player.garrote_victim.stats.max_health * 0.15
+			dmg = player.garrote_victim.stats.max_health * 2
 			extr_pen_chance = 100000
 			player.garrote_victim.deadly_bleeding_duration = 10
 		else:
 			dmg = 100
 			extr_pen_chance = 0
 		
-		player.garrote_victim.stats.getHit(player,dmg * 0.3,Autoload.damage_type.slash,33)
+		player.garrote_victim.stats.getHit(player,dmg,Autoload.damage_type.slash,33)

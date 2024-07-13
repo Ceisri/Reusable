@@ -25,13 +25,16 @@ func updateCooldownLabel() -> void:
 	for child in grid.get_children():
 		var icon = child.get_node("Icon")
 
-#		if icon != null and icon.texture != null and icon.texture.resource_path == Icons.backstep.get_path():
-#			var label: Label = child.get_node("CD")
-#			if label != null:
-#				updateBackstep(label,backstep_cooldown,current_time,last_backstep_time)
-#				modulateIcon(icon,backstep_cooldown,current_time,last_backstep_time)
-#
-#
+		if icon != null and icon.texture != null and icon.texture.resource_path == Icons.garrote.get_path():
+			var label: Label = child.get_node("CD")
+			if label != null:
+				updateCD(label,garrote_cooldown,current_time,last_garrote_time)
+				modulateIcon(icon,backstep_cooldown,current_time,last_garrote_time)
+		if icon != null and icon.texture != null and icon.texture.resource_path == Icons.silent_stab.get_path():
+			var label: Label = child.get_node("CD")
+			if label != null:
+				updateCD(label,silent_stab_cooldown,current_time,last_silent_stab_time)
+				modulateIcon(icon,silent_stab_cooldown,current_time,last_silent_stab_time)
 #
 #		elif icon != null and icon.texture != null and icon.texture.resource_path == Icons.kick.get_path():
 #			var label: Label = child.get_node("CD")
@@ -166,27 +169,36 @@ func updateBackstep(label: Label, cooldown: float, current_time: float, last_tim
 		label.text = ""
 		can_backstep = true
 #___________________________________________________________________________________________________
-var stomp_description: String = "Stomp the ground beneath you dealing extra damage to KNOCKED DOWN enemies"
-var stomp_dmg: float = 5
-var stomp_dmg_proportion: float = 2.5
+var garrote_cooldown: float = 2
+var last_garrote_time: float = 0.0 
+var garrote_cost: float = 10
 
-var stomp_cooldown: float = 6
-var last_stomp_time: float = 0.0 
-func stompCD():
+
+var silent_stab_cooldown: float = 2
+var last_silent_stab_time: float = 0.0 
+var silent_stab_cost: float = 10
+
+
+func silentStabCD()->void:
 	var current_time: float = OS.get_ticks_msec() / 1000.0
-	if current_time - last_stomp_time >= stomp_cooldown:
-		last_stomp_time = current_time
+	if current_time - last_silent_stab_time >= silent_stab_cooldown:
+			last_silent_stab_time = current_time
 
-var can_stomp: bool = false
-func updateStomp(label: Label, cooldown: float, current_time: float, last_time: float) -> void:
+
+func garroteCD()->void:
+	var current_time: float = OS.get_ticks_msec() / 1000.0
+	if current_time - last_garrote_time >= garrote_cooldown:
+			last_garrote_time = current_time
+
+			
+var can_garrote: bool  = true
+func updateCD(label: Label, cooldown: float, current_time: float, last_time: float) -> void:
 	var elapsed_time: float = current_time - last_time
 	var remaining_cooldown: float = max(0, cooldown - elapsed_time)
 	if remaining_cooldown!= 0:
-		can_stomp = false
 		label.text = str(round(remaining_cooldown) )
 	else:
 		label.text = ""
-		can_stomp = true
 #___________________________________________________________________________________________________
 var kick_description: String = "+5% damage per skill level, kick your foes knocking them down if their balance attribute is below 3 or their health is too low"
 var kick_dmg: float = 5
