@@ -22,7 +22,7 @@ var is_in_combat:bool = false
 
 var weapon_type = Autoload.weapon_type_list.fist
 var genes
-
+var stored_attacker:Node = null
 
 onready var inventory_grid
 func _ready() -> void:
@@ -65,7 +65,7 @@ func _physics_process(delta: float) -> void:
 	movement(delta)
 	camera_rotation()
 	clickInputs()
-	fullscreen()
+	InputsInterface()
 	LiftAndThrow()
 	carryObject()
 	behaviourTree()
@@ -76,64 +76,7 @@ func _physics_process(delta: float) -> void:
 		uiColorShift()
 	if Engine.get_physics_frames() % 6 == 0:
 		ResourceBarsLabels()
-
-
-
-
-
-
-var blend: float = 0.22
-
-var stunned_time:float = 0
-var hold_to_base_atk:bool = false #if true holding the base attack buttons continues a combo of attacks, releasing the button stops the attacks midway, if false it will just play the attack animation as if it was a normal skill
-var base_atk_duration:bool = false
-var base_atk2_duration:bool = false
-var base_atk3_duration:bool = false
-var base_atk4_duration:bool = false
-var flip_duration:bool = false
-var throw_rock_duration:bool= false
-var stomp_duration:bool= false
-var kick_duration:bool= false
-
-var backstep_duration:bool= false
-var frontstep_duration:bool= false
-var leftstep_duration:bool= false
-var rightstep_duration:bool= false
-
-var dash_duration:bool= false
-
-var slide_duration:bool= false
-
-
-var death_duration:bool = false
-
-var staggered_duration:bool = false
-var knockeddown_duration:bool = false
-
-
-var overhead_slash_duration:bool = false
-var overhead_slash_combo:bool = false
-
-var rising_slash_duration:bool = false
-var heart_trust_duration:bool = false
-var cyclone_duration:bool = false
-
-var cyclone_combo:bool = false
-
-var whirlwind_duration:bool = false
-var whirlwind_combo:bool = false
-
-
-var parry:bool= false
-var absorbing:bool = false
-
-
-var taunt_duration:bool = false
-var state = Autoload.state_list.idle
-
-var attacking:bool = false
-var is_dead:bool = false
-
+	
 
 onready var animation:AnimationPlayer =  $DirectionControl/Character/AnimationPlayer
 func firstLevelAnimations()-> void:#Momentary Delete Later
@@ -204,16 +147,16 @@ func behaviourTree()-> void:
 			animation.play("dead",0.35)
 			is_dead = true
 	else:
-		if knockeddown_duration == true:
+		if knockeddown == true:
 			clearParryAbsorb()
 			if stats.health <= 0 :
-				knockeddown_duration = false
-				staggered_duration = false
+				knockeddown = false
+				staggered = false
 			if parry == true:
-				knockeddown_duration = false
-				staggered_duration = false
+				knockeddown = false
+				staggered = false
 			elif absorbing == true:
-				knockeddown_duration = false
+				knockeddown = false
 			else:
 				can_walk = false
 				moving = false
@@ -223,7 +166,7 @@ func behaviourTree()-> void:
 					animation.play("knocked down",blend)
 					#skill.getInterrupted()
 
-		elif staggered_duration == true:
+		elif staggered== true:
 			can_walk = false
 			moving = false
 			#genes.can_move = false
@@ -238,7 +181,60 @@ func behaviourTree()-> void:
 		else:
 			activeActions()
 
+var blend: float = 0.22
 
+var stunned_time:float = 0
+var hold_to_base_atk:bool = false #if true holding the base attack buttons continues a combo of attacks, releasing the button stops the attacks midway, if false it will just play the attack animation as if it was a normal skill
+var base_atk_duration:bool = false
+var base_atk2_duration:bool = false
+var base_atk3_duration:bool = false
+var base_atk4_duration:bool = false
+var flip_duration:bool = false
+var throw_rock_duration:bool= false
+var stomp_duration:bool= false
+var kick_duration:bool= false
+
+var backstep_duration:bool= false
+var frontstep_duration:bool= false
+var leftstep_duration:bool= false
+var rightstep_duration:bool= false
+
+var dash_duration:bool= false
+
+var slide_duration:bool= false
+
+
+var death_duration:bool = false
+
+var staggered:bool = false
+var knockeddown:bool = false
+
+
+var overhead_slash_duration:bool = false
+var overhead_slash_combo:bool = false
+
+var rising_slash_duration:bool = false
+var heart_trust_duration:bool = false
+var cyclone_duration:bool = false
+
+var cyclone_combo:bool = false
+
+var whirlwind_duration:bool = false
+var whirlwind_combo:bool = false
+
+
+var garrote_active:bool = false
+
+
+var parry:bool= false
+var absorbing:bool = false
+
+
+var taunt_duration:bool = false
+var state = Autoload.state_list.idle
+
+var attacking:bool = false
+var is_dead:bool = false
 func activeActions()->void:
 	SkillQueueSystem()#DO NOT REMOVE THIS! it is neccessary to allow skill cancelling, skill cancelling doesn't work without skill queue, it has a toggle on off anyway for players that don't like it 
 	if Input.is_action_pressed("Rclick"):
@@ -251,6 +247,12 @@ func activeActions()->void:
 		moveTowardsDirection(skills.backstep_distance)
 		animation.play("dash",0.3,1.25)
 
+	elif garrote_active == true:
+		directionToCamera()
+		moveTowardsDirection(1)
+		animation.play("garrote",0.3,1)
+	
+	
 	elif slide_duration == true:
 		automaticTargetAssist()
 		directionToCamera()
@@ -719,38 +721,43 @@ func skills(slot)-> void:
 #					if skill_cancelling == true:
 #						skills.skillCancel("slide")
 #Backstep______________________________________________________________________________________________
-			if slot.texture.resource_path == Icons.backstep.get_path():
-				if skills.can_backstep == false:
-					returnToIdleBasedOnWeaponType()
-					frontstep_duration = false
-					backstep_duration = false
-					leftstep_duration = false
-					rightstep_duration = false
-					debug.active_action = "trying to backstep"
-				else:
-					debug.active_action = "backstep"
-					debug.last_skills = "backstep"
-					skills.interruptBaseAtk()
-					if Input.is_action_pressed("front"):
-						frontstep_duration = true
-						debug.active_action = "frontstep"
-						debug.last_skills = "frontstep"
-					elif Input.is_action_pressed("right"):
-						rightstep_duration = true
-						debug.active_action = "rightstep"
-						debug.last_skills = "rightstep"
-					elif Input.is_action_pressed("left"):
-						leftstep_duration = true
-						debug.active_action = "leftstep"
-						debug.last_skills = "leftstep"
-					else:
-						backstep_duration = true
-						debug.active_action = "backstep"
-						debug.last_skills = "backstep"
-					if skill_cancelling == true:
-						debug.active_action = "backstep"
-						debug.last_skills = "backstep"
-						skills.skillCancel("backstep")
+			if slot.texture.resource_path == Icons.garrote.get_path():
+				garrote_active = true
+				garroteTarget()
+			
+			
+#			if slot.texture.resource_path == Icons.backstep.get_path():
+#				if skills.can_backstep == false:
+#					returnToIdleBasedOnWeaponType()
+#					frontstep_duration = false
+#					backstep_duration = false
+#					leftstep_duration = false
+#					rightstep_duration = false
+#					debug.active_action = "trying to backstep"
+#				else:
+#					debug.active_action = "backstep"
+#					debug.last_skills = "backstep"
+#					skills.interruptBaseAtk()
+#					if Input.is_action_pressed("front"):
+#						frontstep_duration = true
+#						debug.active_action = "frontstep"
+#						debug.last_skills = "frontstep"
+#					elif Input.is_action_pressed("right"):
+#						rightstep_duration = true
+#						debug.active_action = "rightstep"
+#						debug.last_skills = "rightstep"
+#					elif Input.is_action_pressed("left"):
+#						leftstep_duration = true
+#						debug.active_action = "leftstep"
+#						debug.last_skills = "leftstep"
+#					else:
+#						backstep_duration = true
+#						debug.active_action = "backstep"
+#						debug.last_skills = "backstep"
+#					if skill_cancelling == true:
+#						debug.active_action = "backstep"
+#						debug.last_skills = "backstep"
+#						skills.skillCancel("backstep")
 #Lclick and Rclick__________________________________________________________________________________
 #fist
 #			elif slot.texture.resource_path == Icons.punch.get_path():
@@ -1204,15 +1211,15 @@ func movement(delta: float) -> void:
 		0,
 		Input.get_action_strength("front") - Input.get_action_strength("back")
 	)
-
-	if input_direction.length() > 0:
-		direction = input_direction.rotated(Vector3.UP, h_rot).normalized()
-		moving = true
-		movement_speed = walk_speed
-	elif joystick_active:
-		direction = -joystick_direction.rotated(Vector3.UP, h_rot).normalized()
-		moving = true
-		movement_speed = walk_speed
+	if garrote_active == false:
+		if input_direction.length() > 0:
+			direction = input_direction.rotated(Vector3.UP, h_rot).normalized()
+			moving = true
+			movement_speed = walk_speed
+		elif joystick_active:
+			direction = -joystick_direction.rotated(Vector3.UP, h_rot).normalized()
+			moving = true
+			movement_speed = walk_speed
 	
 	if moving == true:
 		if carried_body == null:
@@ -1567,12 +1574,22 @@ func clickInputs():#Momentary Delete Later
 		else: 
 			attacking = false
 var is_fullscreen :bool  = false
-func fullscreen()-> void:
+func InputsInterface()-> void:
 	if Input.is_action_just_pressed("fullscreen"):
 		is_fullscreen = !is_fullscreen
 		OS.set_window_fullscreen(is_fullscreen)
 		saveGame()
-
+	if Input.is_action_just_pressed("Menu"):
+		menu.visible = !menu.visible
+		
+	if Input.is_action_just_pressed("Debug"):
+		debug.visible = !debug.visible
+		
+	if Input.is_action_just_pressed("Skills"):
+		skills_professions.visible = !skills_professions.visible
+		
+		
+		
 var skill_bar_input:String = "none"
 func skillBarInputs():
 	if Input.is_action_pressed("1"):
@@ -1660,7 +1677,8 @@ func saveGame()->void:
 			node.saveData()
 			
 		if node.has_node("Icon"):
-			node.get_node("Icon").saveData()
+			if node.get_node("Icon").has_method("saveData"):
+				node.get_node("Icon").saveData()
 		
 		elif node.has_node("icon"):
 			debug.error_message = "icon named with lower case I, fix that " + str(node.name)
@@ -1865,7 +1883,7 @@ func LiftAndThrow() -> void:
 							body.is_being_held = true
 						
 func carryObject() -> void:
-	if carried_body:
+	if carried_body != null:
 		carried_body.set_collision_layer(6) 
 		carried_body.set_collision_mask(6) 
 		# Calculate the forward vector from direction_control
@@ -1877,9 +1895,44 @@ func carryObject() -> void:
 		# Set the rotation of carried_body to match direction_control
 		carried_body.rotation = direction_control.rotation
 
+	if garrote_victim != null:
+		garrote_victim.set_collision_layer(6) 
+		garrote_victim.set_collision_mask(6) 
+
+		# Calculate the forward vector from direction_control
+		var forward_vector = direction_control.global_transform.basis.z
+
+		# Set the position of garrote_victim
+		var desired_distance = 0.4  # Adjust the desired distance as needed
+		garrote_victim.translation = direction_control.global_transform.origin + forward_vector * desired_distance + Vector3(0, 0, 0)
+		
+		# Set the rotation of garrote_victim to match direction_control
+		garrote_victim.rotation = direction_control.rotation
+
+
+
+var garrote_victim: KinematicBody = null
+var garrote_offset: Vector3 = Vector3(0,1.516,0.585)
+func garroteTarget() -> void:
+	if garrote_victim == null:
+		var bodies = detector_area.get_overlapping_bodies()
+		for body in bodies:
+			if body.stats.health >0: 
+				if body and body != self and body.is_in_group("Entity"):
+					if isFacingSelf(body, 0.5):
+						body.set_collision_layer(1) 
+						body.set_collision_mask(1) 
+						garrote_victim = body
+						garrote_victim.garroted = true
+
+
 
 func switchWeaponFromHandToSideOrBack():
 	pass
+
+
+
+
 
 
 onready var hook_ray:RayCast = $Camroot/h/v/Camera/Aim/hook_ray
@@ -1948,6 +2001,11 @@ onready var icon_background10:TextureRect = $Canvas/Skillbar/UI_list/icon_bg3
 onready var icon_background11:TextureRect = $Canvas/Skillbar/UI_list/icon_bg4
 onready var icon_background12:TextureRect = $Canvas/Skillbar/UI_list/icon_bg5
 onready var icon_background13:TextureRect = $Canvas/Skillbar/icon_bg6
+onready var skills_bg:TextureRect = $Canvas/Skills/Backgrund
+onready var patternSL:TextureRect = $Canvas/Skills/PatternL
+onready var patternSL2:TextureRect = $Canvas/Skills/PatternL2
+onready var patternSR:TextureRect = $Canvas/Skills/PatternR
+onready var patternSR2:TextureRect = $Canvas/Skills/PatternR2
 
 
 
@@ -1966,6 +2024,9 @@ func colorInterfaceBGPatterns(color)-> void:
 	close_button.modulate = color
 	skillbar_background.modulate = color
 	icon_background.modulate = color
+	skills_bg.modulate = color
+
+	
 
 onready var frame:TextureRect = $Canvas/Menu/Frame
 onready var frame2:TextureRect = $Canvas/Menu/Frame2
@@ -1992,7 +2053,12 @@ onready var loot_button:TextureButton = $Canvas/Skillbar/UI_list/LootButton
 onready var inv_button:TextureButton = $Canvas/Skillbar/UI_list/InvButton
 onready var open_ui_button:TextureButton = $Canvas/Skillbar/OpenUIButton
 onready var drag_ui_button:TextureButton = $Canvas/Skillbar/DragUI
+onready var frameS1:TextureRect = $Canvas/Skills/Frame1
+onready var frameS2:TextureRect = $Canvas/Skills/Frame2
+onready var frameS3:TextureRect = $Canvas/Skills/Frame3
 
+onready var classes_grid:GridContainer = $Canvas/Skills/ClassList/GridContainer
+onready var profess_grid:GridContainer = $Canvas/Skills/ProfessionList/GridContainer
 
 
 func colorInterfaceFrames(color)-> void:
@@ -2005,6 +2071,10 @@ func colorInterfaceFrames(color)-> void:
 	frame7.modulate = color
 	frame8.modulate = color
 	frame9.modulate = color
+
+	frameS1.modulate = color
+	frameS2.modulate = color
+	frameS3.modulate = color
 
 	sett_button.modulate = color
 	skillbar_visi_button.modulate = color
@@ -2020,6 +2090,17 @@ func colorInterfaceFrames(color)-> void:
 	inv_button.modulate = color
 	open_ui_button.modulate = color
 	drag_ui_button.modulate = color
+	
+	
+	patternSL.modulate = color
+	patternSL2.modulate = color
+	patternSR.modulate = color
+	patternSR2.modulate = color
+	
+	for child in classes_grid.get_children():
+		child.get_node("SkillFrame").modulate = color
+	for child in profess_grid.get_children():
+		child.get_node("SkillFrame").modulate = color
 	
 var ui_color = Color(1, 1, 1, 1) # Default to white
 # Function to update UI colors based on color
@@ -2183,3 +2264,11 @@ func ResourceBarsLabels()-> void:
 	health_label.text = "HP: "+ str(round(stats.health * 100/100)) + "/" + str(round(stats.max_health * 100/100))
 	
 	
+onready var skills_professions:Control = $Canvas/Skills
+func _on_CloseSkills_pressed():
+	skills_professions.visible = false
+
+
+func _on_SkillsButton_pressed():
+	skills_professions.visible = !skills_professions.visible
+

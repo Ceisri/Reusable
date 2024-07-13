@@ -25,19 +25,19 @@ func updateCooldownLabel() -> void:
 	for child in grid.get_children():
 		var icon = child.get_node("Icon")
 
-		if icon != null and icon.texture != null and icon.texture.resource_path == Icons.backstep.get_path():
-			var label: Label = child.get_node("CD")
-			if label != null:
-				updateBackstep(label,backstep_cooldown,current_time,last_backstep_time)
-				modulateIcon(icon,backstep_cooldown,current_time,last_backstep_time)
-
-
-
-		elif icon != null and icon.texture != null and icon.texture.resource_path == Icons.kick.get_path():
-			var label: Label = child.get_node("CD")
-			if label != null:
-				updateKick(label,kick_cooldown,current_time,last_kick_time)
-				modulateIcon(icon,kick_cooldown,current_time,last_kick_time)
+#		if icon != null and icon.texture != null and icon.texture.resource_path == Icons.backstep.get_path():
+#			var label: Label = child.get_node("CD")
+#			if label != null:
+#				updateBackstep(label,backstep_cooldown,current_time,last_backstep_time)
+#				modulateIcon(icon,backstep_cooldown,current_time,last_backstep_time)
+#
+#
+#
+#		elif icon != null and icon.texture != null and icon.texture.resource_path == Icons.kick.get_path():
+#			var label: Label = child.get_node("CD")
+#			if label != null:
+#				updateKick(label,kick_cooldown,current_time,last_kick_time)
+#				modulateIcon(icon,kick_cooldown,current_time,last_kick_time)
 
 
 func modulateIcon(icon, cooldown, current_time, last_time) -> void:

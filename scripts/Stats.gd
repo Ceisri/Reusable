@@ -3,7 +3,6 @@ onready var parent = get_parent()
 
 
 func  _ready() -> void:
-
 	convertStats()
 
 #func _physics_process(delta: float) -> void:#only here for testing
@@ -61,7 +60,7 @@ func getHit(attacker: Node, damage: float, damage_type: int, extra_penetrate_cha
 		if attacker.isFacingSelf(parent, 0):  # Flank attack
 			flank_attack = true
 
-
+	parent.stored_attacker = attacker
 	var random_range: float = rand_range(0, 100)
 	
 	if random_range <= deflect_chance:  # Deflected hit
@@ -246,8 +245,8 @@ func addFloatingText(attacker:Node,damage:float, damage_type:int,penetrating:boo
 		floating_text.amount = round(damage * 100) / 100
 		if penetrating == true :
 			floating_text.penetrating_hit = true
-		if parent.is_player == false:
-			if attacker.is_player == true:
+		if not parent.is_in_group("Player"):
+			if attacker.is_in_group("Entity"):
 				attacker.canvas.add_child(floating_text)
 		else:
 			if parent.popup_viewport:
