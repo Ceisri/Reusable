@@ -24,7 +24,7 @@ var weapon_type = Autoload.weapon_type_list.fist
 var genes
 var stored_attacker:Node = null
 
-onready var inventory_grid:GridContainer = $Canvas/Inventory/GridContainer
+onready var inventory_grid:GridContainer = $Canvas/Inventory/ScrollContainer/GridContainer
 func _ready() -> void:
 	loadData()
 	removeBothersomeKeybinds()
@@ -76,6 +76,9 @@ func _physics_process(delta: float) -> void:
 		uiColorShift()
 	if Engine.get_physics_frames() % 6 == 0:
 		ResourceBarsLabels()
+	if Engine.get_physics_frames() % 28 == 0:
+		if Input:
+			displaySlotsLabel()
 	
 
 onready var animation:AnimationPlayer =  $DirectionControl/Character/AnimationPlayer
@@ -2353,6 +2356,7 @@ var last_pressed_index: int = -1
 var last_press_time: float = 0.0
 var double_press_time_inv: float = 0.4
 func inventorySlotPressed(index)->void:
+	displaySlotsLabel()
 	var button = inventory_grid.get_node("InvSlot" + str(index))
 	var icon_texture_rect = button.get_node("Icon")
 	var icon_texture = icon_texture_rect.texture
@@ -2381,6 +2385,7 @@ func inventorySlotPressed(index)->void:
 		
 var selected_slot:TextureButton = null
 func splitSelectedSlot()->void:
+	displaySlotsLabel()
 	if selected_slot != null:
 		debug.selected_slot = selected_slot
 		var selected_icon = selected_slot.get_node("Icon")
@@ -2399,6 +2404,7 @@ func splitSelectedSlot()->void:
 
 
 func combineSelectedSlot()->void:
+	displaySlotsLabel()
 	if selected_slot != null:
 		debug.selected_slot = selected_slot
 		var selected_icon = selected_slot.get_node("Icon")
@@ -2510,3 +2516,17 @@ func combineSlots()->void:
 			if item_path != not_stackable:
 				if item_path in combined_items:
 					child.quantity = combined_items[item_path]
+
+onready var slot_label:Label = $Canvas/Inventory/SlotsLAbel
+func displaySlotsLabel() -> void:
+	var empty_count = 0
+	var total_slots = 0
+
+	for child in inventory_grid.get_children():
+		if child.is_in_group("Inventory"):
+			total_slots += 1
+			var icon_texture = child.get_node("Icon").texture
+			if icon_texture == null:
+				empty_count += 1
+
+	slot_label.text = str(empty_count) + "/" + str(total_slots)
