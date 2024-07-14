@@ -1,9 +1,8 @@
 extends TextureButton
 
-var DRAG_PREVIEW = preload("res://scripts/Components/Sprite.tscn")
-onready var icon = $Icon
-onready var quantity_label = $Quantity
 
+onready var icon = $Icon
+onready var quantity_label = $Label
 var quantity = 0
 var item = "null"
 var type = "item"
@@ -12,11 +11,12 @@ var max_quantity = 9999999
 var skill_tree = false
 
 
-func _physics_process(delta:float)->void:
-	if visible == true:
-		displayQuantity()
 
-
+func _input(event):
+	if Input:
+		if visible == true:
+			displayQuantity()
+			print(str(quantity))
 
 func displayQuantity()->void:
 		if quantity > 0: 
@@ -39,7 +39,7 @@ func get_drag_data(position: Vector2):
 		"origin_item": item,
 		"type": type
 	}
-	var dragPreview = DRAG_PREVIEW.instance()
+	var dragPreview = Autoload.drag_preview.instance()
 	dragPreview.texture = icon.texture
 	add_child(dragPreview)
 	displayQuantity()
@@ -71,16 +71,16 @@ func drop_data(position, data)->void:
 	icon.texture = origin_texture
 
 	if origin_texture == target_texture:
-		# Combine quantities if items are the same
-		quantity += data["origin_quantity"]
-		origin_node.quantity = 0  # Reset the origin quantity
+		if origin_node != self: #CHECK IF IT'S NOT DRAGGIN ON SELF TO AVOID DELETING ITEMS BY MISTAKE
+			# Combine quantities if items are the same
+			quantity += data["origin_quantity"]
+			origin_node.quantity = 0  # Reset the origin quantity
 	else:
-		# Swap quantities if items are different
-		var temp_quantity = quantity
-		quantity = origin_quantity
-		origin_node.quantity = temp_quantity
+		if origin_node != self: #CHECK IF IT'S NOT DRAGGIN ON SELF TO AVOID DELETING ITEMS BY MISTAKE
+			# Swap quantities if items are different
+			var temp_quantity = quantity
+			quantity = origin_quantity
+			origin_node.quantity = temp_quantity
 	# Update the display
 	displayQuantity()
 	#icon.savedata()
-
-
