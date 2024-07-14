@@ -38,7 +38,7 @@ func _ready() -> void:
 	$Name.text = entity_name
 	menu.visible  = false
 	connectInventoryButtons()
-	
+
 
 func removeBothersomeKeybinds()-> void:#Here just in case someone is using this as a template
 	InputMap.action_erase_events("ui_accept")#avoids all the stupid ways you can click buttons or accept things by mistake
@@ -2050,16 +2050,14 @@ onready var patternSL2:TextureRect = $Canvas/Skills/PatternL2
 onready var patternSR:TextureRect = $Canvas/Skills/PatternR
 onready var patternSR2:TextureRect = $Canvas/Skills/PatternR2
 
+onready var patternIL:TextureRect = $Canvas/Inventory/PatternL
+onready var patternIR:TextureRect = $Canvas/Inventory/PatternR
+onready var inventory_bg:TextureRect = $Canvas/Inventory/Backgrund
 
 
 
 
 func colorInterfaceBGPatterns(color)-> void:
-	patternL.modulate = color
-	patternR.modulate = color
-	patternL2.modulate = color
-	patternR2.modulate = color
-	
 	keybinds_button.modulate = color
 	rgb_button.modulate = color
 	color_ui_button.modulate = color
@@ -2068,8 +2066,7 @@ func colorInterfaceBGPatterns(color)-> void:
 	skillbar_background.modulate = color
 	icon_background.modulate = color
 	skills_bg.modulate = color
-
-	
+	inventory_bg.modulate = color
 
 onready var frame:TextureRect = $Canvas/Menu/Frame
 onready var frame2:TextureRect = $Canvas/Menu/Frame2
@@ -2080,8 +2077,7 @@ onready var frame6:TextureRect = $Canvas/Menu/Frame6
 onready var frame7:NinePatchRect = $Canvas/Skillbar/Frame
 onready var frame8:TextureRect = $Canvas/Skillbar/ENBarFrame
 onready var frame9:TextureRect = $Canvas/Skillbar/HPBarFrame
-
-
+onready var frame10:TextureRect = $Canvas/Skills/CloseSkills/Frame
 
 onready var sett_button:TextureButton = $Canvas/Skillbar/Settings
 onready var skillbar_visi_button:TextureButton = $Canvas/Skillbar/SkillBarVisibility
@@ -2099,6 +2095,8 @@ onready var drag_ui_button:TextureButton = $Canvas/Skillbar/DragUI
 onready var frameS1:TextureRect = $Canvas/Skills/Frame1
 onready var frameS2:TextureRect = $Canvas/Skills/Frame2
 onready var frameS3:TextureRect = $Canvas/Skills/Frame3
+onready var frameI:TextureRect = $Canvas/Inventory/Frame
+onready var cls_skills_icon:TextureButton = $Canvas/Skills/CloseSkills
 
 onready var classes_grid:GridContainer = $Canvas/Skills/ClassList/GridContainer
 onready var profess_grid:GridContainer = $Canvas/Skills/ProfessionList/GridContainer
@@ -2114,10 +2112,15 @@ func colorInterfaceFrames(color)-> void:
 	frame7.modulate = color
 	frame8.modulate = color
 	frame9.modulate = color
+	frame.modulate = color
 
 	frameS1.modulate = color
 	frameS2.modulate = color
 	frameS3.modulate = color
+	
+	frameI.modulate = color
+	
+	cls_skills_icon.modulate = color
 
 	sett_button.modulate = color
 	skillbar_visi_button.modulate = color
@@ -2133,12 +2136,24 @@ func colorInterfaceFrames(color)-> void:
 	inv_button.modulate = color
 	open_ui_button.modulate = color
 	drag_ui_button.modulate = color
-	
+	close_inv.modulate = color
 	
 	patternSL.modulate = color
 	patternSL2.modulate = color
 	patternSR.modulate = color
 	patternSR2.modulate = color
+	patternL.modulate = color
+	patternR.modulate = color
+	patternL2.modulate = color
+	patternR2.modulate = color
+	patternIL.modulate = color
+	patternIR.modulate = color
+	
+	split_selected.modulate = color
+	combine_selected.modulate = color
+	stack_up_selected.modulate = color
+	order_slots.modulate = color
+	order_down_slots.modulate = color
 	
 	for child in classes_grid.get_children():
 		child.get_node("SkillFrame").modulate = color
@@ -2217,6 +2232,12 @@ func _on_ColorUIButton_pressed()-> void:
 onready var menu:Control = $Canvas/Menu
 func _on_Settings_pressed()-> void:
 	menu.visible = !menu.visible
+func _on_LootButton_pressed():
+	loot.visible = !loot.visible
+
+
+func _on_InvButton_pressed():
+	inventory.visible = !inventory.visible
 
 
 func _on_CloseButton_pressed()-> void:
@@ -2291,7 +2312,7 @@ func update_visibility()-> void:
 		patternR.visible = false
 		patternL2.visible = false
 		patternR2.visible = false
-		# Add any additional visibility or elements specific to "detailed" mode here
+	
 
 
 onready var skillbar:Control = $Canvas/Skillbar
@@ -2308,6 +2329,7 @@ func ResourceBarsLabels()-> void:
 	
 	
 onready var skills_professions:Control = $Canvas/Skills
+
 func _on_CloseSkills_pressed():
 	skills_professions.visible = false
 
@@ -2320,7 +2342,6 @@ func _on_BugButton_pressed():
 
 
 func _on_GiveMeItems_pressed():
-
 	Autoload.addStackableItem(inventory_grid,Icons.red_potion,100)
 	Autoload.addStackableItem(inventory_grid,Icons.empty_potion,100)
 
@@ -2334,13 +2355,14 @@ onready var combine_selected:TextureButton = $Canvas/Inventory/CombineSelected
 onready var stack_up_selected:TextureButton = $Canvas/Inventory/StackUP
 onready var order_slots:TextureButton = $Canvas/Inventory/OrderSlots
 onready var order_down_slots:TextureButton = $Canvas/Inventory/OrderDownSlots
+onready var close_inv:TextureButton = $Canvas/Inventory/CloseInventory
 func connectInventoryButtons():
 	split_selected.connect("pressed", self, "splitSelectedSlot")
 	combine_selected.connect("pressed", self, "combineSelectedSlot")
 	stack_up_selected.connect("pressed", self, "stackUP")
 	order_slots.connect("pressed", self, "orderSlots")
 	order_down_slots.connect("pressed", self, "orderDownSlots")
-	
+	close_inv.connect("pressed", self, "closeInv")
 	
 	#combine_slots_button.connect("pressed", self, "combineSlots")
 	for child in inventory_grid.get_children():
@@ -2518,7 +2540,7 @@ func combineSlots()->void:
 					child.quantity = combined_items[item_path]
 
 onready var slot_label:Label = $Canvas/Inventory/SlotsLAbel
-func displaySlotsLabel() -> void:
+func displaySlotsLabel()-> void:
 	var empty_count = 0
 	var total_slots = 0
 
@@ -2528,5 +2550,14 @@ func displaySlotsLabel() -> void:
 			var icon_texture = child.get_node("Icon").texture
 			if icon_texture == null:
 				empty_count += 1
-
 	slot_label.text = str(empty_count) + "/" + str(total_slots)
+onready var inventory:Control = $Canvas/Inventory
+func closeInv()-> void:
+	inventory.visible = false
+
+
+
+onready var loot:Control = $Canvas/Loot
+func _on_CloseLoot_pressed():
+	loot.visible = false
+
