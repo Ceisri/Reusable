@@ -24,7 +24,7 @@ var weapon_type = Autoload.weapon_type_list.fist
 var genes
 var stored_attacker:Node = null
 
-onready var inventory_grid
+onready var inventory_grid:GridContainer = $Canvas/Inventory/GridContainer
 func _ready() -> void:
 	loadData()
 	removeBothersomeKeybinds()
@@ -37,7 +37,7 @@ func _ready() -> void:
 	update_visibility()
 	$Name.text = entity_name
 	menu.visible  = false
-	
+	connectInventoryButtons()
 	
 
 func removeBothersomeKeybinds()-> void:#Here just in case someone is using this as a template
@@ -249,16 +249,19 @@ func activeActions()->void:
 		directionToCamera()
 		moveTowardsDirection(skills.backstep_distance)
 		animation.play("dash",0.3,1.25)
-
-	elif garrote_active == true:
-		directionToCamera()
-		moveTowardsDirection(1)
-		animation.play("garrote",0.3,1)
-	
+		
 	elif silent_stab_active == true:
 		directionToCamera()
 		moveTowardsDirection(1)
 		animation.play("punch",0.3,1)
+		skills.skillCancel("silentStab")
+	elif garrote_active == true:
+		directionToCamera()
+		moveTowardsDirection(1)
+		animation.play("garrote",0.3,1)
+		skills.skillCancel("garrote")
+	
+
 		
 	
 	elif slide_duration == true:
@@ -733,6 +736,7 @@ func skills(slot)-> void:
 				if slot.get_parent().get_node("CD").text == "":
 					garrote_active = true
 					garroteTarget()
+					skills.skillCancel("garrote")
 				else:
 					garrote_active = false
 					returnToIdleBasedOnWeaponType()
@@ -740,6 +744,7 @@ func skills(slot)-> void:
 			if slot.texture.resource_path == Icons.silent_stab.get_path():
 				if slot.get_parent().get_node("CD").text == "":
 					silent_stab_active = true
+					skills.skillCancel("silentStab")
 				else:
 					returnToIdleBasedOnWeaponType()
 					
@@ -1016,18 +1021,18 @@ func skills(slot)-> void:
 #
 #
 ##consumables________________________________________________________________________________________
-#			elif slot.texture.resource_path == Icons.red_potion.get_path():
-#				slot.get_parent().displayQuantity()
-#				for child in inventory_grid.get_children():
-#					if child.is_in_group("Inventory"):
-#						var index_str = child.get_name().split("InventorySlot")[1]
-#						var index = int(index_str)
-#						var button = inventory_grid.get_node("InventorySlot" + str(index))
-#						button = inventory_grid.get_node("InventorySlot" + str(index))
-#						if stats.health < stats.max_health:
-#							Icons.consumeRedPotion(self,button,inventory_grid,true,slot.get_parent())
-#						if stats.health > stats.max_health:
-#							stats.health = stats.max_health 
+			elif slot.texture.resource_path == Icons.red_potion.get_path():
+				slot.get_parent().displayQuantity()
+				for child in inventory_grid.get_children():
+					if child.is_in_group("Inventory"):
+						var index_str = child.get_name().split("InvSlot")[1]
+						var index = int(index_str)
+						var button = inventory_grid.get_node("InvSlot" + str(index))
+						button = inventory_grid.get_node("InvSlot" + str(index))
+						if stats.health < stats.max_health:
+							Autoload.consumeRedPotion(self,button,inventory_grid,true,slot.get_parent())
+						if stats.health > stats.max_health:
+							stats.health = stats.max_health 
 
 #skills in skills-tree
 onready var all_skills = $UI/GUI/SkillTrees
@@ -1701,7 +1706,8 @@ func saveGame()->void:
 		elif node.has_node("icon"):
 			debug.error_message = "icon named with lower case I, fix that " + str(node.name)
 			
-
+	saveInventoryData()
+	
 var slot: String = "1"
 var save_directory: String = "user://saves/" + entity_name
 var save_path: String = save_directory +  "save.dat" 
@@ -1757,6 +1763,13 @@ func loadData():
 				shifting_ui_colors = data_file["shifting_ui_colors"]
 			if "shifting_ui_colors2" in data_file:
 				shifting_ui_colors2 = data_file["shifting_ui_colors2"]
+				
+func saveInventoryData():
+	# Call savedata() function on each child of inventory_grid that belongs to the group "Inventory"
+	for child in inventory_grid.get_children():
+		if child.is_in_group("Inventory"):
+			if child.get_node("Icon").has_method("saveData"):
+				child.get_node("Icon").saveData()
 #Graphic interface__________________________________________________________________________________
 onready var entity_graphic_interface:Control = $UI/EnemyUI
 onready var entity_ui_tween:Tween = $UI/EnemyUI/Tween
@@ -2299,3 +2312,201 @@ func _on_CloseSkills_pressed():
 func _on_SkillsButton_pressed():
 	skills_professions.visible = !skills_professions.visible
 
+func _on_BugButton_pressed():
+	debug.visible = !debug.visible
+
+
+func _on_GiveMeItems_pressed():
+
+	Autoload.addStackableItem(inventory_grid,Icons.red_potion,100)
+	Autoload.addStackableItem(inventory_grid,Icons.empty_potion,100)
+
+func setInventoryOwner()->void:
+	for child in inventory_grid.get_children():
+		if child.is_in_group("Inventory"):
+			child.get_node("Icon").player = self 
+
+onready var split_selected:TextureButton = $Canvas/Inventory/SplitSelected
+onready var combine_selected:TextureButton = $Canvas/Inventory/CombineSelected
+onready var stack_up_selected:TextureButton = $Canvas/Inventory/StackUP
+onready var order_slots:TextureButton = $Canvas/Inventory/OrderSlots
+onready var order_down_slots:TextureButton = $Canvas/Inventory/OrderDownSlots
+func connectInventoryButtons():
+	split_selected.connect("pressed", self, "splitSelectedSlot")
+	combine_selected.connect("pressed", self, "combineSelectedSlot")
+	stack_up_selected.connect("pressed", self, "stackUP")
+	order_slots.connect("pressed", self, "orderSlots")
+	order_down_slots.connect("pressed", self, "orderDownSlots")
+	
+	
+	#combine_slots_button.connect("pressed", self, "combineSlots")
+	for child in inventory_grid.get_children():
+		if child.is_in_group("Inventory"):
+			var index_str = child.get_name().split("InvSlot")[1]
+			var index = int(index_str)
+			child.connect("pressed", self, "inventorySlotPressed", [index])
+			child.connect("mouse_entered", self, "inventoryMouseEntered", [index])
+			child.connect("mouse_exited", self, "inventoryMouseExited", [index])
+			
+			
+var last_pressed_index: int = -1
+var last_press_time: float = 0.0
+var double_press_time_inv: float = 0.4
+func inventorySlotPressed(index)->void:
+	var button = inventory_grid.get_node("InvSlot" + str(index))
+	var icon_texture_rect = button.get_node("Icon")
+	var icon_texture = icon_texture_rect.texture
+	if icon_texture != null:
+#		if icon_texture.get_path() == "res://UI/graphics/SkillIcons/empty.png":
+#				button.quantity = 0
+		var current_time = OS.get_ticks_msec() / 1000.0
+		if last_pressed_index == index and current_time - last_press_time <= double_press_time_inv:
+			print("Inventory slot", index, "pressed twice")
+			if icon_texture.get_path() == Icons.red_potion.get_path():
+				if stats.health  < stats.max_health:
+					Autoload.consumeRedPotion(self,button,inventory_grid,false,null)
+				if stats.health >= stats.max_health:
+					stats.health = stats.max_health
+
+
+		else:
+			print("Inventory slot", index, "pressed once")
+		last_pressed_index = index
+		debug.last_pressed_button = index
+		last_press_time = current_time
+		# Set the selected slot to the button that was just pressed
+		selected_slot = button
+		debug.selected_slot = index
+		
+		
+var selected_slot:TextureButton = null
+func splitSelectedSlot()->void:
+	if selected_slot != null:
+		debug.selected_slot = selected_slot
+		var selected_icon = selected_slot.get_node("Icon")
+		if selected_icon.texture != null:
+			var original_quantity = selected_slot.quantity
+			if original_quantity > 1:
+				for child in inventory_grid.get_children():
+					if child.is_in_group("Inventory"):
+						var icon = child.get_node("Icon")
+						if icon.texture == null:
+							icon.texture = selected_icon.texture
+							child.quantity += original_quantity / 2
+							var new_quantity = original_quantity / 2  # Calculate the new quantity
+							selected_slot.quantity = original_quantity - new_quantity  # Update the quantity of the first slot
+							break
+
+
+func combineSelectedSlot()->void:
+	if selected_slot != null:
+		debug.selected_slot = selected_slot
+		var selected_icon = selected_slot.get_node("Icon")
+		if selected_icon.texture != null:
+			for child in inventory_grid.get_children():
+				if child.is_in_group("Inventory") and child != selected_slot:
+					var icon = child.get_node("Icon")
+					if icon.texture == selected_icon.texture:
+						selected_slot.quantity += child.quantity  # Add the quantities
+						child.quantity = 0  # Reset the quantity of the combined slot
+						icon.texture = null  # Clear the texture of the combined slot
+
+
+func orderSlots() -> void:
+	var slots_with_texture = []
+	var slots_without_texture = []
+
+	# Separate slots based on their icon texture
+	for child in inventory_grid.get_children():
+		if child.is_in_group("Inventory"):
+			var icon_texture = child.get_node("Icon").texture
+			if icon_texture != null:
+				slots_with_texture.append(child)
+			else:
+				slots_without_texture.append(child)
+
+	# Reorder slots so that slots with texture come first
+	var ordered_slots = []
+	ordered_slots += slots_with_texture
+	ordered_slots += slots_without_texture
+
+	# Reposition the slots in the inventory_grid
+	for i in range(ordered_slots.size()):
+		var slot = ordered_slots[i]
+		inventory_grid.move_child(slot, i)
+
+
+func orderDownSlots()-> void:
+	var slots_with_texture = []
+	var slots_without_texture = []
+
+	# Separate slots based on their icon texture
+	for child in inventory_grid.get_children():
+		if child.is_in_group("Inventory"):
+			var icon_texture = child.get_node("Icon").texture
+			if icon_texture != null:
+				slots_with_texture.append(child)
+			else:
+				slots_without_texture.append(child)
+
+	# Reorder slots so that slots without texture come first
+	var ordered_slots = []
+	ordered_slots += slots_without_texture
+	ordered_slots += slots_with_texture
+
+	# Reposition the slots in the inventory_grid
+	for i in range(ordered_slots.size()):
+		var slot = ordered_slots[i]
+		inventory_grid.move_child(slot, i)
+
+
+func stackUP()->void:#Just like combineSelectedSlot but stops after one iteration,in case the player wants to combine only some stacks but not all
+	if selected_slot != null:
+		debug.selected_slot = selected_slot
+		if selected_slot.is_in_group("Inventory"):
+			var selected_icon = selected_slot.get_node("Icon")
+			if selected_icon.texture != null:
+				for child in inventory_grid.get_children():
+					if child.is_in_group("Inventory") and child != selected_slot:
+						var icon = child.get_node("Icon")
+						if icon.texture == selected_icon.texture:
+							selected_slot.quantity += child.quantity  # Add the quantities
+							child.quantity = 0  # Reset the quantity of the combined slot
+							icon.texture = null  # Clear the texture of the combined slot
+							break
+
+
+func combineSlots()->void:
+	var combined_items = {}  # Dictionary to store combined items
+# Define weapon set paths
+	var not_stackable = [
+		
+	]
+	# Iterate over children of the inventory grid
+	for child in inventory_grid.get_children():
+		if child.is_in_group("Inventory"):
+			if child.stackable == true:
+				var icon = child.get_node("Icon")
+				if icon.texture != null:
+					var item_path = icon.texture.get_path()
+					print("Checking item_path:", item_path)
+					# Check if the item_path is not in weapset1_paths
+					if not_stackable.has(item_path) == false:
+						print("Combining item:", item_path)
+						if combined_items.has(item_path):
+							combined_items[item_path] += child.quantity
+							icon.texture = null  # Set texture to null for excess slots
+							child.quantity = 0  # Reset quantity
+						else:
+							combined_items[item_path] = child.quantity
+					else:
+						print("Item is part of weapset1_paths:", item_path)
+
+	# Update quantities based on combined_items
+	for child in inventory_grid.get_children():
+		if child.is_in_group("Inventory"):
+			var icon = child.get_node("Icon")
+			var item_path = icon.texture.get_path() if icon.texture != null else null
+			if item_path != not_stackable:
+				if item_path in combined_items:
+					child.quantity = combined_items[item_path]
