@@ -2,6 +2,9 @@ extends Spatial
 
 onready var player = get_parent().get_parent()
 
+func _ready()->void:
+	player.character = self
+	player.skeleton = $Armature/Skeleton
 
 func startMoving()->void:
 	player.can_move = true

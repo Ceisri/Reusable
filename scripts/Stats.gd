@@ -251,7 +251,8 @@ func addFloatingText(attacker:Node,damage:float, damage_type:int,penetrating:boo
 				attacker.canvas.add_child(floating_text)
 		else:
 			if parent.popup_viewport:
-					parent.popup_viewport.add_child(floating_text)
+				floating_text.player = parent
+				parent.popup_viewport.add_child(floating_text)
 
 # Use this function to debug combat in-game without having to look at the print outputs of the engine.
 # It also helps with playtesting across multiple platforms or with multiplayer.

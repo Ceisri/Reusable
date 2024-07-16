@@ -5,10 +5,10 @@ onready var canvas:CanvasLayer = $Canvas
 onready var stats:Node =  $Stats
 onready var skills:Node =  $Skills
 onready var debug:Control =  $Canvas/Debug
-
+onready var skeleton:Skeleton  = null
 
 onready var name_label:Label3D = $Label3D
-onready var popup_viewport:Viewport =   $Sprite3D/Viewport
+onready var popup_viewport:Viewport = $Canvas/Skillbar/AddFloatingDamageHere/Viewport
 
 var username: String
 var entity_name:String = "Guest"
@@ -23,9 +23,14 @@ var is_in_combat:bool = false
 var weapon_type = Autoload.weapon_type_list.fist
 var genes
 var stored_attacker:Node = null
+var character = null
 
 onready var inventory_grid:GridContainer = $Canvas/Inventory/ScrollContainer/GridContainer
 func _ready() -> void:
+	loadInventorySlots()
+	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	character = direction_control.get_node("Character")
+	skeleton = direction_control.get_node("Character").get_node("Armature").get_node("Skeleton")
 	loadData()
 	removeBothersomeKeybinds()
 	setEngineTicks(max_engine_FPS)
@@ -37,7 +42,12 @@ func _ready() -> void:
 	update_visibility()
 	$Name.text = entity_name
 	menu.visible  = false
+	loot.visible  = false
+	skills_professions.visible  = false
+	inventory.visible  = false
 	connectInventoryButtons()
+	connectSkillBarButtons()
+	
 
 
 func removeBothersomeKeybinds()-> void:#Here just in case someone is using this as a template
@@ -72,6 +82,8 @@ func _physics_process(delta: float) -> void:
 	skillBarInputs()
 	skills.updateCooldownLabel()
 	skills.comboSystem()
+	if Engine.get_physics_frames() % 2 == 0:
+		harvestGather()
 	if Engine.get_physics_frames() % 3 == 0:
 		uiColorShift()
 	if Engine.get_physics_frames() % 6 == 0:
@@ -79,6 +91,7 @@ func _physics_process(delta: float) -> void:
 	if Engine.get_physics_frames() % 28 == 0:
 		if Input:
 			displaySlotsLabel()
+		#getLoot(Items.blue_tip_grass,1,rand_range(0,100),"blue tip grass")
 	
 
 onready var animation:AnimationPlayer =  $DirectionControl/Character/AnimationPlayer
@@ -1024,7 +1037,7 @@ func skills(slot)-> void:
 #
 #
 ##consumables________________________________________________________________________________________
-			elif slot.texture.resource_path == Icons.red_potion.get_path():
+			elif slot.texture.resource_path == Items.red_potion.get_path():
 				slot.get_parent().displayQuantity()
 				for child in inventory_grid.get_children():
 					if child.is_in_group("Inventory"):
@@ -1511,6 +1524,7 @@ var v_acceleration: float = 10.0
 var cursor_visible:bool = false
 var aiming_mode:String = "directional"
 
+
 func mouseMode()-> void:
 	if Input.is_action_just_pressed("ESC"):	# Toggle mouse mode
 		cursor_visible =!cursor_visible
@@ -1607,15 +1621,21 @@ func InputsInterface()-> void:
 		saveGame()
 	if Input.is_action_just_pressed("Menu"):
 		menu.visible = !menu.visible
-		
+
 	if Input.is_action_just_pressed("Debug"):
 		debug.visible = !debug.visible
-		
+
 	if Input.is_action_just_pressed("Skills"):
 		skills_professions.visible = !skills_professions.visible
-		
-		
-		
+
+	if  Input.is_action_just_pressed("Inventory"):
+		inventory.visible = !inventory.visible
+
+	if  Input.is_action_just_pressed("Loot"):
+		loot.visible = !loot.visible
+
+
+
 var skill_bar_input:String = "none"
 func skillBarInputs():
 	if Input.is_action_pressed("1"):
@@ -1887,34 +1907,37 @@ var throw_force: float = 25.0 # Adjust the throw force as needed
 var max_pickup_distance: float = 2.5 # Maximum distance to allow picking up objects
 onready var detector_area:Area = $DirectionControl/DetectorArea
 func LiftAndThrow() -> void:
-	# don't just use if carried_body:.... check if it's actually not null otherwise you risk crashes when players spam or do some other stupid stuff
-	if carried_body != null: 
-		var throw_direction = (carried_body.global_transform.origin - camera.global_transform.origin).normalized()
-		if Input.is_action_just_pressed("Lclick"):
-			carried_body.vertical_velocity = Vector3.UP * 0.3
-			carried_body.move_and_slide(throw_direction * throw_force)
-			carried_body.direction = throw_direction
-			carried_body.thrown = true
-			carried_body.thrower = self
-			carried_body = null
-		if Input.is_action_just_pressed("pickup"):
-			carried_body.set_collision_layer(1) 
-			carried_body.set_collision_mask(1) 
-			carried_body = null
-
-	else:
-		var bodies = detector_area.get_overlapping_bodies()
-		for body in bodies:
+	#this prevents a bug that I can't care to fix where where the player walks inside the object 
+	#before lifting it and ends up lifting itself up in the air infinitely togheter with the object
+	if moving == false: 
+		# don't just use if carried_body:.... check if it's actually not null otherwise you risk crashes when players spam or do some other stupid stuff
+		if carried_body != null: 
+			var throw_direction = (carried_body.global_transform.origin - camera.global_transform.origin).normalized()
+			if Input.is_action_just_pressed("Lclick"):
+				carried_body.vertical_velocity = Vector3.UP * 0.3
+				carried_body.move_and_slide(throw_direction * throw_force)
+				carried_body.direction = throw_direction
+				carried_body.thrown = true
+				carried_body.thrower = self
+				carried_body = null
 			if Input.is_action_just_pressed("pickup"):
-				if body and body != self and body.is_in_group("Liftable"):
-					var distance_to_body = body.global_transform.origin.distance_to(global_transform.origin)
-					if distance_to_body <= max_pickup_distance:
-						body.thrower = self
-						body.set_collision_layer(1) 
-						body.set_collision_mask(1) 
-						carried_body = body
-						if body.is_in_group("Entity"):
-							body.is_being_held = true
+				carried_body.set_collision_layer(1) 
+				carried_body.set_collision_mask(1) 
+				carried_body = null
+
+		else:
+			var bodies = detector_area.get_overlapping_bodies()
+			for body in bodies:
+				if Input.is_action_just_pressed("pickup"):
+					if body and body != self and body.is_in_group("Liftable"):
+						var distance_to_body = body.global_transform.origin.distance_to(global_transform.origin)
+						if distance_to_body <= max_pickup_distance:
+							body.thrower = self
+							body.set_collision_layer(1) 
+							body.set_collision_mask(1) 
+							carried_body = body
+							if body.is_in_group("Entity"):
+								body.is_being_held = true
 						
 func carryObject() -> void:
 	if carried_body != null:
@@ -2042,7 +2065,7 @@ onready var icon_background8:TextureRect = $Canvas/Skillbar/UI_list/icon_bg
 onready var icon_background9:TextureRect = $Canvas/Skillbar/UI_list/icon_bg2
 onready var icon_background10:TextureRect = $Canvas/Skillbar/UI_list/icon_bg3
 onready var icon_background11:TextureRect = $Canvas/Skillbar/UI_list/icon_bg4
-onready var icon_background12:TextureRect = $Canvas/Skillbar/UI_list/icon_bg5
+onready var icon_background12:TextureRect = $Canvas/Skillbar/UI_list/InvButtonHolder/icon_bg5
 onready var icon_background13:TextureRect = $Canvas/Skillbar/icon_bg6
 onready var skills_bg:TextureRect = $Canvas/Skills/Backgrund
 onready var patternSL:TextureRect = $Canvas/Skills/PatternL
@@ -2053,11 +2076,10 @@ onready var patternSR2:TextureRect = $Canvas/Skills/PatternR2
 onready var patternIL:TextureRect = $Canvas/Inventory/PatternL
 onready var patternIR:TextureRect = $Canvas/Inventory/PatternR
 onready var inventory_bg:TextureRect = $Canvas/Inventory/Backgrund
+onready var loot_bg:TextureRect = $Canvas/Loot/Backgrund
 
 
-
-
-func colorInterfaceBGPatterns(color)-> void:
+func colorInterfaceBG(color)-> void:
 	keybinds_button.modulate = color
 	rgb_button.modulate = color
 	color_ui_button.modulate = color
@@ -2065,9 +2087,11 @@ func colorInterfaceBGPatterns(color)-> void:
 	close_button.modulate = color
 	skillbar_background.modulate = color
 	icon_background.modulate = color
-	skills_bg.modulate = color
-	inventory_bg.modulate = color
 
+	for child in UI_list.get_children():
+		child.get_node("bg").modulate = color
+	
+	
 onready var frame:TextureRect = $Canvas/Menu/Frame
 onready var frame2:TextureRect = $Canvas/Menu/Frame2
 onready var frame3:TextureRect = $Canvas/Menu/Frame3
@@ -2085,23 +2109,47 @@ onready var help_button:TextureButton = $Canvas/Skillbar/HelpButton
 onready var info_button:TextureButton = $Canvas/Skillbar/InfoButton
 onready var bug_button:TextureButton = $Canvas/Skillbar/BugButton
 onready var edit_skill_keybinds_button:TextureButton = $Canvas/Skillbar/EditSkillbarKeybinds
-onready var skill_button:TextureButton = $Canvas/Skillbar/UI_list/SkillsButton
-onready var quest_button:TextureButton = $Canvas/Skillbar/UI_list/QuestsButton
-onready var char_button:TextureButton = $Canvas/Skillbar/UI_list/CharacterButton
-onready var loot_button:TextureButton = $Canvas/Skillbar/UI_list/LootButton
-onready var inv_button:TextureButton = $Canvas/Skillbar/UI_list/InvButton
+
+
 onready var open_ui_button:TextureButton = $Canvas/Skillbar/OpenUIButton
 onready var drag_ui_button:TextureButton = $Canvas/Skillbar/DragUI
 onready var frameS1:TextureRect = $Canvas/Skills/Frame1
 onready var frameS2:TextureRect = $Canvas/Skills/Frame2
 onready var frameS3:TextureRect = $Canvas/Skills/Frame3
 onready var frameI:TextureRect = $Canvas/Inventory/Frame
-onready var cls_skills_icon:TextureButton = $Canvas/Skills/CloseSkills
+onready var frameL:TextureRect = $Canvas/Loot/Frame
+onready var cls_skills_button:TextureButton = $Canvas/Skills/CloseSkills
+onready var cls_loot_button:TextureButton = $Canvas/Loot/CloseLoot
 
 onready var classes_grid:GridContainer = $Canvas/Skills/ClassList/GridContainer
 onready var profess_grid:GridContainer = $Canvas/Skills/ProfessionList/GridContainer
 
 
+onready var skill_button:TextureButton = $Canvas/Skillbar/UI_list/SkillsButtonHolder/button
+onready var quest_button:TextureButton = $Canvas/Skillbar/UI_list/QuestsButtonHolder/button
+onready var char_button:TextureButton = $Canvas/Skillbar/UI_list/CharacterButtonHolder/button
+onready var loot_button:TextureButton = $Canvas/Skillbar/UI_list/LootButtonHolder/button
+onready var inv_button:TextureButton = $Canvas/Skillbar/UI_list/InvButtonHolder/button
+onready var map_button:TextureButton = $Canvas/Skillbar/UI_list/MapButtonHolder/button
+onready var post_button:TextureButton = $Canvas/Skillbar/UI_list/PostButtonHolder/button
+func connectSkillBarButtons()->void:
+	skill_button.connect("pressed", self, "openSkills")
+	quest_button.connect("pressed", self, "openQeusts")
+	char_button.connect("pressed", self, "openChar")
+	loot_button.connect("pressed", self, "openLoot")
+	inv_button.connect("pressed", self, "openInv")
+
+func openSkills()-> void:
+	skills_professions.visible = !skills_professions.visible
+	popUpUI(skills_professions,skillbar_tween)
+func openInv()-> void:
+	inventory.visible = !inventory.visible
+	popUpUI(inventory,skillbar_tween)
+func openLoot()-> void:
+	loot.visible = !loot.visible
+	popUpUI(loot,skillbar_tween)
+
+	
 func colorInterfaceFrames(color)-> void:
 	frame.modulate = color
 	frame2.modulate = color
@@ -2119,8 +2167,10 @@ func colorInterfaceFrames(color)-> void:
 	frameS3.modulate = color
 	
 	frameI.modulate = color
+	frameL.modulate = color
 	
-	cls_skills_icon.modulate = color
+	cls_skills_button.modulate = color
+	cls_loot_button.modulate = color
 
 	sett_button.modulate = color
 	skillbar_visi_button.modulate = color
@@ -2129,11 +2179,6 @@ func colorInterfaceFrames(color)-> void:
 	bug_button.modulate = color
 	edit_skill_keybinds_button.modulate = color
 	
-	skill_button.modulate = color
-	quest_button.modulate = color
-	char_button.modulate = color
-	loot_button.modulate = color
-	inv_button.modulate = color
 	open_ui_button.modulate = color
 	drag_ui_button.modulate = color
 	close_inv.modulate = color
@@ -2155,15 +2200,19 @@ func colorInterfaceFrames(color)-> void:
 	order_slots.modulate = color
 	order_down_slots.modulate = color
 	
+	for child in UI_list.get_children():
+		child.get_node("button").modulate = color
 	for child in classes_grid.get_children():
 		child.get_node("SkillFrame").modulate = color
 	for child in profess_grid.get_children():
 		child.get_node("SkillFrame").modulate = color
+	for child in loot_grid.get_children():
+		child.get_node("Frame").modulate = color
 	
 var ui_color = Color(1, 1, 1, 1) # Default to white
 # Function to update UI colors based on color
 func colorUI(color: Color)-> void:
-	colorInterfaceBGPatterns(color)
+	colorInterfaceBG(color)
 	ui_color = color
 	
 var ui_color2 = Color(1, 1, 1, 1) # Default to white
@@ -2198,7 +2247,7 @@ func uiColorShift() -> void:
 		var g = 0.5 + 0.5 * sin(time + PI / 3)
 		var b = 0.5 + 0.5 * sin(time + 2 * PI / 3)
 		color = Color(r, g, b)
-		colorInterfaceBGPatterns(color)
+		colorInterfaceBG(color)
 	else:
 		colorUI(ui_color)
 	var color2 = ui_color2
@@ -2316,9 +2365,12 @@ func update_visibility()-> void:
 
 
 onready var skillbar:Control = $Canvas/Skillbar
+onready var skillbar_tween:Tween = $Canvas/Skillbar/Tween
 onready var UI_list:Control = $Canvas/Skillbar/UI_list
 func _on_OpenUIButton_pressed():
+	popUpUI(UI_list,skillbar_tween)
 	UI_list.visible = !UI_list.visible 
+	
 
 onready var health_bar:TextureProgress = $Canvas/Skillbar/HPBar
 onready var health_label:Label = $Canvas/Skillbar/HPlabel
@@ -2342,13 +2394,22 @@ func _on_BugButton_pressed():
 
 
 func _on_GiveMeItems_pressed():
-	Autoload.addStackableItem(inventory_grid,Icons.red_potion,100)
-	Autoload.addStackableItem(inventory_grid,Icons.empty_potion,100)
+	Autoload.addStackableItem(inventory_grid,Items.red_potion,100)
+	Autoload.addStackableItem(inventory_grid,Items.empty_potion,100)
 
 func setInventoryOwner()->void:
 	for child in inventory_grid.get_children():
-		if child.is_in_group("Inventory"):
 			child.get_node("Icon").player = self 
+
+onready var inventory_slot:PackedScene = load("res://Game/Interface/Scenes/InvSlot1.tscn")
+
+func loadInventorySlots() -> void:
+	for i in range(500):
+		var new_slot = inventory_slot.instance()
+		new_slot.name = "InvSlot" + str(i + 1)
+		inventory_grid.add_child(new_slot)
+
+
 
 onready var split_selected:TextureButton = $Canvas/Inventory/SplitSelected
 onready var combine_selected:TextureButton = $Canvas/Inventory/CombineSelected
@@ -2356,13 +2417,14 @@ onready var stack_up_selected:TextureButton = $Canvas/Inventory/StackUP
 onready var order_slots:TextureButton = $Canvas/Inventory/OrderSlots
 onready var order_down_slots:TextureButton = $Canvas/Inventory/OrderDownSlots
 onready var close_inv:TextureButton = $Canvas/Inventory/CloseInventory
-func connectInventoryButtons():
+func connectInventoryButtons()->void:
 	split_selected.connect("pressed", self, "splitSelectedSlot")
 	combine_selected.connect("pressed", self, "combineSelectedSlot")
 	stack_up_selected.connect("pressed", self, "stackUP")
 	order_slots.connect("pressed", self, "orderSlots")
 	order_down_slots.connect("pressed", self, "orderDownSlots")
 	close_inv.connect("pressed", self, "closeInv")
+
 	
 	#combine_slots_button.connect("pressed", self, "combineSlots")
 	for child in inventory_grid.get_children():
@@ -2388,7 +2450,7 @@ func inventorySlotPressed(index)->void:
 		var current_time = OS.get_ticks_msec() / 1000.0
 		if last_pressed_index == index and current_time - last_press_time <= double_press_time_inv:
 			print("Inventory slot", index, "pressed twice")
-			if icon_texture.get_path() == Icons.red_potion.get_path():
+			if icon_texture.get_path() == Items.red_potion.get_path():
 				if stats.health  < stats.max_health:
 					Autoload.consumeRedPotion(self,button,inventory_grid,false,null)
 				if stats.health >= stats.max_health:
@@ -2543,21 +2605,85 @@ onready var slot_label:Label = $Canvas/Inventory/SlotsLAbel
 func displaySlotsLabel()-> void:
 	var empty_count = 0
 	var total_slots = 0
-
 	for child in inventory_grid.get_children():
-		if child.is_in_group("Inventory"):
-			total_slots += 1
-			var icon_texture = child.get_node("Icon").texture
-			if icon_texture == null:
-				empty_count += 1
+		total_slots += 1
+		var icon_texture = child.get_node("Icon").texture
+		if icon_texture == null:
+			empty_count += 1
 	slot_label.text = str(empty_count) + "/" + str(total_slots)
 onready var inventory:Control = $Canvas/Inventory
 func closeInv()-> void:
 	inventory.visible = false
 
-
-
+	
+	
+onready var loot_grid = $Canvas/Loot/ScrollContainer/GridContainer
 onready var loot:Control = $Canvas/Loot
-func _on_CloseLoot_pressed():
+func _on_CloseLoot_pressed()->void:
 	loot.visible = false
 
+
+
+func _on_Trash_pressed()->void:
+	for child in loot_grid.get_children():
+		var icon_texture = child.get_node("Icon").texture
+		icon_texture = null
+		child.quantity = 0 
+		
+
+
+#Gathering__________________________________________________________________________________________
+
+func harvestGather() -> void:
+	if Input.is_action_just_pressed("harvest"):
+		for body in detector_area.get_overlapping_areas():
+			if body.is_in_group("BlueTip"):
+				var plant_size = body.get_node("Plant").size
+				var quantity:int = 1
+				var item = Items.blue_tip_grass
+				var item_rarity:float = Items.blue_tip_grass_rarity
+				var item_name:String= "blue tip grass"
+				if plant_size > 0.5:
+					quantity += int((plant_size - 0.5) / 0.1)  # Increase quantity by 1 for every 0.1 unit above 0.5
+				getLoot(item,quantity,item_rarity,item_name)
+				processTheGathering(body)
+
+
+func processTheGathering(body)->void:
+	debug.harvested_item_size = body.get_node("Plant").size
+	debug.harvested_item = body
+	debug.debugHarvesting()
+	body.get_node("CollisionShape").disabled = true
+	body.visible = false
+	body.get_node("Plant").size = 0
+
+onready var ui_tween:Tween =  $Canvas/Skillbar/UI_list/InvButtonHolder/Tween
+onready var inv_button_holder:Control = $Canvas/Skillbar/UI_list/InvButtonHolder
+onready var resource_viewport:Viewport = $Canvas/Skillbar/AddFloatingIconsHere/Viewport
+func getLoot(item, quantity, item_rarity, item_name)->void:
+	Autoload.addStackableItem(inventory_grid, item, quantity)
+	Autoload.addFloatingIcon(resource_viewport, item, quantity, item_rarity, item_name,self)
+
+	
+func popUI(node_to_pop:Node, tween: Tween) -> void:
+	# Define the scale properties for tweening
+	var initial_scale = node_to_pop.rect_scale
+	var target_scale = Vector2(1.2, 1.2)  # Scale up to 1.2
+
+	# Configure the tween to scale up and then back to initial scale
+	tween.interpolate_property(node_to_pop, "rect_scale", initial_scale, target_scale, 0.1, Tween.TRANS_QUAD, Tween.EASE_OUT)
+	tween.interpolate_property(node_to_pop, "rect_scale", target_scale, initial_scale, 0.1, Tween.TRANS_QUAD, Tween.EASE_IN)
+
+	# Start the tween
+	tween.start()
+func popUpUI(node_to_pop: Node, tween: Tween) -> void:
+	# Define the initial and target scale
+	var initial_scale = Vector2(1, 1)  # Start from full size
+	var target_scale = Vector2(0, 0)  # Scale down to zero
+
+	# Configure the tween to scale down and then back to initial scale
+	tween.interpolate_property(node_to_pop, "rect_scale", initial_scale, target_scale, 0.1, Tween.TRANS_QUAD, Tween.EASE_OUT)
+	tween.interpolate_property(node_to_pop, "rect_scale", target_scale, initial_scale, 0.1, Tween.TRANS_QUAD, Tween.EASE_IN)
+
+	# Start the tween
+	tween.start()
