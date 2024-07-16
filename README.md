@@ -3,7 +3,7 @@ update 16/07/2024
 
 What I added/changed:
 
--Assasinations where you get enemies from behind and slice their throat
+-Assasinations where you grab enemies from behind and slice their throat
 
 -Lift, carry, put down, throw objects or downed enemies
 
