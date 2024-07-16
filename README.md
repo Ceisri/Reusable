@@ -1,3 +1,15 @@
+
+update 16/07/2024
+-Assasinations where you get enemies from behind and slice their throat
+-Lift, carry, put down, throw objects or downed enemies
+-Huge performance boost to the inventory system, on my trash computer 500 inventory slots aren't even noticeable.
+-Improved harvesting 
+-Improved UI
+-Improved crouching, added sneaking, now you can use both to move on tight place 
+-Double jump 
+![alt text](https://github.com/Ceisri/Reusable/blob/main/screenshot%20update.png)
+
+
 ![alt text](https://github.com/Ceisri/Reusable/blob/main/screenshot3.png)
 
 ![alt text](https://github.com/Ceisri/Reusable/blob/main/screenshot.png)
