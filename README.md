@@ -19,6 +19,12 @@ What I added/changed:
 
 -Add UI animations, icons and buttons or inventories and such popping up when taking damage, clicking stuff or receiving items
 
+-Skills in skillbar become red when they are on cooldown and slowly return to their normal color as the cooldown goes towards 0 
+
+-Create characters and Worlds, just like in Terraria
+
+-Added save-date and load data for entities other than the player. 
+
 ![alt text](https://github.com/Ceisri/Reusable/blob/main/screenshot%20update.png)
 
 
