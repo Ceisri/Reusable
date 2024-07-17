@@ -12,11 +12,12 @@ var skill_tree = false
 
 
 
-func _input(event):
-	if Input:
-		if visible == true:
+func _input(event:InputEvent)->void:
+	if get_parent().get_parent().get_parent().visible == true and Input and visible == true:
+		if Engine.get_physics_frames() % 3 == 0:
 			displayQuantity()
-			print(str(quantity))
+			print("displaying quantity")
+
 
 func displayQuantity()->void:
 		if quantity > 0: 
@@ -83,4 +84,6 @@ func drop_data(position, data)->void:
 			origin_node.quantity = temp_quantity
 	# Update the display
 	displayQuantity()
-	#icon.savedata()
+
+
+

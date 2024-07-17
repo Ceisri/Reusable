@@ -10,13 +10,13 @@ onready var skeleton:Skeleton  = null
 onready var name_label:Label3D = $Label3D
 onready var popup_viewport:Viewport = $Canvas/Skillbar/AddFloatingDamageHere/Viewport
 
+export var save_data_password:String = "Nicole can be kind of a dick, especially on the last days of August of 2022"
 var username: String
 var entity_name:String = "Guest"
 var species:String = "Human"
+
 var is_player:bool = true 
 var online_mode:bool = true
-
-puppet var puppet_username: String
 var is_in_combat:bool = false
 
 
@@ -43,6 +43,7 @@ func _ready() -> void:
 	$Name.text = entity_name
 	menu.visible  = false
 	loot.visible  = false
+	debug.visible  = false
 	skills_professions.visible  = false
 	inventory.visible  = false
 	connectInventoryButtons()
@@ -1751,7 +1752,7 @@ func saveData():
 	if !dir.dir_exists(save_directory):
 		dir.make_dir_recursive(save_directory)
 	var file = File.new()
-	var error = file.open_encrypted_with_pass(save_path, File.WRITE, "P@paB3ar6969")
+	var error = file.open_encrypted_with_pass(save_path, File.WRITE, save_data_password)
 	if error == OK:
 		file.store_var(data)
 		file.close()
@@ -1759,7 +1760,7 @@ func saveData():
 func loadData():
 	var file = File.new()
 	if file.file_exists(save_path):
-		var error = file.open_encrypted_with_pass(save_path, File.READ, "P@paB3ar6969")
+		var error = file.open_encrypted_with_pass(save_path, File.READ, save_data_password)
 		if error == OK:
 			var data_file = file.get_var()
 			file.close()
@@ -1919,11 +1920,18 @@ func LiftAndThrow() -> void:
 				carried_body.direction = throw_direction
 				carried_body.thrown = true
 				carried_body.thrower = self
+
 				carried_body = null
 			if Input.is_action_just_pressed("pickup"):
 				carried_body.set_collision_layer(1) 
 				carried_body.set_collision_mask(1) 
+				carried_body.thrown = false
+				carried_body.thrower = null
+				if carried_body.is_in_group("Entity"):
+					carried_body.is_being_held = false
 				carried_body = null
+				
+				
 
 		else:
 			var bodies = detector_area.get_overlapping_bodies()
@@ -1932,7 +1940,6 @@ func LiftAndThrow() -> void:
 					if body and body != self and body.is_in_group("Liftable"):
 						var distance_to_body = body.global_transform.origin.distance_to(global_transform.origin)
 						if distance_to_body <= max_pickup_distance:
-							body.thrower = self
 							body.set_collision_layer(1) 
 							body.set_collision_mask(1) 
 							carried_body = body
@@ -1945,32 +1952,24 @@ func carryObject() -> void:
 		carried_body.set_collision_mask(6) 
 		# Calculate the forward vector from direction_control
 		var forward_vector = direction_control.global_transform.basis.z
-
 		# Set the position of carried_body
 		carried_body.translation = direction_control.global_transform.origin + forward_vector * hold_offset.z + Vector3(0, hold_offset.y, 0)
-		
 		# Set the rotation of carried_body to match direction_control
 		carried_body.rotation = direction_control.rotation
 
 	if garrote_victim != null:
 		garrote_victim.set_collision_layer(6) 
 		garrote_victim.set_collision_mask(6) 
-
 		# Calculate the forward vector from direction_control
 		var forward_vector = direction_control.global_transform.basis.z
 		var right_vector = direction_control.global_transform.basis.x  # Right direction
-
 		# Set the position of garrote_victim
 		var desired_distance = 0.4  # Adjust the desired distance as needed
 		var side_offset = -0.2  # Adjust the side offset as needed
-
 		# Apply the forward and side offsets
 		garrote_victim.translation = direction_control.global_transform.origin + forward_vector * desired_distance + right_vector * side_offset + Vector3(0, 0, 0)
-		
 		# Set the rotation of garrote_victim to match direction_control
 		garrote_victim.rotation = direction_control.rotation
-
-
 
 
 var garrote_victim: KinematicBody = null

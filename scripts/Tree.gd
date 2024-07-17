@@ -15,8 +15,8 @@ func _ready() -> void:
 
 func getChopped(value, instigator) -> void:
 	if health > 0:
-		instigator.receiveDrops(autoload.steak, value)
-		instigator.receiveDrops(autoload.ribs, value)
+		instigator.receiveDrops(Icons.steak, value)
+		instigator.receiveDrops(Icons.ribs, value)
 		health -= value  # Reduce health by the value of the chop
 		if health <= 0:
 			hide()

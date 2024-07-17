@@ -1,13 +1,14 @@
 extends TextureRect
 
-var player
+onready var player = $"../../../../../.."
 var savedTexture : Texture
 var savedQuantity : int
 
+func _ready():
+	loadData()
 
 
-
-func savedata():
+func saveData():
 	savedTexture = texture
 	savedQuantity = get_parent().quantity  # Save the quantity of the parent
 	var parentName = get_parent().get_name()  # Get the name of the parent node
@@ -19,7 +20,7 @@ func savedata():
 		file.store_line(str(savedQuantity))  # Store the quantity as a string
 	file.close()
 
-func loaddata():
+func loadData():
 	var parentName = get_parent().get_name()
 	var savePath = player.save_directory +"/"+ parentName + "_saved_texture_data.txt"
 	var file = File.new()

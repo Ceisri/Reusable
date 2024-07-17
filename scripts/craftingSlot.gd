@@ -44,7 +44,7 @@ func get_drag_data(position: Vector2):
 		"origin_item": item,
 		"type": type
 	}
-	var dragPreview =  autoload.drag_preview.instance()
+	var dragPreview =  Icons.drag_preview.instance()
 	dragPreview.texture = icon.texture
 	add_child(dragPreview)
 	displayQuantity()

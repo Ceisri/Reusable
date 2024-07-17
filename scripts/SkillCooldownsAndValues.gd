@@ -23,66 +23,66 @@ func updateCooldownLabel() -> void:#Gotta edit this eventually and make it one s
 	for child in $"../SkillBar/GridContainer".get_children():
 		var icon = child.get_node("Icon")
 #______________________________________________Dash  cooldowns_____________________________________
-		if icon != null and icon.texture != null and icon.texture.resource_path == autoload.dash.get_path():
+		if icon != null and icon.texture != null and icon.texture.resource_path == Icons.dash.get_path():
 			var label: Label = child.get_node("CD")
 			if label != null:
 				 updateDash(label,dash_cooldown, current_time,last_dash_time)
 #______________________________________________Slide  cooldowns_____________________________________
-		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.slide.get_path():
+		elif icon != null and icon.texture != null and icon.texture.resource_path == Icons.slide.get_path():
 			var label: Label = child.get_node("CD")
 			if label != null:
 				 updateSlide(label,slide_cooldown,current_time,last_slide_time)
 #___________________________________________Backstep  cooldowns_____________________________________
-		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.backstep.get_path():
+		elif icon != null and icon.texture != null and icon.texture.resource_path == Icons.backstep.get_path():
 			var label: Label = child.get_node("CD")
 			if label != null:
 				 updateBackstep(label,backstep_cooldown,current_time,last_backstep_time)
 #___________________________________________Overhead and rising slash cooldowns_________________
-		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.vanguard_icons["sunder"].get_path():
+		elif icon != null and icon.texture != null and icon.texture.resource_path == Icons.vanguard_icons["sunder"].get_path():
 			var label: Label = child.get_node("CD")
 			if label != null:
 				 updateOverheadSlash(label,overhead_slash_cooldown, current_time,last_overhead_slash_time)
-		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.vanguard_icons["rising_slash"].get_path():
+		elif icon != null and icon.texture != null and icon.texture.resource_path == Icons.vanguard_icons["rising_slash"].get_path():
 			var label: Label = child.get_node("CD")
 			if label != null:
 				 updateRising(label,rising_slash_cooldown, current_time,last_rising_slash_time)
 #__________________________________________________Cyclone__________________________________________
-		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.vanguard_icons["cyclone"].get_path():
+		elif icon != null and icon.texture != null and icon.texture.resource_path == Icons.vanguard_icons["cyclone"].get_path():
 			var label: Label = child.get_node("CD")
 			if label != null:
 				 updateLabelCyclone(label,cyclone_cooldown, current_time,last_cyclone_time)
 #___________________________________1_______________Whirlwind________________________________________
-		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.vanguard_icons["whirlwind"].get_path():
+		elif icon != null and icon.texture != null and icon.texture.resource_path == Icons.vanguard_icons["whirlwind"].get_path():
 			var label: Label = child.get_node("CD")
 			if label != null:
 				 updateWhirlwind(label,whirlwind_cooldown, current_time,last_whirlwind_time)
 #__________________________________________________Heart Trust______________________________________
-		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.vanguard_icons["heart_trust"].get_path():
+		elif icon != null and icon.texture != null and icon.texture.resource_path == Icons.vanguard_icons["heart_trust"].get_path():
 			var label: Label = child.get_node("CD")
 			if label != null:
 				 updateHeartTrust(label,heart_trust_cooldown, current_time,last_heart_trust_time)
 #__________________________________________________Taunt____________________________________________
-		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.vanguard_icons["taunt"].get_path():
+		elif icon != null and icon.texture != null and icon.texture.resource_path == Icons.vanguard_icons["taunt"].get_path():
 			var label: Label = child.get_node("CD")
 			if label != null:
 				 updateTaunt(label,taunt_cooldown, current_time,last_taunt_time)
 #__________________________________________________Stomp____________________________________________
-		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.stomp.get_path():
+		elif icon != null and icon.texture != null and icon.texture.resource_path == Icons.stomp.get_path():
 			var label: Label = child.get_node("CD")
 			if label != null:
 				 updateStomp(label,stomp_cooldown,current_time,last_stomp_time)
 #__________________________________________________Kick_____________________________________________
-		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.kick.get_path():
+		elif icon != null and icon.texture != null and icon.texture.resource_path == Icons.kick.get_path():
 			var label: Label = child.get_node("CD")
 			if label != null:
 				 updateKick(label,kick_cooldown,current_time,last_kick_time)
 #_________________________________________________hook_____________________________________________
-		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.grappling_hook.get_path():
+		elif icon != null and icon.texture != null and icon.texture.resource_path == Icons.grappling_hook.get_path():
 			var label: Label = child.get_node("CD")
 			if label != null:
 				 updateGrapplingHook(label,grappling_hook_cooldown,current_time,last_grappling_hook_time)
 #_________________________________________________ComboSwitch_____________________________________________
-		elif icon != null and icon.texture != null and icon.texture.resource_path == autoload.vanguard_icons["combo_switch"].get_path():
+		elif icon != null and icon.texture != null and icon.texture.resource_path == Icons.vanguard_icons["combo_switch"].get_path():
 			var label: Label = child.get_node("CD")
 			if label != null:
 				updateLabelComboSwitch(label,combo_switch_cooldown,current_time,last_combo_switch_time)

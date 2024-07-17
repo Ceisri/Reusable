@@ -1,7 +1,7 @@
 extends TextureButton
 export (NodePath) var player
 onready var icon = $Icon
-onready var label = $Label
+onready var label =  $Level
 var quantity = 99999999999
 var item = "null"
 var type = "skill"
@@ -21,7 +21,7 @@ func get_drag_data(position: Vector2):
 		"origin_quantity": quantity,
 		"type": type
 	}
-	var dragPreview =  autoload.drag_preview.instance()
+	var dragPreview =  Autoload.drag_preview.instance()
 	dragPreview.texture = icon.texture
 	add_child(dragPreview)
 	return data

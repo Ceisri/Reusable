@@ -122,172 +122,172 @@ func switchEquipment()->void:
 				"xy":
 					match player.torso:
 							"naked":
-								equipArmor(autoload.human_xy_naked_torso_0,"Torso")
+								equipArmor(Icons.human_xy_naked_torso_0,"Torso")
 							"tunic0":
-								equipArmor(autoload.human_xy_tunic_0,"Torso")
+								equipArmor(Icons.human_xy_tunic_0,"Torso")
 							"gambeson0":
-								equipArmor(autoload.human_xy_gambeson_0,"Torso")
+								equipArmor(Icons.human_xy_gambeson_0,"Torso")
 							"chainmail0":
-								equipArmor(autoload.human_xy_chainmail_0,"Torso")
+								equipArmor(Icons.human_xy_chainmail_0,"Torso")
 							"cuirass0":
-								equipArmor(autoload.human_xy_cuirass_0,"Torso")
+								equipArmor(Icons.human_xy_cuirass_0,"Torso")
 					match player.legs:
 						"naked":
 							pass
 				"xx":
 					match face_set:
 						"1":
-							equipArmor(autoload.HXXface1,"face")
+							equipArmor(Icons.HXXface1,"face")
 						"2":
-							equipArmor(autoload.HXXface2,"face")
+							equipArmor(Icons.HXXface2,"face")
 						"3":
-							equipArmor(autoload.HXXface3,"face")
+							equipArmor(Icons.HXXface3,"face")
 						"4":
-							equipArmor(autoload.HXXface4,"face")
+							equipArmor(Icons.HXXface4,"face")
 						"5":
-							equipArmor(autoload.HXXface5,"face")
+							equipArmor(Icons.HXXface5,"face")
 					match player.torso:
 							"naked":
-								equipArmor(autoload.human_xx_naked_torso_0,"Torso")
+								equipArmor(Icons.human_xx_naked_torso_0,"Torso")
 							"tunic0":
-								equipArmor(autoload.human_xx_tunic_0,"Torso")
+								equipArmor(Icons.human_xx_tunic_0,"Torso")
 							"tunic1":
-								equipArmor(autoload.human_xx_tunic_1,"Torso")
+								equipArmor(Icons.human_xx_tunic_1,"Torso")
 							"gambeson0":
-								equipArmor(autoload.human_xx_gambeson_0,"Torso")
+								equipArmor(Icons.human_xx_gambeson_0,"Torso")
 							"chainmail0":
-								equipArmor(autoload.human_xx_chainmail_0,"Torso")
+								equipArmor(Icons.human_xx_chainmail_0,"Torso")
 							"cuirass0":
-								equipArmor(autoload.human_xx_cuirass_0,"Torso")
+								equipArmor(Icons.human_xx_cuirass_0,"Torso")
 					match player.legs:
 						"naked":
-							equipArmor(autoload.human_xx_legs_0,"Legs")
+							equipArmor(Icons.human_xx_legs_0,"Legs")
 						"pants0":
-							equipArmor(autoload.human_xx_pants_0,"Legs")
+							equipArmor(Icons.human_xx_pants_0,"Legs")
 						"pants1":
-							equipArmor(autoload.human_xx_pants_1,"Legs")
+							equipArmor(Icons.human_xx_pants_1,"Legs")
 						"gambeson":
-							equipArmor(autoload.human_xx_legs_gambeson_0,"Legs")
+							equipArmor(Icons.human_xx_legs_gambeson_0,"Legs")
 			
 					match player.feet:
-						autoload.boots_list.set_0:
-							equipArmor(autoload.human_xx_feet_0,"Feet")
-						autoload.boots_list.set_1:
-							equipArmor(autoload.human_xx_feet_1,"Feet")
-						autoload.boots_list.set_2:
-							equipArmor(autoload.human_xx_feet_2,"Feet")
+						Icons.boots_list.set_0:
+							equipArmor(Icons.human_xx_feet_0,"Feet")
+						Icons.boots_list.set_1:
+							equipArmor(Icons.human_xx_feet_1,"Feet")
+						Icons.boots_list.set_2:
+							equipArmor(Icons.human_xx_feet_2,"Feet")
 
 					match player.hairstyle:
 						"1":
-							equipArmor(autoload.HXX_hair1,"hair")
+							equipArmor(Icons.HXX_hair1,"hair")
 						"2":
-							equipArmor(autoload.HXX_hair2,"hair")
+							equipArmor(Icons.HXX_hair2,"hair")
 						"3":
-							equipArmor(autoload.HXX_hair3,"hair")
+							equipArmor(Icons.HXX_hair3,"hair")
 						"4":
-							equipArmor(autoload.HXX_hair4,"hair")
+							equipArmor(Icons.HXX_hair4,"hair")
 						"5":
-							equipArmor(autoload.HXX_hair5,"hair")
+							equipArmor(Icons.HXX_hair5,"hair")
 
 func switchWeapon()->void:
 		match player.main_weapon:
-			autoload.main_weap_list.zero:
-				equipArmor(autoload.weapset1_scenes["null"],"main")
+			Icons.main_weap_list.zero:
+				equipArmor(Icons.weapset1_scenes["null"],"main")
 				
-			autoload.main_weap_list.sword_beginner:
+			Icons.main_weap_list.sword_beginner:
 				if player.is_in_combat == true:
-					equipArmor(autoload.weapset1_scenes["sword"],"main")
+					equipArmor(Icons.weapset1_scenes["sword"],"main")
 				else:
-					equipArmor(autoload.weapset1_scenes["swordB"],"main")
+					equipArmor(Icons.weapset1_scenes["swordB"],"main")
 					
-			autoload.main_weap_list.hammer_beginner:
+			Icons.main_weap_list.hammer_beginner:
 				if player.is_in_combat == true:
-					equipArmor(autoload.weapset1_scenes["hammer"],"main")
+					equipArmor(Icons.weapset1_scenes["hammer"],"main")
 				else:
-					equipArmor(autoload.weapset1_scenes["hammerB"],"main")
+					equipArmor(Icons.weapset1_scenes["hammerB"],"main")
 					
-			autoload.main_weap_list.mace_beginner:
+			Icons.main_weap_list.mace_beginner:
 				if player.is_in_combat == true:
-					equipArmor(autoload.weapset1_scenes["mace"],"main")
+					equipArmor(Icons.weapset1_scenes["mace"],"main")
 				else:
-					equipArmor(autoload.weapset1_scenes["maceB"],"main")
+					equipArmor(Icons.weapset1_scenes["maceB"],"main")
 					
-			autoload.main_weap_list.axe_beginner:
+			Icons.main_weap_list.axe_beginner:
 				if player.is_in_combat == true:
-					equipArmor(autoload.weapset1_scenes["axe"],"main")
+					equipArmor(Icons.weapset1_scenes["axe"],"main")
 				else:
-					equipArmor(autoload.weapset1_scenes["axeB"],"main")
+					equipArmor(Icons.weapset1_scenes["axeB"],"main")
 							
 
 					
-			autoload.main_weap_list.greataxe_beginner:
+			Icons.main_weap_list.greataxe_beginner:
 				if player.is_in_combat == true:
-					equipArmor(autoload.weapset1_scenes["greataxe"],"main")
+					equipArmor(Icons.weapset1_scenes["greataxe"],"main")
 				else:
-					equipArmor(autoload.weapset1_scenes["greataxeB"],"main")
+					equipArmor(Icons.weapset1_scenes["greataxeB"],"main")
 					
-			autoload.main_weap_list.greatsword_beginner:
+			Icons.main_weap_list.greatsword_beginner:
 				if player.is_in_combat == true:
-					equipArmor(autoload.weapset1_scenes["greatsword"],"main")
+					equipArmor(Icons.weapset1_scenes["greatsword"],"main")
 				else:
-					equipArmor(autoload.weapset1_scenes["greatswordB"],"main")
-			autoload.main_weap_list.demolition_hammer_beginner:
+					equipArmor(Icons.weapset1_scenes["greatswordB"],"main")
+			Icons.main_weap_list.demolition_hammer_beginner:
 				if player.is_in_combat == true:
-					equipArmor(autoload.weapset1_scenes["demo_hammer"],"main")
+					equipArmor(Icons.weapset1_scenes["demo_hammer"],"main")
 				else:
-					equipArmor(autoload.weapset1_scenes["demo_hammerB"],"main")
+					equipArmor(Icons.weapset1_scenes["demo_hammerB"],"main")
 
-			autoload.main_weap_list.greatmace_beginner:
+			Icons.main_weap_list.greatmace_beginner:
 				if player.is_in_combat == true:
-					equipArmor(autoload.weapset1_scenes["greatmace"],"main")
+					equipArmor(Icons.weapset1_scenes["greatmace"],"main")
 				else:
-					equipArmor(autoload.weapset1_scenes["greatmaceB"],"main")
+					equipArmor(Icons.weapset1_scenes["greatmaceB"],"main")
 
-			autoload.main_weap_list.warhammer_beginner:
+			Icons.main_weap_list.warhammer_beginner:
 				if player.is_in_combat == true:
-					equipArmor(autoload.weapset1_scenes["warhammer"],"main")
+					equipArmor(Icons.weapset1_scenes["warhammer"],"main")
 				else:
-					equipArmor(autoload.weapset1_scenes["warhammerB"],"main")
+					equipArmor(Icons.weapset1_scenes["warhammerB"],"main")
 
 
 		
-		if player.main_weapon == autoload.weapon_type_list.heavy:
-				equipArmor(autoload.weapset1_scenes["null_sec"],"secondary")
+		if player.main_weapon == Icons.weapon_type_list.heavy:
+				equipArmor(Icons.weapset1_scenes["null_sec"],"secondary")
 		else:
 			match player.sec_weapon:
-				autoload.sec_weap_list.zero:
-					equipArmor(autoload.weapset1_scenes["null_sec"],"secondary")
+				Icons.sec_weap_list.zero:
+					equipArmor(Icons.weapset1_scenes["null_sec"],"secondary")
 
 
 
-				autoload.sec_weap_list.sword_beginner:
+				Icons.sec_weap_list.sword_beginner:
 					if player.is_in_combat == true:
-						equipArmor(autoload.weapset1_scenes["sword_sec"],"secondary")
+						equipArmor(Icons.weapset1_scenes["sword_sec"],"secondary")
 					else:
-						equipArmor(autoload.weapset1_scenes["sword_secB"],"secondary")
+						equipArmor(Icons.weapset1_scenes["sword_secB"],"secondary")
 
-				autoload.sec_weap_list.hammer_beginner:
+				Icons.sec_weap_list.hammer_beginner:
 					if player.is_in_combat == true:
-						equipArmor(autoload.weapset1_scenes["hammer_sec"],"secondary")
+						equipArmor(Icons.weapset1_scenes["hammer_sec"],"secondary")
 					else:
-						equipArmor(autoload.weapset1_scenes["hammer_secB"],"secondary")
+						equipArmor(Icons.weapset1_scenes["hammer_secB"],"secondary")
 						
-				autoload.sec_weap_list.mace_beginner:
+				Icons.sec_weap_list.mace_beginner:
 					if player.is_in_combat == true:
-						equipArmor(autoload.weapset1_scenes["mace_sec"],"secondary")
+						equipArmor(Icons.weapset1_scenes["mace_sec"],"secondary")
 					else:
-						equipArmor(autoload.weapset1_scenes["mace_secB"],"secondary")
+						equipArmor(Icons.weapset1_scenes["mace_secB"],"secondary")
 						
 						
-				autoload.sec_weap_list.axe_beginner:
+				Icons.sec_weap_list.axe_beginner:
 					if player.is_in_combat == true:
-						equipArmor(autoload.weapset1_scenes["axe_sec"],"secondary")
+						equipArmor(Icons.weapset1_scenes["axe_sec"],"secondary")
 					else:
-						equipArmor(autoload.weapset1_scenes["axe_secB"],"secondary")
+						equipArmor(Icons.weapset1_scenes["axe_secB"],"secondary")
 								
 
-				autoload.sec_weap_list.shield_beginner:
-					equipArmor(autoload.weapset1_scenes["shield"],"secondary")
+				Icons.sec_weap_list.shield_beginner:
+					equipArmor(Icons.weapset1_scenes["shield"],"secondary")
 					
 
 var face_set:String = "1"
@@ -347,34 +347,34 @@ func switchSkin():#Needs more assets to finish
 				"panthera":
 					match skin_color:
 						"1":
-							changeColor(1, new_material,autoload.pant_xy_tigris_alb)
-							changeHeadTorsoColor(0, new_material,autoload.pant_xy_tigris_alb)
+							changeColor(1, new_material,Icons.pant_xy_tigris_alb)
+							changeHeadTorsoColor(0, new_material,Icons.pant_xy_tigris_alb)
 						"2":
-							changeColor(1, new_material,autoload.pant_xy_tigris_clear)
-							changeHeadTorsoColor(0, new_material,autoload.pant_xy_tigris_clear)
+							changeColor(1, new_material,Icons.pant_xy_tigris_clear)
+							changeHeadTorsoColor(0, new_material,Icons.pant_xy_tigris_clear)
 						"3":
-							changeColor(1, new_material,autoload.pant_xy_tigris)
-							changeHeadTorsoColor(0, new_material,autoload.pant_xy_tigris)
+							changeColor(1, new_material,Icons.pant_xy_tigris)
+							changeHeadTorsoColor(0, new_material,Icons.pant_xy_tigris)
 						"4":
-							changeColor(1, new_material,autoload.pant_xy_leo_red)
-							changeHeadTorsoColor(0, new_material,autoload.pant_xy_leo_red)
+							changeColor(1, new_material,Icons.pant_xy_leo_red)
+							changeHeadTorsoColor(0, new_material,Icons.pant_xy_leo_red)
 						"5":
-							changeColor(1, new_material,autoload.pant_xy_leo)
-							changeHeadTorsoColor(0, new_material,autoload.pant_xy_leo)
+							changeColor(1, new_material,Icons.pant_xy_leo)
+							changeHeadTorsoColor(0, new_material,Icons.pant_xy_leo)
 						"6":
-							changeColor(1, new_material,autoload.pant_xy_leopard_alb)
-							changeHeadTorsoColor(0, new_material,autoload.pant_xy_leopard_alb)
+							changeColor(1, new_material,Icons.pant_xy_leopard_alb)
+							changeHeadTorsoColor(0, new_material,Icons.pant_xy_leopard_alb)
 						"7":
-							changeColor(1, new_material,autoload.pant_xy_nigris)
-							changeHeadTorsoColor(0, new_material,autoload.pant_xy_nigris)
+							changeColor(1, new_material,Icons.pant_xy_nigris)
+							changeHeadTorsoColor(0, new_material,Icons.pant_xy_nigris)
 				"human":
 					match skin_color:
 						"1":
-							changeColor(1, new_material,autoload.hum_xy_white)
-							changeHeadTorsoColor(0, new_material,autoload.hum_xy_white)
+							changeColor(1, new_material,Icons.hum_xy_white)
+							changeHeadTorsoColor(0, new_material,Icons.hum_xy_white)
 						"2":
-							changeColor(1, new_material,autoload.hum_xy_brown)
-							changeHeadTorsoColor(0, new_material,autoload.hum_xy_brown)
+							changeColor(1, new_material,Icons.hum_xy_brown)
+							changeHeadTorsoColor(0, new_material,Icons.hum_xy_brown)
 					
 var skin_types = ["1","2","3","4","5","6","7"]	
 
@@ -486,7 +486,7 @@ func slideImpact()-> void:
 	for victim in trust_area.get_overlapping_bodies():
 		if victim.is_in_group("Enemy"):
 			if victim != self:
-				if victim.state != autoload.state_list.dead:
+				if victim.state != Icons.state_list.dead:
 					player.pushEnemyAway(0.5, victim,0.25)
 					victim.takeThreat(3,player)
 					victim.takeStagger(100)
@@ -518,7 +518,7 @@ func punch()->void:
 		if victim.is_in_group("enemy"):
 			if victim != self:
 				onHit()
-				if victim.state != autoload.state_list.dead:
+				if victim.state != Icons.state_list.dead:
 					player.pushEnemyAway(push_distance, victim,0.25)
 		dealDMG(victim,aggro_power,damage_type,damage)
 
@@ -543,7 +543,7 @@ func kickDMG()-> void:
 		if victim.is_in_group("Enemy"):
 			if victim != self:
 				dealDMG(victim,0,damage_type,damage)
-				if victim.state != autoload.state_list.dead:
+				if victim.state != Icons.state_list.dead:
 					player.pushEnemyAway(push_distance, victim,0.25)
 			if victim.has_method("getKnockedDown"):
 				if victim.health > damage:
@@ -564,7 +564,7 @@ func stompHit()->void:
 		if victim.is_in_group("Entity"):
 			if victim != self:
 				onHit()
-				if victim.state != autoload.state_list.dead:
+				if victim.state != Icons.state_list.dead:
 					player.pushEnemyAway(push_distance, victim,0.25)
 				if victim.knockeddown_duration == true:
 					dealDMG(victim,aggro_power,damage_type,dmg_against_knocked)
@@ -601,7 +601,7 @@ func baseAtktHit()->void:#Heavy
 					dealDMG(victim,aggro_power,damage_type,damage)
 					onHit()
 					playSoundSwordHit()
-					if victim.state != autoload.state_list.dead:
+					if victim.state != Icons.state_list.dead:
 						player.pushEnemyAway(push_distance, victim,0.25)
 
 			
@@ -628,7 +628,7 @@ func baseAtkLastHit()->void:#Heavy
 					dealDMG(victim,aggro_power,damage_type,damage)
 					onHit()
 					playSoundSwordHit()
-					if victim.state != autoload.state_list.dead:
+					if victim.state != Icons.state_list.dead:
 						player.pushEnemyAway(push_distance, victim,0.25)
 
 onready var cleave_area = $CleavingArea
@@ -654,7 +654,7 @@ func cleavetHit()->void:#First base attack for heavy weapons
 					dealDMG(victim,aggro_power,damage_type,damage)
 					onHit()
 					playSoundSwordHit()
-					if victim.state != autoload.state_list.dead:
+					if victim.state != Icons.state_list.dead:
 						player.pushEnemyAway(push_distance, victim,0.25)
 
 func cleaveLastHit()->void:#Second base attack for heavy weapons
@@ -679,7 +679,7 @@ func cleaveLastHit()->void:#Second base attack for heavy weapons
 					dealDMG(victim,aggro_power,damage_type,damage)
 					onHit()
 					playSoundSwordHit()
-					if victim.state != autoload.state_list.dead:
+					if victim.state != Icons.state_list.dead:
 						player.pushEnemyAway(push_distance, victim,0.25)
 
 #Overhead Slash section
@@ -709,7 +709,7 @@ func overheadSlashDMG()->void:
 	for victim in enemies:
 		if victim.is_in_group("enemy"):
 			if victim != self:
-				if victim.state != autoload.state_list.dead:
+				if victim.state != Icons.state_list.dead:
 					player.pushEnemyAway(push_distance, victim,0.25)
 		dealDMG(victim,aggro_power,damage_type,damage)
 
@@ -743,7 +743,7 @@ func risingSlashDMG()-> void:
 	for victim in enemies:
 		if victim.is_in_group("enemy"):
 			if victim != self:
-				if victim.state != autoload.state_list.dead:
+				if victim.state != Icons.state_list.dead:
 					player.pushEnemyAway(push_distance, victim,0.25)
 		dealDMG(victim,aggro_power,damage_type,damage)
 
@@ -779,7 +779,7 @@ func cycloneDMG() -> void:
 	for victim in enemies:
 		if victim.is_in_group("enemy"):
 			if victim != self:
-				if victim.state != autoload.state_list.dead:
+				if victim.state != Icons.state_list.dead:
 					player.pushEnemyAway(push_distance, victim,0.25)
 		dealDMG(victim,aggro_power,damage_type,damage)
 
@@ -812,7 +812,7 @@ func whirlwindDMG() -> void:
 				dealDMG(victim,0,damage_type,damage)
 				onHit()
 				playSoundSwordHit()
-				if victim.state != autoload.state_list.dead:
+				if victim.state != Icons.state_list.dead:
 					player.pushEnemyAway(push_distance, victim,0.25)
 			if victim.has_method("getKnockedDown"):
 				if victim.health > damage:
@@ -852,7 +852,7 @@ func HeartTrustDMG()->void:
 		if victim.is_in_group("enemy"):
 			victim.bleeding_duration = 10
 			if victim != self:
-				if victim.state != autoload.state_list.dead:
+				if victim.state != Icons.state_list.dead:
 					player.pushEnemyAway(push_distance, victim,0.25)
 		dealDMG(victim,aggro_power,damage_type,damage)
 
@@ -897,7 +897,7 @@ func jump()-> void:
 func die()-> void:
 	player.death_duration = false
 	player.has_died = true 
-	player.state = autoload.state_list.dead
+	player.state = Icons.state_list.dead
 func staggeredOver()-> void:
 	player.staggered_duration = false
 func getUp():
@@ -931,6 +931,6 @@ func dealDMG(victim,aggro_power,damage_type,damage)-> void:
 #___________________________________________________________________________________________________
 #Ranged Functions to call in the AnimationPlayer
 func shootArrow():
-	player.all_skills.shootArrow(autoload.quick_shot_damage)
+	player.all_skills.shootArrow(Icons.quick_shot_damage)
 func fullDrawShootArrow():
-	player.all_skills.shootArrow(autoload.full_draw_damage)
+	player.all_skills.shootArrow(Icons.full_draw_damage)
