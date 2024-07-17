@@ -12,7 +12,7 @@ onready var popup_viewport:Viewport = $Canvas/Skillbar/AddFloatingDamageHere/Vie
 
 export var save_data_password:String = "Nicole can be kind of a dick, especially on the last days of August of 2022"
 var username: String
-var entity_name:String = "Guest"
+var entity_name:String 
 var species:String = "Human"
 
 var is_player:bool = true 
@@ -27,11 +27,12 @@ var character = null
 
 onready var inventory_grid:GridContainer = $Canvas/Inventory/ScrollContainer/GridContainer
 func _ready() -> void:
-	loadInventorySlots()
+	initializeSkillbarSlots()
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	character = direction_control.get_node("Character")
 	skeleton = direction_control.get_node("Character").get_node("Armature").get_node("Skeleton")
 	loadData()
+	loadInventorySlots()
 	removeBothersomeKeybinds()
 	setEngineTicks(max_engine_FPS)
 	setProcessFPS(max_processs_FPS)
@@ -48,6 +49,7 @@ func _ready() -> void:
 	inventory.visible  = false
 	connectInventoryButtons()
 	connectSkillBarButtons()
+	connectAreas()
 	
 
 
@@ -81,6 +83,7 @@ func _physics_process(delta: float) -> void:
 	carryObject()
 	behaviourTree()
 	skillBarInputs()
+	doublePressToDash()
 	skills.updateCooldownLabel()
 	skills.comboSystem()
 	if Engine.get_physics_frames() % 2 == 0:
@@ -92,9 +95,9 @@ func _physics_process(delta: float) -> void:
 	if Engine.get_physics_frames() % 28 == 0:
 		if Input:
 			displaySlotsLabel()
+			displayClock()
 		#getLoot(Items.blue_tip_grass,1,rand_range(0,100),"blue tip grass")
 	
-
 onready var animation:AnimationPlayer =  $DirectionControl/Character/AnimationPlayer
 func firstLevelAnimations()-> void:#Momentary Delete Later
 	if is_instance_valid(animation):
@@ -216,7 +219,7 @@ var frontstep_duration:bool= false
 var leftstep_duration:bool= false
 var rightstep_duration:bool= false
 
-var dash_duration:bool= false
+var dash_active:bool= false
 
 var slide_duration:bool= false
 
@@ -251,7 +254,7 @@ var absorbing:bool = false
 
 
 var taunt_duration:bool = false
-var state = Autoload.state_list.idle
+
 
 var attacking:bool = false
 var is_dead:bool = false
@@ -259,10 +262,9 @@ func activeActions()->void:
 	SkillQueueSystem()#DO NOT REMOVE THIS! it is neccessary to allow skill cancelling, skill cancelling doesn't work without skill queue, it has a toggle on off anyway for players that don't like it 
 	if Input.is_action_pressed("Rclick"):
 		switchWeaponFromHandToSideOrBack()
-		state == Autoload.state_list.guard
 		skills.skillCancel("throw_rock")
 
-	if dash_duration == true:
+	if dash_active == true:
 		directionToCamera()
 		moveTowardsDirection(skills.backstep_distance)
 		animation.play("dash",0.3,1.25)
@@ -277,16 +279,12 @@ func activeActions()->void:
 		moveTowardsDirection(1)
 		animation.play("garrote",0.3,1)
 		skills.skillCancel("garrote")
-	
-
 		
-	
 	elif slide_duration == true:
 		automaticTargetAssist()
 		directionToCamera()
 		moveTowardsDirection(skills.backstep_distance)
 		animation.play("slide",blend)
-
 
 	elif backstep_duration == true:
 		directionToCamera()
@@ -724,18 +722,18 @@ func skills(slot)-> void:
 		print("slot not null")
 		if slot.texture != null:
 ##Dash_______________________________________________________________________________________________
-#			if slot.texture.resource_path == Icons.dash.get_path() and dash_duration == false:
+#			if slot.texture.resource_path == Icons.dash.get_path() and dash_active == false:
 #					if skills.can_dash == false:
-#						dash_duration  = false
+#						dash_active  = false
 #						returnToIdleBasedOnWeaponType()
 #					else:
 #						if stats.resolve <= skills.dash_cost:
 #							returnToIdleBasedOnWeaponType()
-#							dash_duration = false
+#							dash_active = false
 #							skills.interruptBaseAtk()
 #						else:
 #							stats.resolve -= skills.dash_cost
-#							dash_duration = true
+#							dash_active = true
 #							if skill_cancelling == true:
 #								skills.skillCancel("dash")
 ##Slide______________________________________________________________________________________________
@@ -1366,7 +1364,7 @@ var dash_timerright: float = 0.0
 var dash_countforward: int = 0
 var dash_timerforward: float = 0.0
 func dodgeIframe() -> void:
-	if state == Autoload.state_list.slide or backstep_duration == true or frontstep_duration == true or leftstep_duration == true or rightstep_duration == true or dash_duration == true:
+	if backstep_duration == true or frontstep_duration == true or leftstep_duration == true or rightstep_duration == true or dash_active == true:
 		set_collision_layer(6) 
 		set_collision_mask(6) 
 	else:
@@ -1374,52 +1372,51 @@ func dodgeIframe() -> void:
 		set_collision_mask(1)   
 		
 func doublePressToDash()-> void:
-	pass
-#	if stats.resolve >= skills.dash_cost:
-#		if dash_countback > 0:
-#			dash_timerback += get_physics_process_delta_time()
-#		if dash_timerback >= double_press_time:
-#			dash_countback = 0
-#			dash_timerback = 0.0
-#		if Input.is_action_just_pressed("backward"):
-#			dash_countback += 1
-#		if dash_countback == 2 and dash_timerback < double_press_time:
-#			dash_duration = true
-#			resolve -= skills.dash_cost
-#
-#
-#		if dash_countforward > 0:
-#			dash_timerforward += get_physics_process_delta_time()
-#		if dash_timerforward >= double_press_time:
-#			dash_countforward = 0
-#			dash_timerforward = 0.0
-#		if Input.is_action_just_pressed("forward"):
-#			dash_countforward += 1
-#		if dash_countforward == 2 and dash_timerforward < double_press_time:
-#			dash_duration = true
-#			resolve -= skills.dash_cost
-#
-#		if dash_countleft > 0:
-#			dash_timerleft += get_physics_process_delta_time()
-#		if dash_timerleft >= double_press_time:
-#			dash_countleft = 0
-#			dash_timerleft = 0.0
-#		if Input.is_action_just_pressed("left"):
-#			dash_countleft += 1
-#		if dash_countleft == 2 and dash_timerleft < double_press_time:
-#			dash_duration = true
-#			resolve -= skills.dash_cost
-#
-#		if dash_countright > 0:
-#			dash_timerright += get_physics_process_delta_time()
-#		if dash_timerright >= double_press_time:
-#			dash_countright = 0
-#			dash_timerright = 0.0
-#		if Input.is_action_just_pressed("right"):
-#			dash_countright += 1
-#		if dash_countright == 2 and dash_timerright < double_press_time :
-#			dash_duration = true
-#			resolve -= skills.dash_cost
+	if stats.resolve >= skills.dash_cost:
+		if dash_countback > 0:
+			dash_timerback += get_physics_process_delta_time()
+		if dash_timerback >= double_press_time:
+			dash_countback = 0
+			dash_timerback = 0.0
+		if Input.is_action_just_pressed("back"):
+			dash_countback += 1
+		if dash_countback == 2 and dash_timerback < double_press_time:
+			dash_active = true
+			stats.resolve -= skills.dash_cost
+
+
+		if dash_countforward > 0:
+			dash_timerforward += get_physics_process_delta_time()
+		if dash_timerforward >= double_press_time:
+			dash_countforward = 0
+			dash_timerforward = 0.0
+		if Input.is_action_just_pressed("front"):
+			dash_countforward += 1
+		if dash_countforward == 2 and dash_timerforward < double_press_time:
+			dash_active = true
+			stats.resolve -= skills.dash_cost
+
+		if dash_countleft > 0:
+			dash_timerleft += get_physics_process_delta_time()
+		if dash_timerleft >= double_press_time:
+			dash_countleft = 0
+			dash_timerleft = 0.0
+		if Input.is_action_just_pressed("left"):
+			dash_countleft += 1
+		if dash_countleft == 2 and dash_timerleft < double_press_time:
+			dash_active = true
+			stats.resolve -= skills.dash_cost
+
+		if dash_countright > 0:
+			dash_timerright += get_physics_process_delta_time()
+		if dash_timerright >= double_press_time:
+			dash_countright = 0
+			dash_timerright = 0.0
+		if Input.is_action_just_pressed("right"):
+			dash_countright += 1
+		if dash_countright == 2 and dash_timerright < double_press_time :
+			dash_active = true
+			stats.resolve -= skills.dash_cost
 
 
 var is_on_stairs:bool = false
@@ -1718,7 +1715,15 @@ func saveGame()->void:
 	for node in Root.get_children():
 		if node.has_method("saveData"):
 			node.saveData()
+		elif node.has_node("Plant"):
+			node.get_node("Plant").saveData()
 
+	for node in get_parent().get_children():
+		if node.has_method("saveData"):
+			node.saveData()
+		elif node.has_node("Plant"):
+			node.get_node("Plant").saveData()
+			
 	for node in $Canvas/Skillbar/GridContainer.get_children():
 		if node.has_method("saveData"):
 			node.saveData()
@@ -1733,9 +1738,10 @@ func saveGame()->void:
 	saveInventoryData()
 	
 var slot: String = "1"
-var save_directory: String = "user://saves/" + entity_name
-var save_path: String = save_directory +  "save.dat" 
+
 func saveData():
+	var save_directory = "user://Characters/" + entity_name + "/"
+	var save_path: String = save_directory +  "SavedData.dat" 
 	var data = {
 		"position": translation,
 		"health": stats.health,
@@ -1758,6 +1764,8 @@ func saveData():
 		file.close()
 		
 func loadData():
+	var save_directory = "user://Characters/" + entity_name + "/"
+	var save_path: String = save_directory +  "SavedData.dat" 
 	var file = File.new()
 	if file.file_exists(save_path):
 		var error = file.open_encrypted_with_pass(save_path, File.READ, save_data_password)
@@ -2396,17 +2404,23 @@ func _on_GiveMeItems_pressed():
 	Autoload.addStackableItem(inventory_grid,Items.red_potion,100)
 	Autoload.addStackableItem(inventory_grid,Items.empty_potion,100)
 
-func setInventoryOwner()->void:
-	for child in inventory_grid.get_children():
-			child.get_node("Icon").player = self 
+
 
 onready var inventory_slot:PackedScene = load("res://Game/Interface/Scenes/InvSlot1.tscn")
-
-func loadInventorySlots() -> void:
+func loadInventorySlots()-> void:
 	for i in range(500):
 		var new_slot = inventory_slot.instance()
 		new_slot.name = "InvSlot" + str(i + 1)
+		new_slot.get_node("Icon").player = self 
+		new_slot.get_node("Icon").save_dictionary = "user://Characters/" + entity_name + "/" 
 		inventory_grid.add_child(new_slot)
+
+onready var skillbar_grid:GridContainer = $Canvas/Skillbar/GridContainer
+func initializeSkillbarSlots()-> void:
+	for child in skillbar_grid.get_children():
+			child.get_node("Icon").player = self 
+			child.get_node("Icon").save_dictionary = "user://Characters/" + entity_name + "/" 
+
 
 
 
@@ -2630,39 +2644,19 @@ func _on_Trash_pressed()->void:
 		child.quantity = 0 
 		
 
-
-#Gathering__________________________________________________________________________________________
-
-func harvestGather() -> void:
-	if Input.is_action_just_pressed("harvest"):
-		for body in detector_area.get_overlapping_areas():
-			if body.is_in_group("BlueTip"):
-				var plant_size = body.get_node("Plant").size
-				var quantity:int = 1
-				var item = Items.blue_tip_grass
-				var item_rarity:float = Items.blue_tip_grass_rarity
-				var item_name:String= "blue tip grass"
-				if plant_size > 0.5:
-					quantity += int((plant_size - 0.5) / 0.1)  # Increase quantity by 1 for every 0.1 unit above 0.5
-				getLoot(item,quantity,item_rarity,item_name)
-				processTheGathering(body)
-
-
-func processTheGathering(body)->void:
-	debug.harvested_item_size = body.get_node("Plant").size
-	debug.harvested_item = body
-	debug.debugHarvesting()
-	body.get_node("CollisionShape").disabled = true
-	body.visible = false
-	body.get_node("Plant").size = 0
-
-onready var ui_tween:Tween =  $Canvas/Skillbar/UI_list/InvButtonHolder/Tween
-onready var inv_button_holder:Control = $Canvas/Skillbar/UI_list/InvButtonHolder
-onready var resource_viewport:Viewport = $Canvas/Skillbar/AddFloatingIconsHere/Viewport
-func getLoot(item, quantity, item_rarity, item_name)->void:
-	Autoload.addStackableItem(inventory_grid, item, quantity)
-	Autoload.addFloatingIcon(resource_viewport, item, quantity, item_rarity, item_name,self)
-
+onready var time_label = $Canvas/Skillbar/Label
+func displayClock()-> void:
+	# Get the current date and time
+	var date_time = OS.get_datetime()
+	
+	# Format the time string
+	var formatted_time = "%02d:%02d" % [date_time.hour, date_time.minute]
+	
+	# Format the date string
+	var formatted_date = "%02d/%02d/%d" % [date_time.day, date_time.month, date_time.year]
+	
+	# Update the label text with time on top and date below, align left
+	time_label.text = formatted_time + "\n" + formatted_date
 	
 func popUI(node_to_pop:Node, tween: Tween) -> void:
 	# Define the scale properties for tweening
@@ -2686,3 +2680,62 @@ func popUpUI(node_to_pop: Node, tween: Tween) -> void:
 
 	# Start the tween
 	tween.start()
+
+#Gathering__________________________________________________________________________________________
+
+onready var plant_area:Area = $Area
+func connectAreas()-> void:
+	plant_area.connect("area_entered", self, "plantAreaEntered")
+	plant_area.connect("area_exited", self, "plantAreaExited")
+	
+func plantAreaEntered(area:Area)-> void:
+	if area.has_node("Plant"):
+		area.get_node("Plant").playerBack()
+		debug.touched_grass = area
+		print("active:true")	
+	
+	
+
+func plantAreaExited(area)-> void:
+	if area.has_node("Plant"):
+		if area.get_node("Plant").size >= 1:
+			area.get_node("Plant").playerLeft()
+			print("active:false")
+
+		
+func harvestGather()-> void:
+	if Input.is_action_just_pressed("harvest"):
+		for body in detector_area.get_overlapping_areas():
+			if body.is_in_group("BlueTip"):
+				var plant_size = body.get_node("Plant").size
+				body.get_node("Plant").time_invisible = 5
+				var quantity:int = 1
+				var item = Items.blue_tip_grass
+				var item_rarity:float = Items.blue_tip_grass_rarity
+				var item_name:String= "blue tip grass"
+				if plant_size > 0.5:
+					quantity += int((plant_size - 0.5) / 0.1)  # Increase quantity by 1 for every 0.1 unit above 0.5
+				getLoot(item,quantity,item_rarity,item_name)
+				processTheGathering(body)
+
+
+
+
+
+
+func processTheGathering(body)->void:
+	debug.harvested_item_size = body.get_node("Plant").size
+	debug.harvested_item = body
+	debug.debugHarvesting()
+	body.get_node("CollisionShape").disabled = true
+	body.visible = false
+	body.get_node("Plant").size = 0
+
+onready var ui_tween:Tween =  $Canvas/Skillbar/UI_list/InvButtonHolder/Tween
+onready var inv_button_holder:Control = $Canvas/Skillbar/UI_list/InvButtonHolder
+onready var resource_viewport:Viewport = $Canvas/Skillbar/AddFloatingIconsHere/Viewport
+func getLoot(item, quantity, item_rarity, item_name)->void:
+	Autoload.addStackableItem(inventory_grid, item, quantity)
+	Autoload.addFloatingIcon(resource_viewport, item, quantity, item_rarity, item_name,self)
+
+

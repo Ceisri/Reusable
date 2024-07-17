@@ -22,6 +22,10 @@ func stepEnd()->void:
 	player.leftstep_duration = false
 	player.rightstep_duration = false
 
+func dashEnd()->void:
+	player.dash_active = false
+
+
 func kickEnd()->void:
 	player.skills.kickCD()
 	player.kick_duration = false
