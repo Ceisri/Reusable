@@ -45,7 +45,8 @@ func movement(delta: float) -> void:
 			if is_instance_valid(collision.collider.stats):
 				if collision.collider != thrower:
 					if thrown == true:
-						collision.collider.stats.getHit(thrower, 15, Autoload.damage_type.blunt,0)
+						collision.collider.stats.getHit(thrower, 15, Autoload.damage_type.blunt,0,1)
+						vertical_velocity = Vector3.DOWN * 3
 		thrown = false
 		direction = Vector3.ZERO
 		horizontal_velocity = Vector3.ZERO

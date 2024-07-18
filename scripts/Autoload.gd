@@ -125,7 +125,7 @@ func gravity(user):#for seamless climbing first check if is_climbing
 var entity_gravity_force = Vector3(0, -9.8, 0)
 var velocity = Vector3()
 func entityGravity(entity):
-#	if not entity.is_on_floor():
+	if not entity.is_on_floor():
 		velocity += entity_gravity_force
 		var movement = velocity 
 		entity.move_and_collide(movement)

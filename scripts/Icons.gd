@@ -35,3 +35,7 @@ var dodge = load("res://Game/Interface/Assets/Icons/Skill_Icons/Skill_Dodge.png"
 var kick = load("res://Game/Interface/Assets/Icons/Skill_Icons/Skill_Kick.png")
 
 
+
+#Effects
+var bleed = load("res://Game/Interface/Assets/Icons/Skill_Icons/Skill_BloodBoiling.png")
+var stun = load("res://Game/Interface/Assets/Icons/Skill_Icons/skill_3_stuned.png")

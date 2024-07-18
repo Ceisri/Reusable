@@ -20,7 +20,7 @@ var rng = RandomNumberGenerator.new()
 var is_player:bool = true
 
 func _ready()->void:
-#	autoload.drawGlobalThreat(self)#For DEbugging purposes only, draws aggro from everything 
+#	Icons.drawGlobalThreat(self)#For DEbugging purposes only, draws aggro from everything 
 	loadPlayerData()
 	switchSexRace()
 	setInventoryOwner()
@@ -40,7 +40,7 @@ func _ready()->void:
 	SwitchEquipmentBasedOnEquipmentIcons()
 	direction = Vector3.BACK.rotated(Vector3.UP, $Camroot/h.global_transform.basis.get_euler().y)
 	aim_label.text = aiming_mode
-	current_race_gender.EquipmentSwitch()
+	skills.EquipmentSwitch()
 	l_click_slot.switchAttackIcon()
 	colorBodyParts()
 	switchButtonTextures()
@@ -48,10 +48,11 @@ func _ready()->void:
 	stutterPrevention()
 	struggle_button.text = "Struggle:" + str(struggles)+ " remaining"
 	colorUI(ui_color)
+	previous_position = global_transform.origin
 	if direction_assist == true:
-		$UI/GUI/Menu/DirectionAssist.pressed = true
+		dir_assist_check.pressed = true
 	else:
-		$UI/GUI/Menu/DirectionAssist.pressed = false
+		dir_assist_check.pressed = false
 	
 
 """
@@ -65,7 +66,7 @@ Hence, why stutterPrevention() so far is pretty empty.
 """
 
 func stutterPrevention()->void:
-	var text = autoload.floatingtext_damage.instance()
+	var text = Icons.floatingtext_damage.instance()
 	text.status = "STUTTER PREVENTION"
 	take_damage_view.add_child(text)
 
@@ -81,7 +82,7 @@ means that this specific function will be ran 12 times per second instead of 24.
 By all means avoid elif in this specific case only use if statments 
 """
 func _physics_process(delta: float) -> void:
-	autoload.gravity(self)#Gravity stays first in the order else jumping doesn't work 
+	Icons.gravity(self)#Gravity stays first in the order else jumping doesn't work 
 	all_skills.updateCooldownLabel()
 	cameraRotation()
 	crossHair()
@@ -153,24 +154,24 @@ func _physics_process(delta: float) -> void:
 	
 
 onready var debug = $Debug
-var debug_mode:bool = true
+var debug_mode:bool = false
 func _on_Debug_pressed():
 	debug_mode = !debug_mode
 	debug.visible = !debug.visible
 func debug() -> void:
-	var state_enum = autoload.state_list  # Access the enum from the singleton
+	var state_enum = Icons.state_list  # Access the enum from the singleton
 	var state_value = state  # Get the current state value
 	var state_name = state_enum.keys()[state_value]  # Convert enum to string
 
-	var weapon_enum = autoload.weapon_type_list
+	var weapon_enum = Icons.weapon_type_list
 	var weapon_value = weapon_type
 	var weapon_name = weapon_enum.keys()[weapon_value]
 
-	var main_weapon_enum = autoload.main_weap_list
+	var main_weapon_enum = Icons.main_weap_list
 	var main_weapon_value = main_weapon
 	var main_weapon_name = main_weapon_enum.keys()[main_weapon_value]
 
-	var sec_weapon_enum = autoload.sec_weap_list
+	var sec_weapon_enum = Icons.sec_weap_list
 	var sec_weapon_value = sec_weapon
 	var sec_weapon_name = sec_weapon_enum.keys()[sec_weapon_value]
 	# Prepare each line of the debug text separately
@@ -276,7 +277,7 @@ var whirlwind_combo:bool = false
 #___________________________________________________________________________________________________
 
 var taunt_duration:bool = false
-var state = autoload.state_list.idle
+var state = Icons.state_list.idle
 
 
 func behaviourTree()-> void:
@@ -303,7 +304,7 @@ func behaviourTree()-> void:
 			is_dead = true
 	else:
 		warning_screen.modulate.a = 0.0
-		if current_race_gender == null or animation == null:
+		if skills == null or animation == null:
 			print("mesh not instanced or animationPlayer not found")
 		else:
 			passiveActions()#this checks for stuns,staggers, knockdowns or other dis
@@ -325,7 +326,7 @@ func passiveActions()-> void:
 			can_walk = false
 			is_walking = false
 			horizontal_velocity = direction * 0
-			current_race_gender.can_move = false
+			skills.can_move = false
 			if health > 15:
 				animation.play("knocked down",blend)
 				skill_queue.getInterrupted()
@@ -333,16 +334,16 @@ func passiveActions()-> void:
 	elif staggered_duration == true:
 		can_walk = false
 		is_walking = false
-		current_race_gender.can_move = false
+		skills.can_move = false
 		animation.play("staggered",blend)
 		skill_queue.getInterrupted()
 	elif stunned_duration > 0 and health >0:
 		skill_queue.getInterrupted()
-		autoload.gravity(self)
+		Icons.gravity(self)
 		animation.play("staggered",blend)
 		can_walk = false
 		is_walking = false
-		current_race_gender.can_move = false
+		skills.can_move = false
 	else:
 		activeActions()
 
@@ -350,7 +351,7 @@ func activeActions()->void:
 	SkillQueueSystem()#DO NOT REMOVE THIS! it is neccessary to allow skill cancelling, skill cancelling doesn't work without skill queue, it has a toggle on off anyway for players that don't like it 
 	if Input.is_action_pressed("rclick"):
 		switchWeaponFromHandToSideOrBack()
-		state == autoload.state_list.guard
+		state == Icons.state_list.guard
 		skill_queue.skillCancel("throw_rock")
 
 	if dash_duration == true:
@@ -398,22 +399,22 @@ func activeActions()->void:
 				clearParryAbsorb()
 				moveDuringAnimation(all_skills.overhead_slash_distance)
 				match weapon_type:
-					autoload.weapon_type_list.sword:
+					Icons.weapon_type_list.sword:
 						if overhead_slash_combo == false:
 							animation.play("overhead slash sword",blend, melee_atk_speed - 0.15)
 						else:
 							animation.play("overhead slash sword",blend, melee_atk_speed + all_skills.overhead_slash_combo_speed_bonus)
-					autoload.weapon_type_list.sword_shield:
+					Icons.weapon_type_list.sword_shield:
 						if overhead_slash_combo == false:
 							animation.play("overhead slash sword",blend, melee_atk_speed- 0.15)
 						else:
 							animation.play("overhead slash sword",blend, melee_atk_speed + all_skills.overhead_slash_combo_speed_bonus)
-					autoload.weapon_type_list.dual_swords:
+					Icons.weapon_type_list.dual_swords:
 						if overhead_slash_combo == false:
 							animation.play("overhead slash sword",blend, melee_atk_speed- 0.15)
 						else:
 							animation.play("overhead slash sword",blend, melee_atk_speed + all_skills.overhead_slash_combo_speed_bonus)
-					autoload.weapon_type_list.heavy:
+					Icons.weapon_type_list.heavy:
 						if overhead_slash_combo == false:
 							animation.play("overhead slash heavy",blend, melee_atk_speed- 0.25)
 						else:
@@ -433,16 +434,16 @@ func activeActions()->void:
 		if all_skills.can_whirlwind == true:
 			if resolve > all_skills.whirlwind_cost:
 				match weapon_type:
-					autoload.weapon_type_list.sword:
+					Icons.weapon_type_list.sword:
 						animation.play("whirlwind sword",blend*1.5,melee_atk_speed+ 0.15)
 						moveDuringAnimation(all_skills.whirlwind_distance)
-					autoload.weapon_type_list.sword_shield:
+					Icons.weapon_type_list.sword_shield:
 						animation.play("whirlwind sword",blend*1.5,melee_atk_speed+ 0.15)
 						moveDuringAnimation(all_skills.whirlwind_distance)
-					autoload.weapon_type_list.dual_swords:
+					Icons.weapon_type_list.dual_swords:
 						animation.play("whirlwind sword",blend*1.5,melee_atk_speed + 0.1)
 						moveDuringAnimation(all_skills.whirlwind_distance)
-					autoload.weapon_type_list.heavy:
+					Icons.weapon_type_list.heavy:
 						animation.play("whirlwind heavy",blend*1.5,melee_atk_speed+ 0.15)
 						moveDuringAnimation(all_skills.whirlwind_distance)
 			else:
@@ -460,13 +461,13 @@ func activeActions()->void:
 		clearParryAbsorb()
 		moveDuringAnimation(6)
 		match weapon_type:
-					autoload.weapon_type_list.sword:
+					Icons.weapon_type_list.sword:
 						animation.play("rising slash shield",blend, melee_atk_speed + 0.35)
-					autoload.weapon_type_list.sword_shield:
+					Icons.weapon_type_list.sword_shield:
 						animation.play("rising slash shield",blend,melee_atk_speed + 0.35)
-					autoload.weapon_type_list.dual_swords:
+					Icons.weapon_type_list.dual_swords:
 						animation.play("rising slash shield",blend, melee_atk_speed + 0.33)
-					autoload.weapon_type_list.heavy:
+					Icons.weapon_type_list.heavy:
 						animation.play("rising slash heavy",blend,melee_atk_speed + 0.35)
 #Cyclone____________________________________________________________________________________________
 	elif cyclone_duration == true:
@@ -478,22 +479,22 @@ func activeActions()->void:
 			if resolve > all_skills.cyclone_cost:
 				moveDuringAnimation(all_skills.cyclone_motion)
 				match weapon_type:
-					autoload.weapon_type_list.sword:
+					Icons.weapon_type_list.sword:
 						if cyclone_combo == false:
 							animation.play("cyclone sword",blend,melee_atk_speed+ 0.25)
 						else:
 							animation.play("cyclone sword",blend,melee_atk_speed+ 1)
-					autoload.weapon_type_list.sword_shield:
+					Icons.weapon_type_list.sword_shield:
 						if cyclone_combo == false:
 							animation.play("cyclone sword",blend,melee_atk_speed+ 0.25)
 						else:
 							animation.play("cyclone sword",blend,melee_atk_speed+ 1)
-					autoload.weapon_type_list.dual_swords:
+					Icons.weapon_type_list.dual_swords:
 						if cyclone_combo == false:
 							animation.play("cyclone sword",blend,melee_atk_speed+ 0.25)
 						else:
 							animation.play("cyclone sword",blend,melee_atk_speed+ 1)
-					autoload.weapon_type_list.heavy:
+					Icons.weapon_type_list.heavy:
 						if cyclone_combo == false:
 							animation.play("cyclone heavy",blend,melee_atk_speed+ 0.15)
 						else:
@@ -512,16 +513,16 @@ func activeActions()->void:
 		clearParryAbsorb()
 		if all_skills.can_heart_trust == true:
 				match weapon_type:
-					autoload.weapon_type_list.sword:
+					Icons.weapon_type_list.sword:
 						animation.play("heart trust sword",blend*1.5,melee_atk_speed+ 0.55)
 						moveDuringAnimation(4)
-					autoload.weapon_type_list.sword_shield:
+					Icons.weapon_type_list.sword_shield:
 						animation.play("heart trust sword",blend*1.5,melee_atk_speed+ 0.35)
 						moveDuringAnimation(3)
-					autoload.weapon_type_list.dual_swords:
+					Icons.weapon_type_list.dual_swords:
 						animation.play("heart trust sword",blend*1.5,melee_atk_speed + 0.1)
 						moveDuringAnimation(3.3)
-					autoload.weapon_type_list.heavy:
+					Icons.weapon_type_list.heavy:
 						animation.play("heart trust sword",blend*1.5,melee_atk_speed + 0.15)
 						moveDuringAnimation(6)
 		else:
@@ -535,7 +536,7 @@ func activeActions()->void:
 		switchWeaponFromHandToSideOrBack()
 		can_walk = false
 		is_walking = false
-		if weapon_type == autoload.weapon_type_list.heavy:
+		if weapon_type == Icons.weapon_type_list.heavy:
 			animation.play("taunt heavy",blend + 0.1,ferocity)
 		else:
 			animation.play("taunt",blend+ 0.1,ferocity)
@@ -564,10 +565,10 @@ func activeActions()->void:
 		directionToCamera()
 		clearParryAbsorb()
 		match weapon_type:
-			autoload.weapon_type_list.dual_swords:
+			Icons.weapon_type_list.dual_swords:
 				animation.play("combo(dual)",blend,melee_atk_speed + all_skills.combo_extr_speed)
 				moveDuringAnimation(all_skills.combo_distance)
-			autoload.weapon_type_list.heavy:
+			Icons.weapon_type_list.heavy:
 				if long_base_atk == true:
 					animation.play("combo(heavy)",blend,melee_atk_speed + all_skills.combo_extr_speed)
 					moveDuringAnimation(all_skills.combo_distance)
@@ -577,10 +578,10 @@ func activeActions()->void:
 		directionToCamera()
 		clearParryAbsorb()
 		match weapon_type:
-			autoload.weapon_type_list.dual_swords:
+			Icons.weapon_type_list.dual_swords:
 				animation.play("combo(dual)",blend,melee_atk_speed + all_skills.combo_extr_speed)
 				moveDuringAnimation(all_skills.combo_distance)
-			autoload.weapon_type_list.heavy:
+			Icons.weapon_type_list.heavy:
 				if long_base_atk == true:
 					animation.play("combo(heavy)",blend,melee_atk_speed + all_skills.combo_extr_speed)
 					moveDuringAnimation(all_skills.combo_distance)
@@ -603,132 +604,118 @@ func activeActions()->void:
 		
 func matchState()->void:
 				match state:
-					autoload.state_list.base_attack:
+					Icons.state_list.base_attack:
 						is_in_combat = true
 						directionToCamera()
 						automaticTargetAssist()
 						switchWeaponFromHandToSideOrBack()
-						if weapon_type == autoload.weapon_type_list.bow:
+						if weapon_type == Icons.weapon_type_list.bow:
 							can_walk = false
 						else:
 							can_walk = true
 						var slot = $UI/GUI/SkillBar/GridContainer/LClickSlot/Icon
 						skills(slot)
-					autoload.state_list.guard:
+					Icons.state_list.guard:
 						switchWeaponFromHandToSideOrBack()
 						var slot = $UI/GUI/SkillBar/GridContainer/RClickSlot/Icon
 						skills(slot)
 	#________________________________________movement states____________________________________________
-					autoload.state_list.walk:
+					Icons.state_list.walk:
 						clearParryAbsorb()
-						if is_in_combat:
-							match weapon_type:
-								autoload.weapon_type_list.fist:
-									animation.play("walk sword",0,1)
-								autoload.weapon_type_list.bow: 
-									animation.play("walk bow",0,1)	
-								autoload.weapon_type_list.sword:
-									animation.play("walk sword",0,1)
-								autoload.weapon_type_list.sword_shield:
-									animation.play("walk shield")
-								autoload.weapon_type_list.dual_swords:
-									animation.play("walk sword",0,1)
-								autoload.weapon_type_list.heavy:
-									animation.play("walk heavy",0,1)
-						else:
-							animation.play("walk",0,1)
-					autoload.state_list.sprint:
+						walkAnimations()
+
+					Icons.state_list.sprint:
 						clearParryAbsorb()
 						animation.play("run", 0,agility)
-					autoload.state_list.run:
+					Icons.state_list.run:
 						clearParryAbsorb()
 						animation.play("run",0,agility)
-					autoload.state_list.climb:
+					Icons.state_list.climb:
 						clearParryAbsorb()
 						animation.play("climb cycle",blend, strength)
-					autoload.state_list.idle:
+					Icons.state_list.idle:
 						clearParryAbsorb()
 						if is_in_combat:
 							match weapon_type:
-								autoload.weapon_type_list.fist:
+								Icons.weapon_type_list.fist:
 									animation.play("idle fist",blend)
-								autoload.weapon_type_list.sword:
+								Icons.weapon_type_list.sword:
 									animation.play("idle sword",blend)
-								autoload.weapon_type_list.sword_shield:
+								Icons.weapon_type_list.sword_shield:
 									animation.play("idle shield",blend)
-								autoload.weapon_type_list.dual_swords:
+								Icons.weapon_type_list.dual_swords:
 									animation.play("idle sword",blend)
-								autoload.weapon_type_list.bow:
+								Icons.weapon_type_list.bow:
 									animation.play("idle bow",blend)
-								autoload.weapon_type_list.heavy:
+								Icons.weapon_type_list.heavy:
 									animation.play("idle heavy",blend)
 						else:
 							animation.play("idle",0.2,1)
 
 	#skillbar stuff_____________________________________________________________________________________
-					autoload.state_list.skill1:
+					Icons.state_list.skill1:
 						var slot = $UI/GUI/SkillBar/GridContainer/Slot1/Icon
 						skills(slot)
-					autoload.state_list.skill2:
+					Icons.state_list.skill2:
 						var slot = $UI/GUI/SkillBar/GridContainer/Slot2/Icon
 						skills(slot)
-					autoload.state_list.skill3:
+					Icons.state_list.skill3:
 						var slot = $UI/GUI/SkillBar/GridContainer/Slot3/Icon
 						skills(slot)
-					autoload.state_list.skill4:
+					Icons.state_list.skill4:
 						var slot = $UI/GUI/SkillBar/GridContainer/Slot4/Icon
 						skills(slot)
-					autoload.state_list.skill5:
+					Icons.state_list.skill5:
 						var slot = $UI/GUI/SkillBar/GridContainer/Slot5/Icon
 						skills(slot)
-					autoload.state_list.skill6:
+					Icons.state_list.skill6:
 						var slot = $UI/GUI/SkillBar/GridContainer/Slot6/Icon
 						skills(slot)
-					autoload.state_list.skill7:
+					Icons.state_list.skill7:
 						var slot = $UI/GUI/SkillBar/GridContainer/Slot7/Icon
 						skills(slot)
-					autoload.state_list.skill8:
+					Icons.state_list.skill8:
 						var slot = $UI/GUI/SkillBar/GridContainer/Slot8/Icon
 						skills(slot)
-					autoload.state_list.skill9:
+					Icons.state_list.skill9:
 						var slot = $UI/GUI/SkillBar/GridContainer/Slot9/Icon
 						skills(slot)
-					autoload.state_list.skill0:
+					Icons.state_list.skill0:
 						var slot = $UI/GUI/SkillBar/GridContainer/Slot10/Icon
 						skills(slot)
-					autoload.state_list.skillQ:
+					Icons.state_list.skillQ:
 						var slot = $UI/GUI/SkillBar/GridContainer/Slot11/Icon
 						skills(slot)
-					autoload.state_list.skillE:
+					Icons.state_list.skillE:
 						var slot = $UI/GUI/SkillBar/GridContainer/Slot12/Icon
 						skills(slot)
-					autoload.state_list.skillR:
+					Icons.state_list.skillR:
 						var slot = $UI/GUI/SkillBar/GridContainer/Slot13/Icon
 						skills(slot)
-					autoload.state_list.skillT:
+					Icons.state_list.skillT:
 						var slot = $UI/GUI/SkillBar/GridContainer/Slot14/Icon
 						skills(slot)
-					autoload.state_list.skillF:
+					Icons.state_list.skillF:
 						var slot = $UI/GUI/SkillBar/GridContainer/Slot15/Icon
 						skills(slot)
-					autoload.state_list.skillG:
+					Icons.state_list.skillG:
 						var slot = $UI/GUI/SkillBar/GridContainer/Slot16/Icon
 						skills(slot)
-					autoload.state_list.skillY:
+					Icons.state_list.skillY:
 						var slot = $UI/GUI/SkillBar/GridContainer/Slot17/Icon
 						skills(slot)
-					autoload.state_list.skillH:
+					Icons.state_list.skillH:
 						var slot = $UI/GUI/SkillBar/GridContainer/Slot18/Icon
 						skills(slot)
-					autoload.state_list.skillV:
+					Icons.state_list.skillV:
 						var slot = $UI/GUI/SkillBar/GridContainer/Slot19/Icon
 						skills(slot)
-					autoload.state_list.skillB:
+					Icons.state_list.skillB:
 						var slot = $UI/GUI/SkillBar/GridContainer/Slot20/Icon
 						skills(slot)
-					autoload.state_list.jump:
+					Icons.state_list.jump:
 						animation.play("jump",blend)
-					autoload.state_list.fall:
+					Icons.state_list.fall:
 						animation.play("fall",blend)
 
 onready var l_click_slot = $UI/GUI/SkillBar/GridContainer/LClickSlot
@@ -746,7 +733,7 @@ func skills(slot)-> void:
 	if slot != null:
 		if slot.texture != null:
 #Dash_______________________________________________________________________________________________
-			if slot.texture.resource_path == autoload.dash.get_path() and dash_duration == false:
+			if slot.texture.resource_path == Icons.dash.get_path() and dash_duration == false:
 					if all_skills.can_dash == false:
 						dash_duration  = false
 						returnToIdleBasedOnWeaponType()
@@ -763,7 +750,7 @@ func skills(slot)-> void:
 							
 								
 #Slide______________________________________________________________________________________________
-			if slot.texture.resource_path == autoload.slide.get_path():
+			if slot.texture.resource_path == Icons.slide.get_path():
 				if all_skills.can_slide == false:
 					slide_duration  = false
 					returnToIdleBasedOnWeaponType()
@@ -773,7 +760,7 @@ func skills(slot)-> void:
 					if skill_cancelling == true:
 						skill_queue.skillCancel("slide")
 #Backstep______________________________________________________________________________________________
-			elif slot.texture.resource_path == autoload.backstep.get_path():
+			elif slot.texture.resource_path == Icons.backstep.get_path():
 				if all_skills.can_backstep == false:
 					returnToIdleBasedOnWeaponType()
 					frontstep_duration = false
@@ -794,7 +781,7 @@ func skills(slot)-> void:
 						skill_queue.skillCancel("backstep")
 #Lclick and Rclick__________________________________________________________________________________
 #fist
-			elif slot.texture.resource_path == autoload.punch.get_path():
+			elif slot.texture.resource_path == Icons.punch.get_path():
 				if hold_to_base_atk == true:
 					animation.play("fist hold",blend,melee_atk_speed + 0.15)
 					directionToCamera()
@@ -803,12 +790,12 @@ func skills(slot)-> void:
 					base_atk_duration = true
 					is_in_combat = true
 						
-			elif slot.texture.resource_path == autoload.punch2.get_path():
+			elif slot.texture.resource_path == Icons.punch2.get_path():
 				if hold_to_base_atk == false:
 					base_atk2_duration = true
 					is_in_combat = true
 #_________________________________________STOMP_____________________________________________________
-			elif slot.texture.resource_path == autoload.stomp.get_path():
+			elif slot.texture.resource_path == Icons.stomp.get_path():
 				if all_skills.can_stomp == false:
 					stomp_duration = false
 					returnToIdleBasedOnWeaponType()
@@ -818,7 +805,7 @@ func skills(slot)-> void:
 				switchWeaponFromHandToSideOrBack()
 				skill_queue.skillCancel("stomp")
 #_________________________________________Kick______________________________________________________
-			elif slot.texture.resource_path == autoload.kick.get_path():
+			elif slot.texture.resource_path == Icons.kick.get_path():
 				if all_skills.can_kick == false:
 					kick_duration = false
 					returnToIdleBasedOnWeaponType()
@@ -831,7 +818,7 @@ func skills(slot)-> void:
 							skill_queue.skillCancel("kick")
 							
 #________________________________________THROW ROCKS________________________________________________
-			elif slot.texture.resource_path == autoload.throw_rock.get_path():
+			elif slot.texture.resource_path == Icons.throw_rock.get_path():
 				if hold_to_base_atk == false:
 					throw_rock_duration = true
 					is_in_combat = true
@@ -844,61 +831,62 @@ func skills(slot)-> void:
 					animation.play("throw rock",blend,range_atk_speed + 0.15)
 #sword
 
-			elif slot.texture.resource_path == autoload.vanguard_icons["combo_switch"].get_path():
+			elif slot.texture.resource_path == Icons.vanguard_icons["combo_switch"].get_path():
 				if all_skills.can_combo_switch == true: 
 					all_skills.comboSwitchCD()
 
 
 
-			elif slot.texture.resource_path == autoload.vanguard_icons["base_atk"].get_path():
+			elif slot.texture.resource_path == Icons.vanguard_icons["base_atk"].get_path():
 				if hold_to_base_atk == true:
 					directionToCamera()
 					baseAtkAnim()
 				else:
 					base_atk_duration = true
-			elif slot.texture.resource_path == autoload.vanguard_icons["base_atk2"].get_path():
+			elif slot.texture.resource_path == Icons.vanguard_icons["base_atk2"].get_path():
 				if hold_to_base_atk == false:
 					base_atk2_duration = true
 					base_atk3_duration = true
 					base_atk4_duration = true
 					
-			elif slot.texture.resource_path == autoload.vanguard_icons["guard_sword"].get_path():
+			elif slot.texture.resource_path == Icons.vanguard_icons["guard_sword"].get_path():
 				if resolve > 0:
 					is_walking = false
 					can_walk = false
 					is_in_combat = true
 					resolve -= 1 * get_physics_process_delta_time()
-					if weapon_type == autoload.weapon_type_list.dual_swords:
+					if weapon_type == Icons.weapon_type_list.dual_swords:
 						animation.play("dual block",blend)
 					else:
 						animation.play("sword block",blend)
 				else:
 					returnToIdleBasedOnWeaponType()
-			elif slot.texture.resource_path == autoload.vanguard_icons["guard_shield"].get_path():
+			elif slot.texture.resource_path == Icons.vanguard_icons["guard_shield"].get_path():
 				if resolve > 0:
 					is_walking = false
 					can_walk = false
 					resolve -= 1 * get_physics_process_delta_time()
 					animation.play("shield block",blend)
+					automaticTargetAssist()
 				else:
 					returnToIdleBasedOnWeaponType()
 #bow 
-			elif slot.texture.resource_path == autoload.quick_shot.get_path():
-				if weapon_type == autoload.weapon_type_list.bow:
+			elif slot.texture.resource_path == Icons.quick_shot.get_path():
+				if weapon_type == Icons.weapon_type_list.bow:
 					is_aiming = true
 					can_walk = false
-					current_race_gender.can_move = false
+					skills.can_move = false
 					is_in_combat = true
 					if is_walking == false:
 						animation.play("shoot",blend,range_atk_speed + 0.4)
 
 #melee weapon skills
 #__________________________________________  overhead slash    _____________________________________
-			elif slot.texture.resource_path == autoload.vanguard_icons["sunder"].get_path():
+			elif slot.texture.resource_path == Icons.vanguard_icons["sunder"].get_path():
 				if overhead_icon.points >0:
 					if all_skills.can_overhead_slash == true:
 						if resolve > all_skills.overhead_slash_cost:
-							if weapon_type != autoload.weapon_type_list.fist:
+							if weapon_type != Icons.weapon_type_list.fist:
 								overhead_slash_duration = true
 								is_in_combat = true
 								if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
@@ -913,7 +901,7 @@ func skills(slot)-> void:
 						returnToIdleBasedOnWeaponType()
 						overhead_slash_duration = false
 #___________________________________________________________________________________________________
-			elif slot.texture.resource_path == autoload.vanguard_icons["taunt"].get_path():
+			elif slot.texture.resource_path == Icons.vanguard_icons["taunt"].get_path():
 					if taunt_icon.points >0:
 						if all_skills.can_taunt == true:
 							if resolve > all_skills.taunt_cost:
@@ -933,11 +921,11 @@ func skills(slot)-> void:
 						returnToIdleBasedOnWeaponType()
 						taunt_duration = false
 #_________________________________________ rising slash ____________________________________________
-			elif slot.texture.resource_path == autoload.vanguard_icons["rising_slash"].get_path():
+			elif slot.texture.resource_path == Icons.vanguard_icons["rising_slash"].get_path():
 					if rising_icon.points >0:
 						if all_skills.can_rising_slash == true:
 							if resolve > all_skills.rising_slash_cost:
-								if weapon_type != autoload.weapon_type_list.fist:
+								if weapon_type != Icons.weapon_type_list.fist:
 									rising_slash_duration = true
 									is_in_combat = true
 									if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
@@ -954,11 +942,11 @@ func skills(slot)-> void:
 						returnToIdleBasedOnWeaponType()
 						rising_slash_duration = false
 #_________________________________________  cyclone   ______________________________________________
-			elif slot.texture.resource_path == autoload.vanguard_icons["cyclone"].get_path():
+			elif slot.texture.resource_path == Icons.vanguard_icons["cyclone"].get_path():
 					if cyclone_icon.points >0 :
 						if all_skills.can_cyclone == true:
 							if resolve > all_skills.cyclone_cost:
-								if weapon_type != autoload.weapon_type_list.fist:
+								if weapon_type != Icons.weapon_type_list.fist:
 									cyclone_duration = true
 									is_in_combat = true
 									if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
@@ -973,11 +961,11 @@ func skills(slot)-> void:
 						returnToIdleBasedOnWeaponType()
 						cyclone_duration = false
 #__________________________________________ Whirlwind _____________________________________________
-			elif slot.texture.resource_path == autoload.vanguard_icons["whirlwind"].get_path():
+			elif slot.texture.resource_path == Icons.vanguard_icons["whirlwind"].get_path():
 					if whirlwind_icon.points >0 :
 						if all_skills.can_whirlwind == true:
 							if resolve > all_skills.whirlwind_cost:
-								if weapon_type != autoload.weapon_type_list.fist:
+								if weapon_type != Icons.weapon_type_list.fist:
 									whirlwind_duration = true
 									is_in_combat = true
 									if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
@@ -992,11 +980,11 @@ func skills(slot)-> void:
 						returnToIdleBasedOnWeaponType()
 						whirlwind_duration = false
 #__________________________________________ Heart Trust ____________________________________________
-			elif slot.texture.resource_path == autoload.vanguard_icons["heart_trust"].get_path():
+			elif slot.texture.resource_path == Icons.vanguard_icons["heart_trust"].get_path():
 					if heart_trust_icon.points >0 :
 						if all_skills.can_heart_trust == true:
 							if resolve > all_skills.heart_trust_cost:
-								if weapon_type != autoload.weapon_type_list.fist:
+								if weapon_type != Icons.weapon_type_list.fist:
 									heart_trust_duration = true
 									if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
 										skill_queue.skillCancel("heart_trust")
@@ -1011,16 +999,16 @@ func skills(slot)-> void:
 						heart_trust_duration = false
 
 #ranged bow skills
-			elif slot.texture.resource_path == autoload.full_draw.get_path():
-				if weapon_type == autoload.weapon_type_list.bow:
+			elif slot.texture.resource_path == Icons.full_draw.get_path():
+				if weapon_type == Icons.weapon_type_list.bow:
 					is_aiming = true
 					can_walk = false
-					current_race_gender.can_move = false
+					skills.can_move = false
 					animation.play("full draw",0.3,range_atk_speed)
 					
 					
 					
-			elif slot.texture.resource_path == autoload.grappling_hook.get_path():
+			elif slot.texture.resource_path == Icons.grappling_hook.get_path():
 				if all_skills.can_grappling_hook == true:
 					direction = -camera.global_transform.basis.z
 					hookEnemies()
@@ -1029,7 +1017,7 @@ func skills(slot)-> void:
 					
 
 #consumables________________________________________________________________________________________
-			elif slot.texture.resource_path == autoload.red_potion.get_path():
+			elif slot.texture.resource_path == Icons.red_potion.get_path():
 				slot.get_parent().displayQuantity()
 				for child in inventory_grid.get_children():
 					if child.is_in_group("Inventory"):
@@ -1038,22 +1026,32 @@ func skills(slot)-> void:
 						var button = inventory_grid.get_node("InventorySlot" + str(index))
 						button = inventory_grid.get_node("InventorySlot" + str(index))
 						if health < max_health:
-							autoload.consumeRedPotion(self,button,inventory_grid,true,slot.get_parent())
+							Icons.consumeRedPotion(self,button,inventory_grid,true,slot.get_parent())
 						if health > max_health:
 							health = max_health 
 
-							
-							
+func returnToIdleBasedOnWeaponType():
+	match weapon_type:
+			Icons.weapon_type_list.fist:
+				animation.play("idle fist",0.3)
+			Icons.weapon_type_list.sword:
+				animation.play("idle sword",0.3)
+			Icons.weapon_type_list.dual_swords:
+				animation.play("idle sword",0.3)
+			Icons.weapon_type_list.bow:
+				animation.play("idle bow",0.3)
+			Icons.weapon_type_list.heavy:
+				animation.play("idle heavy")
 func baseAtkAnim()-> void:
 	match weapon_type:
-		autoload.weapon_type_list.sword:
+		Icons.weapon_type_list.sword:
 			if long_base_atk == true:
 				animation.play("combo sword",blend,melee_atk_speed + all_skills.combo_extr_speed)
 				moveDuringAnimation(all_skills.combo_distance)
 			else:
 				animation.play("cleave sword",blend,melee_atk_speed)
 				moveDuringAnimation(all_skills.cleave_distance)
-		autoload.weapon_type_list.dual_swords:
+		Icons.weapon_type_list.dual_swords:
 			var dual_wield_compensation:float = 1.105 #People have the feeling that two swords should be faster, not realistic, but it breaks their "game feel" 
 			if long_base_atk == true:
 				animation.play("combo(dual)",blend,melee_atk_speed + all_skills.combo_extr_speed * dual_wield_compensation)
@@ -1061,14 +1059,56 @@ func baseAtkAnim()-> void:
 			else:
 				animation.play("cleave dual",blend,melee_atk_speed * dual_wield_compensation)
 				moveDuringAnimation(all_skills.cleave_distance)
-		autoload.weapon_type_list.heavy:
+		Icons.weapon_type_list.heavy:
 			if long_base_atk == true:
 				animation.play("combo(heavy)",blend,melee_atk_speed + all_skills.combo_extr_speed)
 				moveDuringAnimation(all_skills.combo_distance)
 			else:
 				animation.play("cleave",blend,melee_atk_speed)
 				moveDuringAnimation(all_skills.cleave_distance)
-							
+
+
+var previous_position = Vector3.ZERO
+func walkAnimations() -> void:
+	if Input.is_action_pressed("autoturn") and closest_target != null:
+		if is_in_combat== true:
+			if Input.is_action_pressed("right"):
+				animation.play("strafeRCombat")
+			elif Input.is_action_pressed("left"):
+				animation.play("strafeLCombat")
+			else:
+				# Calculate direction to the closest target
+				var to_target = (closest_target.global_transform.origin - global_transform.origin).normalized()
+				# Calculate the current movement direction
+				var current_position = global_transform.origin
+				var movement_direction = (current_position - previous_position).normalized()
+				
+				# Update the previous position
+				previous_position = current_position
+				
+				# Check if moving towards or away from the closest target
+				if movement_direction.dot(to_target) > 0:
+					animation.play("strafeFCombat")
+				else:
+					animation.play_backwards("strafeFCombat")
+
+	else:
+		if is_in_combat:
+			match weapon_type:
+				Icons.weapon_type_list.fist:
+					animation.play("walk sword",0,1)
+				Icons.weapon_type_list.bow: 
+					animation.play("walk bow",0,1)	
+				Icons.weapon_type_list.sword:
+					animation.play("walk sword",0,1)
+				Icons.weapon_type_list.sword_shield:
+					animation.play("walk shield")
+				Icons.weapon_type_list.dual_swords:
+					animation.play("walk sword",0,1)
+				Icons.weapon_type_list.heavy:
+					animation.play("walk heavy",0,1)
+		else:
+			animation.play("walk",0,1)
 							
 var skill_cancelling:bool = true#this only works with the SkillQueueSystem() and serves to interupt skills with other skills 
 
@@ -1082,179 +1122,158 @@ func _on_BaseAtkMode_pressed():
 	switchButtonTextures()
 func SkillQueueSystem()-> void:
 	if skill_queue.queue_skills == true:
-		if state == autoload.state_list.skill1:
+		if state == Icons.state_list.skill1:
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot1/Icon
 			skills(slot)
-		if state == autoload.state_list.skill2:
+		if state == Icons.state_list.skill2:
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot2/Icon
 			skills(slot)
-		if state == autoload.state_list.skill3:
+		if state == Icons.state_list.skill3:
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot3/Icon
 			skills(slot)
-		if state == autoload.state_list.skill4:
+		if state == Icons.state_list.skill4:
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot4/Icon
 			skills(slot)
-		if state == autoload.state_list.skill5:
+		if state == Icons.state_list.skill5:
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot5/Icon
 			skills(slot)
-		if state == autoload.state_list.skill6:
+		if state == Icons.state_list.skill6:
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot6/Icon
 			skills(slot)
-		if state == autoload.state_list.skill7:
+		if state == Icons.state_list.skill7:
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot7/Icon
 			skills(slot)
-		if state == autoload.state_list.skill8:
+		if state == Icons.state_list.skill8:
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot8/Icon
 			skills(slot)
-		if state == autoload.state_list.skill9:
+		if state == Icons.state_list.skill9:
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot9/Icon
 			skills(slot)
-		if state == autoload.state_list.skill0:
+		if state == Icons.state_list.skill0:
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot10/Icon
 			skills(slot)
-		if state == autoload.state_list.skillQ:
+		if state == Icons.state_list.skillQ:
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot11/Icon
 			skills(slot)
-		elif state == autoload.state_list.skillE:
+		elif state == Icons.state_list.skillE:
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot12/Icon
 			skills(slot)
-		if state == autoload.state_list.skillR:
+		if state == Icons.state_list.skillR:
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot13/Icon
 			skills(slot)
-		if state == autoload.state_list.skillT:
+		if state == Icons.state_list.skillT:
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot14/Icon
 			skills(slot)
-		if state == autoload.state_list.skillF:
+		if state == Icons.state_list.skillF:
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot15/Icon
 			skills(slot)
-		if state == autoload.state_list.skillG:
+		if state == Icons.state_list.skillG:
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot16/Icon
 			skills(slot)
-		if state == autoload.state_list.skillY:
+		if state == Icons.state_list.skillY:
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot17/Icon
 			skills(slot)
-		if state == autoload.state_list.skillH:
+		if state == Icons.state_list.skillH:
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot18/Icon
 			skills(slot)
-		if state == autoload.state_list.skillV:
+		if state == Icons.state_list.skillV:
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot19/Icon
 			skills(slot)
-		if state == autoload.state_list.skillB:
+		if state == Icons.state_list.skillB:
 			var slot = $UI/GUI/SkillBar/GridContainer/Slot20/Icon
 			skills(slot)
-func returnToIdleBasedOnWeaponType():
-	match weapon_type:
-			autoload.weapon_type_list.fist:
-				animation.play("idle fist",0.3)
-			autoload.weapon_type_list.sword:
-				animation.play("idle sword",0.3)
-			autoload.weapon_type_list.dual_swords:
-				animation.play("idle sword",0.3)
-			autoload.weapon_type_list.bow:
-				animation.play("idle bow",0.3)
-			autoload.weapon_type_list.heavy:
-				animation.play("idle heavy")
 func moveDuringAnimation(speed):
 	if !is_on_wall():
-		if current_race_gender.can_move == true:
+		if skills.can_move == true:
 			horizontal_velocity = direction * speed 
 			movement_speed = speed
-		elif current_race_gender.can_move == false:
+		elif skills.can_move == false:
 			horizontal_velocity = direction * 0
 			movement_speed = 0
 func moveSidewaysDuringAnimation(speed):
 	if !is_on_wall():
 		horizontal_velocity = -camera.global_transform.basis.x * speed 
-
 var sprint_animation_speed: float = 1
 var anim_cancel:bool = true #If true using abilities and skills interupts base attacks or other animations
 func inputToState():
 	if  health < 0.001:
-		state = autoload.state_list.downed
+		state = Icons.state_list.downed
 	elif health < -100:
 		is_dead = true
 	else:
 #on water
 		if is_swimming:
-			state = autoload.state_list.swim
-
-
+			state = Icons.state_list.swim
 
 		elif not is_on_floor() and not is_climbing and not is_swimming:
-			state = autoload.state_list.fall
+			state = Icons.state_list.fall
 	#attacks________________________________________________________________________________________
 		elif Input.is_action_pressed("rclick") and !cursor_visible: #DON'T MOVE THIS, RCLICK STAYS FOR ANIM CANCEL
 			if !is_walking:
-				state = autoload.state_list.guard
+				state = Icons.state_list.guard
 			else:
-				state = autoload.state_list.walk
+				state = Icons.state_list.walk
 		
 		elif anim_cancel == false:#We check twice for "attack" input based on animation cancelling settings 
 			if Input.is_action_pressed("attack") and !cursor_visible: 
-				state = autoload.state_list.base_attack
-
-
+				state = Icons.state_list.base_attack
 	#skills put these below the walk elif statment in case of keybinding bugs, as of now it works so no need
 		elif Input.is_action_pressed("1"):
-				state = autoload.state_list.skill1
+				state = Icons.state_list.skill1
 		elif Input.is_action_pressed("2"):
-				state = autoload.state_list.skill2
+				state = Icons.state_list.skill2
 		elif Input.is_action_pressed("3"):
-				state = autoload.state_list.skill3
+				state = Icons.state_list.skill3
 		elif Input.is_action_pressed("4"):
-				state = autoload.state_list.skill4
+				state = Icons.state_list.skill4
 		elif Input.is_action_pressed("5"):
-				state = autoload.state_list.skill5
+				state = Icons.state_list.skill5
 		elif Input.is_action_pressed("6"):
-				state = autoload.state_list.skill6
+				state = Icons.state_list.skill6
 		elif Input.is_action_pressed("7"):
-				state = autoload.state_list.skill7
+				state = Icons.state_list.skill7
 		elif Input.is_action_pressed("8"):
-				state = autoload.state_list.skill8
+				state = Icons.state_list.skill8
 		elif Input.is_action_pressed("9"):
-				state = autoload.state_list.skill9
+				state = Icons.state_list.skill9
 		elif Input.is_action_pressed("0"):
-				state = autoload.state_list.skill0
+				state = Icons.state_list.skill0
 		elif Input.is_action_pressed("Q"):
-				state = autoload.state_list.skillQ
+				state = Icons.state_list.skillQ
 		elif Input.is_action_pressed("E"):
-			state = autoload.state_list.skillE
+			state = Icons.state_list.skillE
 		elif Input.is_action_pressed("R"):
-				state = autoload.state_list.skillR
+				state = Icons.state_list.skillR
 		elif Input.is_action_pressed("F"):
-				state = autoload.state_list.skillF
+				state = Icons.state_list.skillF
 		elif Input.is_action_pressed("R"):
-				state = autoload.state_list.skillR
+				state = Icons.state_list.skillR
 		elif Input.is_action_pressed("T"):
-				state = autoload.state_list.skillT
+				state = Icons.state_list.skillT
 		elif Input.is_action_pressed("G"):
-				state = autoload.state_list.skillG
+				state = Icons.state_list.skillG
 		elif Input.is_action_pressed("H"):
-				state = autoload.state_list.skillH
+				state = Icons.state_list.skillH
 		elif Input.is_action_pressed("Y"):
-				state = autoload.state_list.skillY
+				state = Icons.state_list.skillY
 		elif Input.is_action_pressed("V"):
-				state = autoload.state_list.skillV
+				state = Icons.state_list.skillV
 		elif Input.is_action_pressed("B"):
-				state = autoload.state_list.skillB
+				state = Icons.state_list.skillB
 				
 				
 		elif Input.is_action_pressed("attack") and !cursor_visible: 
-			state = autoload.state_list.base_attack
-
-
-				
-				
+			state = Icons.state_list.base_attack
 	#_______________________________________________________________________________
 			
 		elif is_sprinting == true:
-				state =  autoload.state_list.sprint
+				state =  Icons.state_list.sprint
 				
 		elif is_running:
-				state = autoload.state_list.run
+				state = Icons.state_list.run
 
 		elif is_walking:
-				state =  autoload.state_list.walk
+				state =  Icons.state_list.walk
 		elif Input.is_action_pressed("forward") or Input.is_action_pressed("left") or  Input.is_action_pressed("right") or  Input.is_action_pressed("backward"):
 				if Input.is_action_pressed("attack"):
 					can_walk = false
@@ -1263,13 +1282,13 @@ func inputToState():
 				elif Input.is_action_pressed("rclick"):
 					can_walk = false
 				else:
-					state =  autoload.state_list.walk
+					state =  Icons.state_list.walk
 					can_walk = true
 		elif Input.is_action_pressed("crouch"):
-			state =  autoload.state_list.crouch
+			state =  Icons.state_list.crouch
 		else:
 			if health >0:
-				state =  autoload.state_list.idle
+				state =  Icons.state_list.idle
 
 		
 #_______________________________________________Combat______________________________________________
@@ -1282,7 +1301,7 @@ Documentation String:
 	if enabled, all attacks will automatically call automaticTargetAssist()
 """
 
-
+var closest_target = null
 func rotateTowardsEnemy() -> void:
 	var closest_target = null
 	var closest_distance: float = 20.0
@@ -1320,8 +1339,9 @@ func rotateTowardsEnemy() -> void:
 
 
 func manualTargetAssit() -> void:
-	if Input.is_action_pressed("autoturn"):
-		rotateTowardsEnemy()
+	if is_in_combat == true:
+		if Input.is_action_pressed("autoturn"):
+			rotateTowardsEnemy()
 		
 		
 var direction_assist:bool = false # we use this in attacks to auto rotate the direction towards enemies 
@@ -1480,7 +1500,7 @@ func takeDamage(damage:float, aggro_power:float, instigator:Node, stagger_chance
 		damageEffects()
 
 func getKnockedDown(instigator)-> void:#call this for skills that have a different knockdown chance
-	var text = autoload.floatingtext_damage.instance()
+	var text = Icons.floatingtext_damage.instance()
 	damage_effects_manager. getKnockedDownPlayer(instigator)
 	text.status = "Knocked Down!"
 	add_child(text)
@@ -1527,7 +1547,7 @@ func hideShowDeath()->void:
 		staggered_duration = false
 		stunned_duration = 0 
 		can_walk = true
-		state = autoload.state_list.downed
+		state = Icons.state_list.downed
 		stopBeingParlized()
 		skill_queue.getInterrupted()
 		revival_label.visible = true
@@ -1547,7 +1567,7 @@ func hideShowDeath()->void:
 		$UI/GUI/SkillBar/filler.visible = false
 func reviveHereFree()->void:
 	if revival_wait_time <= 0:
-		state  = autoload.state_list.idle
+		state  = Icons.state_list.idle
 		health = max_health * 0.25
 		resolve = max_resolve * 0.25
 		nefis = max_nefis * 0.05
@@ -1558,12 +1578,12 @@ func reviveHereFree()->void:
 		revival_wait_time = 120
 		struggles = 15
 		staggered_duration = false
-		autoload.gravity(self)
+		Icons.gravity(self)
 		is_dead = false
 func reviveHere()->void:#Paid option
 	if coins >= revival_cost:
 		coins-= revival_cost
-		state  = autoload.state_list.idle
+		state  = Icons.state_list.idle
 		health = max_health * 0.5
 		resolve = max_resolve * 0.5
 		nefis = max_nefis 
@@ -1574,7 +1594,7 @@ func reviveHere()->void:#Paid option
 		revival_wait_time = 120
 		struggles = 15
 		staggered_duration = false
-		autoload.gravity(self)
+		Icons.gravity(self)
 		is_dead = false
 func struggle()->void:
 	if struggles >0:
@@ -1583,7 +1603,7 @@ func struggle()->void:
 	struggle_button.text = "Struggle:" + str(struggles)+ " remaining"
 	
 func reviveInTown()->void:
-	state  = autoload.state_list.idle
+	state  = Icons.state_list.idle
 	health = max_health 
 	resolve = max_resolve 
 	nefis = max_nefis 
@@ -1596,7 +1616,7 @@ func reviveInTown()->void:
 	staggered_duration = false
 	translation = Vector3(0,5, 0)
 	can_walk = true
-	autoload.gravity(self)
+	Icons.gravity(self)
 	is_dead = false
 
 
@@ -1695,7 +1715,7 @@ func walk()->void:
 		is_running = false
 		is_crouching = false
 
-	autoload.movement(self)
+	Icons.movement(self)
 
 #climbing section
 var is_swimming:bool = false
@@ -1714,10 +1734,10 @@ func climbing()-> void:
 							is_climbing = true
 							is_swimming = false
 							if not head_ray.is_colliding() and not is_wall_in_range:#vaulting
-								state = autoload.state_list.vault
+								state = Icons.state_list.vault
 								vertical_velocity = Vector3.UP * 3 
 							elif not is_wall_in_range:#normal climb
-								state = autoload.state_list.climb
+								state = Icons.state_list.climb
 								vertical_velocity = Vector3.UP * 3 
 							else:
 								vertical_velocity = Vector3.UP * (strength * 1.25 + (agility * 0.15))
@@ -1785,7 +1805,7 @@ var dash_timerright: float = 0.0
 var dash_countforward: int = 0
 var dash_timerforward: float = 0.0
 func dodgeIframe():
-	if state == autoload.state_list.slide or backstep_duration == true or frontstep_duration == true or leftstep_duration == true or rightstep_duration == true or dash_duration == true:
+	if state == Icons.state_list.slide or backstep_duration == true or frontstep_duration == true or leftstep_duration == true or rightstep_duration == true or dash_duration == true:
 		set_collision_layer(6) 
 		set_collision_mask(6) 
 	else:
@@ -2079,7 +2099,7 @@ func _on_Unstuck_pressed():
 	staggered_duration = false
 	translation = Vector3(0,5, 0)
 	can_walk = true
-	autoload.gravity(self)
+	Icons.gravity(self)
 	
 	
 func skillUserInterfaceInputs():
@@ -2396,44 +2416,44 @@ func UniversalToolTip(icon_texture)->void:
 	var instance_equipment = preload("res://Tooltips/tooltipEquipable.tscn").instance()
 	if icon_texture != null:
 		#consumablaes
-		if icon_texture.get_path() == autoload.red_potion.get_path():
-			callToolTip(instance, "Red Potion", autoload.red_potion_description)
+		if icon_texture.get_path() == Icons.red_potion.get_path():
+			callToolTip(instance, "Red Potion", Icons.red_potion_description)
 		#food
-		elif icon_texture.get_path() == autoload.strawberry.get_path():
+		elif icon_texture.get_path() == Icons.strawberry.get_path():
 			callToolTip(instance,"Strawberry","+5 health points +9 kcals +24 grams of water")
-		elif icon_texture.get_path() == autoload.raspberry.get_path():
+		elif icon_texture.get_path() == Icons.raspberry.get_path():
 			callToolTip(instance,"Raspberry","+3 health points +1 kcals +2 grams of water")
-		elif icon_texture.get_path() == autoload.beetroot.get_path():
+		elif icon_texture.get_path() == Icons.beetroot.get_path():
 			callToolTip(instance,"beetroot","+15 health points +32 kcals +71.8 grams of water")
 			#equipment icons
 #__________________________________EQUIPMENT DESCRIPTIONS HERE______________________________________
 
-		elif icon_texture.get_path() == autoload.weapset1_icons["shield"].get_path():
+		elif icon_texture.get_path() == Icons.weapset1_icons["shield"].get_path():
 			var title:String = "Wood Shield"
-			var stat1:String = "Melee attack speed: " +str(autoload.weapset1_atk_speed["shield"])
-			var stat2:String = "Guard protection: + " + str(autoload.shield_wood_absorb)
-			var stat3:String = "slash/blunt/pierce resistance: + " + str(autoload.shield_wood_general_defense)
+			var stat1:String = "Melee attack speed: " +str(Icons.weapset1_atk_speed["shield"])
+			var stat2:String = "Guard protection: + " + str(Icons.shield_wood_absorb)
+			var stat3:String = "slash/blunt/pierce resistance: + " + str(Icons.shield_wood_general_defense)
 			var description:String = "A very basic shield, yet study and dependable"
 			callToolTipEquip(instance_equipment,title, stat1, stat2, stat3,"","","", "", "",description)
-		elif icon_texture.get_path() == autoload.weapset1_icons["sword"].get_path():
+		elif icon_texture.get_path() == Icons.weapset1_icons["sword"].get_path():
 			var title:String = "Iron broad sword"
-			var stat1:String = "base damage: "+ "+ " + str(autoload.sword_beginner_dmg)
-			var stat2:String = "Guard protection: + " + str(autoload.sword_beginner_absorb)
-			var stat3:String = "Melee attack speed: " +str(autoload.weapset1_atk_speed["sword"])
+			var stat1:String = "base damage: "+ "+ " + str(Icons.sword_beginner_dmg)
+			var stat2:String = "Guard protection: + " + str(Icons.sword_beginner_absorb)
+			var stat3:String = "Melee attack speed: " +str(Icons.weapset1_atk_speed["sword"])
 			var description:String = "Looks like something that was produced enmasse, will make do"
 			callToolTipEquip(instance_equipment,title, stat1, stat2,stat3,"","","", "", "",description)
 
-		elif icon_texture.get_path() == autoload.weapset1_icons["axe"].get_path():
+		elif icon_texture.get_path() == Icons.weapset1_icons["axe"].get_path():
 			var title:String = "Iron axe"
-			var stat1:String = "base damage: "+ "+ " + str(autoload.axe_beginner_dmg)
-			var stat2:String = "Guard protection: + " + str(autoload.axe_beginner_absorb)
-			var stat3:String = "Melee attack speed: " +str(autoload.weapset1_atk_speed["axe"])
+			var stat1:String = "base damage: "+ "+ " + str(Icons.axe_beginner_dmg)
+			var stat2:String = "Guard protection: + " + str(Icons.axe_beginner_absorb)
+			var stat3:String = "Melee attack speed: " +str(Icons.weapset1_atk_speed["axe"])
 			var description:String = "A very good tool"
 			callToolTipEquip(instance_equipment,title, stat1, stat2, stat3,"","","", "", "",description)
 
 
 #______________________________________SKILL DESCRIPTIONS HERE______________________________________
-		elif icon_texture.get_path() == autoload.vanguard_icons["cyclone"].get_path():
+		elif icon_texture.get_path() == Icons.vanguard_icons["cyclone"].get_path():
 			var base_damage: float = all_skills.cyclone_damage + total_dmg
 			var points: int = cyclone_icon.points
 			var damage_multiplier: float = 1.0
@@ -2449,7 +2469,7 @@ func UniversalToolTip(icon_texture)->void:
 			callToolTipSegmented(instance_skills,"cyclone",total_value,cost,extra,cooldown,description)
 	
 	
-		elif icon_texture.get_path() == autoload.vanguard_icons["whirlwind"].get_path():
+		elif icon_texture.get_path() == Icons.vanguard_icons["whirlwind"].get_path():
 			var base_damage: float = all_skills.whirlwind_damage + total_dmg
 			var points: int =  whirlwind_icon.points
 			var health_ratio: float = float(health) / float(max_health)
@@ -2470,7 +2490,7 @@ func UniversalToolTip(icon_texture)->void:
 			callToolTipSegmented(instance_skills,"Desperate Slash",total_value,cost,extra,cooldown,description)
 		
 
-		elif icon_texture.get_path() == autoload.vanguard_icons["sunder"].get_path():
+		elif icon_texture.get_path() == Icons.vanguard_icons["sunder"].get_path():
 			var base_damage: float = all_skills.overhead_slash_damage + total_dmg
 			var points: int = overhead_icon.points
 			var damage_multiplier: float = 1.0
@@ -2485,7 +2505,7 @@ func UniversalToolTip(icon_texture)->void:
 			var extra:String = "Damage"
 			callToolTipSegmented(instance_skills,"Sunder",total_value,cost,extra,cooldown,description)
 		
-		elif icon_texture.get_path() == autoload.vanguard_icons["rising_slash"].get_path():
+		elif icon_texture.get_path() == Icons.vanguard_icons["rising_slash"].get_path():
 			var base_damage: float = all_skills.rising_slash_damage + total_dmg
 			var points: int = rising_icon.points
 			var damage_multiplier: float = 1.0
@@ -2501,7 +2521,7 @@ func UniversalToolTip(icon_texture)->void:
 			callToolTipSegmented(instance_skills,"Rising Slash",total_value,cost,extra,cooldown,description)
 		
 		
-		elif icon_texture.get_path() == autoload.vanguard_icons["heart_trust"].get_path():
+		elif icon_texture.get_path() == Icons.vanguard_icons["heart_trust"].get_path():
 			var base_damage: float = all_skills.heart_trust_dmg + total_dmg
 			var points: int = heart_trust_icon.points
 			var damage_multiplier: float = 1.0
@@ -2517,10 +2537,10 @@ func UniversalToolTip(icon_texture)->void:
 			callToolTipSegmented(instance_skills,"Heart Trust",total_value,cost,extra,cooldown,str(description) + str(all_skills.heart_trust_bleed_duration) + " seconds")
 	
 	
-		elif icon_texture.get_path() == autoload.dash.get_path():
+		elif icon_texture.get_path() == Icons.dash.get_path():
 			pass
 			
-		elif icon_texture.get_path() == autoload.stomp.get_path():
+		elif icon_texture.get_path() == Icons.stomp.get_path():
 			var base_damage: float = all_skills.stomp_dmg + total_dmg
 			var total_damage: float  =all_skills.stomp_dmg + total_dmg
 			var damage_to_knocked =  total_damage *all_skills.stomp_dmg_proportion
@@ -2531,7 +2551,7 @@ func UniversalToolTip(icon_texture)->void:
 			var extra:String = "Burst damage, Situational"
 			callToolTipSegmented(instance_skills,"Stomp",total_value,total_extr_value,cooldown,extra,str(description))
 
-		elif icon_texture.get_path() == autoload.kick.get_path():
+		elif icon_texture.get_path() == Icons.kick.get_path():
 			var base_damage: float = all_skills.kick_dmg + total_dmg
 			var points: int = kick_icon.points
 			var damage_multiplier: float = 1.0
@@ -2546,16 +2566,16 @@ func UniversalToolTip(icon_texture)->void:
 			var extra:String = "Damage"
 			callToolTipSegmented(instance_skills,"Kick",total_value,cost,extra,cooldown,description)
 
-		elif icon_texture.get_path() == autoload.vanguard_icons["combo_switch"].get_path():
+		elif icon_texture.get_path() == Icons.vanguard_icons["combo_switch"].get_path():
 			var description: String = all_skills.combo_switch_description
 			var cooldown = str("Cooldown: ") + str(all_skills.combo_switch_cooldown)+ str(" seconds")
 			var extra:String = "Stance Switch"
 			callToolTipSegmented(instance_skills,"Switch it up","","",extra,cooldown,description)
 #_______________________________________Inventory system____________________________________________
 #for this to work either preload all the item icons here or add the "Global.gd"
-#as an autoload, i called it add_item in my project, and i used it to to compre the path 
+#as an Icons, i called it add_item in my project, and i used it to to compre the path 
 #of icons, if the path matches with the icon i need, i do the effect of the specific item 
-#i also use the same autoload to add items to inventory 
+#i also use the same Icons to add items to inventory 
 onready var inventory_grid = $UI/GUI/Inventory/ScrollContainer/InventoryGrid
 onready var gui = $UI/GUI
 
@@ -2590,19 +2610,19 @@ func inventorySlotPressed(index)->void:
 		var current_time = OS.get_ticks_msec() / 1000.0
 		if last_pressed_index == index and current_time - last_press_time <= double_press_time_inv:
 			print("Inventory slot", index, "pressed twice")
-			if icon_texture.get_path() == autoload.red_potion.get_path():
-				autoload.consumeRedPotion(self,button,inventory_grid,false,null)
-			elif icon_texture.get_path() == autoload.strawberry.get_path():
+			if icon_texture.get_path() == Icons.red_potion.get_path():
+				Icons.consumeRedPotion(self,button,inventory_grid,false,null)
+			elif icon_texture.get_path() == Icons.strawberry.get_path():
 					kilocalories +=1
 					health += 5
 					water += 2
 					button.quantity -=1
-			elif icon_texture.get_path() == autoload.raspberry.get_path():
+			elif icon_texture.get_path() == Icons.raspberry.get_path():
 					kilocalories += 4
 					health += 3
 					water += 3
 					button.quantity -=1
-			elif icon_texture.get_path() == autoload.beetroot.get_path():
+			elif icon_texture.get_path() == Icons.beetroot.get_path():
 					kilocalories += 32
 					health += 15
 					water += 71.8
@@ -2646,14 +2666,14 @@ func combineSlots()->void:
 	var combined_items = {}  # Dictionary to store combined items
 # Define weapon set paths
 	var not_stackable = [
-		autoload.weapset1_icons["sword"].get_path(),
-		autoload.weapset1_icons["axe"].get_path(),
-		autoload.weapset1_icons["demo-hammer"].get_path(),
-		autoload.weapset1_icons["greatmace"].get_path(),
-		autoload.weapset1_icons["warhammer"].get_path(),
-		autoload.weapset1_icons["greataxe"].get_path(),
-		autoload.weapset1_icons["greatsword"].get_path(),
-		autoload.weapset1_icons["shield"].get_path(),
+		Icons.weapset1_icons["sword"].get_path(),
+		Icons.weapset1_icons["axe"].get_path(),
+		Icons.weapset1_icons["demo-hammer"].get_path(),
+		Icons.weapset1_icons["greatmace"].get_path(),
+		Icons.weapset1_icons["warhammer"].get_path(),
+		Icons.weapset1_icons["greataxe"].get_path(),
+		Icons.weapset1_icons["greatsword"].get_path(),
+		Icons.weapset1_icons["shield"].get_path(),
 	]
 	# Iterate over children of the inventory grid
 	for child in inventory_grid.get_children():
@@ -2680,7 +2700,7 @@ func combineSlots()->void:
 		if child.is_in_group("Inventory"):
 			var icon = child.get_node("Icon")
 			var item_path = icon.texture.get_path() if icon.texture != null else null
-			if item_path != autoload.weapset1_icons["sword"].get_path() or item_path != autoload.weapset1_icons["axe"].get_path():
+			if item_path != Icons.weapset1_icons["sword"].get_path() or item_path != Icons.weapset1_icons["axe"].get_path():
 				if item_path in combined_items:
 					child.quantity = combined_items[item_path]
 
@@ -2853,39 +2873,39 @@ func lootBodies()->void:
 
 
 func receiveLootInLootTable(item,quantity)->void:#This is called by the players that use manual looting, it doesn't work with receiveDrops, either thiss or the other otherwise the loot is received twice 
-	autoload.addStackableItem(loot_grid,item,quantity)
+	Icons.addStackableItem(loot_grid,item,quantity)
 
 	
 	
 var auto_loot:bool = false
 func receiveDrops(item,quantity)->void:#This is called by enemeis when they die or by quest givers or by gathering, works alone without neeeding to call lootBodies():
-	autoload.addStackableItem(inventory_grid,item,quantity)
-	autoload.addFloatingIcon(take_damage_view,item,quantity)
+	Icons.addStackableItem(inventory_grid,item,quantity)
+	Icons.addFloatingIcon(take_damage_view,item,quantity)
 	
 
 func _on_GiveMeItems_pressed()->void:#Only for debugging purposes
 	coins += 550
 
-	autoload.addStackableItem(inventory_grid,autoload.red_potion,50000)
+	Icons.addStackableItem(inventory_grid,Icons.red_potion,50000)
 
-	autoload.addNotStackableItem(inventory_grid,autoload.weapset1_icons["sword"])
-	autoload.addNotStackableItem(inventory_grid,autoload.weapset1_icons["axe"])
-	autoload.addNotStackableItem(inventory_grid,autoload.weapset1_icons["hammer"])
-	autoload.addNotStackableItem(inventory_grid,autoload.weapset1_icons["mace"])
+	Icons.addNotStackableItem(inventory_grid,Icons.weapset1_icons["sword"])
+	Icons.addNotStackableItem(inventory_grid,Icons.weapset1_icons["axe"])
+	Icons.addNotStackableItem(inventory_grid,Icons.weapset1_icons["hammer"])
+	Icons.addNotStackableItem(inventory_grid,Icons.weapset1_icons["mace"])
 	
-	autoload.addNotStackableItem(inventory_grid,autoload.weapset1_icons["greataxe"])
-	autoload.addNotStackableItem(inventory_grid,autoload.weapset1_icons["shield"])
-	autoload.addNotStackableItem(inventory_grid,autoload.weapset1_icons["greatsword"])
-	autoload.addNotStackableItem(inventory_grid,autoload.weapset1_icons["demo-hammer"])
-	autoload.addNotStackableItem(inventory_grid,autoload.weapset1_icons["greatmace"])
-	autoload.addNotStackableItem(inventory_grid,autoload.weapset1_icons["warhammer"])
+	Icons.addNotStackableItem(inventory_grid,Icons.weapset1_icons["greataxe"])
+	Icons.addNotStackableItem(inventory_grid,Icons.weapset1_icons["shield"])
+	Icons.addNotStackableItem(inventory_grid,Icons.weapset1_icons["greatsword"])
+	Icons.addNotStackableItem(inventory_grid,Icons.weapset1_icons["demo-hammer"])
+	Icons.addNotStackableItem(inventory_grid,Icons.weapset1_icons["greatmace"])
+	Icons.addNotStackableItem(inventory_grid,Icons.weapset1_icons["warhammer"])
 	
-	autoload.addNotStackableItem(inventory_grid,autoload.garment1)
-	autoload.addNotStackableItem(inventory_grid,autoload.boots1)
+	Icons.addNotStackableItem(inventory_grid,Icons.garment1)
+	Icons.addNotStackableItem(inventory_grid,Icons.boots1)
 
-	autoload.addNotStackableItem(inventory_grid,autoload.torso_armor4)
-	autoload.addNotStackableItem(inventory_grid,autoload.torso_armor2)
-	autoload.addNotStackableItem(inventory_grid,autoload.torso_armor3)
+	Icons.addNotStackableItem(inventory_grid,Icons.torso_armor4)
+	Icons.addNotStackableItem(inventory_grid,Icons.torso_armor2)
+	Icons.addNotStackableItem(inventory_grid,Icons.torso_armor3)
 
 	
 	
@@ -3059,8 +3079,8 @@ func positionCoordinates()->void:
 ####################################################################################################
 #__________________________________Equipment Management____________________________
 func gearUp()->void:	
-	if is_instance_valid(current_race_gender):
-		current_race_gender.EquipmentSwitch()
+	if is_instance_valid(skills):
+		skills.EquipmentSwitch()
 
 		
 onready var main_weap_icon = $UI/GUI/Equipment/MainWeap/Icon
@@ -3176,12 +3196,12 @@ func gloveMouseExited()->void:
 # @Ceisri 
 # Equipment System
 # We check if the icon.texture of a specific equipment slot matches the texture path
-# of an item. All the paths are found in Global.gd and accessed with autoload, which is a singleton.
+# of an item. All the paths are found in Global.gd and accessed with Icons, which is a singleton.
 # If the texture of the slot's icon matches, we activate an effect and deactivate other effects of similar equipment type.
-# For example, if the primary weapon type is autoload.weapset1_icons["sword"], we set the primary weapon effect of that 
+# For example, if the primary weapon type is Icons.weapset1_icons["sword"], we set the primary weapon effect of that 
 # specific weapon to true and turn off all the other primary weapon effects but not the secondary weapon effects,
 # chest effects, boots effects, and so on.
-# The 3D meshes are added directly as children of the skeleton. Where is the skeleton? At current_race_gender.skeleton.
+# The 3D meshes are added directly as children of the skeleton. Where is the skeleton? At skills.skeleton.
 # I tried adding the weapons as children of a bone attachment and setting it as current_weap_instance,
 # then checking if it was null or not, checking the stats directly in the weapon instance, and so on, which also allowed
 # for a system where the player could drop and pick up items from and on the ground. It wasn't very complicated,
@@ -3190,15 +3210,15 @@ func gloveMouseExited()->void:
 # Anyways for this to work, just make sure every equipment piece is rigged to that skelton,
 # and when importing into the engine make sure it has the skin properties with the matching skeleton in the inspector
 
-var weapon_type = autoload.weapon_type_list.fist
-var main_weapon = autoload.main_weap_list.zero
-var sec_weapon = autoload.sec_weap_list.zero
+var weapon_type = Icons.weapon_type_list.fist
+var main_weapon = Icons.main_weap_list.zero
+var sec_weapon = Icons.sec_weap_list.zero
 var head = "naked"
 var torso = "naked"
 var legs = "naked"
 var hand_l = "naked"
 var hand_r = "naked"
-var feet = autoload.boots_list.set_1
+var feet = Icons.boots_list.set_1
 
 func primaryWeapEffect(chosen: String) -> void:
 	var effects: Array = [
@@ -3238,135 +3258,135 @@ func secondaryWeapEffect(chosen: String) -> void:
 func SwitchEquipmentBasedOnEquipmentIcons()-> void:
 #main weapon____________________________________________________________________
 	if sec_weap_icon.texture == null:
-		sec_weapon = autoload.sec_weap_list.zero
+		sec_weapon = Icons.sec_weap_list.zero
 		primaryWeapEffect("none")
 	if main_weap_icon != null:
 		if main_weap_icon.texture == null:
 			sec_wea_slot.visible = true
-			main_weapon = autoload.main_weap_list.zero
+			main_weapon = Icons.main_weap_list.zero
 			primaryWeapEffect("none")
-			weapon_type = autoload.weapon_type_list.fist
+			weapon_type = Icons.weapon_type_list.fist
 		else:
-			if main_weap_icon.texture.get_path() == autoload.weapset1_icons["sword"].get_path():
+			if main_weap_icon.texture.get_path() == Icons.weapset1_icons["sword"].get_path():
 				sec_wea_slot.visible = true
-				main_weapon = autoload.main_weap_list.sword_beginner
+				main_weapon = Icons.main_weap_list.sword_beginner
 				primaryWeapEffect("weapset1_sword")
 				if sec_weap_icon.texture == null:
-					sec_weapon = autoload.sec_weap_list.zero
-					weapon_type = autoload.weapon_type_list.sword
+					sec_weapon = Icons.sec_weap_list.zero
+					weapon_type = Icons.weapon_type_list.sword
 			
-			elif main_weap_icon.texture.get_path() == autoload.weapset1_icons["hammer"].get_path():
+			elif main_weap_icon.texture.get_path() == Icons.weapset1_icons["hammer"].get_path():
 				sec_wea_slot.visible = true
-				main_weapon = autoload.main_weap_list.hammer_beginner
+				main_weapon = Icons.main_weap_list.hammer_beginner
 				primaryWeapEffect("weapset1_hammer")
 				if sec_weap_icon.texture == null:
-					sec_weapon = autoload.sec_weap_list.zero
-					weapon_type = autoload.weapon_type_list.sword
+					sec_weapon = Icons.sec_weap_list.zero
+					weapon_type = Icons.weapon_type_list.sword
 					
-			elif main_weap_icon.texture.get_path() == autoload.weapset1_icons["mace"].get_path():
+			elif main_weap_icon.texture.get_path() == Icons.weapset1_icons["mace"].get_path():
 				sec_wea_slot.visible = true
-				main_weapon = autoload.main_weap_list.mace_beginner
+				main_weapon = Icons.main_weap_list.mace_beginner
 				primaryWeapEffect("weapset1_mace")
 				if sec_weap_icon.texture == null:
-					sec_weapon = autoload.sec_weap_list.zero
-					weapon_type = autoload.weapon_type_list.sword
+					sec_weapon = Icons.sec_weap_list.zero
+					weapon_type = Icons.weapon_type_list.sword
 			
-			elif main_weap_icon.texture.get_path() == autoload.weapset1_icons["axe"].get_path():
+			elif main_weap_icon.texture.get_path() == Icons.weapset1_icons["axe"].get_path():
 				sec_wea_slot.visible = true
-				main_weapon = autoload.main_weap_list.axe_beginner
+				main_weapon = Icons.main_weap_list.axe_beginner
 				primaryWeapEffect("weapset1_axe")
 				if sec_weap_icon.texture == null:
-					sec_weapon = autoload.sec_weap_list.zero
-					weapon_type = autoload.weapon_type_list.sword
+					sec_weapon = Icons.sec_weap_list.zero
+					weapon_type = Icons.weapon_type_list.sword
 		
-			elif main_weap_icon.texture.get_path() == autoload.weapset1_icons["greataxe"].get_path():
-					main_weapon =  autoload.main_weap_list.greataxe_beginner
+			elif main_weap_icon.texture.get_path() == Icons.weapset1_icons["greataxe"].get_path():
+					main_weapon =  Icons.main_weap_list.greataxe_beginner
 					primaryWeapEffect("weapset1_greataxe")
 					secondaryWeapEffect("none")
-					weapon_type = autoload.weapon_type_list.heavy
-					sec_weapon = autoload.sec_weap_list.zero
+					weapon_type = Icons.weapon_type_list.heavy
+					sec_weapon = Icons.sec_weap_list.zero
 					sec_wea_slot.visible = false
 
 					
-			elif main_weap_icon.texture.get_path() == autoload.weapset1_icons["greatsword"].get_path():
-					main_weapon =  autoload.main_weap_list.greatsword_beginner
+			elif main_weap_icon.texture.get_path() == Icons.weapset1_icons["greatsword"].get_path():
+					main_weapon =  Icons.main_weap_list.greatsword_beginner
 					primaryWeapEffect("weapset1_greatsword")
 					secondaryWeapEffect("none")
-					weapon_type = autoload.weapon_type_list.heavy
-					sec_weapon = autoload.sec_weap_list.zero
+					weapon_type = Icons.weapon_type_list.heavy
+					sec_weapon = Icons.sec_weap_list.zero
 					sec_wea_slot.visible = false
 
-			elif main_weap_icon.texture.get_path() == autoload.weapset1_icons["demo-hammer"].get_path():
-					main_weapon =  autoload.main_weap_list.demolition_hammer_beginner
+			elif main_weap_icon.texture.get_path() == Icons.weapset1_icons["demo-hammer"].get_path():
+					main_weapon =  Icons.main_weap_list.demolition_hammer_beginner
 					primaryWeapEffect("weapset1_demo-hammer")
 					secondaryWeapEffect("none")
-					weapon_type = autoload.weapon_type_list.heavy
-					sec_weapon = autoload.sec_weap_list.zero
+					weapon_type = Icons.weapon_type_list.heavy
+					sec_weapon = Icons.sec_weap_list.zero
 					sec_wea_slot.visible = false
 					
-			elif main_weap_icon.texture.get_path() == autoload.weapset1_icons["greatmace"].get_path():
-					main_weapon =  autoload.main_weap_list.greatmace_beginner
+			elif main_weap_icon.texture.get_path() == Icons.weapset1_icons["greatmace"].get_path():
+					main_weapon =  Icons.main_weap_list.greatmace_beginner
 					primaryWeapEffect("weapset1_greatmace")
 					secondaryWeapEffect("none")
-					weapon_type = autoload.weapon_type_list.heavy
-					sec_weapon = autoload.sec_weap_list.zero
+					weapon_type = Icons.weapon_type_list.heavy
+					sec_weapon = Icons.sec_weap_list.zero
 					sec_wea_slot.visible = false
 
 
-			elif main_weap_icon.texture.get_path() == autoload.weapset1_icons["warhammer"].get_path():
-					main_weapon =  autoload.main_weap_list.warhammer_beginner
+			elif main_weap_icon.texture.get_path() == Icons.weapset1_icons["warhammer"].get_path():
+					main_weapon =  Icons.main_weap_list.warhammer_beginner
 					primaryWeapEffect("weapset1_warhammer")
 					secondaryWeapEffect("none")
-					weapon_type = autoload.weapon_type_list.heavy
-					sec_weapon = autoload.sec_weap_list.zero
+					weapon_type = Icons.weapon_type_list.heavy
+					sec_weapon = Icons.sec_weap_list.zero
 					sec_wea_slot.visible = false
 
 
 			else:
 				sec_wea_slot.visible = true
-				main_weapon = autoload.main_weap_list.zero
-				sec_weapon = autoload.sec_weap_list.zero
+				main_weapon = Icons.main_weap_list.zero
+				sec_weapon = Icons.sec_weap_list.zero
 				primaryWeapEffect("none")
-				weapon_type = autoload.weapon_type_list.fist
+				weapon_type = Icons.weapon_type_list.fist
 				
 			
 #sec weapon_____________________________________________________________________
 			if sec_weap_icon == null:
-				sec_weapon = autoload.sec_weap_list.zero
+				sec_weapon = Icons.sec_weap_list.zero
 				secondaryWeapEffect("none")
 			else:
 				if sec_wea_slot.visible == false:
-					sec_weapon = autoload.sec_weap_list.zero
+					sec_weapon = Icons.sec_weap_list.zero
 					secondaryWeapEffect("none")
 				else:
 					if sec_weap_icon.texture == null:
-						sec_weapon = autoload.sec_weap_list.zero
+						sec_weapon = Icons.sec_weap_list.zero
 						secondaryWeapEffect("none")
 					else:
-						if sec_weap_icon.texture.get_path() == autoload.weapset1_icons["sword"].get_path():
-							sec_weapon = autoload.sec_weap_list.sword_beginner
+						if sec_weap_icon.texture.get_path() == Icons.weapset1_icons["sword"].get_path():
+							sec_weapon = Icons.sec_weap_list.sword_beginner
 							secondaryWeapEffect("weapset1_sword2")
-							weapon_type = autoload.weapon_type_list.dual_swords
+							weapon_type = Icons.weapon_type_list.dual_swords
 						
-						elif sec_weap_icon.texture.get_path() == autoload.weapset1_icons["hammer"].get_path():
-							sec_weapon = autoload.sec_weap_list.hammer_beginner
+						elif sec_weap_icon.texture.get_path() == Icons.weapset1_icons["hammer"].get_path():
+							sec_weapon = Icons.sec_weap_list.hammer_beginner
 							secondaryWeapEffect("weapset1_hammer2")
-							weapon_type = autoload.weapon_type_list.dual_swords
+							weapon_type = Icons.weapon_type_list.dual_swords
 							
-						elif sec_weap_icon.texture.get_path() == autoload.weapset1_icons["mace"].get_path():
-							sec_weapon = autoload.sec_weap_list.mace_beginner
+						elif sec_weap_icon.texture.get_path() == Icons.weapset1_icons["mace"].get_path():
+							sec_weapon = Icons.sec_weap_list.mace_beginner
 							secondaryWeapEffect("weapset1_mace2")
-							weapon_type = autoload.weapon_type_list.dual_swords	
+							weapon_type = Icons.weapon_type_list.dual_swords	
 					
-						elif sec_weap_icon.texture.get_path() == autoload.weapset1_icons["axe"].get_path():
-							sec_weapon = autoload.sec_weap_list.axe_beginner
+						elif sec_weap_icon.texture.get_path() == Icons.weapset1_icons["axe"].get_path():
+							sec_weapon = Icons.sec_weap_list.axe_beginner
 							secondaryWeapEffect("weapset1_axe2")
-							weapon_type = autoload.weapon_type_list.dual_swords	
+							weapon_type = Icons.weapon_type_list.dual_swords	
 					
-						elif sec_weap_icon.texture.get_path() == autoload.weapset1_icons["shield"].get_path():
-							sec_weapon = autoload.sec_weap_list.shield_beginner
+						elif sec_weap_icon.texture.get_path() == Icons.weapset1_icons["shield"].get_path():
+							sec_weapon = Icons.sec_weap_list.shield_beginner
 							secondaryWeapEffect("shield_wood_png")
-							weapon_type = autoload.weapon_type_list.sword_shield
+							weapon_type = Icons.weapon_type_list.sword_shield
 							
 						
 
@@ -3374,7 +3394,7 @@ func SwitchEquipmentBasedOnEquipmentIcons()-> void:
 #head___________________________________________________________________________
 	if helm_icon != null:
 		if helm_icon.texture != null:
-			if helm_icon.texture.get_path() == autoload.hat1.get_path():
+			if helm_icon.texture.get_path() == Icons.hat1.get_path():
 				head = "garment1"
 
 		elif helm_icon.texture == null:
@@ -3385,13 +3405,13 @@ func SwitchEquipmentBasedOnEquipmentIcons()-> void:
 	if chest_icon != null: #check if the icon and texture are null just to avoid crashes
 		if chest_icon.texture != null:
 			#the singleton Global.gd holds the preloads paths to various textures, match them to the specific armor icon
-			if chest_icon.texture.get_path() == autoload.garment1.get_path():
+			if chest_icon.texture.get_path() == Icons.garment1.get_path():
 				torso = "tunic0" # if they match set the variable Torso, legs, hands or whatever to a string or enum 
-			elif chest_icon.texture.get_path() == autoload.torso_armor2.get_path():
+			elif chest_icon.texture.get_path() == Icons.torso_armor2.get_path():
 				torso = "gambeson0"
-			elif chest_icon.texture.get_path() == autoload.torso_armor3.get_path():
+			elif chest_icon.texture.get_path() == Icons.torso_armor3.get_path():
 				torso = "chainmail0"
-			elif chest_icon.texture.get_path() == autoload.torso_armor4.get_path():
+			elif chest_icon.texture.get_path() == Icons.torso_armor4.get_path():
 				torso = "cuirass0"
 		elif chest_icon.texture == null:
 			torso = "naked"
@@ -3399,7 +3419,7 @@ func SwitchEquipmentBasedOnEquipmentIcons()-> void:
 	
 	if legs_icon != null:
 		if legs_icon.texture != null:
-			if legs_icon.texture.get_path() == autoload.pants1.get_path():
+			if legs_icon.texture.get_path() == Icons.pants1.get_path():
 				legs = "pants0"
 		elif legs_icon.texture == null:
 			legs = "naked"
@@ -3408,15 +3428,15 @@ func SwitchEquipmentBasedOnEquipmentIcons()-> void:
 #_______________________________feet____________________________________________
 	
 	if feet_icon == null:
-		feet = autoload.boots_list.set_0
+		feet = Icons.boots_list.set_0
 	else:
 		if  feet_icon.texture == null:
-			feet = autoload.boots_list.set_0
+			feet = Icons.boots_list.set_0
 		else:
-			if  feet_icon.texture.get_path() == autoload.boots1.get_path():
-				feet = autoload.boots_list.set_1
-			elif feet_icon.texture.get_path() == autoload.boots1.get_path():
-				feet = autoload.boots_list.set_2
+			if  feet_icon.texture.get_path() == Icons.boots1.get_path():
+				feet = Icons.boots_list.set_1
+			elif feet_icon.texture.get_path() == Icons.boots1.get_path():
+				feet = Icons.boots_list.set_2
 				
 				
 				
@@ -3432,8 +3452,8 @@ func SwitchEquipmentBasedOnEquipmentIcons()-> void:
 
 
 func switchWeaponFromHandToSideOrBack()->void:
-	if is_instance_valid(current_race_gender):
-		current_race_gender.switchWeapon()
+	if is_instance_valid(skills):
+		skills.switchWeapon()
 
 
 
@@ -3475,87 +3495,87 @@ var effects:Dictionary = { #Reminder to add extra_on_hit_resolve_regen to weapon
 	"berserk": {"stats": {"extra_intelligence": -0.5,"extra_balance": -0.5,"extra_agility": 0.5,"extra_melee_atk_speed": 1,"extra_range_atk_speed": 0.5,"extra_cast_atk_speed": 0.3,"extra_ferocity": 0.3,"extra_fury": 0.3,}, "applied": false},
 	
 	#equipment effects______________________________________________________________________________
-	#Use thee respective names of item equipment png name in autoload, add a 2 at the end for secondary weapons
+	#Use thee respective names of item equipment png name in Icons, add a 2 at the end for secondary weapons
 	
-	"weapset1_sword": {"stats": {"extra_dmg": autoload.sword_beginner_dmg,
-	"extra_guard_dmg_absorbition": autoload.sword_beginner_absorb},
+	"weapset1_sword": {"stats": {"extra_dmg": Icons.sword_beginner_dmg,
+	"extra_guard_dmg_absorbition": Icons.sword_beginner_absorb},
 	"extra_on_hit_resolve_regen": 1,
-	"extra_melee_atk_speed":autoload.weapset1_atk_speed["sword"], "applied": false},
+	"extra_melee_atk_speed":Icons.weapset1_atk_speed["sword"], "applied": false},
 	
 
-	"weapset1_sword2": {"stats": {"extra_dmg": autoload.sword_beginner_dmg,
-	"extra_guard_dmg_absorbition": autoload.sword_beginner_absorb,
+	"weapset1_sword2": {"stats": {"extra_dmg": Icons.sword_beginner_dmg,
+	"extra_guard_dmg_absorbition": Icons.sword_beginner_absorb,
 	"extra_on_hit_resolve_regen": 1,
-	"extra_melee_atk_speed":autoload.weapset1_atk_speed["sword"]}, "applied": false},
+	"extra_melee_atk_speed":Icons.weapset1_atk_speed["sword"]}, "applied": false},
 	
-	"weapset1_hammer": {"stats": {"extra_dmg": autoload.sword_beginner_dmg,
-	"extra_guard_dmg_absorbition": autoload.sword_beginner_absorb,
+	"weapset1_hammer": {"stats": {"extra_dmg": Icons.sword_beginner_dmg,
+	"extra_guard_dmg_absorbition": Icons.sword_beginner_absorb,
 	"extra_on_hit_resolve_regen": 1,
-	"extra_melee_atk_speed":autoload.weapset1_atk_speed["hammer"]}, "applied": false},
+	"extra_melee_atk_speed":Icons.weapset1_atk_speed["hammer"]}, "applied": false},
 	
-	"weapset1_hammer2": {"stats": {"extra_dmg": autoload.sword_beginner_dmg,
-	"extra_guard_dmg_absorbition": autoload.sword_beginner_absorb,
+	"weapset1_hammer2": {"stats": {"extra_dmg": Icons.sword_beginner_dmg,
+	"extra_guard_dmg_absorbition": Icons.sword_beginner_absorb,
 	"extra_on_hit_resolve_regen": 1,
-	"extra_melee_atk_speed":autoload.weapset1_atk_speed["hammer"]}, "applied": false},
+	"extra_melee_atk_speed":Icons.weapset1_atk_speed["hammer"]}, "applied": false},
 	
 	
-	"weapset1_mace": {"stats": {"extra_dmg": autoload.sword_beginner_dmg,
-	"extra_guard_dmg_absorbition": autoload.sword_beginner_absorb,
+	"weapset1_mace": {"stats": {"extra_dmg": Icons.sword_beginner_dmg,
+	"extra_guard_dmg_absorbition": Icons.sword_beginner_absorb,
 	"extra_on_hit_resolve_regen": 1,
-	"extra_melee_atk_speed":autoload.weapset1_atk_speed["mace"]}, "applied": false},
+	"extra_melee_atk_speed":Icons.weapset1_atk_speed["mace"]}, "applied": false},
 	
 	
-	"weapset1_mace2": {"stats": {"extra_dmg": autoload.sword_beginner_dmg,
-	"extra_guard_dmg_absorbition": autoload.sword_beginner_absorb,
+	"weapset1_mace2": {"stats": {"extra_dmg": Icons.sword_beginner_dmg,
+	"extra_guard_dmg_absorbition": Icons.sword_beginner_absorb,
 	"extra_on_hit_resolve_regen": 1,
-	"extra_melee_atk_speed":autoload.weapset1_atk_speed["mace"]}, "applied": false},
+	"extra_melee_atk_speed":Icons.weapset1_atk_speed["mace"]}, "applied": false},
 	
 	
-	"weapset1_axe": {"stats": {"extra_dmg": autoload.axe_beginner_dmg,
-	"extra_guard_dmg_absorbition": autoload.axe_beginner_absorb,
+	"weapset1_axe": {"stats": {"extra_dmg": Icons.axe_beginner_dmg,
+	"extra_guard_dmg_absorbition": Icons.axe_beginner_absorb,
 	"extra_on_hit_resolve_regen": 1,
-	"extra_melee_atk_speed":autoload.weapset1_atk_speed["axe"]}, "applied": false},
+	"extra_melee_atk_speed":Icons.weapset1_atk_speed["axe"]}, "applied": false},
 	
-	"weapset1_axe2": {"stats": {"extra_dmg": autoload.axe_beginner_dmg,
-	"extra_guard_dmg_absorbition": autoload.axe_beginner_absorb,
+	"weapset1_axe2": {"stats": {"extra_dmg": Icons.axe_beginner_dmg,
+	"extra_guard_dmg_absorbition": Icons.axe_beginner_absorb,
 	"extra_on_hit_resolve_regen": 1,
-	"extra_melee_atk_speed":autoload.weapset1_atk_speed["axe"]}, "applied": false},
+	"extra_melee_atk_speed":Icons.weapset1_atk_speed["axe"]}, "applied": false},
 	
-	"weapset1_greatsword": {"stats": {"extra_dmg": autoload.greatsword_beginner_dmg,
-	"extra_guard_dmg_absorbition": autoload.greatsword_beginner_absorb,
+	"weapset1_greatsword": {"stats": {"extra_dmg": Icons.greatsword_beginner_dmg,
+	"extra_guard_dmg_absorbition": Icons.greatsword_beginner_absorb,
 	"extra_on_hit_resolve_regen": 2.5,
-	"extra_melee_atk_speed":autoload.weapset1_atk_speed["greatsword"]}, "applied": false},
+	"extra_melee_atk_speed":Icons.weapset1_atk_speed["greatsword"]}, "applied": false},
 	
-	"weapset1_greataxe": {"stats": {"extra_dmg": autoload.greataxe_beginner_dmg,
-	"extra_guard_dmg_absorbition": autoload.greataxe_beginner_absorb,
+	"weapset1_greataxe": {"stats": {"extra_dmg": Icons.greataxe_beginner_dmg,
+	"extra_guard_dmg_absorbition": Icons.greataxe_beginner_absorb,
 	"extra_on_hit_resolve_regen": 1,
-	"extra_melee_atk_speed":autoload.weapset1_atk_speed["greataxe"]}, "applied": false},
+	"extra_melee_atk_speed":Icons.weapset1_atk_speed["greataxe"]}, "applied": false},
 	
 	
-	"weapset1_demo-hammer": {"stats": {"extra_dmg": autoload.demolition_hammer_beg_dmg,
-	"extra_guard_dmg_absorbition": autoload.demolition_hammer_beg_absorb,
-	"extra_melee_atk_speed":autoload.weapset1_atk_speed["demo-hammer"],
+	"weapset1_demo-hammer": {"stats": {"extra_dmg": Icons.demolition_hammer_beg_dmg,
+	"extra_guard_dmg_absorbition": Icons.demolition_hammer_beg_absorb,
+	"extra_melee_atk_speed":Icons.weapset1_atk_speed["demo-hammer"],
 	"extra_on_hit_resolve_regen": 1,
-	"extra_impact": autoload.demolition_hammer_beg_impact}, "applied": false},
+	"extra_impact": Icons.demolition_hammer_beg_impact}, "applied": false},
 	
-	"weapset1_greatmace": {"stats": {"extra_dmg": autoload.greatmace_beg_dmg,
-	"extra_guard_dmg_absorbition": autoload.greatmace_beg_absorb,
-	"extra_melee_atk_speed": autoload.weapset1_atk_speed["greatmace"],
+	"weapset1_greatmace": {"stats": {"extra_dmg": Icons.greatmace_beg_dmg,
+	"extra_guard_dmg_absorbition": Icons.greatmace_beg_absorb,
+	"extra_melee_atk_speed": Icons.weapset1_atk_speed["greatmace"],
 	"extra_on_hit_resolve_regen": 1,
-	"extra_impact": autoload.greatmace_beg_impact}, "applied": false},
+	"extra_impact": Icons.greatmace_beg_impact}, "applied": false},
 	
-	"weapset1_warhammer": {"stats": {"extra_dmg": autoload.greatmace_beg_dmg,
-	"extra_guard_dmg_absorbition": autoload.greatmace_beg_absorb,
-	"extra_melee_atk_speed":autoload.weapset1_atk_speed["warhammer"],
+	"weapset1_warhammer": {"stats": {"extra_dmg": Icons.greatmace_beg_dmg,
+	"extra_guard_dmg_absorbition": Icons.greatmace_beg_absorb,
+	"extra_melee_atk_speed":Icons.weapset1_atk_speed["warhammer"],
 	"extra_on_hit_resolve_regen": 1,
-	"extra_impact": autoload.greatmace_beg_impact}, "applied": false},
+	"extra_impact": Icons.greatmace_beg_impact}, "applied": false},
 	
 	
-	"shield_wood_png": {"stats": {"extra_guard_dmg_absorbition": autoload.shield_wood_absorb,
-	"extra_melee_atk_speed":autoload.weapset1_atk_speed["shield"],
-	"slash_resistance":autoload.shield_wood_general_defense,
-	"blunt_resistance":autoload.shield_wood_general_defense,
-	"pierce_resistance": autoload.shield_wood_general_defense,}, "applied": false},
+	"shield_wood_png": {"stats": {"extra_guard_dmg_absorbition": Icons.shield_wood_absorb,
+	"extra_melee_atk_speed":Icons.weapset1_atk_speed["shield"],
+	"slash_resistance":Icons.shield_wood_general_defense,
+	"blunt_resistance":Icons.shield_wood_general_defense,
+	"pierce_resistance": Icons.shield_wood_general_defense,}, "applied": false},
 
 
 
@@ -3647,34 +3667,34 @@ func showStatusIcon()->void:
 
 	# Apply status icons based on applied effects
 	var applied_effects = [
-		{"name": "dehydration", "texture": autoload.dehydration_texture, "modulation_color": Color(1, 0, 0)},
-		{"name": "overhydration", "texture": autoload.overhydration_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "bloated", "texture": autoload.bloated_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "hungry", "texture": autoload.hungry_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "bleeding", "texture": autoload.bleeding_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "frozen", "texture": autoload.frozen_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "stunned", "texture": autoload.stunned_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "blinded", "texture": autoload.blinded_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "terrorized", "texture": autoload.terrorized_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "scared", "texture": autoload.scared_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "intimidated", "texture": autoload.intimidated_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "rooted", "texture": autoload.rooted_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "blockbuffs", "texture": autoload.blockbuffs_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "blockactive", "texture": autoload.block_active_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "blockpassive", "texture": autoload.block_passive_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "brokendefense", "texture": autoload.broken_defense_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "healreduction", "texture": autoload.heal_reduction_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "bomb", "texture": autoload.bomb_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "slow", "texture": autoload.slow_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "burn", "texture": autoload.burn_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "sleep", "texture": autoload.sleep_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "weakness", "texture": autoload.weakness_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "poisoned", "texture": autoload.poisoned_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "confused", "texture": autoload.confusion_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "impaired", "texture": autoload.impaired_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "lethargy", "texture": autoload.lethargy_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "redpotion", "texture": autoload.red_potion_texture, "modulation_color": Color(1, 1, 1)},
-		{"name": "berserk", "texture": autoload.berserk_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "dehydration", "texture": Icons.dehydration_texture, "modulation_color": Color(1, 0, 0)},
+		{"name": "overhydration", "texture": Icons.overhydration_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "bloated", "texture": Icons.bloated_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "hungry", "texture": Icons.hungry_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "bleeding", "texture": Icons.bleeding_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "frozen", "texture": Icons.frozen_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "stunned", "texture": Icons.stunned_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "blinded", "texture": Icons.blinded_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "terrorized", "texture": Icons.terrorized_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "scared", "texture": Icons.scared_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "intimidated", "texture": Icons.intimidated_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "rooted", "texture": Icons.rooted_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "blockbuffs", "texture": Icons.blockbuffs_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "blockactive", "texture": Icons.block_active_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "blockpassive", "texture": Icons.block_passive_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "brokendefense", "texture": Icons.broken_defense_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "healreduction", "texture": Icons.heal_reduction_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "bomb", "texture": Icons.bomb_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "slow", "texture": Icons.slow_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "burn", "texture": Icons.burn_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "sleep", "texture": Icons.sleep_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "weakness", "texture": Icons.weakness_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "poisoned", "texture": Icons.poisoned_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "confused", "texture": Icons.confusion_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "impaired", "texture": Icons.impaired_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "lethargy", "texture": Icons.lethargy_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "redpotion", "texture": Icons.red_potion_texture, "modulation_color": Color(1, 1, 1)},
+		{"name": "berserk", "texture": Icons.berserk_texture, "modulation_color": Color(1, 1, 1)},
 	]
 
 	for effect in applied_effects:
@@ -3694,6 +3714,8 @@ func redPotion():
 		if red_potion_duration >0:
 			health += 10
 			red_potion_duration -= 1
+			if health > max_health:
+				health = max_health
 			applyEffect("redpotion",true)
 		else:
 			applyEffect("redpotion",false)
@@ -5600,7 +5622,7 @@ var slot: String = "1"
 var save_directory: String
 var save_path: String 
 func savePlayerData():
-	current_race_gender.savePlayerData()
+	skills.savePlayerData()
 	var data = {
 		"aiming_mode":aiming_mode,
 		"direction_assist":direction_assist,
@@ -5972,118 +5994,118 @@ func loadPlayerData():
 #_____________CHARACTER EDITING, SPECIES, SEX, BLEND SHAPES AND BONE EDITOR IN ANOTHER SCRIPT 
 var species: String = "human"
 var sex: String = "xx"
-var current_race_gender: Node = null 
+var skills: Node = null 
 
 func switchSexRace():
 	match sex:
 		"xy":
 			match species:
 				"saurus":
-					if current_race_gender != null:
-						current_race_gender.queue_free() # Delete previous gender scene
-					current_race_gender = autoload.saurus.instance()
-					current_race_gender.player = self 
+					if skills != null:
+						skills.queue_free() # Delete previous gender scene
+					skills = Icons.saurus.instance()
+					skills.player = self 
 					raceInstacePreparations()
 					InstanceRace()
 				"human":
-					if current_race_gender != null:
-						current_race_gender.queue_free() # Delete previous gender scene
-					current_race_gender = autoload.human_male.instance()
-					current_race_gender.player = self 
+					if skills != null:
+						skills.queue_free() # Delete previous gender scene
+					skills = Icons.human_male.instance()
+					skills.player = self 
 					raceInstacePreparations()
 					InstanceRace()
 				"panthera":
-					if current_race_gender != null:
-						current_race_gender.queue_free() # Delete previous gender scene
-					current_race_gender = autoload.panthera_male.instance()
-					current_race_gender.player = self 
+					if skills != null:
+						skills.queue_free() # Delete previous gender scene
+					skills = Icons.panthera_male.instance()
+					skills.player = self 
 					raceInstacePreparations()
 					InstanceRace()
 				"sepris":
-					if current_race_gender != null:
-						current_race_gender.queue_free()
-					current_race_gender = autoload.sepris.instance()
-					current_race_gender.player = self 
+					if skills != null:
+						skills.queue_free()
+					skills = Icons.sepris.instance()
+					skills.player = self 
 					raceInstacePreparations()
 					InstanceRace()
 				"bireas":
-					if current_race_gender != null:
-						current_race_gender.queue_free()
-					current_race_gender = autoload.bireas.instance()
+					if skills != null:
+						skills.queue_free()
+					skills = Icons.bireas.instance()
 					raceInstacePreparations()
 					InstanceRace()
 				"skeleton":
-					if current_race_gender != null:
-						current_race_gender.queue_free()
-					current_race_gender = autoload.skeleton.instance()
+					if skills != null:
+						skills.queue_free()
+					skills = Icons.skeleton.instance()
 					raceInstacePreparations()
 					InstanceRace()
 				"kadosiel":
-					if current_race_gender != null:
-						current_race_gender.queue_free()
-					current_race_gender = autoload.kadosiel.instance()
+					if skills != null:
+						skills.queue_free()
+					skills = Icons.kadosiel.instance()
 					raceInstacePreparations()
 					InstanceRace()
 		"xx":
 			match species:
 				"saurus":
-					if current_race_gender != null:
-						current_race_gender.queue_free() # Delete previous gender scene
-					current_race_gender = autoload.saurus.instance()
+					if skills != null:
+						skills.queue_free() # Delete previous gender scene
+					skills = Icons.saurus.instance()
 					raceInstacePreparations()
 					InstanceRace()
 				"human":
-					if current_race_gender != null:
-						current_race_gender.queue_free() # Delete previous gender scene
-					current_race_gender = autoload.human_female.instance()
+					if skills != null:
+						skills.queue_free() # Delete previous gender scene
+					skills = Icons.human_female.instance()
 					raceInstacePreparations()
 					InstanceRace()
 				"panthera":
-					if current_race_gender != null:
-						current_race_gender.queue_free() # Delete previous gender scene
-					current_race_gender = autoload.panthera_female.instance()
+					if skills != null:
+						skills.queue_free() # Delete previous gender scene
+					skills = Icons.panthera_female.instance()
 					raceInstacePreparations()
 					InstanceRace()
 				"sepris":
-					if current_race_gender != null:
-						current_race_gender.queue_free()
-					current_race_gender = autoload.sepris.instance()
+					if skills != null:
+						skills.queue_free()
+					skills = Icons.sepris.instance()
 					raceInstacePreparations()
 					InstanceRace()
 				"bireas":
-					if current_race_gender != null:
-						current_race_gender.queue_free()
-					current_race_gender = autoload.bireas.instance()
+					if skills != null:
+						skills.queue_free()
+					skills = Icons.bireas.instance()
 					raceInstacePreparations()
 					InstanceRace()
 				"skeleton":
-					if current_race_gender != null:
-						current_race_gender.queue_free()
-					current_race_gender = autoload.skeleton.instance()
+					if skills != null:
+						skills.queue_free()
+					skills = Icons.skeleton.instance()
 					raceInstacePreparations()
 					InstanceRace()
 				"kadosiel":
-					if current_race_gender != null:
-						current_race_gender.queue_free()
-					current_race_gender = autoload.kadosiel.instance()
+					if skills != null:
+						skills.queue_free()
+					skills = Icons.kadosiel.instance()
 					raceInstacePreparations()
 					InstanceRace()
-	if is_instance_valid(current_race_gender):
-		var current_face_set = current_race_gender.face_set
+	if is_instance_valid(skills):
+		var current_face_set = skills.face_set
 func raceInstacePreparations():
-	current_race_gender.player = self 
-	current_race_gender.save_directory = save_directory
-	current_race_gender.save_path = save_path + "colors.dat"
+	skills.player = self 
+	skills.save_directory = save_directory
+	skills.save_path = save_path + "colors.dat"
 func InstanceRace():
-	player_mesh.add_child(current_race_gender)
+	player_mesh.add_child(skills)
 func _on_switchGender_pressed():
-	current_race_gender.player = self 
+	skills.player = self 
 	if sex == "xy":
 		sex = "xx"
 	else:
 		sex = "xy"
 	switchSexRace() # Call the function to change gender and update scene
-	current_race_gender.EquipmentSwitch()
+	skills.EquipmentSwitch()
 var species_list = ["sepris", "human","skeleton","panthera","bireas","saurus","kadosiel"]# Define the list of available species
 var current_species_index = 0# Initialize the index of the current species
 func _on_switchRace_pressed():
@@ -6092,9 +6114,9 @@ func _on_switchRace_pressed():
 		current_species_index = 0
 	species = species_list[current_species_index]
 	switchSexRace() # Call the function to change gender and update scene
-	current_race_gender.EquipmentSwitch()
+	skills.EquipmentSwitch()
 	hairstyle = hair_list[current_hair_index]
-	current_race_gender.face_set = face_list[current_face_index]
+	skills.face_set = face_list[current_face_index]
 var hair_list = ["1", "2", "3","4","5"]
 var current_hair_index = 0
 func _on_switchhair_pressed():
@@ -6102,7 +6124,7 @@ func _on_switchhair_pressed():
 	if current_hair_index >= hair_list.size():  # Wrap around to the beginning if reached the end of the list
 		current_hair_index = 0  # Reset index to the beginning
 	hairstyle = hair_list[current_hair_index]
-	current_race_gender.switchEquipment()
+	skills.switchEquipment()
 	colorBodyParts()
 
 var face_list = ["1", "2", "3", "4","5"]
@@ -6111,14 +6133,14 @@ func _on_switch_face_pressed():
 	current_face_index += 1  # Increment the index to move to the next face
 	if current_face_index >= face_list.size():  # Wrap around to the beginning if reached the end of the list
 		current_face_index = 0  # Reset index to the beginning
-	current_race_gender.face_set = face_list[current_face_index]
-	current_race_gender.EquipmentSwitch()
+	skills.face_set = face_list[current_face_index]
+	skills.EquipmentSwitch()
 
 func _on_ArmorColorSwitch_pressed():
-	current_race_gender.randomizeArmor()
+	skills.randomizeArmor()
 
 func _on_SkinColorSwitch_pressed():
-	current_race_gender._on_Button_pressed()
+	skills._on_Button_pressed()
 	
 	
 var hairstyle: String = "1"
@@ -6142,30 +6164,30 @@ func _on_ColorPicker_color_changed(color: Color) -> void:
 		colorBodyParts()
 					
 func colorBodyParts() -> void:
-	if current_race_gender != null:
-		if current_race_gender.right_eye != null:
-			var right_eye = current_race_gender.right_eye
+	if skills != null:
+		if skills.right_eye != null:
+			var right_eye = skills.right_eye
 			var new_material = iris_image.duplicate()  # Duplicate the preloaded material to avoid modifying the original
 			new_material.albedo_color = right_eye_color
 			new_material.flags_unshaded = true
 			right_eye.material_override = new_material  # Assign the new material to the right eye
-	if current_race_gender != null:
-		if current_race_gender.left_eye != null:
-			var left_eye = current_race_gender.left_eye
+	if skills != null:
+		if skills.left_eye != null:
+			var left_eye = skills.left_eye
 			var new_material = iris_image.duplicate()  # Duplicate the preloaded material to avoid modifying the original
 			new_material.albedo_color = left_eye_color
 			new_material.flags_unshaded = true
 			left_eye.material_override = new_material  # Assign the new material to the right eye
-	if current_race_gender != null:
-		if current_race_gender.skeleton != null:
-			for child in current_race_gender.skeleton.get_children():
+	if skills != null:
+		if skills.skeleton != null:
+			for child in skills.skeleton.get_children():
 				if child.is_in_group("hair"):
 					var material = child.mesh.surface_get_material(0) # Assuming only one surface
 					material.albedo_color = hair_color
 
 func _on_BlendshapeTest_pressed()->void:
-	current_race_gender.smile = rand_range(-2,+2)
-	current_race_gender.applyBlendShapes()
+	skills.smile = rand_range(-2,+2)
+	skills.applyBlendShapes()
 
 #________________________________________LEVELING SYSTEM____________________________________________
 var experience_points: int = 0
