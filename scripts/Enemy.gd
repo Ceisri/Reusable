@@ -102,6 +102,7 @@ func getThrown(delta: float) -> void:
 				if collision.collider != thrower:
 					if thrown == true:
 						collision.collider.stats.getHit(thrower, 15, Autoload.damage_type.blunt,0)
+						vertical_velocity = Vector3.DOWN * 3
 						
 
 		direction = Vector3.ZERO
@@ -113,7 +114,6 @@ export var species: String = "Goblin"
 func saveData():
 	var save_directory: String = "user://Worlds/" + world.world_name + "/" + species + "/" + entity_name + "/" +str(name)+ "/" 
 	var save_path: String = save_directory  + "/save.dat"
-
 	var data = {
 		"position": translation,
 		"health": stats.health,
@@ -127,11 +127,10 @@ func saveData():
 	if error == OK:
 		file.store_var(data)
 		file.close()
-		
+
 func loadData():
 	var save_directory: String = "user://Worlds/" + world.world_name + "/" + species + "/" + entity_name + "/" +str(name)+ "/" 
 	var save_path: String = save_directory  + "/save.dat"
-	
 	var file = File.new()
 	if file.file_exists(save_path):
 		var error = file.open_encrypted_with_pass(save_path, File.READ, save_data_password)
@@ -155,16 +154,12 @@ func respawn()->void:
 	threat_system.resetThreats()
 	can_be_looted = false
 	state = Autoload.state_list.wander
-
-
 	dying = false
 	dead = false
 
 	if is_randomized == true:
 		if can_wear_armor == true:
 			entity_holder.selectRandomEquipment()
-		
-			
 func displayThreatInfo(label):
 	threat_system.threat_info = threat_system.getBestFive()
 	label.text = "\n".join(threat_system.threat_info)
@@ -172,9 +167,6 @@ func displayThreatInfo(label):
 
 
 var state = Autoload.state_list.wander
-
-
-
 var dying:bool = false
 var dead:bool = false
 var staggered_duration: bool = false
@@ -281,38 +273,62 @@ func slideForward() -> void:
 			tween.start()
 		else:
 			tween.stop_all()
-
-			
-
 func stopSlidingForward()-> void:
 	tween.stop_all()
-onready var eyes = $Eyes
 var turn_speed = 9
-func lookTarget(turning_speed)->void:
+
+onready var eyes:Spatial = $Eyes
+
+
+func rotateAwayFromDirection(target_direction: Vector3) -> void:
+	if target_direction.length_squared() > 0.0001:
+		var look_at_rotation = Basis()
+		look_at_rotation = look_at_rotation.rotated(Vector3(0, 1, 0), atan2(-target_direction.x, -target_direction.z))
+		self.global_transform.basis = look_at_rotation
+
+func rotateTowardsDirection(target_direction: Vector3) -> void:
+	if target_direction.length_squared() > 0.0001:
+		var look_at_rotation = Basis()
+		look_at_rotation = look_at_rotation.rotated(Vector3(0, 1, 0), atan2(target_direction.x, target_direction.z))
+		self.global_transform.basis = look_at_rotation
+
+func lookTarget(speed: float) -> void:
 	var target = threat_system.findHighestThreat()
-	if target: 
-		eyes.look_at(target.player.global_transform.origin, Vector3.UP)
-		rotate_y(deg2rad(eyes.rotation.y * turning_speed))
+	if not target:
+		return
+	
+	var direction = (target.player.global_transform.origin - global_transform.origin).normalized()
+	direction.y = 0  # Set the Y component to 0 to prevent flying
+	
+	if direction.length_squared() > 0.0001:
+		var current_direction = -global_transform.basis.z.normalized()
+		var target_rotation = current_direction.linear_interpolate(direction, speed)
 		
-		
+		var look_at_rotation = Basis()
+		look_at_rotation = look_at_rotation.rotated(Vector3(0, 1, 0), atan2(target_rotation.x, target_rotation.z))
+		self.global_transform.basis = look_at_rotation
 
 
-		
-		
 var walk_speed: float = 3
+
 func followTarget(angry:bool)->void:
 	if angry == false:
 		var target =threat_system.findHighestThreat()
 		if target:
+			
 			direction = (target.player.global_transform.origin - global_transform.origin).normalized()
 			direction.y = 0  # Set the Y component to 0 to prevent flying
+			rotateTowardsDirection(direction)
 			move_and_slide(direction * walk_speed)
 	else:
 		var target =threat_system.findLowestThreat()
 		if target:
+			rotateTowardsDirection(direction)
 			direction = (target.player.global_transform.origin - global_transform.origin).normalized()
 			direction.y = 0  # Set the Y component to 0 to prevent flying
 			move_and_slide(direction * walk_speed)
+			
+			
 var orbit_angle = 0.0  # Declare orbit_angle as a member variable
 func orbitTarget()->void:
 	if stats.health > 0: 
