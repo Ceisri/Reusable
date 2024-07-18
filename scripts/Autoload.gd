@@ -71,20 +71,18 @@ enum state_list{
 
 
 enum damage_type {
-	slash,
-	pierce,
-	blunt,
-	sonic,
-	heat,
-	cold,
-	jolt, 
-	toxic,
-	acid,
-	shock,
-	bleed,
-	neuro,
-	radiant,
-	healing
+	slash,#1
+	blunt,#2
+	pierce,#3
+	sonic,#4
+	heat,#5
+	cold,#6
+	jolt,#7
+	toxic,#8
+	acid,#9
+	arcane,#10
+	bleed,#11
+	radiant,#12
 }
 enum weapon_type_list {
 	fist,

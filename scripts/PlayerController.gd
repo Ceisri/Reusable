@@ -3,6 +3,7 @@ extends KinematicBody
 
 onready var canvas:CanvasLayer = $Canvas
 onready var stats:Node =  $Stats
+onready var effects:Node = $Effects
 onready var skills:Node =  $Skills
 onready var debug:Control =  $Canvas/Debug
 onready var skeleton:Skeleton  = null
@@ -50,7 +51,7 @@ func _ready() -> void:
 	connectInventoryButtons()
 	connectSkillBarButtons()
 	connectAreas()
-	
+
 
 
 func removeBothersomeKeybinds()-> void:#Here just in case someone is using this as a template
@@ -86,12 +87,44 @@ func _physics_process(delta: float) -> void:
 	doublePressToDash()
 	skills.updateCooldownLabel()
 	skills.comboSystem()
+	laserRayForTesting()
 	if Engine.get_physics_frames() % 2 == 0:
+		
 		harvestGather()
 	if Engine.get_physics_frames() % 3 == 0:
+		showEnemyStats()
 		uiColorShift()
+
+
 	if Engine.get_physics_frames() % 6 == 0:
 		ResourceBarsLabels()
+		
+	if Engine.get_physics_frames() % 12 == 0:
+		effects.showStatusIcon(
+	$Canvas/Skillbar/StatusGrid/Icon1,
+	$Canvas/Skillbar/StatusGrid/Icon2,
+	$Canvas/Skillbar/StatusGrid/Icon3,
+	$Canvas/Skillbar/StatusGrid/Icon4,
+	$Canvas/Skillbar/StatusGrid/Icon5,
+	$Canvas/Skillbar/StatusGrid/Icon6,
+	$Canvas/Skillbar/StatusGrid/Icon7,
+	$Canvas/Skillbar/StatusGrid/Icon8,
+	$Canvas/Skillbar/StatusGrid/Icon9,
+	$Canvas/Skillbar/StatusGrid/Icon10,
+	$Canvas/Skillbar/StatusGrid/Icon11,
+	$Canvas/Skillbar/StatusGrid/Icon12,
+	$Canvas/Skillbar/StatusGrid/Icon13,
+	$Canvas/Skillbar/StatusGrid/Icon14,
+	$Canvas/Skillbar/StatusGrid/Icon15,
+	$Canvas/Skillbar/StatusGrid/Icon16,
+	$Canvas/Skillbar/StatusGrid/Icon17,
+	$Canvas/Skillbar/StatusGrid/Icon18,
+	$Canvas/Skillbar/StatusGrid/Icon19,
+	$Canvas/Skillbar/StatusGrid/Icon20,
+	$Canvas/Skillbar/StatusGrid/Icon21,
+	$Canvas/Skillbar/StatusGrid/Icon22,
+	$Canvas/Skillbar/StatusGrid/Icon23,
+	$Canvas/Skillbar/StatusGrid/Icon24)
 	if Engine.get_physics_frames() % 28 == 0:
 		if Input:
 			displaySlotsLabel()
@@ -272,7 +305,8 @@ func activeActions()->void:
 	elif silent_stab_active == true:
 		directionToCamera()
 		moveTowardsDirection(1)
-		animation.play("punch",0.3,1)
+		animation.play("punch",0.3,stats.extra_melee_atk_speed)
+		print(str(stats.extra_melee_atk_speed))
 		skills.skillCancel("silentStab")
 	elif garrote_active == true:
 		directionToCamera()
@@ -1135,6 +1169,17 @@ func automaticTargetAssist() ->void:
 
 
 #_______________________________________________Combat______________________________________________
+
+func laserRayForTesting() -> void:
+	if Input.is_action_pressed("Lclick"):
+		if ray.is_colliding():
+			var body = ray.get_collider()
+			if body != null:
+				if body != self:
+					if body.is_in_group("Entity"):
+						body.stats.getHit(self,rand_range(5,15),Autoload.damage_type.cold,15,rand_range(0,5))
+						body.get_node("Effects").applyEffect("bleed",true)
+	
 """
 @Ceisri
 Documentation String: 
@@ -1578,9 +1623,10 @@ func isFacingSelf(body:Node, threshold: float) -> bool:
 	var direction_to_body = (body_position - self_position).normalized()
 	# Get the facing direction of the body from its Mesh node
 	var facing_direction = Vector3.ZERO
-	var direcion_node = body.get_node("DirectionControl")
-	if direcion_node:
-		facing_direction = direcion_node.global_transform.basis.z.normalized()
+	var direction_node = body.get_node("DirectionControl")
+	
+	if direction_node:
+		facing_direction = direction_node.global_transform.basis.z.normalized()
 	else:# If DirectionControl node is not found, use the default facing direction of the body
 		facing_direction = body.global_transform.basis.z.normalized()
 	# Calculate the dot product between the body's facing direction and the direction to the calling object (self)
@@ -1747,6 +1793,13 @@ func saveData():
 		"health": stats.health,
 		"max_health": stats.max_health,
 		
+		"entity_graphic_interface.rect_position":entity_graphic_interface.rect_position,
+		
+		"entity_graphic_RU.visible":entity_graphic_RU.visible,
+		"entity_graphic_LU.visible":entity_graphic_LU.visible,
+		"entity_graphic_RD.visible":entity_graphic_RD.visible,
+		"entity_graphic_LD.visible":entity_graphic_LD.visible,
+		
 		"skillbar.rect_position": skillbar.rect_position,
 		"skill_bar_mode": skill_bar_mode,
 		"ui_color": ui_color,
@@ -1780,7 +1833,20 @@ func loadData():
 			if "max_health" in data_file:
 				stats.max_health = data_file["max_health"]
 
+			if "entity_graphic_interface.rect_position" in data_file:
+				entity_graphic_interface.rect_position = data_file["entity_graphic_interface.rect_position"]
 
+
+			if "entity_graphic_LU.visible" in data_file:
+				entity_graphic_LU.visible = data_file["entity_graphic_LU.visible"]
+			if "entity_graphic_RU.visible" in data_file:
+				entity_graphic_RU.visible = data_file["entity_graphic_RU.visible"]
+				
+			if "entity_graphic_LD.visible" in data_file:
+				entity_graphic_LD.visible = data_file["entity_graphic_LD.visible"]
+			if "entity_graphic_RD.visible" in data_file:
+				entity_graphic_RD.visible = data_file["entity_graphic_RD.visible"]
+			
 			if "skillbar.rect_position" in data_file:
 				skillbar.rect_position = data_file["skillbar.rect_position"]
 			if "skill_bar_mode" in data_file:
@@ -1803,17 +1869,23 @@ func saveInventoryData():
 			if child.get_node("Icon").has_method("saveData"):
 				child.get_node("Icon").saveData()
 #Graphic interface__________________________________________________________________________________
-onready var entity_graphic_interface:Control = $UI/EnemyUI
-onready var entity_ui_tween:Tween = $UI/EnemyUI/Tween
-onready var entity_health_bar:TextureProgress = $UI/EnemyUI/ProgressBar
-onready var entity_health_label:Label =  $UI/EnemyUI/HPLabel
-onready var entity_ae_bar:TextureProgress = $UI/GUI/EnemyUI/AE
-onready var entity_ae_label:Label =$UI/GUI/EnemyUI/AE/AElab
+onready var entity_graphic_interface:Control =  $Canvas/EnemyUI
+onready var entity_graphic_RU:Control = $Canvas/EnemyUI/Up
+onready var entity_graphic_LU:Control = $Canvas/EnemyUI/UpL
 
-onready var entity_ne_bar:TextureProgress = $UI/GUI/EnemyUI/NE
-onready var entity_ne_label:Label = $UI/GUI/EnemyUI/NE/NElab
-onready var entity_re_bar:TextureProgress = $UI/GUI/EnemyUI/RE
-onready var entity_re_label:Label = $UI/GUI/EnemyUI/RE/RElab
+onready var entity_graphic_RD:Control = $Canvas/EnemyUI/Down
+onready var entity_graphic_LD:Control = $Canvas/EnemyUI/DownL
+
+
+onready var entity_ui_tween:Tween =  $Canvas/EnemyUI/Tween
+onready var entity_health_bar:TextureProgress = $Canvas/EnemyUI/Up/TextureProgress
+onready var entity_health_label:Label = $Canvas/EnemyUI/Up/HPlabel
+
+onready var entity_health_bar2:TextureProgress = $Canvas/EnemyUI/UpL/TextureProgress
+onready var entity_health_label2:Label = $Canvas/EnemyUI/UpL/HPlabel
+
+onready var entity_energy_bar:TextureProgress = $Canvas/EnemyUI/Down/TextureProgress
+onready var entity_energy_label:Label =  $Canvas/EnemyUI/Down/EPlabel
 
 onready var entity_frontdef_label:Label = $UI/EnemyUI/FrontDefLabel
 onready var entity_flankdef_label:Label = $UI/EnemyUI/FlankDefLabel
@@ -1821,38 +1893,162 @@ onready var entity_backdef_label:Label = $UI/EnemyUI/BackDefLabel
 
 onready var ray:RayCast = $CameraRoot/Horizontal/Vertical/Camera/Aim
 
-onready var entity_pos_label:Label =  $UI/EnemyUI/Position
+onready var entity_pos_label:Label = $Canvas/EnemyUI/coordinates
 var fade_duration: float = 0.3
 
 
-onready var threat_label:Label = $UI/EnemyUI/ThreatLabel
+onready var threat_label:Label = $Canvas/EnemyUI/Down/ThreatLabel
 var stored_victim:KinematicBody = null
-var time_to_show_store_victim:int = 0
+var time_to_show_stored_victim:int = 0
+
+func showEnemyBuffsDebuffs(body)->void:
+	if $Canvas/EnemyUI/Down.visible == true:
+		body.get_node("Effects").showStatusIcon(
+		$Canvas/EnemyUI/Down/StatusGrid/Icon1,
+		$Canvas/EnemyUI/Down/StatusGrid/Icon2,
+		$Canvas/EnemyUI/Down/StatusGrid/Icon3,
+		$Canvas/EnemyUI/Down/StatusGrid/Icon4,
+		$Canvas/EnemyUI/Down/StatusGrid/Icon5,
+		$Canvas/EnemyUI/Down/StatusGrid/Icon6,
+		$Canvas/EnemyUI/Down/StatusGrid/Icon7,
+		$Canvas/EnemyUI/Down/StatusGrid/Icon8,
+		$Canvas/EnemyUI/Down/StatusGrid/Icon9,
+		$Canvas/EnemyUI/Down/StatusGrid/Icon10,
+		$Canvas/EnemyUI/Down/StatusGrid/Icon11,
+		$Canvas/EnemyUI/Down/StatusGrid/Icon12,
+		$Canvas/EnemyUI/Down/StatusGrid/Icon13,
+		$Canvas/EnemyUI/Down/StatusGrid/Icon14,
+		$Canvas/EnemyUI/Down/StatusGrid/Icon15,
+		$Canvas/EnemyUI/Down/StatusGrid/Icon16,
+		$Canvas/EnemyUI/Down/StatusGrid/Icon17,
+		$Canvas/EnemyUI/Down/StatusGrid/Icon18,
+		$Canvas/EnemyUI/Down/StatusGrid/Icon19,
+		$Canvas/EnemyUI/Down/StatusGrid/Icon20,
+		$Canvas/EnemyUI/Down/StatusGrid/Icon21,
+		$Canvas/EnemyUI/Down/StatusGrid/Icon22,
+		$Canvas/EnemyUI/Down/StatusGrid/Icon23,
+		$Canvas/EnemyUI/Down/StatusGrid/Icon24)
+	
+	if $Canvas/EnemyUI/DownL.visible == true:
+		body.get_node("Effects").showStatusIcon(
+		$Canvas/EnemyUI/DownL/StatusGrid/Icon1,
+		$Canvas/EnemyUI/DownL/StatusGrid/Icon2,
+		$Canvas/EnemyUI/DownL/StatusGrid/Icon3,
+		$Canvas/EnemyUI/DownL/StatusGrid/Icon4,
+		$Canvas/EnemyUI/DownL/StatusGrid/Icon5,
+		$Canvas/EnemyUI/DownL/StatusGrid/Icon6,
+		$Canvas/EnemyUI/DownL/StatusGrid/Icon7,
+		$Canvas/EnemyUI/DownL/StatusGrid/Icon8,
+		$Canvas/EnemyUI/DownL/StatusGrid/Icon9,
+		$Canvas/EnemyUI/DownL/StatusGrid/Icon10,
+		$Canvas/EnemyUI/DownL/StatusGrid/Icon11,
+		$Canvas/EnemyUI/DownL/StatusGrid/Icon12,
+		$Canvas/EnemyUI/DownL/StatusGrid/Icon13,
+		$Canvas/EnemyUI/DownL/StatusGrid/Icon14,
+		$Canvas/EnemyUI/DownL/StatusGrid/Icon15,
+		$Canvas/EnemyUI/DownL/StatusGrid/Icon16,
+		$Canvas/EnemyUI/DownL/StatusGrid/Icon17,
+		$Canvas/EnemyUI/DownL/StatusGrid/Icon18,
+		$Canvas/EnemyUI/DownL/StatusGrid/Icon19,
+		$Canvas/EnemyUI/DownL/StatusGrid/Icon20,
+		$Canvas/EnemyUI/DownL/StatusGrid/Icon21,
+		$Canvas/EnemyUI/DownL/StatusGrid/Icon22,
+		$Canvas/EnemyUI/DownL/StatusGrid/Icon23,
+		$Canvas/EnemyUI/DownL/StatusGrid/Icon24)
+
+func updateEnemyBarsLabels(body)-> void:
+	entity_health_bar.value =body.stats.health
+	entity_health_bar.max_value =body.stats.max_health
+	entity_health_label.text = "HP:" + str(round(body.stats.health* 100) / 100) + "/" + str(body.stats.max_health)
+	entity_health_bar2.value =body.stats.health
+	entity_health_bar2.max_value =body.stats.max_health
+	entity_health_label2.text = "HP:" + str(round(body.stats.health* 100) / 100) + "/" + str(body.stats.max_health)
+	var rounded_position = Vector3(
+		round(body.global_transform.origin.x * 10) / 10,
+		round(body.global_transform.origin.y * 10) / 10,
+		round(body.global_transform.origin.z * 10) / 10
+	)
+	var coordinates:String = "%d, %d, %d" % [rounded_position.x, rounded_position.y, rounded_position.z]
+	entity_pos_label.text = coordinates	
+
+onready var entity_res_slash:Label = $Canvas/EnemyUI/Down/ExtraIntel/ScrollContainer/GridContainer/Slash/label
+onready var entity_res_blunt:Label = $Canvas/EnemyUI/Down/ExtraIntel/ScrollContainer/GridContainer/Blunt/label
+onready var entity_res_pierce:Label = $Canvas/EnemyUI/Down/ExtraIntel/ScrollContainer/GridContainer/Pierce/label
+onready var entity_res_sonic:Label =$Canvas/EnemyUI/Down/ExtraIntel/ScrollContainer/GridContainer/Sonic/label
+onready var entity_res_heat:Label = $Canvas/EnemyUI/Down/ExtraIntel/ScrollContainer/GridContainer/Heat/label
+onready var entity_res_cold:Label =$Canvas/EnemyUI/Down/ExtraIntel/ScrollContainer/GridContainer/Cold/label
+onready var entity_res_jolt:Label = $Canvas/EnemyUI/Down/ExtraIntel/ScrollContainer/GridContainer/Jolt/label
+onready var entity_res_toxic:Label = $Canvas/EnemyUI/Down/ExtraIntel/ScrollContainer/GridContainer/Toxic/label
+onready var entity_res_acid:Label =$Canvas/EnemyUI/Down/ExtraIntel/ScrollContainer/GridContainer/Acid/label
+onready var entity_res_arcane:Label = $Canvas/EnemyUI/Down/ExtraIntel/ScrollContainer/GridContainer/Arcane/label
+onready var entity_res_bleed:Label = $Canvas/EnemyUI/Down/ExtraIntel/ScrollContainer/GridContainer/Bleed/label
+onready var entity_res_radiant:Label = $Canvas/EnemyUI/Down/ExtraIntel/ScrollContainer/GridContainer/Radiant/label
+
+
+onready var entity_res_slash2:Label = $Canvas/EnemyUI/DownL/ExtraIntel/ScrollContainer/GridContainer/Slash/label
+onready var entity_res_blunt2:Label = $Canvas/EnemyUI/DownL/ExtraIntel/ScrollContainer/GridContainer/Blunt/label
+onready var entity_res_pierce2:Label = $Canvas/EnemyUI/DownL/ExtraIntel/ScrollContainer/GridContainer/Pierce/label
+onready var entity_res_sonic2:Label =$Canvas/EnemyUI/DownL/ExtraIntel/ScrollContainer/GridContainer/Sonic/label
+onready var entity_res_heat2:Label = $Canvas/EnemyUI/DownL/ExtraIntel/ScrollContainer/GridContainer/Heat/label
+onready var entity_res_cold2:Label =$Canvas/EnemyUI/DownL/ExtraIntel/ScrollContainer/GridContainer/Cold/label
+onready var entity_res_jolt2:Label = $Canvas/EnemyUI/DownL/ExtraIntel/ScrollContainer/GridContainer/Jolt/label
+onready var entity_res_toxic2:Label = $Canvas/EnemyUI/DownL/ExtraIntel/ScrollContainer/GridContainer/Toxic/label
+onready var entity_res_acid2:Label =$Canvas/EnemyUI/DownL/ExtraIntel/ScrollContainer/GridContainer/Acid/label
+onready var entity_res_arcane2:Label = $Canvas/EnemyUI/DownL/ExtraIntel/ScrollContainer/GridContainer/Arcane/label
+onready var entity_res_bleed2:Label = $Canvas/EnemyUI/DownL/ExtraIntel/ScrollContainer/GridContainer/Bleed/label
+onready var entity_res_radiant2:Label = $Canvas/EnemyUI/DownL/ExtraIntel/ScrollContainer/GridContainer/Radiant/label
+
+
+func showEntityIntel(body)-> void:#show this if the player has enough perception or other stats, players will be able to see these enemy info just by looking at them 
+	var enemy_stats = body.get_node("Stats")
+	entity_res_slash.text = str(enemy_stats.slash_resistance)
+	entity_res_blunt.text = str(enemy_stats.blunt_resistance)
+	entity_res_pierce.text = str(enemy_stats.pierce_resistance)
+	entity_res_sonic.text = str(enemy_stats.sonic_resistance)
+	entity_res_heat.text = str(enemy_stats.heat_resistance)
+	entity_res_cold.text = str(enemy_stats.cold_resistance)
+	entity_res_jolt.text = str(enemy_stats.jolt_resistance)
+	entity_res_toxic.text = str(enemy_stats.toxic_resistance)
+	entity_res_acid.text = str(enemy_stats.acid_resistance)
+	entity_res_arcane.text = str(enemy_stats.arcane_resistance)
+	entity_res_bleed.text = str(enemy_stats.bleed_resistance)
+	entity_res_radiant.text = str(enemy_stats.radiant_resistance)
+	
+	entity_res_slash2.text = str(enemy_stats.slash_resistance)
+	entity_res_blunt2.text = str(enemy_stats.blunt_resistance)
+	entity_res_pierce2.text = str(enemy_stats.pierce_resistance)
+	entity_res_sonic2.text = str(enemy_stats.sonic_resistance)
+	entity_res_heat2.text = str(enemy_stats.heat_resistance)
+	entity_res_cold2.text = str(enemy_stats.cold_resistance)
+	entity_res_jolt2.text = str(enemy_stats.jolt_resistance)
+	entity_res_toxic2.text = str(enemy_stats.toxic_resistance)
+	entity_res_acid2.text = str(enemy_stats.acid_resistance)
+	entity_res_arcane2.text = str(enemy_stats.arcane_resistance)
+	entity_res_bleed2.text = str(enemy_stats.bleed_resistance)
+	entity_res_radiant2.text = str(enemy_stats.radiant_resistance)
+#	entity_frontdef_label.text ="front defense: "+ str(body.stats.front_defense)
+#	entity_flankdef_label.text ="flank defense: "+ str(body.stats.flank_defense)
+#	entity_backdef_label.text ="back defense: "+ str(body.stats.back_defense)
+#
 
 func showEnemyStats()-> void:
-	if stored_victim != null and time_to_show_store_victim > 0:
-		var body =  stored_victim
+	if stored_victim != null and time_to_show_stored_victim > 0:
+		entity_graphic_interface.modulate.a = 1.0
+		showEnemyBuffsDebuffs(stored_victim)
 		if Engine.get_physics_frames() % 3 == 0:# Again this is here only to reduce the refresh rate and boost performance 
-			entity_graphic_interface.modulate.a = 1.0
-			entity_health_bar.value =stored_victim.stats.health
-			entity_health_bar.max_value = stored_victim.stats.max_health
-			entity_health_label.text = "HP:" + str(round(stored_victim.stats.health* 100) / 100) + "/" + str(stored_victim.stats.max_health)
-			var rounded_position = Vector3(
-				round(stored_victim.global_transform.origin.x * 10) / 10,
-				round(stored_victim.global_transform.origin.y * 10) / 10,
-				round(stored_victim.global_transform.origin.z * 10) / 10
-			)
-			var coordinates:String = "%d, %d, %d" % [rounded_position.x, rounded_position.y, rounded_position.z]
-			entity_pos_label.text = coordinates
-			showEntityIntel(body)
-			
+			updateEnemyBarsLabels(stored_victim)
+			updateEnemyBarsLabels(stored_victim)
+			showEntityIntel(stored_victim)
+
+		
+
 			if stored_victim.has_method("displayThreatInfo"):
 				stored_victim.displayThreatInfo(threat_label)
 			else:
 				threat_label.text = ""
 		if Engine.get_physics_frames() % 24 == 0:
-			if time_to_show_store_victim > 0:
-				time_to_show_store_victim -= 1
+			if time_to_show_stored_victim > 0:
+				time_to_show_stored_victim -= 1
 			else:
 				entity_ui_tween.interpolate_property(entity_graphic_interface, "modulate:a", entity_graphic_interface.modulate.a, 0.0, fade_duration, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
 				entity_ui_tween.start()
@@ -1862,21 +2058,11 @@ func showEnemyStats()-> void:
 			if body != null:
 				if body != self:
 					if body.is_in_group("Entity") and body != self:
-						# Instantly turn alpha to maximum
 						entity_graphic_interface.modulate.a = 1.0
-						entity_health_bar.value = body.stats.health
-						entity_health_bar.max_value = body.stats.max_health
-						entity_health_label.text = "HP:" + str(round(body.stats.health* 100) / 100) + "/" + str(body.stats.max_health)
-						var rounded_position = Vector3(
-							round(body.global_transform.origin.x * 10) / 10,
-							round(body.global_transform.origin.y * 10) / 10,
-							round(body.global_transform.origin.z * 10) / 10
-						)
-						var coordinates:String = "%d, %d, %d" % [rounded_position.x, rounded_position.y, rounded_position.z]
-						entity_pos_label.text = coordinates
-						
+						showEnemyBuffsDebuffs(body)
+						updateEnemyBarsLabels(body)
+						updateEnemyBarsLabels(body)
 						showEntityIntel(body)
-						
 						if body.has_method("displayThreatInfo"):
 							body.displayThreatInfo(threat_label)
 						else:
@@ -1895,11 +2081,6 @@ func showEnemyStats()-> void:
 				entity_ui_tween.start()
  
 
-func showEntityIntel(body)-> void:#show this if the playe has enough perception or other stats, players will be able to see these enemy info just by looking at them 
-	entity_frontdef_label.text ="front defense: "+ str(body.stats.front_defense)
-	entity_flankdef_label.text ="flank defense: "+ str(body.stats.flank_defense)
-	entity_backdef_label.text ="back defense: "+ str(body.stats.back_defense)
-	
 	
 
 
@@ -1965,6 +2146,7 @@ func carryObject() -> void:
 		# Set the rotation of carried_body to match direction_control
 		carried_body.rotation = direction_control.rotation
 
+#If the enemy model is not using mixamo and has normal rotation use this
 	if garrote_victim != null:
 		garrote_victim.set_collision_layer(6) 
 		garrote_victim.set_collision_mask(6) 
@@ -1978,6 +2160,28 @@ func carryObject() -> void:
 		garrote_victim.translation = direction_control.global_transform.origin + forward_vector * desired_distance + right_vector * side_offset + Vector3(0, 0, 0)
 		# Set the rotation of garrote_victim to match direction_control
 		garrote_victim.rotation = direction_control.rotation
+
+#else use that 
+#	if garrote_victim != null:
+#		garrote_victim.set_collision_layer(6) 
+#		garrote_victim.set_collision_mask(6) 
+#
+#		# Calculate the forward vector from direction_control
+#		var forward_vector = direction_control.global_transform.basis.z
+#		var right_vector = direction_control.global_transform.basis.x  # Right direction
+#
+#		# Set the position of garrote_victim
+#		var desired_distance = 0.4  # Adjust the desired distance as needed
+#		var side_offset = -0.2  # Adjust the side offset as needed
+#
+#		# Apply the forward and side offsets
+#		garrote_victim.translation = direction_control.global_transform.origin + forward_vector * desired_distance + right_vector * side_offset + Vector3(0, 0, 0)
+#
+#		# Set the rotation of garrote_victim to match direction_control, inverted
+#		garrote_victim.rotation.y = direction_control.rotation.y + PI  # Rotate 180 degrees around Y axis
+#		garrote_victim.rotation.x = -direction_control.rotation.x  # Invert X rotation
+#		garrote_victim.rotation.z = -direction_control.rotation.z  # Invert Z rotation
+
 
 
 var garrote_victim: KinematicBody = null
@@ -2106,7 +2310,7 @@ onready var frame4:TextureRect = $Canvas/Menu/Frame4
 onready var frame5:TextureRect = $Canvas/Menu/Frame5
 onready var frame6:TextureRect = $Canvas/Menu/Frame6
 onready var frame7:NinePatchRect = $Canvas/Skillbar/Frame
-onready var frame8:TextureRect = $Canvas/Skillbar/ENBarFrame
+onready var frame8:TextureRect = $Canvas/Skillbar/EPBarFrame
 onready var frame9:TextureRect = $Canvas/Skillbar/HPBarFrame
 onready var frame10:TextureRect = $Canvas/Skills/CloseSkills/Frame
 
@@ -2658,28 +2862,61 @@ func displayClock()-> void:
 	# Update the label text with time on top and date below, align left
 	time_label.text = formatted_time + "\n" + formatted_date
 	
+
+onready var tween_ui1: Tween = $TweensUI/Tween1
+onready var tween_ui2: Tween = $TweensUI/Tween2
+onready var tween_ui3: Tween = $TweensUI/Tween3
+
+func getAvailableTween() -> Tween:
+	if !tween_ui1.is_active():
+		return tween_ui1
+	elif !tween_ui2.is_active():
+		return tween_ui2
+	elif !tween_ui3.is_active():
+		return tween_ui3
+	else:
+		return null
+
+func popUIHit(node_to_pop: Node) -> void:
+	var tween = getAvailableTween()
+	if tween == null:
+		print("No available tweens")
+		return
+	# Define the scale properties for tweening
+	var initial_scale = Vector2(0.48,0.48)
+	var target_scale = initial_scale * 1.2  # Scale up to 1.2 times the original
+	# Stop any existing tweens on the node
+	tween.stop_all()
+	# Configure the tween to scale up and then back to initial scale
+	tween.interpolate_property(node_to_pop, "rect_scale", initial_scale, target_scale, 0.1, Tween.TRANS_QUAD, Tween.EASE_OUT)
+	tween.interpolate_property(node_to_pop, "rect_scale", target_scale, initial_scale, 0.1, Tween.TRANS_QUAD, Tween.EASE_IN, 0.1)
+	# Start the tween
+	tween.start()
+	
 func popUI(node_to_pop:Node, tween: Tween) -> void:
 	# Define the scale properties for tweening
 	var initial_scale = node_to_pop.rect_scale
 	var target_scale = Vector2(1.2, 1.2)  # Scale up to 1.2
-
 	# Configure the tween to scale up and then back to initial scale
 	tween.interpolate_property(node_to_pop, "rect_scale", initial_scale, target_scale, 0.1, Tween.TRANS_QUAD, Tween.EASE_OUT)
 	tween.interpolate_property(node_to_pop, "rect_scale", target_scale, initial_scale, 0.1, Tween.TRANS_QUAD, Tween.EASE_IN)
-
 	# Start the tween
 	tween.start()
 func popUpUI(node_to_pop: Node, tween: Tween) -> void:
 	# Define the initial and target scale
 	var initial_scale = Vector2(1, 1)  # Start from full size
 	var target_scale = Vector2(0, 0)  # Scale down to zero
-
 	# Configure the tween to scale down and then back to initial scale
 	tween.interpolate_property(node_to_pop, "rect_scale", initial_scale, target_scale, 0.1, Tween.TRANS_QUAD, Tween.EASE_OUT)
 	tween.interpolate_property(node_to_pop, "rect_scale", target_scale, initial_scale, 0.1, Tween.TRANS_QUAD, Tween.EASE_IN)
 
 	# Start the tween
 	tween.start()
+
+
+
+
+
 
 #Gathering__________________________________________________________________________________________
 
@@ -2731,11 +2968,13 @@ func processTheGathering(body)->void:
 	body.visible = false
 	body.get_node("Plant").size = 0
 
-onready var ui_tween:Tween =  $Canvas/Skillbar/UI_list/InvButtonHolder/Tween
+onready var tween_inv:Tween =  $Canvas/Skillbar/UI_list/InvButtonHolder/Tween
 onready var inv_button_holder:Control = $Canvas/Skillbar/UI_list/InvButtonHolder
 onready var resource_viewport:Viewport = $Canvas/Skillbar/AddFloatingIconsHere/Viewport
 func getLoot(item, quantity, item_rarity, item_name)->void:
 	Autoload.addStackableItem(inventory_grid, item, quantity)
 	Autoload.addFloatingIcon(resource_viewport, item, quantity, item_rarity, item_name,self)
+
+
 
 
