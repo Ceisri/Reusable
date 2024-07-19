@@ -38,7 +38,7 @@ func idle():
 		startIdleTimer()
 func wander():#move the entity in the forward direction
 	if is_walking == true:
-		var velocity = getSlideVelocity(parent.walk_speed)
+		var velocity = getSlideVelocity(parent.stats.speed)
 		parent.move_and_slide(velocity)
 
 func getSlideVelocity(speed: float) -> Vector3:# Get the forward direction

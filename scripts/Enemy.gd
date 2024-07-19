@@ -1,11 +1,27 @@
 extends KinematicBody
+
+export var entity_name: String = "Bandit"
+export var species: String = "Goblin"
+export var is_boss:bool = false
+export var stationary:bool = false
+export var can_respawn:bool = true
+export var can_be_looted:bool = false 
+export var is_randomized:bool = false
+export var can_wear_armor:bool = true
+
+
+export var save_data_password:String = "Mei is quite Cute"
+export var spawn_point:Vector3 = Vector3(0,10,0)
+
+
+export var weight:float = 50
+
 onready var world = get_parent()
 var experience_worth:int = 15
 onready var threat_system: Node = $Threat
 onready var animation = $Mesh/EntityHolder/AnimationPlayer
 onready var entity_holder = $Mesh/EntityHolder
 onready var stats = $Stats
-
 
 var vertical_velocity : Vector3 = Vector3()
 var movement: Vector3 = Vector3()
@@ -16,17 +32,7 @@ var angular_acceleration = int()
 var acceleration = int()
 var random_atk:float
 
-var is_player:bool = false 
-export var save_data_password:String = "Mei is quite Cute"
-export var spawn_point:Vector3 = Vector3(0,10,0)
-export var can_be_looted:bool = false ##loot system in entity_holder = $Mesh/EntityHolder
-export var is_randomized:bool = false
-export var can_wear_armor:bool = true
-export var can_respawn:bool = true
-export var weight:float = 50
 var dropped_loot:bool = false
-
-
 var garroted:bool = false
 var thrown: bool = false
 var is_being_held:bool = false
@@ -108,9 +114,6 @@ func getThrown(delta: float) -> void:
 		direction = Vector3.ZERO
 		horizontal_velocity = Vector3.ZERO
 
-
-export var entity_name: String = "Bandit"
-export var species: String = "Goblin"
 func saveData():
 	var save_directory: String = "user://Worlds/" + world.world_name + "/" + species + "/" + entity_name + "/" +str(name)+ "/" 
 	var save_path: String = save_directory  + "/save.dat"
@@ -177,9 +180,15 @@ func behaviourTree()->void:
 	var target = threat_system.findHighestThreat()
 	if stats.health <0:
 		if dying == true:
-			animation.play("death",0.6)
+			if dead == false:
+				if animation:
+					animation.play("death",0.6)
+			else:
+				if animation:
+					animation.play("dead",0.6)
 		else:
-			animation.play("dead",0.6)
+			if animation:
+				animation.play("dead",0.6)
 	elif garroted == true:
 		animation.play("garroted",0.2)
 	elif stunned_duration > 0:
@@ -204,15 +213,17 @@ func behaviourTree()->void:
 
 onready var wander:Node = $Wandering
 func matchState()->void:
+	if animation:
 		match state:
 			Autoload.state_list.idle:
 				animation.play("idle",0.3)
 			Autoload.state_list.wander:
-				wander.wander()
-				if wander.is_walking == true:
-					animation.play("walk")
-				else:
-					animation.play("idle")
+				if stationary == false:
+					wander.wander()
+					if wander.is_walking == true:
+						animation.play("walk")
+					else:
+						animation.play("idle")
 				forceDirectionChange()
 			Autoload.state_list.curious:
 				lookTarget(turn_speed)
@@ -244,11 +255,10 @@ onready var ray_straight: RayCast = $RayStraight
 
 func slideLeft():
 	var distance = 2.0
-	var speed = 2.0
 	
 	var direction_to_target = -global_transform.basis.x  # Move sideways to the left
 	
-	var movement = direction_to_target * distance * speed * get_process_delta_time()
+	var movement = direction_to_target * distance * stats.speed * get_process_delta_time()
 	
 	move_and_slide(movement)
 
@@ -264,7 +274,6 @@ func slideForward() -> void:
 		var  distance_to_target = findDistanceTarget()
 		if distance_to_target > 1.4:
 			var distance: float = 2.0
-			var speed: float = 2.0
 			var direction: Vector3 = (stored_attacker.global_transform.origin - global_transform.origin).normalized()
 			var target_position: Vector3 = global_transform.origin + (direction * distance)
 
@@ -309,7 +318,6 @@ func lookTarget(speed: float) -> void:
 		self.global_transform.basis = look_at_rotation
 
 
-var walk_speed: float = 3
 
 func followTarget(angry:bool)->void:
 	if angry == false:
@@ -319,14 +327,14 @@ func followTarget(angry:bool)->void:
 			direction = (target.player.global_transform.origin - global_transform.origin).normalized()
 			direction.y = 0  # Set the Y component to 0 to prevent flying
 			rotateTowardsDirection(direction)
-			move_and_slide(direction * walk_speed)
+			move_and_slide(direction * stats.speed)
 	else:
 		var target =threat_system.findLowestThreat()
 		if target:
 			rotateTowardsDirection(direction)
 			direction = (target.player.global_transform.origin - global_transform.origin).normalized()
 			direction.y = 0  # Set the Y component to 0 to prevent flying
-			move_and_slide(direction * walk_speed)
+			move_and_slide(direction * stats.speed)
 			
 			
 var orbit_angle = 0.0  # Declare orbit_angle as a member variable
@@ -339,12 +347,12 @@ func orbitTarget()->void:
 				var center = target.player.global_transform.origin
 				var radius = 4  # Set your desired radius here
 				var min_distance_to_start_orbit = 5  # Adjust the minimum distance to start orbiting
-				var max_orbit_speed = walk_speed * 0.7  # Adjust the maximum orbit speed (30% of walk_speed)
-				var min_orbit_speed = walk_speed * 0.08  # Adjust the minimum orbit speed (10% of walk_speed)
+				var max_orbit_speed = stats.speed * 0.7  # Adjust the maximum orbit speed (30% of walk_speed)
+				var min_orbit_speed = stats.speed * 0.08  # Adjust the minimum orbit speed (10% of walk_speed)
 				var orbit_speed = clamp((max_orbit_speed - min_orbit_speed) * (1 - distance_to_target / min_distance_to_start_orbit) + min_orbit_speed, min_orbit_speed, max_orbit_speed)
 				if distance_to_target > min_distance_to_start_orbit:
 					var direction_to_target = (center - global_transform.origin).normalized()# Move towards the target until the minimum distance is reached
-					global_transform.origin += direction_to_target * walk_speed * get_process_delta_time()
+					global_transform.origin += direction_to_target * stats.speed * get_process_delta_time()
 				else:
 					var relative_position = global_transform.origin - center# Calculate the relative position of the object from the target
 					#relative_position.y = 0  # Make sure the rotation is in the XZ plane
@@ -357,11 +365,7 @@ func findDistanceTarget():
 		var center = target.player.global_transform.origin
 		var distance_to_target = global_transform.origin.distance_to(center)
 		return distance_to_target
-
 #________________This Section is dedicated to moving towards random directions______________________
-
-# Declare class variables
-var speed: float = 3.0
 var rotation_speed: float = 2.0
 
 onready var take_damage_audio = $TakeHit
@@ -526,6 +530,7 @@ func randomizeAttacks() -> void:
 
 func die()->void:
 	dying = false
+	dead = true
 func getUp()->void:
 	knockeddown = false
 	state = Autoload.state_list.wander
