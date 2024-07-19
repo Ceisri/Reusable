@@ -46,6 +46,7 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	$Label3D2.text = str(stats.health)
+	$DebugLabel2.text = active_action
 	if is_being_held == false:
 		if Engine.get_physics_frames() % 5 == 0:
 			Autoload.entityGravity(self)
@@ -390,10 +391,7 @@ func getKnockedDown(instigator)-> void:#call this for skills that have a differe
 	animReset()
 	
 func animReset():
-	atk1_duration = false
-	atk2_duration = false
-	atk3_duration = false
-	atk4_duration = false
+	active_action = "none"
 	staggered_duration = false
 
 	
@@ -433,22 +431,7 @@ func staggeredOver():
 	state = Autoload.state_list.wander
 	staggered_duration = false
 	
-	
-var atk1_duration:bool = false
-var atk1_spam:int = 0
-
-var atk2_duration:bool = false
-var atk2_spam:int = 0
-
-var atk3_duration:bool = false
-var atk3_spam:int = 0
-
-var atk4_duration:bool = false
-var atk4_spam:int = 0
-
-
-var atk5_duration:bool = false
-var atk5_spam:int = 0
+var active_action:String = "none"
 
 func combat()->void:
 	if staggered_duration == false:
@@ -469,63 +452,60 @@ func combat()->void:
 
 
 func chase()->void:
-	if atk1_duration == false and atk2_duration == false and atk3_duration == false and atk4_duration == false and atk5_duration == false:
+	if active_action == "none":
 		lookTarget(turn_speed)
 		followTarget(false)
-		animation.play("walk combat",0.1)
+		animation.play("walk",0.1)
 func attackAnimations()->void:
-	if atk1_duration == true:
-		animation.play("atk1", 0.25,1)
-	elif atk2_duration == true:
-		animation.play("atk2", 0.3,1)
-	elif atk3_duration == true:
-		animation.play("atk3", 0.3,1)
-	elif atk4_duration == true:
-		animation.play("atk4", 0.3)
-	elif atk5_duration == true:
-		animation.play("atk5", 0.3)
+	match active_action:
+		"atk1":
+			animation.play("atk1", 0.25,1)
+		"atk2":
+			animation.play("atk2", 0.3,1)
+		"atk3":
+			animation.play("atk3", 0.3,1)
+		"atk4":
+			animation.play("atk4", 0.3)
+		"atk5":
+			animation.play("atk5", 0.3)
 
 func animationCancel()->void:
-	atk1_duration = false
-	atk2_duration = false
-	atk3_duration = false
-	atk4_duration = false
-	atk5_duration = false
+	active_action = "none"
 	
 func changeAttackType()->void:
 	random_atk = rand_range(0,1)
-	if atk1_duration  == true:
-		 atk1_duration = false
-	if atk2_duration == true:
-		 atk2_duration = false
-	if atk3_duration == true:
-		 atk3_duration = false
-	if atk4_duration == true:
-		 atk4_duration = false
-	if atk5_duration == true:
-		 atk5_duration = false
+	match active_action:
+		"atk1":
+			active_action = "atk2"
+		"atk2":
+			active_action = "atk3"
+		"atk3":
+			active_action = "atk4"
+		"atk4":
+			active_action = "atk5"
+		"atk5":
+			active_action = "atk1"
 
 var atk2_cost: float = 60
 
 var can_switch_atk:bool = true
 func randomizeAttacks() -> void:
 	if random_atk < 0.2:  # 20%
-		atk1_duration = true
+		active_action = "atk1"
 	elif random_atk < 0.4:  # 20%
 #		if resolve > atk2_cost:
-			atk2_duration = true
+			active_action = "atk2"
 #		else:
 #			if random_atk <0.5:
 #				atk3_duration = true
 #			else:
 #				atk5_duration = true
 	elif random_atk < 0.6:  # 20%
-		atk3_duration = true
+		active_action = "atk3"
 	elif random_atk < 0.8:  # 20%
-		atk4_duration = true
+		active_action = "atk4"
 	else:  # 20%
-		atk5_duration = true
-
+		active_action = "atk5"
 
 
 func die()->void:

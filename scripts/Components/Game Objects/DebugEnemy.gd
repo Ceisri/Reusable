@@ -17,13 +17,11 @@ func entity_state_debug()-> void:
 	var state_name = state_enum.keys()[state_value]  # Convert enum to string
 	var held = "\nheld: " + str(parent.is_being_held)
 	var thrower = "\nheld by: " +str(parent.thrower)
-	var floor_text = "\nis_on_floor(): " + str(parent.is_on_floor())
 	if entity_state_label == null:
 		pass
 	else:
 		entity_state_label.text = state_name +\
 								held+\
 								"\nthrown: " + str(parent.thrown) +\
-								thrower+\
-								floor_text
-								
+								thrower
+

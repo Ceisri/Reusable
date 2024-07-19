@@ -30,5 +30,5 @@ func calculateRandomPosition(center: Vector2) -> Vector2:
 
 func _on_Tween_tween_all_completed()->void:
 	if is_instance_valid(player):
-		player.popUI(player.inv_button_holder,player.ui_tween)
+		player.popUI(player.inv_button_holder,player.tween_inv)
 	self.queue_free()

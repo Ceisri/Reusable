@@ -142,19 +142,7 @@ func bugFinderAction() -> void:
 
 onready var bools_label:Label = $BoolLabel
 func checkTrue()-> void:
-	var bools_text = ""
-
-	if parent.garrote_active:
-		bools_text += "garrote_active: True\n"
-
-	if parent.staggered:
-		bools_text += "staggered: True\n"
-
-	if parent.knockeddown:
-		bools_text += "knockeddown: True\n"
-
-	# If none of the booleans are true, bools_text will remain ""
-	bools_label.text = bools_text
+	pass
 
 
 onready var inv_label:Label = $InventoryDebug
