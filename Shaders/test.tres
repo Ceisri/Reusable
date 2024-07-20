@@ -1,6 +1,6 @@
 [gd_resource type="VisualShader" load_steps=8 format=2]
 
-[ext_resource path="res://Shaders/imgs/slash3.png" type="Texture" id=1]
+[ext_resource path="res://Game/Shaders/Images/slash2.png" type="Texture" id=1]
 
 [sub_resource type="VisualShaderNodeInput" id=1]
 input_name = "uv"
@@ -62,7 +62,7 @@ void light() {
 
 }
 "
-graph_offset = Vector2( -912.65, 162.302 )
+graph_offset = Vector2( -361.916, -161.489 )
 flags/ambient_light_disabled = true
 flags/unshaded = true
 nodes/fragment/0/position = Vector2( 520, 200 )

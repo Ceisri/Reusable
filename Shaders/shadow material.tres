@@ -1,0 +1,9 @@
+[gd_resource type="SpatialMaterial" load_steps=2 format=2]
+
+[ext_resource path="res://Game/Shaders/Images/shadow01.png" type="Texture" id=1]
+
+[resource]
+flags_transparent = true
+flags_unshaded = true
+albedo_color = Color( 1, 1, 1, 0.290196 )
+albedo_texture = ExtResource( 1 )
