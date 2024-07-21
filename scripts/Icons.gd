@@ -35,6 +35,13 @@ var dodge = load("res://Game/Interface/Assets/Icons/Skill_Icons/Skill_Dodge.png"
 var kick = load("res://Game/Interface/Assets/Icons/Skill_Icons/Skill_Kick.png")
 
 
+#Elementalist skills
+var fireball = load("res://Game/Interface/Assets/Icons/Skill_Icons/fire_arrow.png")
+var triple_fireball = load("res://Game/Interface/Assets/Icons/Skill_Icons/fire_rain.png")
+var immolate = load("res://Game/Interface/Assets/Icons/Skill_Icons/Skill_FireElementalSummon.png")
+var ring_of_fire = load("res://Game/Interface/Assets/Icons/Skill_Icons/Skill_FireRing.png")
+var wall_of_fire = load("res://Game/Interface/Assets/Icons/Skill_Icons/firewall.png")
+
 
 #Effects
 var bleed = load("res://Game/Interface/Assets/Icons/Skill_Icons/Skill_BloodBoiling.png")

@@ -103,7 +103,6 @@ func getThrown(delta: float) -> void:
 
 	var collision = move_and_collide(movement)
 	if collision:
-		#print("Collided with: ", collision.collider.name)
 		if collision.collider.is_in_group("Entity"):
 			if is_instance_valid(collision.collider.stats):
 				if collision.collider != thrower:
@@ -440,14 +439,12 @@ func combat()->void:
 		if distance_to_target != null:
 			if distance_to_target <= 2:
 				randomizeAttacks()
-				print("This unit is attacking" + str(distance_to_target))
 			else:
-					print(random_atk)
-					if random_atk > 0.8:
-						animation.play("ultimate",0.1)
-						animationCancel()
-					else:
-						chase()
+				if random_atk > 0.8:
+					animation.play("ultimate",0.1)
+					animationCancel()
+				else:
+					chase()
 
 
 

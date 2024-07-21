@@ -1,14 +1,15 @@
 extends MeshInstance
 
+onready var threat_system =$"../../../../../../../Threat"
 onready var parent = get_parent()
 onready var initial_rotation = rotation_degrees
 
 func _physics_process(delta: float) -> void:
-	if Engine.get_physics_frames() % 24 == 0:
+	if Engine.get_physics_frames() % 2 == 0:
 		lookTarget(15 * delta)
 
 func lookTarget(turning_speed: float) -> void:
-	var target = parent.get_node("Threat").findHighestThreat()
+	var target = threat_system.findHighestThreat()
 	if target:
 		var target_pos = target.player.global_transform.origin
 
