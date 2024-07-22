@@ -58,8 +58,10 @@ func _ready() -> void:
 	else:
 		dir_assist_label.text = "Target Assist: OFF" 
 	target_mode_label.text =  target_mode
-	
-	
+	if sneak_toggle == true:
+		crouch_label.text =  "Crouch Toggle:On"
+	else:
+		crouch_label.text = "Crouch Toggle:Off"
 func removeBothersomeKeybinds()-> void:#Here just in case someone is using this as a template
 	InputMap.action_erase_events("ui_accept")#avoids all the stupid ways you can click buttons or accept things by mistake
 	InputMap.action_erase_events("ui_select")
@@ -185,7 +187,7 @@ func firstLevelAnimations()-> void:#Momentary Delete Later
 			if carried_body == null:
 				if crawling == true:
 					animation.play("crawl idle",blend)
-				elif sneaking == true:
+				elif crouching == true:
 					animation.play("sneak", 0.3)
 				else:
 					animation.play("idle", 0.3)
@@ -999,14 +1001,14 @@ var max_jumps = 2
 # Movement variables
 var joystick_direction: Vector3 = Vector3()
 var joystick_active: bool = false
-var sneak_toggle:bool = false
-var sneaking:bool = false
+var sneak_toggle:bool = true
+var crouching:bool = false
 var crawling:bool = false
 
 onready var upper_collision:CollisionShape = $UpperCollision
 onready var middle_collision:CollisionShape = $MidCollision
 var can_walk:bool = false
-
+var press_count = 0
 #Movement section___________________________________________________________________________________
 func movement(delta: float) -> void:
 	var h_rot = camera_v.global_transform.basis.get_euler().y
@@ -1045,7 +1047,7 @@ func movement(delta: float) -> void:
 				sprint_speed = default_sprint_speed
 				movement_mode = "run"
 				movement_speed = run_speed
-			elif sneaking == true:
+			elif crouching == true:
 				debug.active_action = "sneaking"
 				sprint_speed = default_sprint_speed
 				movement_mode = "sneak"
@@ -1070,31 +1072,51 @@ func movement(delta: float) -> void:
 			sprint_speed = default_sprint_speed
 			movement_speed = walk_speed 
 			movement_mode = "walk"
-	if sneak_toggle == true:
-		if Input.is_action_just_pressed("Crouch"):
-			sneaking = !sneaking
-	if Input.is_action_just_pressed("Crawl"):
-		crawling = !crawling
-	
+
 	if sneak_toggle == false:
 		if Input.is_action_pressed("Crouch"):
-			sneaking = true
+			crouching = true
 		else:
-			sneaking = false
+			crouching = false
+		if Input.is_action_pressed("Crawl"):
+			crawling = true
+		else:
+			crawling = false
+	else:
+		if Input.is_action_just_pressed("Crouch"):
+			press_count = (press_count + 1) % 3
+			if press_count == 0:
+				crouching = false
+				crawling = false
+			elif press_count == 1:
+				crouching = true
+				crawling = false
+			elif press_count == 2:
+				crouching = false
+				crawling = true
+
 	if jump_count < 1:
 		if carried_body == null:
 			if is_on_floor():
-				if Input.is_action_just_pressed("Jump"):
-					debug.active_action = "jumping"
-					jump_count += 1
-					vertical_velocity = Vector3.UP * jump_strength
+				if crouching or crawling:
+					if Input.is_action_just_pressed("Jump"):
+						crouching = false
+						crawling = false
+				else:
+					if Input.is_action_just_pressed("Jump"):
+						debug.active_action = "jumping"
+						jump_count += 1
+						vertical_velocity = Vector3.UP * jump_strength
 			else:
 				if Input.is_action_just_pressed("Jump"):
 					debug.active_action = "double jumping"
 					jump_count += 1
 					vertical_velocity = Vector3.UP * jump_strength
 					active_action = "flip"
-					
+	
+	
+	
+	
 	movementCollisions()
 	if is_on_floor():
 		jump_count = 0
@@ -1104,11 +1126,15 @@ func movement(delta: float) -> void:
 	move_and_slide(movement, Vector3.UP)
 	horizontal_velocity = horizontal_velocity.linear_interpolate(direction.normalized() * movement_speed, acceleration * delta)
 
+
+
+	
+
 func movementCollisions()-> void:
 	if crawling == true:
 		middle_collision.disabled = true
 		upper_collision.disabled = true
-	elif sneaking == true:
+	elif crouching == true:
 		middle_collision.disabled = false
 		upper_collision.disabled = true
 	else:
@@ -2198,8 +2224,14 @@ func openInterfaceColorPickers()-> void:
 func openKeybindsSettings()-> void:
 	keybinds_settings.visible = !keybinds_settings.visible
 
+onready var crouch_label:Label = $Canvas/Menu/SneakTogle/label
 func sneakToggle() -> void:
 	sneak_toggle = !sneak_toggle
+	if sneak_toggle == true:
+		crouch_label.text =  "Crouch Toggle:On"
+	else:
+		crouch_label.text = "Crouch Toggle:Off"
+		
 func closeMenu()-> void:
 	menu.visible = false
 func exit()-> void:
