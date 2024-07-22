@@ -3,20 +3,24 @@ extends KinematicBody
 var direction: Vector3 = Vector3.ZERO # Direction of the bullet
 onready var area: Area = $Area
 var summoner: KinematicBody
-var entity_name: String = "Arrow"
 var damage: float 
-var life_time: int = 200
+var life_time: int = 5
 var velocity: Vector3 = Vector3.ZERO # Initial velocity
 var speed:float = 30
 var time_to_rotate:float = 5
 
 
 
-func moveArrow():
-	move_and_collide(direction.normalized() * speed * get_physics_process_delta_time())
-
 func _physics_process(delta: float) -> void:
-	moveArrow()
+	move_and_collide(direction.normalized() * speed * get_physics_process_delta_time())
+	
+
+#Rotate away from summoner
+#	if time_to_rotate > 0:
+#		time_to_rotate -= 1
+#		var opposite_direction = -summoner.direction.normalized()
+#		look_at(global_transform.origin + opposite_direction, Vector3.UP)
+		
 	for body in area.get_overlapping_bodies():
 		if body.is_in_group("Entity"):
 			if body != self:

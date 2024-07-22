@@ -8,7 +8,7 @@ var fending_blow  = load("res://Game/Interface/Assets/Icons/Skill_Icons/cut_arro
 var pomel_strike = load("res://Game/Interface/Assets/Icons/Skill_Icons/sword_pomel_strike.png")
 var wall = load("res://Game/Interface/Assets/Icons/Skill_Icons/multiple_knights.png")
 var parry = load("res://Game/Interface/Assets/Icons/Skill_Icons/Skill_Parry.png")
-var slam = load("res://Game/Interface/Assets/Icons/Skill Icons/ThrowOver.png")
+var slam = load("res://Game/Interface/Assets/Icons/Skill_Icons/ThrowOver.png")
 var execute = load("res://Game/Interface/Assets/Icons/Skill_Icons/Execute.png")
 var eviscerate = load("res://Game/Interface/Assets/Icons/Skill_Icons/sword_bloody.png")
 var aegis = load("res://Game/Interface/Assets/Icons/Skill_Icons/shield4.png")
@@ -36,6 +36,12 @@ var kick = load("res://Game/Interface/Assets/Icons/Skill_Icons/Skill_Kick.png")
 
 
 #Elementalist skills
+var switch_element = load("res://Game/Interface/Assets/Icons/Skill_Icons/Skill_MagicEye.png")
+var lighting_shot = load("res://Game/Interface/Assets/Icons/Skill_Icons/lighting_ball2.png")
+var icile_scatter_shot = load("res://Game/Interface/Assets/Icons/Skill_Icons/Skill_FrostRain.png")
+var drain = load("res://Game/Interface/Assets/Icons/Skill_Icons/shadow_drain.png")
+var razor_wind_shield = load("res://Game/Interface/Assets/Icons/Skill_Icons/wind_skill3.png")
+
 var fireball = load("res://Game/Interface/Assets/Icons/Skill_Icons/fire_arrow.png")
 var triple_fireball = load("res://Game/Interface/Assets/Icons/Skill_Icons/fire_rain.png")
 var immolate = load("res://Game/Interface/Assets/Icons/Skill_Icons/Skill_FireElementalSummon.png")

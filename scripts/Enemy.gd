@@ -286,7 +286,6 @@ func stopSlidingForward()-> void:
 	tween.stop_all()
 var turn_speed = 9
 
-onready var eyes:Spatial = $Eyes
 
 
 func rotateAwayFromDirection(target_direction: Vector3) -> void:
@@ -581,7 +580,7 @@ onready var ray_down:RayCast =$RayDownBehind
 func lostAndFound():
 	if not ray_down.is_colliding():
 		time_fallin += 1
-		print(str(name)+ "fallen for: " + str(time_fallin))
+		#print(str(name)+ "fallen for: " + str(time_fallin))
 		if time_fallin > 5:
 			translation = spawn_point
 			time_fallin = 0
