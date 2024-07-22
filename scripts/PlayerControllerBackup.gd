@@ -46,20 +46,14 @@ func _ready() -> void:
 	menu.visible  = false
 	loot.visible  = false
 	debug.visible  = false
-	skills_civilian.visible  = false
+	skills_professions.visible  = false
 	inventory.visible  = false
 	connectInventoryButtons()
 	connectSkillBarButtons()
-	connectMenuButtons()
 	connectAreas()
-	action_history[OS.get_ticks_msec()] = active_action
-	if direction_assist == true:
-		dir_assist_label.text = "Target Assist: On" 
-	else:
-		dir_assist_label.text = "Target Assist: OFF" 
-	target_mode_label.text =  target_mode
-	
-	
+
+
+
 func removeBothersomeKeybinds()-> void:#Here just in case someone is using this as a template
 	InputMap.action_erase_events("ui_accept")#avoids all the stupid ways you can click buttons or accept things by mistake
 	InputMap.action_erase_events("ui_select")
@@ -77,12 +71,6 @@ func setProcessFPS(fps: int) -> void:
 
 
 func _physics_process(delta: float) -> void:
-	skillBarInputs()
-	if debug.visible:
-		$Label2.visible = true
-		$Label2.text = "previous: " + previous_action
-	else:
-		$Label2.visible = false
 	gravity()
 	climbStairs()
 	climb()
@@ -90,16 +78,18 @@ func _physics_process(delta: float) -> void:
 	rotateMesh()
 	movement(delta)
 	camera_rotation()
+	clickInputs()
 	InputsInterface()
 	LiftAndThrow()
 	carryObject()
 	behaviourTree()
+	skillBarInputs()
 	doublePressToDash()
 	skills.updateCooldownLabel()
 	skills.comboSystem()
 	laserRayForTesting()
-	manualTargetAssit()
 	if Engine.get_physics_frames() % 2 == 0:
+		
 		harvestGather()
 	if Engine.get_physics_frames() % 3 == 0:
 		showEnemyStats()
@@ -109,13 +99,7 @@ func _physics_process(delta: float) -> void:
 	if Engine.get_physics_frames() % 6 == 0:
 		ResourceBarsLabels()
 		
-		
 	if Engine.get_physics_frames() % 12 == 0:
-		if debug.visible:
-			$Label.visible = true
-			$Label.text = active_action
-		else:
-			$Label.visible = false
 		effects.showStatusIcon(
 	$Canvas/Skillbar/StatusGrid/Icon1,
 	$Canvas/Skillbar/StatusGrid/Icon2,
@@ -145,13 +129,13 @@ func _physics_process(delta: float) -> void:
 		if Input:
 			displaySlotsLabel()
 			displayClock()
-		#getLoot(Items.blue_tip_grass,1,rand_range(0,100),"blue tip grass") #testing only
-
+		#getLoot(Items.blue_tip_grass,1,rand_range(0,100),"blue tip grass")
+	
 onready var animation:AnimationPlayer =  $DirectionControl/Character/AnimationPlayer
 func firstLevelAnimations()-> void:#Momentary Delete Later
 	if is_instance_valid(animation):
 		if !is_on_floor():
-			if active_action == "flip":
+			if flip_duration == true:
 				animation.play("flip")
 			else:
 				if !is_on_wall():
@@ -251,133 +235,325 @@ func behaviourTree()-> void:
 			activeActions()
 
 var blend: float = 0.22
+
 var stunned_time:float = 0
 var hold_to_base_atk:bool = false #if true holding the base attack buttons continues a combo of attacks, releasing the button stops the attacks midway, if false it will just play the attack animation as if it was a normal skill
+var base_atk_duration:bool = false
+var base_atk2_duration:bool = false
+var base_atk3_duration:bool = false
+var base_atk4_duration:bool = false
+var flip_duration:bool = false
+var throw_rock_duration:bool= false
+var stomp_duration:bool= false
+var kick_duration:bool= false
+
+var backstep_duration:bool= false
+var frontstep_duration:bool= false
+var leftstep_duration:bool= false
+var rightstep_duration:bool= false
+
+var dash_active:bool= false
+
+var slide_duration:bool= false
+
+
 var dying:bool = false
 var dead:bool = false
+
+
 var staggered:bool = false
 var knockeddown:bool = false
+
+
+var overhead_slash_duration:bool = false
+var overhead_slash_combo:bool = false
+
+var rising_slash_duration:bool = false
+var heart_trust_duration:bool = false
+var cyclone_duration:bool = false
+
+var cyclone_combo:bool = false
+
+var whirlwind_duration:bool = false
+var whirlwind_combo:bool = false
+
+
+var silent_stab_active:bool = false
+var garrote_active:bool = false
+
+
 var parry:bool= false
 var absorbing:bool = false
+
+
+var taunt_duration:bool = false
+
+
 var attacking:bool = false
 var is_dead:bool = false
-
-var active_action:String = "none"
-var previous_action:String
-var action_history:Dictionary = {}
-
- 
-func _process(delta:float) -> void:
-	var current_time = OS.get_ticks_msec()
-	# Cleanup old entries from the action_history
-	for timestamp in action_history.keys():
-		if current_time - timestamp > 500: # 250 ms = 0.25 seconds
-			action_history.erase(timestamp)
-	
-	# Update previous_action if we have a timestamp older than 0.25 seconds
-	if action_history.size() > 0:
-		var sorted_keys = action_history.keys()
-		sorted_keys.sort()
-		previous_action = action_history[sorted_keys[0]]
-	else:
-		previous_action = active_action
-
-func update_active_action(new_action:String) -> void:
-	action_history[OS.get_ticks_msec()] = new_action
-	active_action = new_action
-
-
-
 func activeActions()->void:
 	SkillQueueSystem()#DO NOT REMOVE THIS! it is neccessary to allow skill cancelling, skill cancelling doesn't work without skill queue, it has a toggle on off anyway for players that don't like it 
 	if Input.is_action_pressed("Rclick"):
 		switchWeaponFromHandToSideOrBack()
-		TargetAssist()
 		skills.skillCancel("throw_rock")
 
-	if active_action == "dash":
+	if dash_active == true:
 		directionToCamera()
-		TargetAssist()
 		moveTowardsDirection(skills.backstep_distance)
 		animation.play("dash",0.3,1.25)
 		
-	elif active_action ==  "garrote":
-		can_walk = false
+	elif silent_stab_active == true:
+		directionToCamera()
+		moveTowardsDirection(1)
+		animation.play("punch",0.3,stats.extra_melee_atk_speed)
+		print(str(stats.extra_melee_atk_speed))
+		skills.skillCancel("silentStab")
+	elif garrote_active == true:
 		directionToCamera()
 		moveTowardsDirection(1)
 		animation.play("garrote",0.3,1)
 		skills.skillCancel("garrote")
-
-	elif active_action == "silent stab":
-		can_walk = true
+		
+	elif slide_duration == true:
+		automaticTargetAssist()
 		directionToCamera()
-		TargetAssist()
-		moveTowardsDirection(1)
-		animation.play("punch",0.3,stats.melee_atk_speed)
-		skills.skillCancel("silent stab")
-		
-	elif active_action == "fireball":
-		TargetAssist()
-		can_walk = false
-		direction = -camera.global_transform.basis.z
-		animation.play("quick shot",0.3,stats.melee_atk_speed)
-		skills.skillCancel("fireball")
-		
-	elif active_action == "lighting":
-		TargetAssist()
-		can_walk = false
-		direction = -camera.global_transform.basis.z
-		animation.play("quick shot",0.3,stats.melee_atk_speed)
-		skills.skillCancel("lighting")
-		
-	elif active_action == "triple fireball":
-		TargetAssist()
-		can_walk = false
-		direction = -camera.global_transform.basis.z
-		animation.play("quick shot",0.3,stats.melee_atk_speed)
-		skills.skillCancel("triple fireball")
-
-	elif active_action == "immolate":
-		TargetAssist()
-		can_walk = false
-		direction = -camera.global_transform.basis.z
-		animation.play("quick shot",0.3,stats.melee_atk_speed)
-		skills.skillCancel("immolate")
-
-	elif active_action == "ring of fire":
-		TargetAssist()
-		can_walk = false
-		direction = -camera.global_transform.basis.z
-		animation.play("quick shot",0.3,stats.melee_atk_speed)
-		skills.skillCancel("ring of fire")
-
-	elif active_action == "wall of fire":
-		TargetAssist()
-		can_walk = false
-		moveTowardsDirection(0)
-		direction = -camera.global_transform.basis.z
-		animation.play("quick shot",0.3,stats.melee_atk_speed)
-		skills.skillCancel("wall of fire")
-		
-
-		
-	elif active_action == "slide":
-		TargetAssist()
-		direction = -camera.global_transform.basis.z
 		moveTowardsDirection(skills.backstep_distance)
 		animation.play("slide",blend)
 
-	elif active_action == "backstep":
+	elif backstep_duration == true:
 		directionToCamera()
 		moveTowardsDirection(-skills.backstep_distance)
 		animation.play("backstep",blend,1)
+		print("backstep_duration true")
+
+	elif frontstep_duration == true:
+		directionToCamera()
+		moveTowardsDirection(+skills.backstep_distance)
+		animation.play("frontstep",blend,1)
+		
+	elif leftstep_duration == true:
+		is_aiming = true
+		moveSidewaysDuringAnimation(skills.backstep_distance)
+		direction = -camera.global_transform.basis.z
+		animation.play("leftstep",blend,1)
+
+	elif rightstep_duration == true:
+		is_aiming = true
+		moveSidewaysDuringAnimation(-skills.backstep_distance)
+		direction = -camera.global_transform.basis.z
+		animation.play("rightstep",blend,1)
+		
+
+	elif overhead_slash_duration == true:
+		automaticTargetAssist()
+		if skills.can_overhead_slash == true:
+			if stats.resolve > skills.overhead_slash_cost:
+				switchWeaponFromHandToSideOrBack()
+				directionToCamera()
+				clearParryAbsorb()
+				moveTowardsDirection(skills.overhead_slash_distance)
+				match weapon_type:
+					Autoload.weapon_type_list.sword:
+						if overhead_slash_combo == false:
+							animation.play("overhead slash sword",blend, stats.melee_atk_speed - 0.15)
+						else:
+							animation.play("overhead slash sword",blend, stats.melee_atk_speed + skills.overhead_slash_combo_speed_bonus)
+					Autoload.weapon_type_list.sword_shield:
+						if overhead_slash_combo == false:
+							animation.play("overhead slash sword",blend, stats.melee_atk_speed- 0.15)
+						else:
+							animation.play("overhead slash sword",blend, stats.melee_atk_speed + skills.overhead_slash_combo_speed_bonus)
+					Autoload.weapon_type_list.dual_swords:
+						if overhead_slash_combo == false:
+							animation.play("overhead slash sword",blend, stats.melee_atk_speed- 0.15)
+						else:
+							animation.play("overhead slash sword",blend, stats.melee_atk_speed + skills.overhead_slash_combo_speed_bonus)
+					Autoload.weapon_type_list.heavy:
+						if overhead_slash_combo == false:
+							animation.play("overhead slash heavy",blend, stats.melee_atk_speed- 0.25)
+						else:
+							animation.play("overhead slash heavy",blend, stats.melee_atk_speed + skills.overhead_slash_combo_speed_bonus)
+			else:
+				overhead_slash_duration = false
+				returnToIdleBasedOnWeaponType()
+		else:
+			overhead_slash_duration = false
+			returnToIdleBasedOnWeaponType()
+#Whirlwind__________________________________________________________________________________________
+	elif whirlwind_duration == true :
+		automaticTargetAssist()
+		directionToCamera()
+		switchWeaponFromHandToSideOrBack()
+		clearParryAbsorb()
+		if skills.can_whirlwind == true:
+			if stats.resolve > skills.whirlwind_cost:
+				match weapon_type:
+					Autoload.weapon_type_list.sword:
+						animation.play("whirlwind sword",blend*1.5,stats.melee_atk_speed+ 0.15)
+						moveTowardsDirection(skills.whirlwind_distance)
+					Autoload.weapon_type_list.sword_shield:
+						animation.play("whirlwind sword",blend*1.5,stats.melee_atk_speed+ 0.15)
+						moveTowardsDirection(skills.whirlwind_distance)
+					Autoload.weapon_type_list.dual_swords:
+						animation.play("whirlwind sword",blend*1.5,stats.melee_atk_speed + 0.1)
+						moveTowardsDirection(skills.whirlwind_distance)
+					Autoload.weapon_type_list.heavy:
+						animation.play("whirlwind heavy",blend*1.5,stats.melee_atk_speed+ 0.15)
+						moveTowardsDirection(skills.whirlwind_distance)
+			else:
+				whirlwind_duration = false
+				returnToIdleBasedOnWeaponType()
+		else:
+			whirlwind_duration = false
+			returnToIdleBasedOnWeaponType()
+		
+#Rising slash____________________________________________________________________________________
+	elif rising_slash_duration == true:
+		automaticTargetAssist()
+		directionToCamera()
+		switchWeaponFromHandToSideOrBack()
+		clearParryAbsorb()
+		moveTowardsDirection(6)
+		match weapon_type:
+					Autoload.weapon_type_list.sword:
+						animation.play("rising slash shield",blend, stats.melee_atk_speed + 0.35)
+					Autoload.weapon_type_list.sword_shield:
+						animation.play("rising slash shield",blend,stats.melee_atk_speed + 0.35)
+					Autoload.weapon_type_list.dual_swords:
+						animation.play("rising slash shield",blend, stats.melee_atk_speed + 0.33)
+					Autoload.weapon_type_list.heavy:
+						animation.play("rising slash heavy",blend,stats.melee_atk_speed + 0.35)
+#Cyclone____________________________________________________________________________________________
+	elif cyclone_duration == true:
+		automaticTargetAssist()
+		directionToCamera()
+		switchWeaponFromHandToSideOrBack()
+		clearParryAbsorb()
+		if skills.can_cyclone == true:
+			if stats.resolve > skills.cyclone_cost:
+				moveTowardsDirection(skills.cyclone_motion)
+				match weapon_type:
+					Autoload.weapon_type_list.sword:
+						if cyclone_combo == false:
+							animation.play("cyclone sword",blend,stats.melee_atk_speed+ 0.25)
+						else:
+							animation.play("cyclone sword",blend,stats.melee_atk_speed+ 1)
+					Autoload.weapon_type_list.sword_shield:
+						if cyclone_combo == false:
+							animation.play("cyclone sword",blend,stats.melee_atk_speed+ 0.25)
+						else:
+							animation.play("cyclone sword",blend,stats.melee_atk_speed+ 1)
+					Autoload.weapon_type_list.dual_swords:
+						if cyclone_combo == false:
+							animation.play("cyclone sword",blend,stats.melee_atk_speed+ 0.25)
+						else:
+							animation.play("cyclone sword",blend,stats.melee_atk_speed+ 1)
+					Autoload.weapon_type_list.heavy:
+						if cyclone_combo == false:
+							animation.play("cyclone heavy",blend,stats.melee_atk_speed+ 0.15)
+						else:
+							animation.play("cyclone heavy",blend,stats.melee_atk_speed+ 0.95)
+			else:
+				cyclone_duration = false
+				returnToIdleBasedOnWeaponType()
+		else:
+			cyclone_duration = false
+			returnToIdleBasedOnWeaponType()
+#Heart trust____________________________________________________________________________________________
+	elif heart_trust_duration == true:
+		automaticTargetAssist()
+		directionToCamera()
+		switchWeaponFromHandToSideOrBack()
+		clearParryAbsorb()
+		if skills.can_heart_trust == true:
+				match weapon_type:
+					Autoload.weapon_type_list.sword:
+						animation.play("heart trust sword",blend*1.5,stats.melee_atk_speed+ 0.55)
+						moveTowardsDirection(4)
+					Autoload.weapon_type_list.sword_shield:
+						animation.play("heart trust sword",blend*1.5,stats.melee_atk_speed+ 0.35)
+						moveTowardsDirection(3)
+					Autoload.weapon_type_list.dual_swords:
+						animation.play("heart trust sword",blend*1.5,stats.melee_atk_speed + 0.1)
+						moveTowardsDirection(3.3)
+					Autoload.weapon_type_list.heavy:
+						animation.play("heart trust sword",blend*1.5,stats.melee_atk_speed + 0.15)
+						moveTowardsDirection(6)
+		else:
+			heart_trust_duration = false
+			returnToIdleBasedOnWeaponType()
+#___________________________________________________________________________________________________
+	elif taunt_duration == true:
+		automaticTargetAssist()
+		directionToCamera()
+		clearParryAbsorb()
+		switchWeaponFromHandToSideOrBack()
+		can_walk = false
+		moving = false
+		if weapon_type == Autoload.weapon_type_list.heavy:
+			animation.play("taunt heavy",blend + 0.1,stats.ferocity)
+		else:
+			animation.play("taunt",blend+ 0.1,stats.ferocity)
+			
+#__________________IF THE PLAYER DECIDED TO PLAY WITH HOLD OFF, 1 CLICK = 1 BASE ATTTACK__________
+	elif throw_rock_duration == true:
+		direction = -camera.global_transform.basis.z
+		can_walk = false
+		animation.play("throw rock",blend,stats.range_atk_speed)
+		moveTowardsDirection(0)
+		
+	elif base_atk_duration == true:
+		automaticTargetAssist()
+		directionToCamera()
+		clearParryAbsorb()
+		baseAtkAnim()
+	elif base_atk2_duration == true:
+		automaticTargetAssist()
+		directionToCamera()
+		clearParryAbsorb()
+		baseAtkAnim()
+
+	elif base_atk3_duration == true:
+		automaticTargetAssist()
+		directionToCamera()
+		clearParryAbsorb()
+		match weapon_type:
+			Autoload.weapon_type_list.dual_swords:
+				animation.play("combo(dual)",blend,stats.melee_atk_speed + skills.combo_extr_speed)
+				moveTowardsDirection(skills.combo_distance)
+			Autoload.weapon_type_list.heavy:
+				if long_base_atk == true:
+					animation.play("combo(heavy)",blend,stats.melee_atk_speed + skills.combo_extr_speed)
+					moveTowardsDirection(skills.combo_distance)
+
+	elif base_atk4_duration == true:
+		automaticTargetAssist()
+		directionToCamera()
+		clearParryAbsorb()
+		match weapon_type:
+			Autoload.weapon_type_list.dual_swords:
+				animation.play("combo(dual)",blend,stats.melee_atk_speed + skills.combo_extr_speed)
+				moveTowardsDirection(skills.combo_distance)
+			Autoload.weapon_type_list.heavy:
+				if long_base_atk == true:
+					animation.play("combo(heavy)",blend,stats.melee_atk_speed + skills.combo_extr_speed)
+					moveTowardsDirection(skills.combo_distance)
+
+	elif stomp_duration == true:
+		automaticTargetAssist()
+		directionToCamera()
+		clearParryAbsorb()
+		
+		animation.play("stomp",blend,stats.melee_atk_speed * 1.2)
+		moveTowardsDirection(2)
+	elif kick_duration == true:
+		automaticTargetAssist()
 		directionToCamera()
 		clearParryAbsorb()
 		animation.play("kick",blend,stats.agility)
 		moveTowardsDirection(0)
 	else:
 		skillState()
-		can_walk = true
 
 func skillState() -> void:
 	if skill_bar_input == "none":
@@ -456,6 +632,9 @@ func skillState() -> void:
 			"N":
 				var slot = $Canvas/Skillbar/GridContainer/SlotN/Icon
 				skills(slot)
+			"M":
+				var slot = $Canvas/Skillbar/GridContainer/SlotM/Icon
+				skills(slot)
 			"F1":
 				var slot = $Canvas/Skillbar/GridContainer/SlotF1/Icon
 				skills(slot)
@@ -470,12 +649,6 @@ func skillState() -> void:
 				skills(slot)
 			"F5":
 				var slot = $Canvas/Skillbar/GridContainer/SlotF5/Icon
-				skills(slot)
-			"RClick":
-				var slot = $Canvas/Skillbar/GridContainer/SlotRClick/Icon
-				skills(slot)
-			"LClick":
-				var slot = $Canvas/Skillbar/GridContainer/SlotLClick/Icon
 				skills(slot)
 func SkillQueueSystem()-> void:
 	if skills.queue_skills == true:
@@ -551,6 +724,9 @@ func SkillQueueSystem()-> void:
 		elif skill_bar_input == "N":
 			var slot = $Canvas/Skillbar/GridContainer/SlotN/Icon
 			skills(slot)
+		elif skill_bar_input == "M":
+			var slot = $Canvas/Skillbar/GridContainer/SlotM/Icon
+			skills(slot)
 		elif skill_bar_input == "F1":
 			var slot = $Canvas/Skillbar/GridContainer/SlotF1/Icon
 			skills(slot)
@@ -569,74 +745,330 @@ func SkillQueueSystem()-> void:
 
 
 
-onready var l_click_slot = $Canvas/Skillbar/GridContainer/SlotLClick
-onready var r_click_slot = $Canvas/Skillbar/GridContainer/SlotRClick
+onready var l_click_slot =  $Canvas/Skillbar/SlotLClick
+onready var r_click_slot = $Canvas/Skillbar/SlotRClick
 
 func skills(slot)-> void:
 	if slot == null:
-		pass
-		#print("slot null")
+		print("slot null")
 	else:
-		#print("slot not null")
+		
+		print("slot not null")
 		if slot.texture != null:
+##Dash_______________________________________________________________________________________________
+#			if slot.texture.resource_path == Icons.dash.get_path() and dash_active == false:
+#					if skills.can_dash == false:
+#						dash_active  = false
+#						returnToIdleBasedOnWeaponType()
+#					else:
+#						if stats.resolve <= skills.dash_cost:
+#							returnToIdleBasedOnWeaponType()
+#							dash_active = false
+#							skills.interruptBaseAtk()
+#						else:
+#							stats.resolve -= skills.dash_cost
+#							dash_active = true
+#							if skill_cancelling == true:
+#								skills.skillCancel("dash")
+##Slide______________________________________________________________________________________________
+#			if slot.texture.resource_path == Icons.slide.get_path():
+#				if skills.can_slide == false:
+#					slide_duration  = false
+#					returnToIdleBasedOnWeaponType()
+#				else:
+#					slide_duration = true
+#					skills.interruptBaseAtk()
+#					if skill_cancelling == true:
+#						skills.skillCancel("slide")
+#Backstep______________________________________________________________________________________________
 			if slot.texture.resource_path == Icons.garrote.get_path():
 				if slot.get_parent().get_node("CD").text == "":
-					active_action = "garrote"
+					garrote_active = true
 					garroteTarget()
 					skills.skillCancel("garrote")
 				else:
-
+					garrote_active = false
 					returnToIdleBasedOnWeaponType()
 
 			if slot.texture.resource_path == Icons.silent_stab.get_path():
 				if slot.get_parent().get_node("CD").text == "":
-					active_action = "silent stab"
-					skills.skillCancel("silent stab")
+					silent_stab_active = true
+					skills.skillCancel("silentStab")
 				else:
-
 					returnToIdleBasedOnWeaponType()
 					
-			if slot.texture.resource_path == Icons.switch_element.get_path():
-				if slot.get_parent().get_node("CD").text == "":
-					skills.SwitchElementCD()
-					l_click_slot.switchAttackIcon(self)
-
-			if slot.texture.resource_path == Icons.lighting_shot.get_path():
-				active_action = "lighting"
-				
-			if slot.texture.resource_path == Icons.fireball.get_path():
-				active_action = "fireball"
-				skills.skillCancel("fireball")
-
-			if slot.texture.resource_path == Icons.triple_fireball.get_path():
-				if slot.get_parent().get_node("CD").text != "":
-					active_action = "none"
-					returnToIdleBasedOnWeaponType()
-
-				else:
-					active_action = "triple fireball"
-					skills.skillCancel("triple fireball")
-
-				
 					
-			if slot.texture.resource_path == Icons.immolate.get_path():
-				if slot.get_parent().get_node("CD").text == "":
-					active_action = "immolate"
-					skills.skillCancel("immolate")
-				else:
+#			if slot.texture.resource_path == Icons.backstep.get_path():
+#				if skills.can_backstep == false:
+#					returnToIdleBasedOnWeaponType()
+#					frontstep_duration = false
+#					backstep_duration = false
+#					leftstep_duration = false
+#					rightstep_duration = false
+#					debug.active_action = "trying to backstep"
+#				else:
+#					debug.active_action = "backstep"
+#					debug.last_skills = "backstep"
+#					skills.interruptBaseAtk()
+#					if Input.is_action_pressed("front"):
+#						frontstep_duration = true
+#						debug.active_action = "frontstep"
+#						debug.last_skills = "frontstep"
+#					elif Input.is_action_pressed("right"):
+#						rightstep_duration = true
+#						debug.active_action = "rightstep"
+#						debug.last_skills = "rightstep"
+#					elif Input.is_action_pressed("left"):
+#						leftstep_duration = true
+#						debug.active_action = "leftstep"
+#						debug.last_skills = "leftstep"
+#					else:
+#						backstep_duration = true
+#						debug.active_action = "backstep"
+#						debug.last_skills = "backstep"
+#					if skill_cancelling == true:
+#						debug.active_action = "backstep"
+#						debug.last_skills = "backstep"
+#						skills.skillCancel("backstep")
+#Lclick and Rclick__________________________________________________________________________________
+#fist
+#			elif slot.texture.resource_path == Icons.punch.get_path():
+#				if hold_to_base_atk == true:
+#					animation.play("fist hold",blend,stats.melee_atk_speed + 0.15)
+#					directionToCamera()
+#					moveTowardsDirection(2.5)
+#				else:
+#					base_atk_duration = true
+#					is_in_combat = true
+#
+#			elif slot.texture.resource_path == Icons.punch2.get_path():
+#				if hold_to_base_atk == false:
+#					base_atk2_duration = true
+#					is_in_combat = true
+#
+#			elif slot.texture.resource_path == Icons.stomp.get_path():
+#				if skills.can_stomp == false:
+#					stomp_duration = false
+#					returnToIdleBasedOnWeaponType()
+#				else:
+#					stomp_duration = true
+#				is_in_combat = true
+#				switchWeaponFromHandToSideOrBack()
+#				skills.skillCancel("stomp")
+#_________________________________________Kick______________________________________________________
+			elif slot.texture.resource_path == Icons.kick.get_path():
+				debug.active_action = "kick"
+				if skills.can_kick == false:
+					kick_duration = false
+					debug.active_action = "can't kick"
+					debug.last_skills = "can't kick"
 					returnToIdleBasedOnWeaponType()
-			if slot.texture.resource_path == Icons.ring_of_fire.get_path():
-				if slot.get_parent().get_node("CD").text == "":
-					active_action = "ring of fire"
-					skills.skillCancel("ring of fire")
 				else:
-					returnToIdleBasedOnWeaponType()
-			if slot.texture.resource_path == Icons.wall_of_fire.get_path():
-				if slot.get_parent().get_node("CD").text == "":
-					active_action = "wall of fire"
-					skills.skillCancel("wall of fire")
-				else:
-					returnToIdleBasedOnWeaponType()
+				#	if kick_icon.points >0:
+						if stats.resolve > skills.kick_cost:
+							kick_duration = true
+							is_in_combat = true
+							switchWeaponFromHandToSideOrBack()
+							skills.skillCancel("kick")
+							
+#
+#			elif slot.texture.resource_path == Icons.throw_rock.get_path():
+#				if hold_to_base_atk == false:
+#					throw_rock_duration = true
+#					is_in_combat = true
+#				else:
+#					moving = false
+#					can_walk = false
+#					is_in_combat = true
+#					direction = -camera.global_transform.basis.z
+#					moveTowardsDirection(0)
+#					animation.play("throw rock",blend,stats.range_atk_speed + 0.15)
+##sword
+#
+#			elif slot.texture.resource_path == Icons.vanguard_icons["combo_switch"].get_path():
+#				if skills.can_combo_switch == true: 
+#					skills.comboSwitchCD()
+#
+#
+#
+#			elif slot.texture.resource_path == Icons.vanguard_icons["base_atk"].get_path():
+#				if hold_to_base_atk == true:
+#					directionToCamera()
+#					baseAtkAnim()
+#				else:
+#					base_atk_duration = true
+#			elif slot.texture.resource_path == Icons.vanguard_icons["base_atk2"].get_path():
+#				if hold_to_base_atk == false:
+#					base_atk2_duration = true
+#					base_atk3_duration = true
+#					base_atk4_duration = true
+#
+#			elif slot.texture.resource_path == Icons.vanguard_icons["guard_sword"].get_path():
+#				if stats.resolve > 0:
+#					moving = false
+#					can_walk = false
+#					is_in_combat = true
+#					stats.resolve -= 1 * get_physics_process_delta_time()
+#					if weapon_type == Icons.weapon_type_list.dual_swords:
+#						animation.play("dual block",blend)
+#					else:
+#						animation.play("sword block",blend)
+#				else:
+#					returnToIdleBasedOnWeaponType()
+#			elif slot.texture.resource_path == Icons.vanguard_icons["guard_shield"].get_path():
+#				if stats.resolve > 0:
+#					moving = false
+#					can_walk = false
+#					stats.resolve -= 1 * get_physics_process_delta_time()
+#					animation.play("shield block",blend)
+#				else:
+#					returnToIdleBasedOnWeaponType()
+##bow 
+#			elif slot.texture.resource_path == Icons.quick_shot.get_path():
+#				if weapon_type == Icons.weapon_type_list.bow:
+#					is_aiming = true
+#					can_walk = false
+#					genes.can_move = false
+#					is_in_combat = true
+#					if moving == false:
+#						animation.play("shoot",blend,stats.range_atk_speed + 0.4)
+#
+##melee weapon skills
+##__________________________________________  overhead slash    _____________________________________
+#			elif slot.texture.resource_path == Icons.vanguard_icons["sunder"].get_path():
+#				if overhead_icon.points >0:
+#					if skills.can_overhead_slash == true:
+#						if stats.resolve > skills.overhead_slash_cost:
+#							if weapon_type != Icons.weapon_type_list.fist:
+#								overhead_slash_duration = true
+#								is_in_combat = true
+#								if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
+#									skills.skillCancel("sunder")
+#							else:
+#								returnToIdleBasedOnWeaponType()
+#								overhead_slash_duration = false
+#						else:
+#							returnToIdleBasedOnWeaponType()
+#							overhead_slash_duration = false
+#					else:
+#						returnToIdleBasedOnWeaponType()
+#						overhead_slash_duration = false
+##___________________________________________________________________________________________________
+#			elif slot.texture.resource_path == Icons.vanguard_icons["taunt"].get_path():
+#					if taunt_icon.points >0:
+#						if skills.can_taunt == true:
+#							if stats.resolve > skills.taunt_cost:
+#								taunt_duration = true
+#								moving = false
+#								can_walk = false
+#								is_in_combat = true
+#								if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
+#									skills.skillCancel("taunt")
+#							else:
+#								returnToIdleBasedOnWeaponType()
+#								taunt_duration = false
+#						else:
+#							returnToIdleBasedOnWeaponType()
+#							taunt_duration = false
+#					else:
+#						returnToIdleBasedOnWeaponType()
+#						taunt_duration = false
+##_________________________________________ rising slash ____________________________________________
+#			elif slot.texture.resource_path == Icons.vanguard_icons["rising_slash"].get_path():
+#					if rising_icon.points >0:
+#						if skills.can_rising_slash == true:
+#							if stats.resolve > skills.rising_slash_cost:
+#								if weapon_type != Icons.weapon_type_list.fist:
+#									rising_slash_duration = true
+#									is_in_combat = true
+#									if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
+#										skills.skillCancel("rising_slash")
+#									else:
+#										pass
+#							else:
+#								returnToIdleBasedOnWeaponType()
+#								rising_slash_duration = false
+#						else:
+#							returnToIdleBasedOnWeaponType()
+#							rising_slash_duration = false
+#					else:
+#						returnToIdleBasedOnWeaponType()
+#						rising_slash_duration = false
+##_________________________________________  cyclone   ______________________________________________
+#			elif slot.texture.resource_path == Icons.vanguard_icons["cyclone"].get_path():
+#					if cyclone_icon.points >0 :
+#						if skills.can_cyclone == true:
+#							if stats.resolve > skills.cyclone_cost:
+#								if weapon_type != Icons.weapon_type_list.fist:
+#									cyclone_duration = true
+#									is_in_combat = true
+#									if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
+#										skills.skillCancel("cyclone")
+#							else:
+#								returnToIdleBasedOnWeaponType()
+#								cyclone_duration = false
+#						else:
+#							returnToIdleBasedOnWeaponType()
+#							cyclone_duration = false
+#					else:
+#						returnToIdleBasedOnWeaponType()
+#						cyclone_duration = false
+##__________________________________________ Whirlwind _____________________________________________
+#			elif slot.texture.resource_path == Icons.vanguard_icons["whirlwind"].get_path():
+#					if whirlwind_icon.points >0 :
+#						if skills.can_whirlwind == true:
+#							if stats.resolve > skills.whirlwind_cost:
+#								if weapon_type != Icons.weapon_type_list.fist:
+#									whirlwind_duration = true
+#									is_in_combat = true
+#									if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
+#										skills.skillCancel("whirlwind")
+#							else:
+#								returnToIdleBasedOnWeaponType()
+#								whirlwind_duration = false
+#						else:
+#							returnToIdleBasedOnWeaponType()
+#							whirlwind_duration = false
+#					else:
+#						returnToIdleBasedOnWeaponType()
+#						whirlwind_duration = false
+##__________________________________________ Heart Trust ____________________________________________
+#			elif slot.texture.resource_path == Icons.vanguard_icons["heart_trust"].get_path():
+#					if heart_trust_icon.points >0 :
+#						if skills.can_heart_trust == true:
+#							if stats.resolve > skills.heart_trust_cost:
+#								if weapon_type != Icons.weapon_type_list.fist:
+#									heart_trust_duration = true
+#									if skill_cancelling == true:#Putting all of thise in a function with an exception doesn't work properly, like animationCancelException(cyclone_duration)
+#										skills.skillCancel("heart_trust")
+#							else:
+#								returnToIdleBasedOnWeaponType()
+#								heart_trust_duration = false
+#						else:
+#							returnToIdleBasedOnWeaponType()
+#							heart_trust_duration = false
+#					else:
+#						returnToIdleBasedOnWeaponType()
+#						heart_trust_duration = false
+#
+##ranged bow skills
+#			elif slot.texture.resource_path == Icons.full_draw.get_path():
+#				if weapon_type == Icons.weapon_type_list.bow:
+#					is_aiming = true
+#					can_walk = false
+#					genes.can_move = false
+#					animation.play("full draw",0.3,stats.range_atk_speed)
+#
+#
+#
+#			elif slot.texture.resource_path == stats.grappling_hook.get_path():
+#				if skills.can_grappling_hook == true:
+#					direction = -camera.global_transform.basis.z
+#					hookEnemies()
+#					skills.grapplingHookCD()
+#
+#
+#
 ##consumables________________________________________________________________________________________
 			elif slot.texture.resource_path == Items.red_potion.get_path():
 				slot.get_parent().displayQuantity()
@@ -728,145 +1160,15 @@ func moveSidewaysDuringAnimation(speed):
 
 var sprint_animation_speed: float = 1
 var anim_cancel:bool = true #If true using abilities and skills interupts base attacks or other animations
+
+var direction_assist:bool = false
+func automaticTargetAssist() ->void:
+	if direction_assist == true:
+		rotateTowardsEnemy()
+
+
+
 #_______________________________________________Combat______________________________________________
-
-#simple pick up and throw code, with a few considerations, thrown objects can glitch thru the floor if spammed
-#avoid it by increasing the floor collisions layers and masks...you've got 64 of them in total, use them. 
-#the thrown object moves using the same movement code in the player's func movement()
-#just make sure to add some vertical velocity to the object right before throwing, else nothind bad is going to happen
-#it just works better in third person this way. 
-var carried_body: KinematicBody = null
-var hold_offset: Vector3 = Vector3(0,1.516,0.585)
-var throw_force: float = 25.0 # Adjust the throw force as needed
-var max_pickup_distance: float = 2.5 # Maximum distance to allow picking up objects
-onready var detector_area:Area = $DirectionControl/DetectorArea
-func LiftAndThrow() -> void:
-	#this prevents a bug that I can't care to fix where where the player walks inside the object 
-	#before lifting it and ends up lifting itself up in the air infinitely togheter with the object
-	if moving == false: 
-		# don't just use if carried_body:.... check if it's actually not null otherwise you risk crashes when players spam or do some other stupid stuff
-		if carried_body != null: 
-			var throw_direction = (carried_body.global_transform.origin - camera.global_transform.origin).normalized()
-			if Input.is_action_just_pressed("Lclick"):
-				carried_body.vertical_velocity = Vector3.UP * 0.3
-				carried_body.move_and_slide(throw_direction * throw_force)
-				carried_body.direction = throw_direction
-				carried_body.thrown = true
-				carried_body.thrower = self
-
-				carried_body = null
-			if Input.is_action_just_pressed("pickup"):
-				carried_body.set_collision_layer(1) 
-				carried_body.set_collision_mask(1) 
-				carried_body.thrown = false
-				carried_body.thrower = null
-				if carried_body.is_in_group("Entity"):
-					carried_body.is_being_held = false
-				carried_body = null
-				
-				
-
-		else:
-			var bodies = detector_area.get_overlapping_bodies()
-			for body in bodies:
-				if Input.is_action_just_pressed("pickup"):
-					if body and body != self and body.is_in_group("Liftable"):
-						var distance_to_body = body.global_transform.origin.distance_to(global_transform.origin)
-						if distance_to_body <= max_pickup_distance:
-							body.set_collision_layer(1) 
-							body.set_collision_mask(1) 
-							carried_body = body
-							if body.is_in_group("Entity"):
-								body.is_being_held = true
-						
-func carryObject() -> void:
-	if carried_body != null:
-		carried_body.set_collision_layer(6) 
-		carried_body.set_collision_mask(6) 
-		# Calculate the forward vector from direction_control
-		var forward_vector = direction_control.global_transform.basis.z
-		# Set the position of carried_body
-		carried_body.translation = direction_control.global_transform.origin + forward_vector * hold_offset.z + Vector3(0, hold_offset.y, 0)
-		# Set the rotation of carried_body to match direction_control
-		carried_body.rotation = direction_control.rotation
-
-#If the enemy model is not using mixamo and has normal rotation use this
-	if garrote_victim != null:
-		garrote_victim.set_collision_layer(6) 
-		garrote_victim.set_collision_mask(6) 
-		# Calculate the forward vector from direction_control
-		var forward_vector = direction_control.global_transform.basis.z
-		var right_vector = direction_control.global_transform.basis.x  # Right direction
-		# Set the position of garrote_victim
-		var desired_distance = 0.4  # Adjust the desired distance as needed
-		var side_offset = -0.2  # Adjust the side offset as needed
-		# Apply the forward and side offsets
-		garrote_victim.translation = direction_control.global_transform.origin + forward_vector * desired_distance + right_vector * side_offset + Vector3(0, 0, 0)
-		# Set the rotation of garrote_victim to match direction_control
-		garrote_victim.rotation = direction_control.rotation
-
-#else use that 
-#	if garrote_victim != null:
-#		garrote_victim.set_collision_layer(6) 
-#		garrote_victim.set_collision_mask(6) 
-#
-#		# Calculate the forward vector from direction_control
-#		var forward_vector = direction_control.global_transform.basis.z
-#		var right_vector = direction_control.global_transform.basis.x  # Right direction
-#
-#		# Set the position of garrote_victim
-#		var desired_distance = 0.4  # Adjust the desired distance as needed
-#		var side_offset = -0.2  # Adjust the side offset as needed
-#
-#		# Apply the forward and side offsets
-#		garrote_victim.translation = direction_control.global_transform.origin + forward_vector * desired_distance + right_vector * side_offset + Vector3(0, 0, 0)
-#
-#		# Set the rotation of garrote_victim to match direction_control, inverted
-#		garrote_victim.rotation.y = direction_control.rotation.y + PI  # Rotate 180 degrees around Y axis
-#		garrote_victim.rotation.x = -direction_control.rotation.x  # Invert X rotation
-#		garrote_victim.rotation.z = -direction_control.rotation.z  # Invert Z rotation
-
-
-
-var garrote_victim: KinematicBody = null
-var garrote_offset: Vector3 = Vector3(0,1.516,0.585)
-func garroteTarget() -> void:
-	if garrote_victim == null:
-		var bodies = detector_area.get_overlapping_bodies()
-		for body in bodies:
-			if body and body != self and body.is_in_group("Entity"):
-				if body.stats.health > 0:
-					if isFacingSelf(body, 0.5):
-						body.set_collision_layer(1) 
-						body.set_collision_mask(1) 
-						garrote_victim = body
-						garrote_victim.garroted = true
-						if body != garrote_victim:
-							body.garroted = false
-						return  # Exit the function once a victim is found
-
-onready var hook_ray:RayCast = $Camroot/h/v/Camera/Aim/hook_ray
-onready var hook_mesh:MeshInstance = $Camroot/h/v/Camera/Aim/hook
-func hookEnemies() -> void:
-	var instigator:KinematicBody = self 
-	if hook_ray.is_colliding():
-		var body = hook_ray.get_collider()
-		var distance = global_transform.origin.distance_to(body.global_transform.origin)
-		if body != null:
-			if body != self:
-				if body.is_in_group("Entity"):
-					if body.has_method("getKnockedDown"):
-						if body.has_method("lookTarget"):
-							body.lookTarget(12)
-							if body.health >  body.max_health *  0.1:
-								if body.balance < 3:
-									body.getKnockedDown(instigator)
-					#pullEnemy(distance, body, 0.5 + (distance * 0.01))
-				# @Ceisri 
-				# Managed to make this work, except sometimes the hook pulls the player thru collisions
-				# not gonna bother with it for now, the function is found at "res://scripts/DeprecatedScripts/GrapplingHook.gd"
-				#else:
-					#pullPlayer((distance * 0.01),(distance * 0.01))
 
 func laserRayForTesting() -> void:
 	if Input.is_action_pressed("Lclick"):
@@ -887,76 +1189,50 @@ Documentation String:
 	if enabled, all attacks will automatically call automaticTargetAssist()
 """
 
-#Force the player to look at the enemy, optional
-var stored_victim:KinematicBody = null
+
 func rotateTowardsEnemy() -> void:
-	match target_mode:
-		"Lowest Health":
-			var closest_target = null
-			var closest_distance: float = 20.0
-			# Get all nodes in the "Entity" group
-			var entities = get_tree().get_nodes_in_group("Entity")
-			# List to hold entities and their health within range
-			var targets_in_range = []
-			# Find targets within the closest distance and add to list
-			for entity in entities:
-				if entity != self:
-					var distance = global_transform.origin.distance_to(entity.global_transform.origin)
-					if distance < closest_distance and entity.get_node("Stats").health > 0:
-						targets_in_range.append(entity)
-			# Find the target with the lowest health or closest distance if health is the same
-			for target in targets_in_range:
-				if closest_target == null:
-					closest_target = target
-				elif target.get_node("Stats").health < closest_target.get_node("Stats").health:
-					closest_target = target
-				elif target.get_node("Stats").health == closest_target.get_node("Stats").health:
-					var distance_to_target = global_transform.origin.distance_to(target.global_transform.origin)
-					var distance_to_closest = global_transform.origin.distance_to(closest_target.global_transform.origin)
-					if distance_to_target < distance_to_closest:
-						closest_target = target
-			# Set direction towards the target with the lowest health or closest distance
-			if closest_target:
-				direction = (closest_target.global_transform.origin - global_transform.origin).normalized()
-		"Last Hit":
-			if stored_victim:
-				var distance = global_transform.origin.distance_to(stored_victim.global_transform.origin)
-				if distance < 20.0 and stored_victim.get_node("Stats").health > 0:
-					direction = (stored_victim.global_transform.origin - global_transform.origin).normalized()
-		"Attacker":
-			if stored_attacker:
-				var distance = global_transform.origin.distance_to(stored_attacker.global_transform.origin)
-				if distance < 20.0 and stored_attacker.get_node("Stats").health > 0:
-					direction = (stored_attacker.global_transform.origin - global_transform.origin).normalized()
+	var closest_target = null
+	var closest_distance: float = 20.0
+
+	# Get all nodes in the "Entity" group
+	var entities = get_tree().get_nodes_in_group("Entity")
+
+	# List to hold entities and their health within range
+	var targets_in_range = []
+
+	# Find targets within the closest distance and add to list
+	for entity in entities:
+		if entity != self:
+			var distance = global_transform.origin.distance_to(entity.global_transform.origin)
+			if distance < closest_distance and entity.health > 0:
+				targets_in_range.append(entity)
+
+	# Find the target with the lowest health or closest distance if health is the same
+	for target in targets_in_range:
+		if closest_target == null:
+			closest_target = target
+		elif target.health < closest_target.health:
+			closest_target = target
+		elif target.health == closest_target.health:
+			var distance_to_target = global_transform.origin.distance_to(target.global_transform.origin)
+			var distance_to_closest = global_transform.origin.distance_to(closest_target.global_transform.origin)
+			if distance_to_target < distance_to_closest:
+				closest_target = target
+
+	# Set direction towards the target with the lowest health or closest distance
+	if closest_target:
+		direction = (closest_target.global_transform.origin - global_transform.origin).normalized()
 
 
-var direction_assist:bool = true # we use this in attacks to auto rotate the direction towards enemies 
-onready var dir_assist_label:Label = $Canvas/Menu/TargetAssist/label
-func targetAssistOnOff()-> void:
-	direction_assist = !direction_assist
-	if direction_assist == true:
-		dir_assist_label.text = "Target Assist: On" 
-	else:
-		dir_assist_label.text = "Target Assist: OFF" 
-		
-		
-var target_mode:String = "Last Hit"
-onready var target_mode_label:Label = $Canvas/Menu/TargetAssistMode/label
-func targetAssistMode()-> void:
-	if target_mode == "Last Hit":
-		target_mode = "Lowest Health"
-	elif target_mode == "Lowest Health":
-		target_mode = "Attacker"
-	else:
-		target_mode = "Last Hit"
-	target_mode_label.text =  target_mode
-	
+
+
 func manualTargetAssit() -> void:
-	if Input.is_action_pressed("LockOn"):
+	if Input.is_action_pressed("autoturn"):
 		rotateTowardsEnemy()
-func TargetAssist() ->void:
-	if direction_assist == true:
-		rotateTowardsEnemy()
+		
+		
+
+
 #___________________________________________________________________________________________________
 #Movement and physics
 var gravity_force: float = 20
@@ -1014,24 +1290,23 @@ func movement(delta: float) -> void:
 	moving = false
 
 	var input_direction = Vector3(
-		Input.get_action_strength("Left") - Input.get_action_strength("Right"),
+		Input.get_action_strength("left") - Input.get_action_strength("right"),
 		0,
-		Input.get_action_strength("Front") - Input.get_action_strength("Back")
+		Input.get_action_strength("front") - Input.get_action_strength("back")
 	)
-	if can_walk == true:
-		if active_action != "garrote":
-			if input_direction.length() > 0:
-				direction = input_direction.rotated(Vector3.UP, h_rot).normalized()
-				moving = true
-				movement_speed = walk_speed
-			elif joystick_active:
-				direction = -joystick_direction.rotated(Vector3.UP, h_rot).normalized()
-				moving = true
-				movement_speed = walk_speed
+	if garrote_active == false:
+		if input_direction.length() > 0:
+			direction = input_direction.rotated(Vector3.UP, h_rot).normalized()
+			moving = true
+			movement_speed = walk_speed
+		elif joystick_active:
+			direction = -joystick_direction.rotated(Vector3.UP, h_rot).normalized()
+			moving = true
+			movement_speed = walk_speed
 	
 	if moving == true:
 		if carried_body == null:
-			if Input.is_action_pressed("Sprint"):
+			if Input.is_action_pressed("sprint"):
 				debug.active_action = "sprinting"
 				is_in_combat = false
 				movement_speed = sprint_speed
@@ -1040,7 +1315,7 @@ func movement(delta: float) -> void:
 					sprint_speed += 0.005 * stats.agility
 				elif sprint_speed > max_sprint_speed:
 					sprint_speed = max_sprint_speed
-			elif Input.is_action_pressed("Run"):
+			elif Input.is_action_pressed("run"):
 				debug.active_action = "running"
 				sprint_speed = default_sprint_speed
 				movement_mode = "run"
@@ -1071,29 +1346,29 @@ func movement(delta: float) -> void:
 			movement_speed = walk_speed 
 			movement_mode = "walk"
 	if sneak_toggle == true:
-		if Input.is_action_just_pressed("Crouch"):
+		if Input.is_action_just_pressed("sneak"):
 			sneaking = !sneaking
-	if Input.is_action_just_pressed("Crawl"):
+	if Input.is_action_just_pressed("crawl"):
 		crawling = !crawling
 	
 	if sneak_toggle == false:
-		if Input.is_action_pressed("Crouch"):
+		if Input.is_action_pressed("sneak"):
 			sneaking = true
 		else:
 			sneaking = false
 	if jump_count < 1:
 		if carried_body == null:
 			if is_on_floor():
-				if Input.is_action_just_pressed("Jump"):
+				if Input.is_action_just_pressed("jump"):
 					debug.active_action = "jumping"
 					jump_count += 1
 					vertical_velocity = Vector3.UP * jump_strength
 			else:
-				if Input.is_action_just_pressed("Jump"):
+				if Input.is_action_just_pressed("jump"):
 					debug.active_action = "double jumping"
 					jump_count += 1
 					vertical_velocity = Vector3.UP * jump_strength
-					active_action = "flip"
+					flip_duration = true
 					
 	movementCollisions()
 	if is_on_floor():
@@ -1115,6 +1390,9 @@ func movementCollisions()-> void:
 		middle_collision.disabled = false
 		upper_collision.disabled = false
 
+func _on_SneakToggle_pressed() -> void:
+	sneak_toggle = !sneak_toggle
+
 
 # Dodge
 var double_press_time: float = 0.18
@@ -1131,13 +1409,12 @@ var dash_timerright: float = 0.0
 var dash_countforward: int = 0
 var dash_timerforward: float = 0.0
 func dodgeIframe() -> void:
-	pass
-#	if backstep_duration == true or frontstep_duration == true or leftstep_duration == true or rightstep_duration == true or dash_active == true:
-#		set_collision_layer(6) 
-#		set_collision_mask(6) 
-#	else:
-#		set_collision_layer(1) 
-#		set_collision_mask(1)   
+	if backstep_duration == true or frontstep_duration == true or leftstep_duration == true or rightstep_duration == true or dash_active == true:
+		set_collision_layer(6) 
+		set_collision_mask(6) 
+	else:
+		set_collision_layer(1) 
+		set_collision_mask(1)   
 		
 func doublePressToDash()-> void:
 	if stats.resolve >= skills.dash_cost:
@@ -1146,10 +1423,10 @@ func doublePressToDash()-> void:
 		if dash_timerback >= double_press_time:
 			dash_countback = 0
 			dash_timerback = 0.0
-		if Input.is_action_just_pressed("Back"):
+		if Input.is_action_just_pressed("back"):
 			dash_countback += 1
 		if dash_countback == 2 and dash_timerback < double_press_time:
-			active_action = "dash"
+			dash_active = true
 			stats.resolve -= skills.dash_cost
 
 
@@ -1158,10 +1435,10 @@ func doublePressToDash()-> void:
 		if dash_timerforward >= double_press_time:
 			dash_countforward = 0
 			dash_timerforward = 0.0
-		if Input.is_action_just_pressed("Front"):
+		if Input.is_action_just_pressed("front"):
 			dash_countforward += 1
 		if dash_countforward == 2 and dash_timerforward < double_press_time:
-			active_action = "dash"
+			dash_active = true
 			stats.resolve -= skills.dash_cost
 
 		if dash_countleft > 0:
@@ -1169,10 +1446,10 @@ func doublePressToDash()-> void:
 		if dash_timerleft >= double_press_time:
 			dash_countleft = 0
 			dash_timerleft = 0.0
-		if Input.is_action_just_pressed("Left"):
+		if Input.is_action_just_pressed("left"):
 			dash_countleft += 1
 		if dash_countleft == 2 and dash_timerleft < double_press_time:
-			active_action = "dash"
+			dash_active = true
 			stats.resolve -= skills.dash_cost
 
 		if dash_countright > 0:
@@ -1180,10 +1457,10 @@ func doublePressToDash()-> void:
 		if dash_timerright >= double_press_time:
 			dash_countright = 0
 			dash_timerright = 0.0
-		if Input.is_action_just_pressed("Right"):
+		if Input.is_action_just_pressed("right"):
 			dash_countright += 1
 		if dash_countright == 2 and dash_timerright < double_press_time :
-			active_action = "dash"
+			dash_active = true
 			stats.resolve -= skills.dash_cost
 
 
@@ -1209,10 +1486,10 @@ func climb()-> void:
 	if skill_bar_input == "none":
 		if carried_body == null:
 			if climb_ray.is_colliding() and is_on_wall():
-				if moving == true and not Input.is_action_pressed("Sprint") and not Input.is_action_pressed("Run") and not Input.is_action_pressed("Crouch")and not Input.is_action_pressed("Crawl"):
+				if moving == true and not Input.is_action_pressed("sprint") and not Input.is_action_pressed("run") and not Input.is_action_pressed("sneak"):
 					gravity_active = false
 					checkWallInclination()
-					active_action = "none"
+					flip_duration = false
 					if not head_ray.is_colliding() and not is_wall_in_range:#vaulting
 						if  not is_on_floor():
 							movement_mode = "vault"
@@ -1269,7 +1546,6 @@ var is_aiming:bool = false
 onready var direction_control:Spatial = $DirectionControl
 func rotateMesh() -> void:
 	direction_control.rotation.y = lerp_angle(direction_control.rotation.y, atan2(direction.x, direction.z) - rotation.y, get_physics_process_delta_time() * angular_acceleration)
-
 func directionToCamera():#put this on attacks 
 	if aiming_mode =="camera":
 		direction = -camera.global_transform.basis.z
@@ -1375,9 +1651,12 @@ func _input(event):
 		elif event is InputEventMouseButton and event.button_index == BUTTON_WHEEL_DOWN:
 			# Zoom out when scrolling down
 			Zoom(1)
-
-			
-			
+func clickInputs():#Momentary Delete Later
+	if !cursor_visible:
+		if Input.is_action_pressed("Lclick"):
+			attacking = true
+		else: 
+			attacking = false
 var is_fullscreen :bool  = false
 func InputsInterface()-> void:
 	if Input.is_action_just_pressed("fullscreen"):
@@ -1391,7 +1670,7 @@ func InputsInterface()-> void:
 		debug.visible = !debug.visible
 
 	if Input.is_action_just_pressed("Skills"):
-		skills_civilian.visible = !skills_civilian.visible
+		skills_professions.visible = !skills_professions.visible
 
 	if  Input.is_action_just_pressed("Inventory"):
 		inventory.visible = !inventory.visible
@@ -1403,70 +1682,68 @@ func InputsInterface()-> void:
 
 var skill_bar_input:String = "none"
 func skillBarInputs():
-	if Input.is_action_just_pressed("1"):
+	if Input.is_action_pressed("1"):
 		skill_bar_input = "1"
-	elif Input.is_action_just_pressed("2"):
+	elif Input.is_action_pressed("2"):
 		skill_bar_input = "2"
-	elif Input.is_action_just_pressed("3"):
+	elif Input.is_action_pressed("3"):
 		skill_bar_input = "3"
-	elif Input.is_action_just_pressed("4"):
+	elif Input.is_action_pressed("4"):
 		skill_bar_input = "4"
-	elif Input.is_action_just_pressed("5"):
+	elif Input.is_action_pressed("5"):
 		skill_bar_input = "5"
-	elif Input.is_action_just_pressed("6"):
+	elif Input.is_action_pressed("6"):
 		skill_bar_input = "6"
-	elif Input.is_action_just_pressed("7"):
+	elif Input.is_action_pressed("7"):
 		skill_bar_input = "7"
-	elif Input.is_action_just_pressed("8"):
+	elif Input.is_action_pressed("8"):
 		skill_bar_input = "8"
-	elif Input.is_action_just_pressed("9"):
+	elif Input.is_action_pressed("9"):
 		skill_bar_input = "9"
-	elif Input.is_action_just_pressed("0"):
+	elif Input.is_action_pressed("0"):
 		skill_bar_input = "0"
-	elif Input.is_action_just_pressed("Q"):
+	elif Input.is_action_pressed("Q"):
 		skill_bar_input = "Q"
-	elif Input.is_action_just_pressed("E"):
+	elif Input.is_action_pressed("E"):
 		skill_bar_input = "E"
-	elif Input.is_action_just_pressed("Z"):
+	elif Input.is_action_pressed("Z"):
 		skill_bar_input = "Z"
-	elif Input.is_action_just_pressed("X"):
+	elif Input.is_action_pressed("X"):
 		skill_bar_input = "X"
-	elif Input.is_action_just_pressed("C"):
+	elif Input.is_action_pressed("C"):
 		skill_bar_input = "C"
-	elif Input.is_action_just_pressed("R"):
+	elif Input.is_action_pressed("R"):
 		skill_bar_input = "R"
-	elif Input.is_action_just_pressed("F"):
+	elif Input.is_action_pressed("F"):
 		skill_bar_input = "F"
-	elif Input.is_action_just_pressed("T"):
+	elif Input.is_action_pressed("T"):
 		skill_bar_input = "T"
-	elif Input.is_action_just_pressed("V"):
+	elif Input.is_action_pressed("V"):
 		skill_bar_input = "V"
-	elif Input.is_action_just_pressed("G"):
+	elif Input.is_action_pressed("G"):
 		skill_bar_input = "G"
-	elif Input.is_action_just_pressed("B"):
+	elif Input.is_action_pressed("B"):
 		skill_bar_input = "B"
-	elif Input.is_action_just_pressed("Y"):
+	elif Input.is_action_pressed("Y"):
 		skill_bar_input = "Y"
-	elif Input.is_action_just_pressed("H"):
+	elif Input.is_action_pressed("H"):
 		skill_bar_input = "H"
-	elif Input.is_action_just_pressed("N"):
+	elif Input.is_action_pressed("N"):
 		skill_bar_input = "N"
-	elif Input.is_action_just_pressed("F1"):
+	elif Input.is_action_pressed("M"):
+		skill_bar_input = "M"
+	elif Input.is_action_pressed("F1"):
 		skill_bar_input = "F1"
-	elif Input.is_action_just_pressed("F2"):
+	elif Input.is_action_pressed("F2"):
 		skill_bar_input = "F2"
-	elif Input.is_action_just_pressed("F3"):
+	elif Input.is_action_pressed("F3"):
 		skill_bar_input = "F3"
-	elif Input.is_action_just_pressed("F4"):
+	elif Input.is_action_pressed("F4"):
 		skill_bar_input = "F4"
-	elif Input.is_action_just_pressed("F5"):
+	elif Input.is_action_pressed("F5"):
 		skill_bar_input = "F5"
-	elif Input.is_action_pressed("Lclick"):
-		if !cursor_visible:
-			skill_bar_input = "LClick"
-	elif Input.is_action_pressed("Rclick"):
-		if !cursor_visible:
-			skill_bar_input = "RClick"
+
+
 	else:
 		skill_bar_input = "none"
 
@@ -1517,9 +1794,6 @@ func saveData():
 		"health": stats.health,
 		"max_health": stats.max_health,
 		
-		"direction_assist":direction_assist,
-		"target_mode":target_mode,
-		
 		"entity_graphic_interface.rect_position":entity_graphic_interface.rect_position,
 		
 		"entity_graphic_RU.visible":entity_graphic_RU.visible,
@@ -1559,12 +1833,6 @@ func loadData():
 				stats.health = data_file["health"]
 			if "max_health" in data_file:
 				stats.max_health = data_file["max_health"]
-
-			if "direction_assist" in data_file:
-				direction_assist = data_file["direction_assist"]
-			if "target_mode" in data_file:
-				target_mode = data_file["target_mode"]
-
 
 			if "entity_graphic_interface.rect_position" in data_file:
 				entity_graphic_interface.rect_position = data_file["entity_graphic_interface.rect_position"]
@@ -1630,6 +1898,7 @@ var fade_duration: float = 0.3
 
 onready var threat_label:Label = $Canvas/EnemyUI/Down/ExtraIntel/ThreatList
 onready var threat_label2:Label =$Canvas/EnemyUI/DownL/ExtraIntel/ThreatList
+var stored_victim:KinematicBody = null
 var time_to_show_stored_victim:int = 0
 
 func showEnemyBuffsDebuffs(body)->void:
@@ -1782,6 +2051,8 @@ func showEntityIntel(body)-> void:#show this if the player has enough perception
 		entity_res_bleed.text = str(enemy_stats.bleed_resistance)
 		entity_res_radiant.text = str(enemy_stats.radiant_resistance)
 
+
+
 	if entity_graphic_LU.visible == true:
 		if body.has_method("displayThreatInfo"):
 			body.displayThreatInfo(threat_label2)
@@ -1856,11 +2127,164 @@ func showEnemyStats()-> void:
 				# Start tween to fade out
 				entity_ui_tween.interpolate_property(entity_graphic_interface, "modulate:a", entity_graphic_interface.modulate.a, 0.0,fade_duration/3, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
 				entity_ui_tween.start()
+ 
+
+	
+
+
+#simple pick up and throw code, with a few considerations, thrown objects can glitch thru the floor if spammed
+#avoid it by increasing the floor collisions layers and masks...you've got 64 of them in total, use them. 
+#the thrown object moves using the same movement code in the player's func movement()
+#just make sure to add some vertical velocity to the object right before throwing, else nothind bad is going to happen
+#it just works better in third person this way. 
+
+
+var carried_body: KinematicBody = null
+var hold_offset: Vector3 = Vector3(0,1.516,0.585)
+var throw_force: float = 25.0 # Adjust the throw force as needed
+var max_pickup_distance: float = 2.5 # Maximum distance to allow picking up objects
+onready var detector_area:Area = $DirectionControl/DetectorArea
+func LiftAndThrow() -> void:
+	#this prevents a bug that I can't care to fix where where the player walks inside the object 
+	#before lifting it and ends up lifting itself up in the air infinitely togheter with the object
+	if moving == false: 
+		# don't just use if carried_body:.... check if it's actually not null otherwise you risk crashes when players spam or do some other stupid stuff
+		if carried_body != null: 
+			var throw_direction = (carried_body.global_transform.origin - camera.global_transform.origin).normalized()
+			if Input.is_action_just_pressed("Lclick"):
+				carried_body.vertical_velocity = Vector3.UP * 0.3
+				carried_body.move_and_slide(throw_direction * throw_force)
+				carried_body.direction = throw_direction
+				carried_body.thrown = true
+				carried_body.thrower = self
+
+				carried_body = null
+			if Input.is_action_just_pressed("pickup"):
+				carried_body.set_collision_layer(1) 
+				carried_body.set_collision_mask(1) 
+				carried_body.thrown = false
+				carried_body.thrower = null
+				if carried_body.is_in_group("Entity"):
+					carried_body.is_being_held = false
+				carried_body = null
+				
+				
+
+		else:
+			var bodies = detector_area.get_overlapping_bodies()
+			for body in bodies:
+				if Input.is_action_just_pressed("pickup"):
+					if body and body != self and body.is_in_group("Liftable"):
+						var distance_to_body = body.global_transform.origin.distance_to(global_transform.origin)
+						if distance_to_body <= max_pickup_distance:
+							body.set_collision_layer(1) 
+							body.set_collision_mask(1) 
+							carried_body = body
+							if body.is_in_group("Entity"):
+								body.is_being_held = true
+						
+func carryObject() -> void:
+	if carried_body != null:
+		carried_body.set_collision_layer(6) 
+		carried_body.set_collision_mask(6) 
+		# Calculate the forward vector from direction_control
+		var forward_vector = direction_control.global_transform.basis.z
+		# Set the position of carried_body
+		carried_body.translation = direction_control.global_transform.origin + forward_vector * hold_offset.z + Vector3(0, hold_offset.y, 0)
+		# Set the rotation of carried_body to match direction_control
+		carried_body.rotation = direction_control.rotation
+
+#If the enemy model is not using mixamo and has normal rotation use this
+	if garrote_victim != null:
+		garrote_victim.set_collision_layer(6) 
+		garrote_victim.set_collision_mask(6) 
+		# Calculate the forward vector from direction_control
+		var forward_vector = direction_control.global_transform.basis.z
+		var right_vector = direction_control.global_transform.basis.x  # Right direction
+		# Set the position of garrote_victim
+		var desired_distance = 0.4  # Adjust the desired distance as needed
+		var side_offset = -0.2  # Adjust the side offset as needed
+		# Apply the forward and side offsets
+		garrote_victim.translation = direction_control.global_transform.origin + forward_vector * desired_distance + right_vector * side_offset + Vector3(0, 0, 0)
+		# Set the rotation of garrote_victim to match direction_control
+		garrote_victim.rotation = direction_control.rotation
+
+#else use that 
+#	if garrote_victim != null:
+#		garrote_victim.set_collision_layer(6) 
+#		garrote_victim.set_collision_mask(6) 
+#
+#		# Calculate the forward vector from direction_control
+#		var forward_vector = direction_control.global_transform.basis.z
+#		var right_vector = direction_control.global_transform.basis.x  # Right direction
+#
+#		# Set the position of garrote_victim
+#		var desired_distance = 0.4  # Adjust the desired distance as needed
+#		var side_offset = -0.2  # Adjust the side offset as needed
+#
+#		# Apply the forward and side offsets
+#		garrote_victim.translation = direction_control.global_transform.origin + forward_vector * desired_distance + right_vector * side_offset + Vector3(0, 0, 0)
+#
+#		# Set the rotation of garrote_victim to match direction_control, inverted
+#		garrote_victim.rotation.y = direction_control.rotation.y + PI  # Rotate 180 degrees around Y axis
+#		garrote_victim.rotation.x = -direction_control.rotation.x  # Invert X rotation
+#		garrote_victim.rotation.z = -direction_control.rotation.z  # Invert Z rotation
+
+
+
+var garrote_victim: KinematicBody = null
+var garrote_offset: Vector3 = Vector3(0,1.516,0.585)
+func garroteTarget() -> void:
+	if garrote_victim == null:
+		var bodies = detector_area.get_overlapping_bodies()
+		for body in bodies:
+			if body and body != self and body.is_in_group("Entity"):
+				if body.stats.health > 0:
+					if isFacingSelf(body, 0.5):
+						body.set_collision_layer(1) 
+						body.set_collision_mask(1) 
+						garrote_victim = body
+						garrote_victim.garroted = true
+						if body != garrote_victim:
+							body.garroted = false
+						return  # Exit the function once a victim is found
+
 
 
 
 func switchWeaponFromHandToSideOrBack():
 	pass
+
+
+
+
+
+
+onready var hook_ray:RayCast = $Camroot/h/v/Camera/Aim/hook_ray
+onready var hook_mesh:MeshInstance = $Camroot/h/v/Camera/Aim/hook
+func hookEnemies() -> void:
+	var instigator:KinematicBody = self 
+	if hook_ray.is_colliding():
+		var body = hook_ray.get_collider()
+		var distance = global_transform.origin.distance_to(body.global_transform.origin)
+		if body != null:
+			if body != self:
+				if body.is_in_group("Entity"):
+					if body.has_method("getKnockedDown"):
+						if body.has_method("lookTarget"):
+							body.lookTarget(12)
+							if body.health >  body.max_health *  0.1:
+								if body.balance < 3:
+									body.getKnockedDown(instigator)
+					#pullEnemy(distance, body, 0.5 + (distance * 0.01))
+			
+			
+				# @Ceisri 
+				# Managed to make this work, except sometimes the hook pulls the player thru collisions
+				# not gonna bother with it for now, the function is found at "res://scripts/DeprecatedScripts/GrapplingHook.gd"
+				#else:
+					#pullPlayer((distance * 0.01),(distance * 0.01))
+
 
 
 func switchButtonTextures()->void:
@@ -1877,58 +2301,16 @@ func switchButtonTextures()->void:
 
 
 #____________________________________GRAPHICAL INTERFACE AND SETTINGS_______________________________
-
-#Skillbar 
-func connectSkillBarButtons()->void:
-	skill_button.connect("pressed", self, "openSkills")
-	quest_button.connect("pressed", self, "openQeusts")
-	char_button.connect("pressed", self, "openChar")
-	loot_button.connect("pressed", self, "openLoot")
-	inv_button.connect("pressed", self, "openInv")
-
-func _on_Settings_pressed()-> void:
-	menu.visible = !menu.visible
-func _on_LootButton_pressed():
-	loot.visible = !loot.visible
-
-
-
-
-#Skill tree, classes and civilian section
-onready var knight:Control = $Canvas/Skills/Knight
-onready var assasin:Control = $Canvas/Skills/Assasin
-onready var scout:Control = $Canvas/Skills/Scout
-onready var elementalist:Control = $Canvas/Skills/Elementalist
-onready var commoner:Control = $Canvas/Skills/Commoner
-
-
-
-
-func _on_Knight_pressed():
-	showSkillTreeHideOters(knight)
-
-func _on_Assasin_pressed():
-	showSkillTreeHideOters(assasin)
-
-func _on_Scout_pressed():
-	showSkillTreeHideOters(scout)
-	
-func _on_Elementalist_pressed():
-	showSkillTreeHideOters(elementalist)
-
-func showSkillTreeHideOters(skill_tree_to_show):
-	var skill_trees = [knight, assasin, scout,elementalist]
-	for tree in skill_trees:
-		tree.visible = false
-	skill_tree_to_show.visible = true
-
-
 onready var patternL:TextureRect = $Canvas/Skillbar/PatternL
 onready var patternR:TextureRect =  $Canvas/Skillbar/PatternR
 onready var patternL2:TextureRect = $Canvas/Skillbar/PatternL2
 onready var patternR2:TextureRect =   $Canvas/Skillbar/PatternR2
 
-
+onready var keybinds_button:TextureButton = $Canvas/Menu/Keybinds
+onready var rgb_button:TextureButton =  $Canvas/Menu/RGBButton
+onready var color_ui_button:TextureButton = $Canvas/Menu/ColorUIButton
+onready var exit_button:TextureButton = $Canvas/Menu/ExitGameButton
+onready var close_button:TextureButton = $Canvas/Menu/CloseButton
 onready var skillbar_background:TextureRect = $Canvas/Skillbar/Background
 onready var icon_background:TextureRect = $Canvas/Skillbar/icon_bg
 onready var icon_background2:TextureRect = $Canvas/Skillbar/icon_bg2
@@ -1955,32 +2337,26 @@ onready var patternIR:TextureRect = $Canvas/Inventory/PatternR
 onready var inventory_bg:TextureRect = $Canvas/Inventory/Backgrund
 onready var loot_bg:TextureRect = $Canvas/Loot/Backgrund
 
-onready var menu_button_bg1:TextureRect = $Canvas/Menu/TargetAssist/bg
-onready var menu_button_bg2:TextureRect = $Canvas/Menu/TargetAssistMode/bg
-onready var menu_button_bg3:TextureRect = $Canvas/Menu/ExitGame/bg
-onready var menu_button_bg4:TextureRect = $Canvas/Menu/CloseMenu/bg
-onready var menu_button_bg5:TextureRect = $Canvas/Menu/Keybinds/bg
-onready var menu_button_bg6:TextureRect = $Canvas/Menu/SneakTogle/bg
-onready var menu_button_bg7:TextureRect = $Canvas/Menu/ShiftingColors/bg
-onready var menu_button_bg8:TextureRect = $Canvas/Menu/OpenInterfaceColorPicker/bg
-
 
 func colorInterfaceBG(color)-> void:
+	keybinds_button.modulate = color
+	rgb_button.modulate = color
+	color_ui_button.modulate = color
+	exit_button.modulate = color
+	close_button.modulate = color
 	skillbar_background.modulate = color
 	icon_background.modulate = color
-	menu_button_bg1.modulate = color
-	menu_button_bg2.modulate = color
-	menu_button_bg3.modulate = color
-	menu_button_bg4.modulate = color
-	menu_button_bg5.modulate = color
-	menu_button_bg6.modulate = color
-	menu_button_bg7.modulate = color
-	menu_button_bg8.modulate = color
-	
+
 	for child in UI_list.get_children():
 		child.get_node("bg").modulate = color
-
-onready var menu_frame:TextureRect = $Canvas/Menu/Frame
+	
+	
+onready var frame:TextureRect = $Canvas/Menu/Frame
+onready var frame2:TextureRect = $Canvas/Menu/Frame2
+onready var frame3:TextureRect = $Canvas/Menu/Frame3
+onready var frame4:TextureRect = $Canvas/Menu/Frame4
+onready var frame5:TextureRect = $Canvas/Menu/Frame5
+onready var frame6:TextureRect = $Canvas/Menu/Frame6
 onready var frame7:NinePatchRect = $Canvas/Skillbar/Frame
 onready var frame8:TextureRect = $Canvas/Skillbar/EPBarFrame
 onready var frame9:TextureRect = $Canvas/Skillbar/HPBarFrame
@@ -2005,7 +2381,8 @@ onready var cls_skills_button:TextureButton = $Canvas/Skills/CloseSkills
 onready var cls_loot_button:TextureButton = $Canvas/Loot/CloseLoot
 
 onready var classes_grid:GridContainer = $Canvas/Skills/ClassList/GridContainer
-onready var civilian_grid:GridContainer = $Canvas/Skills/CivilianList/GridContainer
+onready var profess_grid:GridContainer = $Canvas/Skills/ProfessionList/GridContainer
+
 
 onready var skill_button:TextureButton = $Canvas/Skillbar/UI_list/SkillsButtonHolder/button
 onready var quest_button:TextureButton = $Canvas/Skillbar/UI_list/QuestsButtonHolder/button
@@ -2014,15 +2391,35 @@ onready var loot_button:TextureButton = $Canvas/Skillbar/UI_list/LootButtonHolde
 onready var inv_button:TextureButton = $Canvas/Skillbar/UI_list/InvButtonHolder/button
 onready var map_button:TextureButton = $Canvas/Skillbar/UI_list/MapButtonHolder/button
 onready var post_button:TextureButton = $Canvas/Skillbar/UI_list/PostButtonHolder/button
-onready var elementalist_skill_grid:GridContainer= $Canvas/Skills/Elementalist/ElementalSkillList/ElementalSkillListGrid
+func connectSkillBarButtons()->void:
+	skill_button.connect("pressed", self, "openSkills")
+	quest_button.connect("pressed", self, "openQeusts")
+	char_button.connect("pressed", self, "openChar")
+	loot_button.connect("pressed", self, "openLoot")
+	inv_button.connect("pressed", self, "openInv")
 
+func openSkills()-> void:
+	skills_professions.visible = !skills_professions.visible
+	popUpUI(skills_professions,skillbar_tween)
+func openInv()-> void:
+	inventory.visible = !inventory.visible
+	popUpUI(inventory,skillbar_tween)
+func openLoot()-> void:
+	loot.visible = !loot.visible
+	popUpUI(loot,skillbar_tween)
 
-func colorInterfaceFrames(color)-> void:
-	menu_frame.modulate = color
 	
+func colorInterfaceFrames(color)-> void:
+	frame.modulate = color
+	frame2.modulate = color
+	frame3.modulate = color
+	frame4.modulate = color
+	frame5.modulate = color
+	frame6.modulate = color
 	frame7.modulate = color
 	frame8.modulate = color
 	frame9.modulate = color
+	frame.modulate = color
 
 	frameS1.modulate = color
 	frameS2.modulate = color
@@ -2062,38 +2459,15 @@ func colorInterfaceFrames(color)-> void:
 	order_slots.modulate = color
 	order_down_slots.modulate = color
 	
-	target_assist_button.modulate = color
-	target_assist_mode_button.modulate = color
-	close_menu_button.modulate = color
-	exit_button.modulate = color
-	keybinds_button.modulate = color
-	rgb_button.modulate = color
-	open_ui_color_button.modulate = color
-	sneak_toggle_button.modulate = color
-
-
-
-	for child in commoner.get_children():
-		child.get_node("SkillFrame").modulate = color
-
-	for child in elementalist_skill_grid.get_children():
-		child.get_node("SkillFrame").modulate = color
-	for child in scout.get_children():
-		child.get_node("SkillFrame").modulate = color
-	for child in assasin.get_children():
-		child.get_node("SkillFrame").modulate = color
-	for child in knight.get_children():
-		child.get_node("SkillFrame").modulate = color
 	for child in UI_list.get_children():
 		child.get_node("button").modulate = color
 	for child in classes_grid.get_children():
 		child.get_node("SkillFrame").modulate = color
-	for child in civilian_grid.get_children():
+	for child in profess_grid.get_children():
 		child.get_node("SkillFrame").modulate = color
 	for child in loot_grid.get_children():
 		child.get_node("Frame").modulate = color
-
-
+	
 var ui_color = Color(1, 1, 1, 1) # Default to white
 # Function to update UI colors based on color
 func colorUI(color: Color)-> void:
@@ -2106,23 +2480,13 @@ func colorUI2(color: Color)-> void:
 	ui_color2 = color
 
 
-	
-func openSkills()-> void:
-	skills_civilian.visible = !skills_civilian.visible
-	popUpUI(skills_civilian,skillbar_tween)
-func openInv()-> void:
-	inventory.visible = !inventory.visible
-	popUpUI(inventory,skillbar_tween)
-func openLoot()-> void:
-	loot.visible = !loot.visible
-	popUpUI(loot,skillbar_tween)
-
 var shifting_ui_colors: bool = false
 var shifting_ui_colors2: bool = false
 var button_press_state: int = 0
 
-func interfaceShiftingColors()-> void:
+func _on_RGBButton_pressed()-> void:
 	button_press_state += 1
+	
 	if button_press_state == 1:
 		shifting_ui_colors = true
 		shifting_ui_colors2 = true
@@ -2160,50 +2524,34 @@ func uiColorShift() -> void:
 func _on_UIColorPicker_color_changed(color)-> void:
 	colorUI(color)
 
+
 func _on_UIColorPicker2_color_changed(color)-> void:
 	colorUI2(color)
 
-
-onready var menu:Control = $Canvas/Menu
-onready var keybinds_settings:Control = $Canvas/Menu/KeybindEditingSection
-onready var target_assist_button:TextureButton = $Canvas/Menu/TargetAssist/button
-onready var target_assist_mode_button:TextureButton =  $Canvas/Menu/TargetAssistMode/button
-onready var close_menu_button:TextureButton = $Canvas/Menu/CloseMenu/button
-onready var exit_button:TextureButton = $Canvas/Menu/ExitGame/button
-onready var open_ui_color_button:TextureButton = $Canvas/Menu/OpenInterfaceColorPicker/button
-onready var rgb_button:TextureButton = $Canvas/Menu/ShiftingColors/button
-onready var keybinds_button:TextureButton = $Canvas/Menu/Keybinds/button
-onready var sneak_toggle_button:TextureButton = $Canvas/Menu/SneakTogle/button
-
-func connectMenuButtons()-> void:
-	target_assist_button.connect("pressed", self, "targetAssistOnOff")
-	target_assist_mode_button.connect("pressed", self, "targetAssistMode")
-	close_menu_button.connect("pressed", self, "closeMenu")
-	exit_button.connect("pressed", self, "exit")
-	open_ui_color_button.connect("pressed", self, "openInterfaceColorPickers")
-	rgb_button.connect("pressed", self, "interfaceShiftingColors")
-	keybinds_button.connect("pressed", self, "openKeybindsSettings")
-	sneak_toggle_button.connect("pressed", self, "sneakToggle")
-	
-
-	
-
+		
 onready var gui_color_picker = $Canvas/Menu/UIColorPicker
 onready var gui_color_picker2 = $Canvas/Menu/UIColorPicker2
-func openInterfaceColorPickers()-> void:
+func _on_ColorUIButton_pressed()-> void:
 	gui_color_picker.visible  = !gui_color_picker.visible 
 	gui_color_picker2.visible  = !gui_color_picker2.visible 
 
-	
-func openKeybindsSettings()-> void:
-	keybinds_settings.visible = !keybinds_settings.visible
 
-func sneakToggle() -> void:
-	sneak_toggle = !sneak_toggle
-func closeMenu()-> void:
+
+onready var menu:Control = $Canvas/Menu
+func _on_Settings_pressed()-> void:
+	menu.visible = !menu.visible
+func _on_LootButton_pressed():
+	loot.visible = !loot.visible
+
+
+func _on_InvButton_pressed():
+	inventory.visible = !inventory.visible
+
+
+func _on_CloseButton_pressed()-> void:
 	menu.visible = false
-func exit()-> void:
-	saveGame()
+	
+func _on_ExitGameButton_pressed()-> void:
 	get_tree().quit()
 
 
@@ -2291,13 +2639,14 @@ func ResourceBarsLabels()-> void:
 	health_label.text = "HP: "+ str(round(stats.health * 100/100)) + "/" + str(round(stats.max_health * 100/100))
 	
 	
-onready var skills_civilian:Control = $Canvas/Skills
+onready var skills_professions:Control = $Canvas/Skills
 
 func _on_CloseSkills_pressed():
-	skills_civilian.visible = false
+	skills_professions.visible = false
+
 
 func _on_SkillsButton_pressed():
-	skills_civilian.visible = !skills_civilian.visible
+	skills_professions.visible = !skills_professions.visible
 
 func _on_BugButton_pressed():
 	debug.visible = !debug.visible
@@ -2654,6 +3003,11 @@ func harvestGather()-> void:
 				getLoot(item,quantity,item_rarity,item_name)
 				processTheGathering(body)
 
+
+
+
+
+
 func processTheGathering(body)->void:
 	debug.harvested_item_size = body.get_node("Plant").size
 	debug.harvested_item = body
@@ -2668,5 +3022,7 @@ onready var resource_viewport:Viewport = $Canvas/Skillbar/AddFloatingIconsHere/V
 func getLoot(item, quantity, item_rarity, item_name)->void:
 	Autoload.addStackableItem(inventory_grid, item, quantity)
 	Autoload.addFloatingIcon(resource_viewport, item, quantity, item_rarity, item_name,self)
+
+
 
 
