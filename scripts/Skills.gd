@@ -339,7 +339,120 @@ func shootFireball(damage):
 	# Orient to match player direction
 	fireball_instance.look_at_from_position(shoot_position, shoot_position - player_direction, Vector3.UP)
 
+var icicle: PackedScene = preload("res://Game/World/Player/Skill_Scenes/Icicle.tscn")
 
+
+func shootIcicle(damage):
+	var player_global_transform: Transform = player.global_transform
+	var icicle_instance: KinematicBody
+	var camera_transform: Transform = player.camera.global_transform
+	var camera_forward: Vector3 = -camera_transform.basis.z.normalized()
+	var camera_right: Vector3 = camera_transform.basis.x.normalized()
+	var shoot_position: Vector3 = player_global_transform.origin + camera_forward * 0.25
+	var camera_up: Vector3 = camera_transform.basis.y.normalized()
+	shoot_position.y += vertical_spawn_offset
+	
+		
+	# 1st Bullet
+	icicle_instance = icicle.instance()
+	icicle_instance.direction = camera_forward
+	icicle_instance.summoner = player
+	icicle_instance.damage = damage * 4
+	Root.add_child(icicle_instance)
+	icicle_instance.look_at_from_position(shoot_position, shoot_position - camera_forward, Vector3.UP)
+	icicle_instance.global_transform.origin = shoot_position
+
+	# 2nd Bullet
+	icicle_instance = icicle.instance()
+	icicle_instance.direction = (camera_forward + camera_right * 0.02).normalized()
+	icicle_instance.summoner = player
+	icicle_instance.damage = damage
+	Root.add_child(icicle_instance)
+	icicle_instance.look_at_from_position(shoot_position + camera_right * 0.1, shoot_position + camera_right * 0.1 - icicle_instance.direction, Vector3.UP)
+	icicle_instance.global_transform.origin = shoot_position + camera_right * 0.1
+
+	# 3rd Bullet
+	icicle_instance = icicle.instance()
+	icicle_instance.direction = (camera_forward - camera_right * 0.02).normalized()
+	icicle_instance.summoner = player
+	icicle_instance.damage = damage
+	Root.add_child(icicle_instance)
+	icicle_instance.look_at_from_position(shoot_position - camera_right * 0.1, shoot_position - camera_right * 0.1 - icicle_instance.direction, Vector3.UP)
+	icicle_instance.global_transform.origin = shoot_position - camera_right * 0.1
+
+	# 4th Bullet
+	icicle_instance = icicle.instance()
+	icicle_instance.direction = (camera_forward + camera_right * 0.05).normalized()
+	icicle_instance.summoner = player
+	icicle_instance.damage = damage
+	Root.add_child(icicle_instance)
+	icicle_instance.look_at_from_position(shoot_position + camera_right * 0.25, shoot_position + camera_right * 0.25 - icicle_instance.direction, Vector3.UP)
+	icicle_instance.global_transform.origin = shoot_position + camera_right * 0.25
+
+	# 5th Bullet
+	icicle_instance = icicle.instance()
+	icicle_instance.direction = (camera_forward - camera_right * 0.05).normalized()
+	icicle_instance.summoner = player
+	icicle_instance.damage = damage
+	Root.add_child(icicle_instance)
+	icicle_instance.look_at_from_position(shoot_position - camera_right * 0.25, shoot_position - camera_right * 0.25 - icicle_instance.direction, Vector3.UP)
+	icicle_instance.global_transform.origin = shoot_position - camera_right * 0.25
+
+	# 6th Bullet
+	icicle_instance = icicle.instance()
+	icicle_instance.direction = (camera_forward + camera_right * 0.1).normalized()
+	icicle_instance.summoner = player
+	icicle_instance.damage = damage
+	Root.add_child(icicle_instance)
+	icicle_instance.look_at_from_position(shoot_position + camera_right * 0.5, shoot_position + camera_right * 0.5 - icicle_instance.direction, Vector3.UP)
+	icicle_instance.global_transform.origin = shoot_position + camera_right * 0.5
+
+	# 7th Bullet
+	icicle_instance = icicle.instance()
+	icicle_instance.direction = (camera_forward - camera_right * 0.1).normalized()
+	icicle_instance.summoner = player
+	icicle_instance.damage = damage
+	Root.add_child(icicle_instance)
+	icicle_instance.look_at_from_position(shoot_position - camera_right * 0.5, shoot_position - camera_right * 0.5 - icicle_instance.direction, Vector3.UP)
+	icicle_instance.global_transform.origin = shoot_position - camera_right * 0.5
+
+	# 8th Bullet
+	icicle_instance = icicle.instance()
+	icicle_instance.direction = (camera_forward + camera_right * 0.12).normalized()
+	icicle_instance.summoner = player
+	icicle_instance.damage = damage
+	Root.add_child(icicle_instance)
+	icicle_instance.look_at_from_position(shoot_position + camera_right * 0.6, shoot_position + camera_right * 0.6 - icicle_instance.direction, Vector3.UP)
+	icicle_instance.global_transform.origin = shoot_position + camera_right * 0.6
+
+	# 9th Bullet
+	icicle_instance = icicle.instance()
+	icicle_instance.direction = (camera_forward - camera_right * 0.12).normalized()
+	icicle_instance.summoner = player
+	icicle_instance.damage = damage
+	Root.add_child(icicle_instance)
+	icicle_instance.look_at_from_position(shoot_position - camera_right * 0.6, shoot_position - camera_right * 0.6 - icicle_instance.direction, Vector3.UP)
+	icicle_instance.global_transform.origin = shoot_position - camera_right * 0.6
+
+	# 10th Bullet
+	icicle_instance = icicle.instance()
+	icicle_instance.direction = (camera_forward + camera_right * 0.15).normalized()
+	icicle_instance.summoner = player
+	icicle_instance.damage = damage
+	Root.add_child(icicle_instance)
+	icicle_instance.look_at_from_position(shoot_position + camera_right * 0.75, shoot_position + camera_right * 0.75 - icicle_instance.direction, Vector3.UP)
+	icicle_instance.global_transform.origin = shoot_position + camera_right * 0.75
+
+	# 11th Bullet
+	icicle_instance = icicle.instance()
+	icicle_instance.direction = (camera_forward - camera_right * 0.15).normalized()
+	icicle_instance.summoner = player
+	icicle_instance.damage = damage
+	Root.add_child(icicle_instance)
+	icicle_instance.look_at_from_position(shoot_position - camera_right * 0.75, shoot_position - camera_right * 0.75 - icicle_instance.direction, Vector3.UP)
+	icicle_instance.global_transform.origin = shoot_position - camera_right * 0.75
+	
+	
 
 
 var immolate_cooldown: float = 0.5
@@ -476,9 +589,11 @@ func placeWallOfFire(wall_of_fire_damage):
 	Root.add_child(wall_of_fire_instance)
 	wall_of_fire_instance.global_transform.origin = shoot_position
 	
-	# Orient to match player direction
-	wall_of_fire_instance.look_at_from_position(shoot_position, shoot_position - player_direction, Vector3.UP)
+	# Extract horizontal direction
+	var horizontal_direction: Vector3 = Vector3(player_direction.x, 0, player_direction.z).normalized()
 
+	# Orient to match player direction horizontally
+	wall_of_fire_instance.look_at_from_position(shoot_position, shoot_position - horizontal_direction, Vector3.UP)
 
 
 
