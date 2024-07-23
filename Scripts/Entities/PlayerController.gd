@@ -592,21 +592,24 @@ func skills(slot)-> void:
 		#print("slot not null")
 		if slot.texture != null:
 			if slot.texture.resource_path == Icons.garrote.get_path():
-				if slot.get_parent().get_node("CD").text == "":
-					active_action = "garrote"
-					garroteTarget()
-					skills.skillCancel("garrote")
-				else:
-
+				if slot.get_parent().get_node("CD").text != "":
+					active_action = "none"
 					returnToIdleBasedOnWeaponType()
-
+				else:#This is needed to avoid bugs where holding the button ignores the cooldown once cause a double use of the skill
+					if previous_action != "garrote":
+						active_action = "garrote"
+						skills.skillCancel("garrote")
+					else:returnToIdleBasedOnWeaponType()
+					
 			if slot.texture.resource_path == Icons.silent_stab.get_path():
-				if slot.get_parent().get_node("CD").text == "":
-					active_action = "silent stab"
-					skills.skillCancel("silent stab")
-				else:
-
+				if slot.get_parent().get_node("CD").text != "":
+					active_action = "none"
 					returnToIdleBasedOnWeaponType()
+				else:#This is needed to avoid bugs where holding the button ignores the cooldown once cause a double use of the skill
+					if previous_action != "silent stab":
+						active_action = "silent stab"
+						skills.skillCancel("silent stab")
+					else:returnToIdleBasedOnWeaponType()
 					
 			if slot.texture.resource_path == Icons.switch_element.get_path():
 				if slot.get_parent().get_node("CD").text == "":
@@ -624,35 +627,47 @@ func skills(slot)-> void:
 				active_action = "icicle scatter shot"
 				skills.skillCancel("icicle scatter shot")
 
+
 			if slot.texture.resource_path == Icons.triple_fireball.get_path():
 				if slot.get_parent().get_node("CD").text != "":
 					active_action = "none"
 					returnToIdleBasedOnWeaponType()
+				else:#This is needed to avoid bugs where holding the button ignores the cooldown once cause a double use of the skill
+					if previous_action != "triple fireball":
+						active_action = "triple fireball"
+						skills.skillCancel("triple fireball")
+					else:returnToIdleBasedOnWeaponType()
 
-				else:
-					active_action = "triple fireball"
-					skills.skillCancel("triple fireball")
-
-				
-					
 			if slot.texture.resource_path == Icons.immolate.get_path():
-				if slot.get_parent().get_node("CD").text == "":
-					active_action = "immolate"
-					skills.skillCancel("immolate")
-				else:
+				if slot.get_parent().get_node("CD").text != "":
+					active_action = "none"
 					returnToIdleBasedOnWeaponType()
+				else:#This is needed to avoid bugs where holding the button ignores the cooldown once cause a double use of the skill
+					if previous_action != "immolate":
+						active_action = "immolate"
+						skills.skillCancel("immolate")
+					else:returnToIdleBasedOnWeaponType()
+
 			if slot.texture.resource_path == Icons.ring_of_fire.get_path():
-				if slot.get_parent().get_node("CD").text == "":
-					active_action = "ring of fire"
-					skills.skillCancel("ring of fire")
-				else:
+				if slot.get_parent().get_node("CD").text != "":
+					active_action = "none"
 					returnToIdleBasedOnWeaponType()
+				else:#This is needed to avoid bugs where holding the button ignores the cooldown once cause a double use of the skill
+					if previous_action != "ring of fire":
+						active_action = "ring of fire"
+						skills.skillCancel("ring of fire")
+					else:returnToIdleBasedOnWeaponType()
+
 			if slot.texture.resource_path == Icons.wall_of_fire.get_path():
-				if slot.get_parent().get_node("CD").text == "":
-					active_action = "wall of fire"
-					skills.skillCancel("wall of fire")
-				else:
+				if slot.get_parent().get_node("CD").text != "":
+					active_action = "none"
 					returnToIdleBasedOnWeaponType()
+				else:#This is needed to avoid bugs where holding the button ignores the cooldown once cause a double use of the skill
+					if previous_action != "wall of fire":
+						active_action = "wall of fire"
+						skills.skillCancel("wall of fire")
+					else:returnToIdleBasedOnWeaponType()
+
 ##consumables________________________________________________________________________________________
 			elif slot.texture.resource_path == Items.red_potion.get_path():
 				slot.get_parent().displayQuantity()
@@ -667,8 +682,8 @@ func skills(slot)-> void:
 						if stats.health > stats.max_health:
 							stats.health = stats.max_health 
 
-#skills in skills-tree
-
+			else:
+				returnToIdleBasedOnWeaponType()
 
 
 func baseAtkAnim()-> void:
