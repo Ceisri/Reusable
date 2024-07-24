@@ -1,6 +1,6 @@
 extends TextureRect
 
-onready var player = $"../../../../.."
+onready var player = owner
 var savedTexture: Texture
 var savedQuantity : int
 var save_dictionary: String

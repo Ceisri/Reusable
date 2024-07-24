@@ -30,6 +30,7 @@ var character = null
 onready var inventory_grid:GridContainer = $Canvas/Inventory/ScrollContainer/GridContainer
 func _ready() -> void:
 	initializeSkillbarSlots()
+	loadTouchInputIcons()
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	character = direction_control.get_node("Character")
 	skeleton = direction_control.get_node("Character").get_node("Armature").get_node("Skeleton")
@@ -502,6 +503,13 @@ func skillState() -> void:
 			"LClick":
 				var slot = $Canvas/Skillbar/GridContainer/SlotLClick/Icon
 				skills(slot)
+			"TouchSkill1":
+				var slot = $Canvas/TouchScreen/Skill1/TochScreen1/Icon
+				skills(slot)
+			"TouchATK":
+				var slot = $Canvas/TouchScreen/BaseATK/Icon
+				skills(slot)
+
 func inputCancel()-> void:
 	if can_input_cancel == true:
 		if skill_bar_input == "1":
@@ -591,7 +599,9 @@ func inputCancel()-> void:
 		elif skill_bar_input == "F5":
 			var slot = $Canvas/Skillbar/GridContainer/SlotF5/Icon
 			skills(slot)
-
+		elif skill_bar_input =="TouchSkill1":
+			var slot =  $Canvas/TouchScreen/Skill1/TochScreen1/Icon
+			skills(slot)
 
 
 onready var l_click_slot = $Canvas/Skillbar/GridContainer/SlotLClick
@@ -600,9 +610,7 @@ onready var r_click_slot = $Canvas/Skillbar/GridContainer/SlotRClick
 func skills(slot)-> void:
 	if slot == null:
 		pass
-		#print("slot null")
 	else:
-		#print("slot not null")
 		if slot.texture != null:
 			if slot.texture.resource_path == Icons.garrote.get_path():
 				if slot.get_parent().get_node("CD").text != "":
@@ -628,6 +636,7 @@ func skills(slot)-> void:
 				if slot.get_parent().get_node("CD").text == "":
 					skills.SwitchElementCD()
 					l_click_slot.switchAttackIcon(self)
+					$Canvas/TouchScreen/BaseATK.switchAttackIcon(self)
 
 			if slot.texture.resource_path == Icons.lighting_shot.get_path():
 				active_action = "lighting"
@@ -654,8 +663,6 @@ func skills(slot)-> void:
 						active_action = "triple fireball"
 						skills.skillCancel("triple fireball")
 					else:returnToIdleBasedOnWeaponType()
-
-
 
 			if slot.texture.resource_path == Icons.immolate.get_path():
 				if slot.get_parent().get_node("CD").text != "":
@@ -1330,9 +1337,10 @@ func mouseMode()-> void:
 		
 var zoom_speed: float = 0.1
 func Zoom(zoom_direction : float)-> void:
-	# Adjust the camera's position based on the zoom direction
-	camera.translation.y += zoom_direction * zoom_speed
-	camera.translation.z -= zoom_direction * (zoom_speed * 2)
+	if !cursor_visible:
+		# Adjust the camera's position based on the zoom direction
+		camera.translation.y += zoom_direction * zoom_speed
+		camera.translation.z -= zoom_direction * (zoom_speed * 2)
 func camera_rotation() -> void:
 	if !cursor_visible:
 		camrot_v = clamp(camrot_v, cam_v_min, cam_v_max)
@@ -1489,6 +1497,12 @@ func skillBarInputs():
 		skill_bar_input = "F4"
 	elif Input.is_action_just_pressed("F5"):
 		skill_bar_input = "F5"
+		
+	elif Input.is_action_just_pressed("TouchSkill1"):
+		skill_bar_input = "TouchSkill1"
+		
+	elif Input.is_action_pressed("TouchATK"):
+		skill_bar_input = "TouchATK"
 	elif Input.is_action_pressed("Lclick"):
 		if !cursor_visible:
 			skill_bar_input = "LClick"
@@ -1532,6 +1546,13 @@ func saveGame()->void:
 		elif node.has_node("icon"):
 			debug.error_message = "icon named with lower case I, fix that " + str(node.name)
 			
+	for touch_input in touch_inputs.get_children():
+		for child in touch_input.get_children():
+			if child.has_node("Icon"):
+				var icon = child.get_node("Icon")
+				icon.player = self 
+				icon.save_dictionary = "user://Characters/" + entity_name + "/" 
+				icon.saveData()
 	saveInventoryData()
 	
 var slot: String = "1"
@@ -2374,9 +2395,17 @@ func initializeSkillbarSlots()-> void:
 			child.get_node("Icon").player = self 
 			child.get_node("Icon").save_dictionary = "user://Characters/" + entity_name + "/" 
 
+onready var touch_inputs:Control = $Canvas/TouchScreen
 
-
-
+func loadTouchInputIcons()-> void:
+	for touch_input in touch_inputs.get_children():
+		for child in touch_input.get_children():
+			if child.has_node("Icon"):
+				var icon = child.get_node("Icon")
+				icon.player = self 
+				icon.save_dictionary = "user://Characters/" + entity_name + "/" 
+				icon.loadData()
+			
 onready var split_selected:TextureButton = $Canvas/Inventory/SplitSelected
 onready var combine_selected:TextureButton = $Canvas/Inventory/CombineSelected
 onready var stack_up_selected:TextureButton = $Canvas/Inventory/StackUP

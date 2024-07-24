@@ -2,14 +2,10 @@ extends TextureButton
 
 onready var icon = $Icon
 
-
 var quantity = 0
 var item = "null"
 var type = "item"
 var skill_tree = false
-
-
-
 
 
 func displayQuantity():
@@ -20,7 +16,6 @@ func displayQuantity():
 			
 		if icon.texture == null:
 			quantity = 0
-		
 
 func get_drag_data(position: Vector2):
 	var slot = get_parent().get_name()
@@ -45,7 +40,6 @@ func can_drop_data(position, data):
 	data["target_item"] = item
 
 	return true
-
 
 func drop_data(position, data):
 	var origin_texture = data["origin_texture"]

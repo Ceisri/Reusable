@@ -41,9 +41,56 @@ func modulateIcon(icon, cooldown, current_time, last_time) -> void:
 
 func updateCooldownLabel() -> void:
 	var current_time = OS.get_ticks_msec() / 1000.0
+	for touch_input in player.touch_inputs.get_children():
+		for child in touch_input.get_children():
+			var icon = child.get_node("Icon")
+			if icon != null and icon.texture != null and icon.texture.resource_path == Icons.garrote.get_path():
+				var label: Label = child.get_node("CD")
+				if label != null:
+					updateCD(label,garrote_cooldown,current_time,last_garrote_time)
+					modulateIcon(icon,garrote_cooldown,current_time,last_garrote_time)
+			if icon != null and icon.texture != null and icon.texture.resource_path == Icons.silent_stab.get_path():
+				var label: Label = child.get_node("CD")
+				if label != null:
+					updateCD(label,silent_stab_cooldown,current_time,last_silent_stab_time)
+					modulateIcon(icon,silent_stab_cooldown,current_time,last_silent_stab_time)
+			if icon != null and icon.texture != null and icon.texture.resource_path == Icons.switch_element.get_path():
+				var label: Label = child.get_node("CD")
+				if label != null:
+					updateCD(label,switch_element_cooldown,current_time,last_switch_element_time)
+					modulateIcon(icon,switch_element_cooldown,current_time,last_switch_element_time)
+			if icon != null and icon.texture != null and icon.texture.resource_path == Icons.triple_fireball.get_path():
+				var label: Label = child.get_node("CD")
+				if label != null:
+					updateCD(label,triple_fireball_cooldown,current_time,last_triple_fireball_time)
+					modulateIcon(icon,triple_fireball_cooldown,current_time,last_triple_fireball_time)
+			if icon != null and icon.texture != null and icon.texture.resource_path == Icons.triple_fireball.get_path():
+				var label: Label = child.get_node("CD")
+				if label != null:
+					updateCD(label,triple_fireball_cooldown,current_time,last_triple_fireball_time)
+					modulateIcon(icon,triple_fireball_cooldown,current_time,last_triple_fireball_time)
+			if icon != null and icon.texture != null and icon.texture.resource_path == Icons.immolate.get_path():
+				var label: Label = child.get_node("CD")
+				if label != null:
+					updateCD(label,immolate_cooldown,current_time,last_immolate_time)
+					modulateIcon(icon,immolate_cooldown,current_time,last_immolate_time)
+					
+			if icon != null and icon.texture != null and icon.texture.resource_path == Icons.ring_of_fire.get_path():
+				var label: Label = child.get_node("CD")
+				if label != null:
+					updateCD(label,ring_of_fire_cooldown,current_time,last_ring_of_fire_time)
+					modulateIcon(icon,ring_of_fire_cooldown,current_time,last_ring_of_fire_time)
+			if icon != null and icon.texture != null and icon.texture.resource_path == Icons.wall_of_fire.get_path():
+				var label: Label = child.get_node("CD")
+				if label != null:
+					updateCD(label,wall_of_fire_cooldown,current_time,last_wall_of_fire_time)
+					modulateIcon(icon,wall_of_fire_cooldown,current_time,last_wall_of_fire_time)
+
+
+
+
 	for child in grid.get_children():
 		var icon = child.get_node("Icon")
-
 		if icon != null and icon.texture != null and icon.texture.resource_path == Icons.garrote.get_path():
 			var label: Label = child.get_node("CD")
 			if label != null:
@@ -54,7 +101,7 @@ func updateCooldownLabel() -> void:
 			if label != null:
 				updateCD(label,silent_stab_cooldown,current_time,last_silent_stab_time)
 				modulateIcon(icon,silent_stab_cooldown,current_time,last_silent_stab_time)
-		
+
 		if icon != null and icon.texture != null and icon.texture.resource_path == Icons.switch_element.get_path():
 			var label: Label = child.get_node("CD")
 			if label != null:
@@ -75,7 +122,7 @@ func updateCooldownLabel() -> void:
 			if label != null:
 				updateCD(label,immolate_cooldown,current_time,last_immolate_time)
 				modulateIcon(icon,immolate_cooldown,current_time,last_immolate_time)
-				
+
 		if icon != null and icon.texture != null and icon.texture.resource_path == Icons.ring_of_fire.get_path():
 			var label: Label = child.get_node("CD")
 			if label != null:
@@ -86,10 +133,9 @@ func updateCooldownLabel() -> void:
 			if label != null:
 				updateCD(label,wall_of_fire_cooldown,current_time,last_wall_of_fire_time)
 				modulateIcon(icon,wall_of_fire_cooldown,current_time,last_wall_of_fire_time)
-				
-				
-				
-				
+
+
+
 # List of skill cooldowns and last times for easier access and reset
 enum Skills {
 	garrote,
