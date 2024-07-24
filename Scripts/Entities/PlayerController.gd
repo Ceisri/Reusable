@@ -506,8 +506,32 @@ func skillState() -> void:
 			"TouchSkill1":
 				var slot = $Canvas/TouchScreen/Skill1/TochScreen1/Icon
 				skills(slot)
+			"TouchSkill2":
+				var slot = $Canvas/TouchScreen/Skill2/TochScreen2/Icon
+				skills(slot)
+			"TouchSkill3":
+				var slot = $Canvas/TouchScreen/Skill3/TochScreen3/Icon
+				skills(slot)
+			"TouchSkill4":
+				var slot = $Canvas/TouchScreen/Skill4/TochScreen4/Icon
+				skills(slot)
+			"TouchSkill5":
+				var slot = $Canvas/TouchScreen/Skill5/TochScreen5/Icon
+				skills(slot)
+			"TouchSkill6":
+				var slot = $Canvas/TouchScreen/Skill6/TochScreen6/Icon
+				skills(slot)
+			"TouchSkill7":
+				var slot = $Canvas/TouchScreen/Skill7/TochScreen7/Icon
+				skills(slot)
+			"TouchSkill8":
+				var slot = $Canvas/TouchScreen/Skill8/TochScreen8/Icon
+				skills(slot)
+			"TouchSkill9":
+				var slot = $Canvas/TouchScreen/Skill9/TochScreen9/Icon
+				skills(slot)
 			"TouchATK":
-				var slot = $Canvas/TouchScreen/BaseATK/Icon
+				var slot = $Canvas/TouchScreen/BaseATK/IconBaseATK
 				skills(slot)
 
 func inputCancel()-> void:
@@ -598,9 +622,6 @@ func inputCancel()-> void:
 			skills(slot)
 		elif skill_bar_input == "F5":
 			var slot = $Canvas/Skillbar/GridContainer/SlotF5/Icon
-			skills(slot)
-		elif skill_bar_input =="TouchSkill1":
-			var slot =  $Canvas/TouchScreen/Skill1/TochScreen1/Icon
 			skills(slot)
 
 
@@ -1498,19 +1519,44 @@ func skillBarInputs():
 	elif Input.is_action_just_pressed("F5"):
 		skill_bar_input = "F5"
 		
-	elif Input.is_action_just_pressed("TouchSkill1"):
+	elif Input.is_action_pressed("TouchSkill1"):
 		skill_bar_input = "TouchSkill1"
+	elif Input.is_action_pressed("TouchSkill2"):
+		skill_bar_input = "TouchSkill2"
+	elif Input.is_action_pressed("TouchSkill3"):
+		skill_bar_input = "TouchSkill3"
+	elif Input.is_action_pressed("TouchSkill4"):
+		skill_bar_input = "TouchSkill4"
+	elif Input.is_action_pressed("TouchSkill5"):
+		skill_bar_input = "TouchSkill5"
+	elif Input.is_action_pressed("TouchSkill6"):
+		skill_bar_input = "TouchSkill6"
+	elif Input.is_action_pressed("TouchSkill7"):
+		skill_bar_input = "TouchSkill7"
+	elif Input.is_action_pressed("TouchSkill8"):
+		skill_bar_input = "TouchSkill8"
+	elif Input.is_action_pressed("TouchSkill9"):
+		skill_bar_input = "TouchSkill9"
+		
 		
 	elif Input.is_action_pressed("TouchATK"):
 		skill_bar_input = "TouchATK"
+		
 	elif Input.is_action_pressed("Lclick"):
 		if !cursor_visible:
 			skill_bar_input = "LClick"
 	elif Input.is_action_pressed("Rclick"):
 		if !cursor_visible:
 			skill_bar_input = "RClick"
+			
 	else:
 		skill_bar_input = "none"
+
+
+
+
+
+
 
 var long_base_atk:bool = false
 func _on_baseatkswitch_pressed():
@@ -2763,5 +2809,4 @@ onready var resource_viewport:Viewport = $Canvas/Skillbar/AddFloatingIconsHere/V
 func getLoot(item, quantity, item_rarity, item_name)->void:
 	Autoload.addStackableItem(inventory_grid, item, quantity)
 	Autoload.addFloatingIcon(resource_viewport, item, quantity, item_rarity, item_name,self)
-
 
