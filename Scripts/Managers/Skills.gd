@@ -6,16 +6,9 @@ var demon_distance: float = 10.0
 var summon_cooldown: float = 0.15 
 var last_summon_time: float = 0.0 
 
-var queue_skills:bool = true #this is only for people with disabilities or if the game ever goes online to help with high ping, as of now it can't be used by itself until I revamp the skill cancel system  
 func _ready()->void:
 	pass
-	#connect("pressed", self , "pressed")
 
-func pressed()->void:
-	queue_skills = !queue_skills
-	player.switchButtonTextures()
-	
-	
 func comboSystem():
 	pass
 
@@ -313,11 +306,13 @@ func placeLighting(damage):
 
 		
 var fireball: PackedScene = preload("res://Game/World/Player/Skill_Scenes/Fireball.tscn")
+var arcane_bolt: PackedScene = preload("res://Game/World/Player/Skill_Scenes/ArcaneBolt.tscn")
+
 var vertical_spawn_offset: float = 1.2
-func shootFireball(damage):
+func shootProjectile(damage,projectile):
 	var camera = player.camera 
 	var player_global_transform: Transform = player.global_transform
-	var fireball_instance: KinematicBody
+	var projectile_instance: KinematicBody
 	var player_direction = player.direction
 	var camera_transform: Transform = camera.global_transform
 	var camera_rotation_x: float = camera_transform.basis.get_euler().x#Get the rotation degrees on the x-axis of the camera
@@ -330,14 +325,14 @@ func shootFireball(damage):
 	shoot_position.y += vertical_spawn_offset 
 	var camera_right: Vector3 = camera_global_transform.basis.x.normalized()
 	# Shoot the first bullet towards where the camera is looking at
-	fireball_instance = fireball.instance()
-	fireball_instance.direction = camera_forward
-	fireball_instance.summoner = player
-	fireball_instance.damage =  damage  
-	Root.add_child(fireball_instance)
-	fireball_instance.global_transform.origin = shoot_position
+	projectile_instance = projectile.instance()
+	projectile_instance.direction = camera_forward
+	projectile_instance.summoner = player
+	projectile_instance.damage =  damage  
+	Root.add_child(projectile_instance)
+	projectile_instance.global_transform.origin = shoot_position
 	# Orient to match player direction
-	fireball_instance.look_at_from_position(shoot_position, shoot_position - player_direction, Vector3.UP)
+	projectile_instance.look_at_from_position(shoot_position, shoot_position - player_direction, Vector3.UP)
 
 var icicle: PackedScene = preload("res://Game/World/Player/Skill_Scenes/Icicle.tscn")
 
@@ -466,18 +461,17 @@ func immolateCD()->void:
 var immolate: PackedScene = preload("res://Game/World/Player/Skill_Scenes/FireBreath.tscn")
 func shootImmolate(damage):
 	var camera = player.camera 
-	var player_global_transform: Transform = player.global_transform
 	var immolate_instance: KinematicBody
 	var player_direction = player.direction
 	var camera_transform: Transform = camera.global_transform
 	var camera_rotation_x: float = camera_transform.basis.get_euler().x#Get the rotation degrees on the x-axis of the camera
 	var strength_factor: float = 1.0#Calculate the strength factor based on the rotation of the camera
-	var player_forward: Vector3 = player_global_transform.basis.z.normalized()
+	var player_forward: Vector3 = player.global_transform.basis.z.normalized()
 
 	var camera_global_transform: Transform = camera.global_transform
 	var camera_forward: Vector3 = -camera_global_transform.basis.z.normalized() 
 	var shoot_position: Vector3 = player.global_transform.origin + camera_forward * 0.5
-	shoot_position.y += 0.5
+	shoot_position.y =  player.global_transform.origin.y + vertical_spawn_offset + 0.5
 	var camera_right: Vector3 = camera_global_transform.basis.x.normalized()
 	# Shoot the first bullet towards where the camera is looking at
 	immolate_instance = immolate.instance()

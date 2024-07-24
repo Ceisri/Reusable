@@ -7,6 +7,7 @@ onready var effects:Node = $Effects
 onready var skills:Node =  $Skills
 onready var debug:Control =  $Canvas/Debug
 onready var skeleton:Skeleton  = null
+onready var shadow:MeshInstance  = $shadow
 
 onready var name_label:Label3D = $Name
 onready var popup_viewport:Viewport = $Canvas/Skillbar/AddFloatingDamageHere/Viewport
@@ -53,15 +54,26 @@ func _ready() -> void:
 	connectMenuButtons()
 	connectAreas()
 	action_history[OS.get_ticks_msec()] = active_action
-	if direction_assist == true:
+	
+	if direction_assist:
 		dir_assist_label.text = "Target Assist: On" 
+		target_mode_control.visible = true
 	else:
 		dir_assist_label.text = "Target Assist: OFF" 
+		target_mode_control.visible = false
+		
 	target_mode_label.text =  target_mode
-	if sneak_toggle == true:
+	if sneak_toggle:
 		crouch_label.text =  "Crouch Toggle:On"
 	else:
 		crouch_label.text = "Crouch Toggle:Off"
+	if can_input_cancel:
+		input_cancel_label.text = "Input Cancel:On"
+	else:
+		input_cancel_label.text = "Input Cancel:On"
+		
+	target_mode_control.visible = !keybinds_settings.visible
+	target_mode_control.visible = !gui_color_picker2.visible
 func removeBothersomeKeybinds()-> void:#Here just in case someone is using this as a template
 	InputMap.action_erase_events("ui_accept")#avoids all the stupid ways you can click buttons or accept things by mistake
 	InputMap.action_erase_events("ui_select")
@@ -106,8 +118,6 @@ func _physics_process(delta: float) -> void:
 	if Engine.get_physics_frames() % 3 == 0:
 		showEnemyStats()
 		uiColorShift()
-
-
 	if Engine.get_physics_frames() % 6 == 0:
 		ResourceBarsLabels()
 		effects.showStatusIcon(
@@ -149,8 +159,32 @@ func _physics_process(delta: float) -> void:
 			displayClock()
 		#getLoot(Items.blue_tip_grass,1,rand_range(0,100),"blue tip grass") #testing only
 
+ 
+func _process(delta:float) -> void:
+	var current_time = OS.get_ticks_msec()
+	# Cleanup old entries from the action_history
+	for timestamp in action_history.keys():
+		if current_time - timestamp > 500: # 250 ms = 0.25 seconds
+			action_history.erase(timestamp)
+	
+	# Update previous_action if we have a timestamp older than 0.25 seconds
+	if action_history.size() > 0:
+		var sorted_keys = action_history.keys()
+		sorted_keys.sort()
+		previous_action = action_history[sorted_keys[0]]
+	else:
+		previous_action = active_action
+		
+	shadow.rotateShadow()
+	shadow.moveShadow()
+	
+	
+var active_action:String = "none"
+var previous_action:String
+var action_history:Dictionary = {}
+
 onready var animation:AnimationPlayer =  $DirectionControl/Character/AnimationPlayer
-func firstLevelAnimations()-> void:#Momentary Delete Later
+func firstLevelAnimations()-> void:
 	if is_instance_valid(animation):
 		if !is_on_floor():
 			if active_action == "flip":
@@ -160,9 +194,7 @@ func firstLevelAnimations()-> void:#Momentary Delete Later
 					if movement_mode != "climb":
 						if carried_body == null:
 							animation.play("fall")
-#		elif attacking == true:
-#			baseAtkAnim()
-		elif moving == true:
+		elif moving:
 			if carried_body == null:
 				match movement_mode:
 					"walk":
@@ -185,15 +217,14 @@ func firstLevelAnimations()-> void:#Momentary Delete Later
 				animation.play("carry walk")
 		else:
 			if carried_body == null:
-				if crawling == true:
+				if crawling:
 					animation.play("crawl idle",blend)
-				elif crouching == true:
+				elif crouching:
 					animation.play("sneak", 0.3)
 				else:
 					animation.play("idle", 0.3)
 			else:
 				animation.play("carry", 0.3)
-		
 
 func behaviourTree()-> void:
 	if stats.health < 0: 
@@ -205,7 +236,7 @@ func behaviourTree()-> void:
 		#warning_screen.modulate.a = 1
 		
 		if stats.health >= -100:
-			if moving == true:
+			if moving:
 				animation.play("downed walk",0.35)
 				movement_speed = 1
 				stats.health -= 1 * get_physics_process_delta_time()
@@ -218,15 +249,15 @@ func behaviourTree()-> void:
 			animation.play("dead",0.35)
 			is_dead = true
 	else:
-		if knockeddown == true:
+		if knockeddown:
 			clearParryAbsorb()
 			if stats.health <= 0 :
 				knockeddown = false
 				staggered = false
-			if parry == true:
+			if parry:
 				knockeddown = false
 				staggered = false
-			elif absorbing == true:
+			elif absorbing:
 				knockeddown = false
 			else:
 				can_walk = false
@@ -237,7 +268,7 @@ func behaviourTree()-> void:
 					animation.play("knocked down",blend)
 					#skill.getInterrupted()
 
-		elif staggered== true:
+		elif staggered:
 			can_walk = false
 			moving = false
 			#genes.can_move = false
@@ -264,34 +295,12 @@ var absorbing:bool = false
 var attacking:bool = false
 var is_dead:bool = false
 
-var active_action:String = "none"
-var previous_action:String
-var action_history:Dictionary = {}
 
- 
-func _process(delta:float) -> void:
-	var current_time = OS.get_ticks_msec()
-	# Cleanup old entries from the action_history
-	for timestamp in action_history.keys():
-		if current_time - timestamp > 500: # 250 ms = 0.25 seconds
-			action_history.erase(timestamp)
-	
-	# Update previous_action if we have a timestamp older than 0.25 seconds
-	if action_history.size() > 0:
-		var sorted_keys = action_history.keys()
-		sorted_keys.sort()
-		previous_action = action_history[sorted_keys[0]]
-	else:
-		previous_action = active_action
-
-func update_active_action(new_action:String) -> void:
-	action_history[OS.get_ticks_msec()] = new_action
-	active_action = new_action
 
 
 
 func activeActions()->void:
-	SkillQueueSystem()#DO NOT REMOVE THIS! it is neccessary to allow skill cancelling, skill cancelling doesn't work without skill queue, it has a toggle on off anyway for players that don't like it 
+	inputCancel()
 	if Input.is_action_pressed("Rclick"):
 		switchWeaponFromHandToSideOrBack()
 		TargetAssist()
@@ -317,7 +326,6 @@ func activeActions()->void:
 		moveTowardsDirection(1)
 		animation.play("punch",0.3,stats.melee_atk_speed)
 		skills.skillCancel("silent stab")
-		
 
 	elif active_action == "lighting":
 		TargetAssist()
@@ -332,16 +340,21 @@ func activeActions()->void:
 		direction = -camera.global_transform.basis.z
 		animation.play("quick shot",0.3,stats.melee_atk_speed)
 		skills.skillCancel("icicle scatter shot")
-
+		
+	elif active_action == "arcane bolt":
+		TargetAssist()
+		can_walk = false
+		direction = -camera.global_transform.basis.z
+		animation.play("quick shot",0.3,stats.melee_atk_speed)
+		skills.skillCancel("arcane bolt")
+		
 	elif active_action == "fireball":
 		TargetAssist()
 		can_walk = false
 		direction = -camera.global_transform.basis.z
 		animation.play("quick shot",0.3,stats.melee_atk_speed)
 		skills.skillCancel("fireball")
-		
 
-		
 	elif active_action == "triple fireball":
 		TargetAssist()
 		can_walk = false
@@ -489,8 +502,8 @@ func skillState() -> void:
 			"LClick":
 				var slot = $Canvas/Skillbar/GridContainer/SlotLClick/Icon
 				skills(slot)
-func SkillQueueSystem()-> void:
-	if skills.queue_skills == true:
+func inputCancel()-> void:
+	if can_input_cancel == true:
 		if skill_bar_input == "1":
 			var slot = $Canvas/Skillbar/GridContainer/Slot1/Icon
 			skills(slot)
@@ -627,6 +640,10 @@ func skills(slot)-> void:
 				active_action = "icicle scatter shot"
 				skills.skillCancel("icicle scatter shot")
 
+			if slot.texture.resource_path == Icons.arcane_bolt.get_path():
+				active_action = "arcane bolt"
+				skills.skillCancel("arcane bolt")
+
 
 			if slot.texture.resource_path == Icons.triple_fireball.get_path():
 				if slot.get_parent().get_node("CD").text != "":
@@ -637,6 +654,8 @@ func skills(slot)-> void:
 						active_action = "triple fireball"
 						skills.skillCancel("triple fireball")
 					else:returnToIdleBasedOnWeaponType()
+
+
 
 			if slot.texture.resource_path == Icons.immolate.get_path():
 				if slot.get_parent().get_node("CD").text != "":
@@ -685,17 +704,16 @@ func skills(slot)-> void:
 			else:
 				returnToIdleBasedOnWeaponType()
 
-
 func baseAtkAnim()-> void:
 	match weapon_type:
 		Autoload.weapon_type_list.fist:
-			if long_base_atk == true:
+			if long_base_atk:
 				animation.play("punch",blend,stats.melee_atk_speed + skills.combo_extr_speed)
 				moveTowardsDirection(skills.combo_distance)
 			else:
 				animation.play("punch",blend,stats.melee_atk_speed)
 		Autoload.weapon_type_list.sword:
-			if long_base_atk == true:
+			if long_base_atk:
 				animation.play("combo sword",blend,stats.melee_atk_speed + skills.combo_extr_speed)
 				moveTowardsDirection(skills.combo_distance)
 			else:
@@ -703,14 +721,14 @@ func baseAtkAnim()-> void:
 				moveTowardsDirection(skills.cleave_distance)
 		Autoload.weapon_type_list.dual_swords:
 			var dual_wield_compensation:float = 1.105 #People have the feeling that two swords should be faster, not realistic, but it breaks their "game feel" 
-			if long_base_atk == true:
+			if long_base_atk:
 				animation.play("combo(dual)",blend,stats.melee_atk_speed + skills.combo_extr_speed * dual_wield_compensation)
 				moveTowardsDirection(skills.combo_distance)
 			else:
 				animation.play("cleave dual",blend,stats.melee_atk_speed * dual_wield_compensation)
 				moveTowardsDirection(skills.cleave_distance)
 		Autoload.weapon_type_list.heavy:
-			if long_base_atk == true:
+			if long_base_atk:
 				animation.play("combo(heavy)",blend,stats.melee_atk_speed + skills.combo_extr_speed)
 				moveTowardsDirection(skills.combo_distance)
 			else:
@@ -718,7 +736,6 @@ func baseAtkAnim()-> void:
 				moveTowardsDirection(skills.cleave_distance)
 
 var skill_cancelling:bool = true#this only works with the SkillQueueSystem() and serves to interupt skills with other skills 
-
 
 func stopBeingParlized():
 	pass
@@ -730,7 +747,6 @@ func _on_BaseAtkMode_pressed():
 	hold_to_base_atk = !hold_to_base_atk
 	switchButtonTextures()
 
-			
 func returnToIdleBasedOnWeaponType():
 	match weapon_type:
 			Autoload.weapon_type_list.fist:
@@ -751,7 +767,6 @@ func moveSidewaysDuringAnimation(speed):
 var sprint_animation_speed: float = 1
 var anim_cancel:bool = true #If true using abilities and skills interupts base attacks or other animations
 #_______________________________________________Combat______________________________________________
-
 #simple pick up and throw code, with a few considerations, thrown objects can glitch thru the floor if spammed
 #avoid it by increasing the floor collisions layers and masks...you've got 64 of them in total, use them. 
 #the thrown object moves using the same movement code in the player's func movement()
@@ -785,9 +800,6 @@ func LiftAndThrow() -> void:
 				if carried_body.is_in_group("Entity"):
 					carried_body.is_being_held = false
 				carried_body = null
-				
-				
-
 		else:
 			var bodies = detector_area.get_overlapping_bodies()
 			for body in bodies:
@@ -800,7 +812,6 @@ func LiftAndThrow() -> void:
 							carried_body = body
 							if body.is_in_group("Entity"):
 								body.is_being_held = true
-						
 func carryObject() -> void:
 	if carried_body != null:
 		carried_body.set_collision_layer(6) 
@@ -826,7 +837,6 @@ func carryObject() -> void:
 		garrote_victim.translation = direction_control.global_transform.origin + forward_vector * desired_distance + right_vector * side_offset + Vector3(0, 0, 0)
 		# Set the rotation of garrote_victim to match direction_control
 		garrote_victim.rotation = direction_control.rotation
-
 #else use that 
 #	if garrote_victim != null:
 #		garrote_victim.set_collision_layer(6) 
@@ -847,8 +857,6 @@ func carryObject() -> void:
 #		garrote_victim.rotation.y = direction_control.rotation.y + PI  # Rotate 180 degrees around Y axis
 #		garrote_victim.rotation.x = -direction_control.rotation.x  # Invert X rotation
 #		garrote_victim.rotation.z = -direction_control.rotation.z  # Invert Z rotation
-
-
 
 var garrote_victim: KinematicBody = null
 var garrote_offset: Vector3 = Vector3(0,1.516,0.585)
@@ -952,38 +960,18 @@ func rotateTowardsEnemy() -> void:
 					direction = (stored_attacker.global_transform.origin - global_transform.origin).normalized()
 
 
-var direction_assist:bool = true # we use this in attacks to auto rotate the direction towards enemies 
-onready var dir_assist_label:Label = $Canvas/Menu/TargetAssist/label
-func targetAssistOnOff()-> void:
-	direction_assist = !direction_assist
-	if direction_assist == true:
-		dir_assist_label.text = "Target Assist: On" 
-	else:
-		dir_assist_label.text = "Target Assist: OFF" 
-		
-		
-var target_mode:String = "Last Hit"
-onready var target_mode_label:Label = $Canvas/Menu/TargetAssistMode/label
-func targetAssistMode()-> void:
-	if target_mode == "Last Hit":
-		target_mode = "Lowest Health"
-	elif target_mode == "Lowest Health":
-		target_mode = "Attacker"
-	else:
-		target_mode = "Last Hit"
-	target_mode_label.text =  target_mode
 	
 func manualTargetAssit() -> void:
 	if Input.is_action_pressed("LockOn"):
 		rotateTowardsEnemy()
 func TargetAssist() ->void:
-	if direction_assist == true:
+	if direction_assist:
 		rotateTowardsEnemy()
 #___________________________________________________________________________________________________
 #Movement and physics
 var gravity_force: float = 20
 func gravity():
-	if gravity_active == true:
+	if gravity_active:
 		if is_in_combat == false:
 			if not is_on_floor():
 					vertical_velocity += Vector3.DOWN * gravity_force  * get_physics_process_delta_time()
@@ -1040,7 +1028,7 @@ func movement(delta: float) -> void:
 		0,
 		Input.get_action_strength("Front") - Input.get_action_strength("Back")
 	)
-	if can_walk == true:
+	if can_walk:
 		if active_action != "garrote":
 			if input_direction.length() > 0:
 				direction = input_direction.rotated(Vector3.UP, h_rot).normalized()
@@ -1051,7 +1039,7 @@ func movement(delta: float) -> void:
 				moving = true
 				movement_speed = walk_speed
 	
-	if moving == true:
+	if moving:
 		if carried_body == null:
 			if Input.is_action_pressed("Sprint"):
 				debug.active_action = "sprinting"
@@ -1067,12 +1055,12 @@ func movement(delta: float) -> void:
 				sprint_speed = default_sprint_speed
 				movement_mode = "run"
 				movement_speed = run_speed
-			elif crouching == true:
+			elif crouching:
 				debug.active_action = "sneaking"
 				sprint_speed = default_sprint_speed
 				movement_mode = "sneak"
 				movement_speed = walk_speed * 0.5
-			elif crawling == true:
+			elif crawling:
 				debug.active_action = "crawl"
 				sprint_speed = default_sprint_speed
 				movement_mode = "crawl"
@@ -1133,10 +1121,7 @@ func movement(delta: float) -> void:
 					jump_count += 1
 					vertical_velocity = Vector3.UP * jump_strength
 					active_action = "flip"
-	
-	
-	
-	
+
 	movementCollisions()
 	if is_on_floor():
 		jump_count = 0
@@ -1147,14 +1132,11 @@ func movement(delta: float) -> void:
 	horizontal_velocity = horizontal_velocity.linear_interpolate(direction.normalized() * movement_speed, acceleration * delta)
 
 
-
-	
-
 func movementCollisions()-> void:
-	if crawling == true:
+	if crawling:
 		middle_collision.disabled = true
 		upper_collision.disabled = true
-	elif crouching == true:
+	elif crouching:
 		middle_collision.disabled = false
 		upper_collision.disabled = true
 	else:
@@ -1178,7 +1160,7 @@ var dash_countforward: int = 0
 var dash_timerforward: float = 0.0
 func dodgeIframe() -> void:
 	pass
-#	if backstep_duration == true or frontstep_duration == true or leftstep_duration == true or rightstep_duration == true or dash_active == true:
+#	if backstep_duration or frontstep_duration or leftstep_duration or rightstep_duration or dash_active:
 #		set_collision_layer(6) 
 #		set_collision_mask(6) 
 #	else:
@@ -1255,7 +1237,7 @@ func climb()-> void:
 	if skill_bar_input == "none":
 		if carried_body == null:
 			if climb_ray.is_colliding() and is_on_wall():
-				if moving == true and not Input.is_action_pressed("Sprint") and not Input.is_action_pressed("Run") and not Input.is_action_pressed("Crouch")and not Input.is_action_pressed("Crawl"):
+				if moving and not Input.is_action_pressed("Sprint") and not Input.is_action_pressed("Run") and not Input.is_action_pressed("Crouch")and not Input.is_action_pressed("Crawl"):
 					gravity_active = false
 					checkWallInclination()
 					active_action = "none"
@@ -1298,7 +1280,7 @@ func checkWallInclination()-> void:
 var can_move:bool = false
 func moveTowardsDirection(speed):
 	if !is_on_wall():
-		if can_move == true:
+		if can_move:
 			horizontal_velocity = direction * speed 
 		
 # These are connected from the joystick multidirectional addon 
@@ -1446,7 +1428,7 @@ func InputsInterface()-> void:
 		loot.visible = !loot.visible
 
 
-
+var can_input_cancel:bool = true 
 var skill_bar_input:String = "none"
 func skillBarInputs():
 	if Input.is_action_just_pressed("1"):
@@ -1522,7 +1504,6 @@ func _on_baseatkswitch_pressed():
 
 
 #SaveGame___________________________________________________________________________________________
-
 func saveGame()->void:
 	for entity in get_tree().get_nodes_in_group("Entity"):
 		if entity.has_method("saveData"):
@@ -1563,6 +1544,7 @@ func saveData():
 		"health": stats.health,
 		"max_health": stats.max_health,
 		
+		"can_input_cancel":can_input_cancel,
 		"direction_assist":direction_assist,
 		"target_mode":target_mode,
 		
@@ -1606,6 +1588,9 @@ func loadData():
 			if "max_health" in data_file:
 				stats.max_health = data_file["max_health"]
 
+
+			if "can_input_cancel" in data_file:
+				can_input_cancel = data_file["can_input_cancel"]
 			if "direction_assist" in data_file:
 				direction_assist = data_file["direction_assist"]
 			if "target_mode" in data_file:
@@ -1681,7 +1666,7 @@ func showEnemyBuffsDebuffs(body)->void:
 	if body == null:
 		print("body dissapeared for some reason at func showEnemyBuffsDebuffs(body)")
 	else:
-		if $Canvas/EnemyUI/Down.visible == true:
+		if $Canvas/EnemyUI/Down.visible:
 			if body.has_node("Effects"):
 				body.get_node("Effects").showStatusIcon(
 				$Canvas/EnemyUI/Down/StatusGrid/Icon1,
@@ -1709,7 +1694,7 @@ func showEnemyBuffsDebuffs(body)->void:
 				$Canvas/EnemyUI/Down/StatusGrid/Icon23,
 				$Canvas/EnemyUI/Down/StatusGrid/Icon24)
 		
-		if $Canvas/EnemyUI/DownL.visible == true:
+		if $Canvas/EnemyUI/DownL.visible:
 			if body.has_node("Effects"):
 				body.get_node("Effects").showStatusIcon(
 				$Canvas/EnemyUI/DownL/StatusGrid/Icon1,
@@ -1801,7 +1786,7 @@ func showEntityIntel(body)-> void:#show this if the player has enough perception
 	var enemy_stats = body.get_node("Stats")
 	if body.entity_name != null:
 		entity_name_label.text = str(body.entity_name)
-	if entity_graphic_RU.visible == true:
+	if entity_graphic_RU.visible:
 		if body.has_method("displayThreatInfo"):
 			body.displayThreatInfo(threat_label)
 		else:
@@ -1827,7 +1812,7 @@ func showEntityIntel(body)-> void:#show this if the player has enough perception
 		entity_res_bleed.text = str(enemy_stats.bleed_resistance)
 		entity_res_radiant.text = str(enemy_stats.radiant_resistance)
 
-	if entity_graphic_LU.visible == true:
+	if entity_graphic_LU.visible:
 		if body.has_method("displayThreatInfo"):
 			body.displayThreatInfo(threat_label2)
 		else:
@@ -1915,7 +1900,7 @@ func switchButtonTextures()->void:
 	button.texture_normal = new_texture
 	
 	var button1= $UI/GUI/SkillBar/SkillQueue
-	var new_texture_path1 = "res://Game button icons/start_skill_queue.png" if skills.queue_skills else "res://Game button icons/stop_skil_queue.png"
+	var new_texture_path1 = "res://Game button icons/start_skill_queue.png" if can_input_cancel else "res://Game button icons/stop_skil_queue.png"
 	var new_texture1 = load(new_texture_path1)
 	button1.texture_normal = new_texture1
 
@@ -2009,6 +1994,13 @@ func colorInterfaceBG(color)-> void:
 	menu_button_bg7.modulate = color
 	menu_button_bg8.modulate = color
 	
+	for child in menu.get_children():
+		if child.has_node("bg"):
+			child.get_node("bg").modulate = color
+	for child in keybinds_settings.get_children():
+		if child.has_node("bg"):
+			child.get_node("bg").modulate = color
+		
 	for child in UI_list.get_children():
 		child.get_node("bg").modulate = color
 
@@ -2093,20 +2085,15 @@ func colorInterfaceFrames(color)-> void:
 	order_slots.modulate = color
 	order_down_slots.modulate = color
 	
-	target_assist_button.modulate = color
-	target_assist_mode_button.modulate = color
-	close_menu_button.modulate = color
-	exit_button.modulate = color
-	keybinds_button.modulate = color
-	rgb_button.modulate = color
-	open_ui_color_button.modulate = color
-	sneak_toggle_button.modulate = color
 
-
-
+	for child in keybinds_settings.get_children():
+		if child.has_node("button"):
+			child.get_node("button").modulate = color
+	for child in menu.get_children():
+		if child.has_node("button"):
+			child.get_node("button").modulate = color
 	for child in commoner.get_children():
 		child.get_node("SkillFrame").modulate = color
-
 	for child in elementalist_skill_grid.get_children():
 		child.get_node("SkillFrame").modulate = color
 	for child in scout.get_children():
@@ -2167,7 +2154,7 @@ func interfaceShiftingColors()-> void:
 
 func uiColorShift() -> void:
 	var color = ui_color
-	if shifting_ui_colors == true:
+	if shifting_ui_colors:
 		var time = OS.get_ticks_msec() / 1000.0
 		var r = 0.5 + 0.5 * sin(time)
 		var g = 0.5 + 0.5 * sin(time + PI / 3)
@@ -2177,7 +2164,7 @@ func uiColorShift() -> void:
 	else:
 		colorUI(ui_color)
 	var color2 = ui_color2
-	if shifting_ui_colors2 == true:
+	if shifting_ui_colors2:
 		var time = OS.get_ticks_msec() / 1000.0
 		# Calculate the opposite color based on the first color's RGB values
 		var r2 = 1.0 - (0.5 + 0.5 * sin(time))
@@ -2205,6 +2192,7 @@ onready var open_ui_color_button:TextureButton = $Canvas/Menu/OpenInterfaceColor
 onready var rgb_button:TextureButton = $Canvas/Menu/ShiftingColors/button
 onready var keybinds_button:TextureButton = $Canvas/Menu/Keybinds/button
 onready var sneak_toggle_button:TextureButton = $Canvas/Menu/SneakTogle/button
+onready var input_cancel_button:TextureButton = $Canvas/Menu/InputCancel/button
 
 func connectMenuButtons()-> void:
 	target_assist_button.connect("pressed", self, "targetAssistOnOff")
@@ -2215,37 +2203,62 @@ func connectMenuButtons()-> void:
 	rgb_button.connect("pressed", self, "interfaceShiftingColors")
 	keybinds_button.connect("pressed", self, "openKeybindsSettings")
 	sneak_toggle_button.connect("pressed", self, "sneakToggle")
+	input_cancel_button.connect("pressed", self, "inputCancelToggle")
 	
 
-	
+var direction_assist:bool = true # we use this in attacks to auto rotate the direction towards enemies 
+onready var dir_assist_label:Label = $Canvas/Menu/TargetAssist/label
+onready var target_mode_control:Control = $Canvas/Menu/TargetAssistMode
+func targetAssistOnOff()-> void:
+	direction_assist = !direction_assist
+	if direction_assist:#remember to update this on _ready() too when changing it 
+		dir_assist_label.text = "Target Assist: On" 
+		target_mode_control.visible = true
+	else:
+		dir_assist_label.text = "Target Assist: Off" 
+		target_mode_control.visible = false
+var target_mode:String = "Last Hit"
+onready var target_mode_label:Label = $Canvas/Menu/TargetAssistMode/label
+func targetAssistMode()-> void:
+	if target_mode == "Last Hit":
+		target_mode = "Lowest Health"
+	elif target_mode == "Lowest Health":
+		target_mode = "Attacker"
+	else:
+		target_mode = "Last Hit"
+	target_mode_label.text =  target_mode
 
 onready var gui_color_picker = $Canvas/Menu/UIColorPicker
 onready var gui_color_picker2 = $Canvas/Menu/UIColorPicker2
 func openInterfaceColorPickers()-> void:
 	gui_color_picker.visible  = !gui_color_picker.visible 
-	gui_color_picker2.visible  = !gui_color_picker2.visible 
+	gui_color_picker2.visible  = !gui_color_picker2.visible
+	target_mode_control.visible = !gui_color_picker2.visible
 
-	
 func openKeybindsSettings()-> void:
 	keybinds_settings.visible = !keybinds_settings.visible
+	target_mode_control.visible = !keybinds_settings.visible
 
 onready var crouch_label:Label = $Canvas/Menu/SneakTogle/label
 func sneakToggle() -> void:
 	sneak_toggle = !sneak_toggle
-	if sneak_toggle == true:
+	if sneak_toggle: #remember to update this on _ready() too when changing it 
 		crouch_label.text =  "Crouch Toggle:On"
 	else:
 		crouch_label.text = "Crouch Toggle:Off"
-		
+onready var input_cancel_label:Label = $Canvas/Menu/InputCancel/label
+func inputCancelToggle() -> void:
+	can_input_cancel = !can_input_cancel
+	if can_input_cancel:
+		input_cancel_label.text = "Input Cancel:On"
+	else:
+		input_cancel_label.text = "Input Cancel:Off"
+
 func closeMenu()-> void:
 	menu.visible = false
 func exit()-> void:
 	saveGame()
 	get_tree().quit()
-
-
-
-
 
 
 var skill_bar_mode: String = "normal"
@@ -2528,7 +2541,7 @@ func combineSlots()->void:
 	# Iterate over children of the inventory grid
 	for child in inventory_grid.get_children():
 		if child.is_in_group("Inventory"):
-			if child.stackable == true:
+			if child.stackable:
 				var icon = child.get_node("Icon")
 				if icon.texture != null:
 					var item_path = icon.texture.get_path()
@@ -2620,6 +2633,22 @@ func popUIHit(node_to_pop: Node) -> void:
 		return
 	# Define the scale properties for tweening
 	var initial_scale = Vector2(0.48,0.48)
+	var target_scale = initial_scale * 1.2  # Scale up to 1.2 times the original
+	# Stop any existing tweens on the node
+	tween.stop_all()
+	# Configure the tween to scale up and then back to initial scale
+	tween.interpolate_property(node_to_pop, "rect_scale", initial_scale, target_scale, 0.1, Tween.TRANS_QUAD, Tween.EASE_OUT)
+	tween.interpolate_property(node_to_pop, "rect_scale", target_scale, initial_scale, 0.1, Tween.TRANS_QUAD, Tween.EASE_IN, 0.1)
+	# Start the tween
+	tween.start()
+	
+func popUIHit2(node_to_pop: Node) -> void:
+	var tween = getAvailableTween()
+	if tween == null:
+		print("No available tweens")
+		return
+	# Define the scale properties for tweening
+	var initial_scale = Vector2(-0.48,0.48)
 	var target_scale = initial_scale * 1.2  # Scale up to 1.2 times the original
 	# Stop any existing tweens on the node
 	tween.stop_all()

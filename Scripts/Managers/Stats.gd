@@ -1,6 +1,5 @@
 extends Node
 onready var parent = get_parent()
-export var speed = 3
 
 func  _ready() -> void:
 	level = Autoload.rng.randi_range(1,1000)
@@ -72,13 +71,16 @@ func getHit(attacker: Node, damage: float, damage_type: int, extra_penetrate_cha
 			backstab = true
 		if attacker.isFacingSelf(parent, 0):  # Flank attack
 			flank_attack = true
-			
+
 	if attacker.is_in_group("Player"):
 		attacker.stored_victim = parent
-		attacker.time_to_show_stored_victim = 10
-		attacker.popUIHit(attacker.entity_health_label)
-		
-		
+		attacker.time_to_show_stored_victim = 50
+		if attacker.entity_health_label.visible == true:
+			attacker.popUIHit(attacker.entity_health_label)
+		if attacker.entity_health_label2.visible == true:
+			attacker.popUIHit2(attacker.entity_health_label2)
+
+
 	parent.stored_attacker = attacker
 	var random_range: float = rand_range(0, 100)
 	
@@ -138,6 +140,9 @@ func getHit(attacker: Node, damage: float, damage_type: int, extra_penetrate_cha
 		
 		
 func convertStats():
+	
+	var speed = base_speed + extra_speed
+	
 	deflect_chance = base_deflect_chance + extr_deflect_chance 
 	penetration_chance = base_penetration_chance + extr_deflect_chance 
 
@@ -148,7 +153,13 @@ func convertStats():
 	flank_defense = base_flank_defense + extr_flank_defense
 	back_defense = base_back_defense + extr_back_defense
 	
+	
+	
 export var level = 1
+
+export var base_speed:float = 3
+var extra_speed:float = 3
+var speed:float  = base_speed + extra_speed
 #resistances
 export var stagger_resistance: float = 0.0 #0 to 100 in percentage, this is directly detracted to instigator.stagger_chance 
 export var slash_resistance: int = 15 #50 equals 33.333% damage reduction 100 equals 50% damage reduction, 200 equals 66.666% damage reduction

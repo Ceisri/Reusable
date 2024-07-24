@@ -7,7 +7,7 @@ var damage: float
 var life_time: int = 5
 var velocity: Vector3 = Vector3.ZERO # Initial velocity
 var speed:float = 30
-var time_to_rotate:float = 5
+var time_to_rotate:float = 2
 
 func _physics_process(delta: float) -> void:
 	for body in get_overlapping_bodies():

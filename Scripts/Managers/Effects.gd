@@ -5,6 +5,7 @@ var effects:Dictionary = { #Reminder to add extra_on_hit_resolve_regen to weapon
 	"none": {"stats": {}, "applied": false},
 	"bleed": {"stats": {"extra_melee_atk_speed": 5.22,}, "applied": false},
 	"stun": {"stats": {"extra_melee_atk_speed": 5.22,}, "applied": false},
+	"slow": {"stats": {"extra_speed": -2,}, "applied": false},
 	}
 	
 func showStatusIcon(
@@ -28,7 +29,9 @@ func showStatusIcon(
 	
 	var applied_effects = [
 		{"name": "bleed", "texture": Icons.bleed, "modulation_color": Color(1, 1, 1)},
-		{"name": "stun", "texture": Icons.stun, "modulation_color": Color(1, 1, 1)}
+		{"name": "stun", "texture": Icons.stun, "modulation_color": Color(1, 1, 1)},
+		{"name": "slow", "texture": Icons.slow, "modulation_color": Color(1, 1, 1)}
+		
 	]
 
 	for effect in applied_effects:
@@ -38,11 +41,16 @@ func showStatusIcon(
 					icon.texture = effect["texture"]
 					icon.modulate = effect["modulation_color"]
 					var label = icon.get_node("Label")
-					if effect["name"] == "bleed":
-						label.text = str(bleed_duration)
-					elif effect["name"] == "stun":
-						label.text = str(stun_duration)
-					break
+					if label == null:
+						pass
+					else:
+						if effect["name"] == "bleed":
+							label.text = str(bleed_duration)
+						elif effect["name"] == "stun":
+							label.text = str(stun_duration)
+						elif effect["name"] == "slow":
+							label.text = str(slow_duration)
+						break
 					
 func applyEffect(effect_name: String, active: bool)->void:
 	var stats = get_parent().get_node("Stats")
@@ -67,6 +75,7 @@ func applyEffect(effect_name: String, active: bool)->void:
 				
 var bleed_duration:int = 1
 var stun_duration:int = 1
+var slow_duration:int = 1
 #put on a 1 second timer or every 60,30 or whatever your max physics frame is to mimic a second,
 #you could use -= delta but, but then again why refersh something like 60 times a second if you need it 1 times per second? 
 func effectManager() -> void: 
@@ -75,9 +84,15 @@ func effectManager() -> void:
 		applyEffect("bleed",true)
 	else:
 		applyEffect("bleed",false)
-		
+
 	if stun_duration > 0 : 
 		stun_duration -= 1
 		applyEffect("stun",true)
 	else:
 		applyEffect("stun",false)
+
+	if slow_duration > 0 : 
+		slow_duration -= 1
+		applyEffect("slow",true)
+	else:
+		applyEffect("slow",false)

@@ -22,6 +22,7 @@ onready var threat_system: Node = $Threat
 onready var animation = $Mesh/EntityHolder/AnimationPlayer
 onready var entity_holder = $Mesh/EntityHolder
 onready var stats = $Stats
+onready var effects = $Effects
 
 var vertical_velocity : Vector3 = Vector3()
 var movement: Vector3 = Vector3()
@@ -60,6 +61,7 @@ func _physics_process(delta: float) -> void:
 				rotateShadow()
 				moveShadow()
 		if Engine.get_physics_frames() % 24 == 0:
+			effects.effectManager()
 			letMeDie()
 			lostAndFound()
 #			if deadly_bleeding_duration > 0:

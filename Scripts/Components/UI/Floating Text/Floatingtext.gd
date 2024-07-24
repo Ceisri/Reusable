@@ -67,7 +67,7 @@ func _ready() -> void:
 			if penetrating_hit:
 				texture.modulate = Color("#d83232")
 		
-		Autoload.damage_type.neuro:
+		Autoload.damage_type.arcane:
 			label.modulate = Color("#d47be0")
 			if penetrating_hit:
 				texture.modulate = Color("#d47be0")

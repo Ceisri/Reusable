@@ -27,13 +27,13 @@ func endAction()->void:
 func placeOrShoot()->void:
 	match player.active_action:
 		"lighting":
-			player.skills.placeLighting(2.25)
+			player.skills.placeLighting(1)
 		"fireball":
-			player.skills.shootFireball(10)
-			
+			player.skills.shootProjectile(10,player.skills.fireball)
 		"icicle scatter shot":
-			player.skills.shootIcicle(0.25)
-
+			player.skills.shootIcicle(1)
+		"arcane bolt":
+			player.skills.shootProjectile(3.5,player.skills.arcane_bolt)
 		"ring of fire":
 			player.skills.placeRingOfFire(12)
 		"wall of fire":

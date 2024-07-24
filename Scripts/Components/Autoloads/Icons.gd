@@ -39,6 +39,8 @@ var kick = load("res://Game/Interface/Assets/Icons/Skill_Icons/Skill_Kick.png")
 var switch_element = load("res://Game/Interface/Assets/Icons/Skill_Icons/Skill_MagicEye.png")
 var lighting_shot = load("res://Game/Interface/Assets/Icons/Skill_Icons/lighting_ball2.png")
 var icile_scatter_shot = load("res://Game/Interface/Assets/Icons/Skill_Icons/Skill_FrostRain.png")
+var arcane_bolt = load("res://Game/Interface/Assets/Icons/Skill_Icons/Shadow_bolt.png")
+
 var drain = load("res://Game/Interface/Assets/Icons/Skill_Icons/shadow_drain.png")
 var razor_wind_shield = load("res://Game/Interface/Assets/Icons/Skill_Icons/wind_skill3.png")
 
@@ -52,3 +54,4 @@ var wall_of_fire = load("res://Game/Interface/Assets/Icons/Skill_Icons/firewall.
 #Effects
 var bleed = load("res://Game/Interface/Assets/Icons/Skill_Icons/Skill_BloodBoiling.png")
 var stun = load("res://Game/Interface/Assets/Icons/Skill_Icons/skill_3_stuned.png")
+var slow = load("res://Game/Interface/Assets/Icons/Skill_Icons/Skill_Chain.png")
