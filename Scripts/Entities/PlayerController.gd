@@ -55,14 +55,14 @@ func _ready() -> void:
 	connectMenuButtons()
 	connectAreas()
 	action_history[OS.get_ticks_msec()] = active_action
-	
+
 	if direction_assist:
 		dir_assist_label.text = "Target Assist: On" 
 		target_mode_control.visible = true
 	else:
 		dir_assist_label.text = "Target Assist: OFF" 
 		target_mode_control.visible = false
-		
+
 	target_mode_label.text =  target_mode
 	if sneak_toggle:
 		crouch_label.text =  "Crouch Toggle:On"
@@ -72,9 +72,13 @@ func _ready() -> void:
 		input_cancel_label.text = "Input Cancel:On"
 	else:
 		input_cancel_label.text = "Input Cancel:On"
-		
+
+
 	target_mode_control.visible = !keybinds_settings.visible
 	target_mode_control.visible = !gui_color_picker2.visible
+	
+	
+	
 func removeBothersomeKeybinds()-> void:#Here just in case someone is using this as a template
 	InputMap.action_erase_events("ui_accept")#avoids all the stupid ways you can click buttons or accept things by mistake
 	InputMap.action_erase_events("ui_select")
@@ -1610,18 +1614,36 @@ func saveData():
 		"position": translation,
 		"health": stats.health,
 		"max_health": stats.max_health,
-		
+
+
+
 		"can_input_cancel":can_input_cancel,
 		"direction_assist":direction_assist,
 		"target_mode":target_mode,
-		
+		"touch_screen_inputs.visible":touch_screen_inputs.visible,
+		"skillbar.visible":skillbar.visible,
+
+
+
 		"entity_graphic_interface.rect_position":entity_graphic_interface.rect_position,
-		
+
+
+
 		"entity_graphic_RU.visible":entity_graphic_RU.visible,
 		"entity_graphic_LU.visible":entity_graphic_LU.visible,
 		"entity_graphic_RD.visible":entity_graphic_RD.visible,
 		"entity_graphic_LD.visible":entity_graphic_LD.visible,
-		
+
+
+
+		"touch_inputs_label.text":touch_inputs_label.text,
+		"crouch_label.text":crouch_label.text,
+		"target_mode_label.text":target_mode_label.text,
+		"dir_assist_label.text":dir_assist_label.text,
+		"input_cancel_label.text":input_cancel_label.text,
+
+
+
 		"skillbar.rect_position": skillbar.rect_position,
 		"skill_bar_mode": skill_bar_mode,
 		"ui_color": ui_color,
@@ -1662,6 +1684,26 @@ func loadData():
 				direction_assist = data_file["direction_assist"]
 			if "target_mode" in data_file:
 				target_mode = data_file["target_mode"]
+
+
+			if "skillbar.visible" in data_file:
+				skillbar.visible = data_file["skillbar.visible"]
+			if "touch_screen_inputs.visible" in data_file:
+				touch_screen_inputs.visible = data_file["touch_screen_inputs.visible"]
+
+			if "touch_inputs_label.text" in data_file:
+				touch_inputs_label.text = data_file["touch_inputs_label.text"]
+			if "crouch_label.text" in data_file:
+				crouch_label.text = data_file["crouch_label.text"]
+			if "target_mode_label.text" in data_file:
+				target_mode_label.text = data_file["target_mode_label.text"]
+			if "dir_assist_label.text" in data_file:
+				dir_assist_label.text = data_file["dir_assist_label.text"]
+			if "input_cancel_label.text" in data_file:
+				input_cancel_label.text = data_file["input_cancel_label.text"]
+
+
+
 
 
 			if "entity_graphic_interface.rect_position" in data_file:
@@ -2260,6 +2302,7 @@ onready var rgb_button:TextureButton = $Canvas/Menu/ShiftingColors/button
 onready var keybinds_button:TextureButton = $Canvas/Menu/Keybinds/button
 onready var sneak_toggle_button:TextureButton = $Canvas/Menu/SneakTogle/button
 onready var input_cancel_button:TextureButton = $Canvas/Menu/InputCancel/button
+onready var touch_input_button:TextureButton = $Canvas/Menu/TouchInputs/button
 
 func connectMenuButtons()-> void:
 	target_assist_button.connect("pressed", self, "targetAssistOnOff")
@@ -2271,6 +2314,7 @@ func connectMenuButtons()-> void:
 	keybinds_button.connect("pressed", self, "openKeybindsSettings")
 	sneak_toggle_button.connect("pressed", self, "sneakToggle")
 	input_cancel_button.connect("pressed", self, "inputCancelToggle")
+	touch_input_button.connect("pressed", self, "switchDesktopMobile")
 	
 
 var direction_assist:bool = true # we use this in attacks to auto rotate the direction towards enemies 
@@ -2294,6 +2338,18 @@ func targetAssistMode()-> void:
 	else:
 		target_mode = "Last Hit"
 	target_mode_label.text =  target_mode
+
+onready var touch_screen_inputs:Control = $Canvas/TouchScreen
+onready var touch_inputs_label:Label =  $Canvas/Menu/TouchInputs/label
+func switchDesktopMobile()-> void:
+	skillbar.visible = !skillbar.visible
+	touch_screen_inputs.visible =!touch_screen_inputs.visible
+	if touch_screen_inputs.visible:
+		touch_inputs_label.text = "Mobile Mode"
+	else:
+		touch_inputs_label.text = "Desktop Mode"
+
+
 
 onready var gui_color_picker = $Canvas/Menu/UIColorPicker
 onready var gui_color_picker2 = $Canvas/Menu/UIColorPicker2

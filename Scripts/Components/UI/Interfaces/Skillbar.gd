@@ -1,6 +1,5 @@
 extends Control
 
-var can_drag:bool = false
 var dragging: bool = false
 var offset: Vector2
 
@@ -17,6 +16,7 @@ func dragUI() -> void:
 	if dragging:
 		rect_position = get_global_mouse_position() + offset
 
+var can_drag:bool = false
 
 
 
