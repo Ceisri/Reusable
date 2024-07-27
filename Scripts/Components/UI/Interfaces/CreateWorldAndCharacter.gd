@@ -24,6 +24,12 @@ func _ready():
 	create_new_world_button.connect("pressed", self, "_on_create_new_world_button_pressed")
 	create_new_character_button.connect("pressed", self, "_on_create_new_character_button_pressed")
 
+onready var random_info_label:Label = $Control/RandomInfo
+func _physics_process(delta: float) -> void:
+	if Engine.get_physics_frames() % 80 == 0:
+		Autoload.randomizeInfo(random_info_label)
+
+
 func _on_create_new_world_button_pressed():
 	var world_name = world_name_line_edit.text
 	if world_name != "":

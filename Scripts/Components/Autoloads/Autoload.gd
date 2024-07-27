@@ -1,4 +1,70 @@
 extends Node
+
+
+
+func _ready():
+	shuffle_tips()
+
+
+
+var tips = [
+	"Always check for traps, even on your birthday.",
+	"Don't trust a wizard with a clean robe.",
+	"Remember, red potions are for health, blue potions are for bravery.",
+	"Fire is hot; touching it might make you regret your life choices.",
+	"Don't poke the bear; some creatures are best left alone.",
+	"Friends don't let friends fight dragons alone.",
+	"A well-timed dodge is worth a thousand health potions.",
+	"Don't feed the trolls, unless you want them to follow you home.",
+	"You can drown in water.",
+	"Some attacks deal more damage from the back or the sides.",
+	"Not everyone is trustworthy.",
+	"Question common sense and dogma.",
+	"Be skeptical about the masses.",
+	"Explore every nook and cranny; hidden treasures await.",
+	"Save often; danger lurks around every corner.",
+	"Learn your enemy's weaknesses for an advantage in battle.",
+	"Stock up on healing items before venturing into unknown territory.",
+	"Engage with locals; their stories may reveal hidden secrets.",
+	"Live, laugh, lurv.",
+	"When life gives you pants, shit them.",
+	"When in danger, when in doubt, run in circles, scream and shout.",
+	"Go do that voodoo that you do so well!",
+	"May your chips always be crispy.",
+	"Dance like no one's watching, because they're probably not.",
+	"When in doubt, blame the lag.",
+	"A hero without snacks is just a very hungry person.",
+	"If the enemy is in range, so are you. Run!",
+	"Remember: gravity is a harsh mistress.",
+	"Always carry snacks; even heroes get hungry.",
+	"If you think it's a trap, it probably is.",
+	"A knife fits their back better than yours",
+	"Never trust a treasure chest that smiles back.",
+	"Monsters hate stairs; use them to your advantage.",
+	"Remember, the cake is always a lie.",
+	"Save your game before doing anything heroic.",
+	"Even the mightiest warrior needs a good nap.",
+	"A sharp sword is a hero's best friend."
+]
+var current_tip_index = 0
+
+func sequenceInfo(label) -> void:
+	label.text = tips[current_tip_index]
+	current_tip_index = (current_tip_index + 1) % tips.size()
+
+var shuffled_tips = []
+
+func shuffle_tips():
+	shuffled_tips = tips.duplicate()
+	shuffled_tips.shuffle()
+
+func randomizeInfo(label) -> void:
+	if current_tip_index >= shuffled_tips.size():
+		shuffle_tips()
+		current_tip_index = 0
+	label.text = shuffled_tips[current_tip_index]
+	current_tip_index += 1
+	
 var rng = RandomNumberGenerator.new()
 #____________________________________________Perforance_____________________________________________
 var entity_tick_rate: float = 0.04

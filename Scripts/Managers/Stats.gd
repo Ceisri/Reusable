@@ -66,11 +66,11 @@ func getHit(attacker: Node, damage: float, damage_type: int, extra_penetrate_cha
 			mitigation = radiant_resistance / (radiant_resistance + 100.0)
 	
 	# Check if attacker is flanking
-#	if attacker.has_method("isFacingSelf"):
-	if attacker.isFacingSelf(parent, 0.5):
-		backstab = true
-	if attacker.isFacingSelf(parent, 0):  # Flank attack
-		flank_attack = true
+	if attacker.has_method("isFacingSelf"):
+		if attacker.isFacingSelf(parent, 0.5):
+			backstab = true
+		if attacker.isFacingSelf(parent, 0):  # Flank attack
+			flank_attack = true
 
 	if attacker.is_in_group("Player"):
 		attacker.stored_victim = parent
@@ -93,18 +93,12 @@ func getHit(attacker: Node, damage: float, damage_type: int, extra_penetrate_cha
 		if backstab:
 			damage_after_backstab = (damage_after_deflection * (1.0 - backstab_mitigation))* attacker.stats.backstab_strength
 			final_damage = damage_after_backstab 
-			if attacker.is_in_group("Player"):
-					debugHit(attacker, damage,final_damage, damage_type,deflected, penetrating_blow,flank_attack,backstab)
 		elif flank_attack:
 			damage_after_flank = (damage_after_deflection * (1.0 - flank_mitigation)) * attacker.stats.flank_strength
 			final_damage = damage_after_flank 
-			if attacker.is_in_group("Player"):
-					debugHit(attacker, damage,final_damage, damage_type,deflected, penetrating_blow,flank_attack,backstab)
 		else:
 			damage_after_front = damage_to_take * (1.0 - front_mitigation)
 			final_damage = damage_after_front 
-			if attacker.is_in_group("Player"):
-					debugHit(attacker, damage,final_damage, damage_type,deflected, penetrating_blow,flank_attack,backstab)
 
 	else:
 		if random_range <= extra_penetrate_chance + attacker.stats.penetration_chance:  # Penetrating hit
@@ -113,35 +107,27 @@ func getHit(attacker: Node, damage: float, damage_type: int, extra_penetrate_cha
 			if backstab:
 				damage_after_backstab = (damage_to_take * (1.0 - backstab_mitigation))* attacker.stats.backstab_strength
 				final_damage = damage_after_backstab 
-				if attacker.is_in_group("Player"):
-					debugHit(attacker, damage,final_damage, damage_type,deflected, penetrating_blow,flank_attack,backstab)
 			elif flank_attack:
 				damage_after_flank = (damage_to_take * (1.0 - flank_mitigation)) * attacker.stats.flank_strength
 				final_damage = damage_after_flank 
-				if attacker.is_in_group("Player"):
-					debugHit(attacker, damage,final_damage, damage_type,deflected, penetrating_blow,flank_attack,backstab)
 			else:
 				damage_after_front = damage_to_take * (1.0 - front_mitigation)
 				final_damage = damage_after_front 
-				if attacker.is_in_group("Player"):
-					debugHit(attacker, damage,final_damage, damage_type,deflected, penetrating_blow,flank_attack,backstab)
+
 		else:  # Normal hit
 			damage_to_take *= (1.0 - mitigation)
 			if backstab:
 				damage_after_backstab = (damage_to_take * (1.0 - backstab_mitigation))* attacker.stats.backstab_strength
 				final_damage = damage_after_backstab 
-				if attacker.is_in_group("Player"):
-					debugHit(attacker, damage,final_damage, damage_type,deflected, penetrating_blow,flank_attack,backstab)
 			elif flank_attack:
 				damage_after_flank = (damage_to_take * (1.0 - flank_mitigation)) * attacker.stats.flank_strength
 				final_damage = damage_after_flank 
-				if attacker.is_in_group("Player"):
-					debugHit(attacker, damage,final_damage, damage_type,deflected, penetrating_blow,flank_attack,backstab)
 			else:
 				damage_after_front = damage_to_take * (1.0 - front_mitigation)
 				final_damage = damage_after_front 
-				if attacker.is_in_group("Player"):
-					debugHit(attacker, damage,final_damage, damage_type,deflected, penetrating_blow,flank_attack,backstab)
+	
+	if attacker.is_in_group("Player"):
+		debugHit(attacker, damage,final_damage, damage_type,deflected, penetrating_blow,flank_attack,backstab)
 	addFloatingText(attacker,final_damage, damage_type, penetrating_blow)
 	health -= round(final_damage* 100) / 100
 	if health <=0:
@@ -150,7 +136,6 @@ func getHit(attacker: Node, damage: float, damage_type: int, extra_penetrate_cha
 		else:
 			if parent.dead == false:
 				parent.dying = true
-				
 	if parent.has_node("Threat"):
 		attacker_threat.threat += damage_to_take + extra_threat
 		

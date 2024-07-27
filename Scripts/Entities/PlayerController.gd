@@ -32,6 +32,7 @@ func _ready() -> void:
 	initializeSkillbarSlots()
 	loadTouchInputIcons()
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	loading_screen.visible = true
 	character = direction_control.get_node("Character")
 	skeleton = direction_control.get_node("Character").get_node("Armature").get_node("Skeleton")
 	loadData()
@@ -56,29 +57,25 @@ func _ready() -> void:
 	connectAreas()
 	action_history[OS.get_ticks_msec()] = active_action
 
-	if direction_assist:
-		dir_assist_label.text = "Target Assist: On" 
-		target_mode_control.visible = true
-	else:
-		dir_assist_label.text = "Target Assist: OFF" 
-		target_mode_control.visible = false
-
-	target_mode_label.text =  target_mode
-	if sneak_toggle:
-		crouch_label.text =  "Crouch Toggle:On"
-	else:
-		crouch_label.text = "Crouch Toggle:Off"
-	if can_input_cancel:
-		input_cancel_label.text = "Input Cancel:On"
-	else:
-		input_cancel_label.text = "Input Cancel:On"
-
 
 	target_mode_control.visible = !keybinds_settings.visible
 	target_mode_control.visible = !gui_color_picker2.visible
 	
-	
-	
+
+onready var loading_screen:TextureRect = $Canvas/LoadingScreen
+onready var load_time_label:Label = $Canvas/LoadingScreen/LooadTimeLabel
+onready var random_info_label:Label = $Canvas/LoadingScreen/RandomInfo
+var loading_time:float = 200.0
+
+func loadingScreen() -> void:
+	var percentage_complete = ((200.0 - loading_time) / 200.0) * 100
+	load_time_label.text = str(round(percentage_complete * 100) / 100.0) + "%"
+	loading_time -= rand_range(0.25, 1.75)
+	if loading_time <= 0:
+		loading_screen.visible = false
+
+
+
 func removeBothersomeKeybinds()-> void:#Here just in case someone is using this as a template
 	InputMap.action_erase_events("ui_accept")#avoids all the stupid ways you can click buttons or accept things by mistake
 	InputMap.action_erase_events("ui_select")
@@ -124,6 +121,9 @@ func _physics_process(delta: float) -> void:
 	if Engine.get_physics_frames() % 3 == 0:
 		showEnemyStats()
 		uiColorShift()
+	if Engine.get_physics_frames() % 4 == 0:
+		if loading_time > 0:
+			loadingScreen()
 	if Engine.get_physics_frames() % 6 == 0:
 		ResourceBarsLabels()
 		effects.showStatusIcon(
@@ -154,6 +154,7 @@ func _physics_process(delta: float) -> void:
 	if Engine.get_physics_frames() % 12 == 0:
 		if debug.visible:
 			$Label.visible = true
+			laserRayForTesting()
 			$Label.text = active_action
 		else:
 			$Label.visible = false
@@ -163,6 +164,10 @@ func _physics_process(delta: float) -> void:
 		if Input:
 			displaySlotsLabel()
 			displayClock()
+			
+	if Engine.get_physics_frames() % 60 == 0:
+		if loading_time >0:
+			Autoload.sequenceInfo(random_info_label)
 		#getLoot(Items.blue_tip_grass,1,rand_range(0,100),"blue tip grass") #testing only
 
  
@@ -2055,6 +2060,8 @@ func switchButtonTextures()->void:
 
 #____________________________________GRAPHICAL INTERFACE AND SETTINGS_______________________________
 
+onready var help_menu:Control = $Canvas/Help
+
 #Skillbar 
 func connectSkillBarButtons()->void:
 	skill_button.connect("pressed", self, "openSkills")
@@ -2062,13 +2069,17 @@ func connectSkillBarButtons()->void:
 	char_button.connect("pressed", self, "openChar")
 	loot_button.connect("pressed", self, "openLoot")
 	inv_button.connect("pressed", self, "openInv")
+	help_button.connect("pressed", self, "openHelp")
+	
 
 func _on_Settings_pressed()-> void:
 	menu.visible = !menu.visible
-func _on_LootButton_pressed():
+func _on_LootButton_pressed()-> void:
 	loot.visible = !loot.visible
 
-
+func openHelp()-> void:
+	help_menu.visible = !help_menu.visible
+	
 
 
 #Skill tree, classes and civilian section

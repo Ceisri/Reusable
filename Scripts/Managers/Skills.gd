@@ -373,6 +373,7 @@ func _ready():
 		arcane_bolt_pool.append(arcane_bolt_instance)
 		Root.add_child(arcane_bolt_instance)
 
+
 func get_projectile_from_pool(projectile_scene: PackedScene) -> KinematicBody:
 	var pool = get_pool_for_projectile(projectile_scene)
 	for projectile in pool:
