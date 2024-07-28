@@ -8,43 +8,77 @@ func _ready():
 
 
 var tips = [
+	"Collect waifus responsibly; they’re not just for show.",
+	"Some attacks deal more damage from the back or the sides.",
+	"Ale is great for courage, but not for clear thinking.",
+	"If if you have high  charima Expect every maiden you meet to instantly fall for you.",
 	"Always check for traps, even on your birthday.",
 	"Don't trust a wizard with a clean robe.",
 	"Remember, red potions are for health, blue potions are for bravery.",
 	"Fire is hot; touching it might make you regret your life choices.",
 	"Don't poke the bear; some creatures are best left alone.",
+	"if you can't defeat a foe fairly, push them off a cliff",
+	"Never polish your armor or bathe; a true love should see past such things.",
 	"Friends don't let friends fight dragons alone.",
 	"A well-timed dodge is worth a thousand health potions.",
 	"Don't feed the trolls, unless you want them to follow you home.",
 	"You can drown in water.",
-	"Some attacks deal more damage from the back or the sides.",
+	"A hero’s journey shouldn’t start at the bottom of a bottle.",
 	"Not everyone is trustworthy.",
+	"Nobody will love you deeply unless you get taller shoes.",
 	"Question common sense and dogma.",
+	"Remember, potions are just fantasy drugs with fewer side effects.",
+	"Complain in the tavern about how all maidens are the same.",
+	"Ugly? Just get a better helmet.",
+	"Healing herbs: because sometimes magic needs a little help.",
+	"Blame everyone else for your problems.",
 	"Be skeptical about the masses.",
 	"Explore every nook and cranny; hidden treasures await.",
 	"Save often; danger lurks around every corner.",
 	"Learn your enemy's weaknesses for an advantage in battle.",
+	"Rely solely on crash diets and fads.",
 	"Stock up on healing items before venturing into unknown territory.",
 	"Engage with locals; their stories may reveal hidden secrets.",
 	"Live, laugh, lurv.",
+	"They say beauty is skin deep, but a good armor set covers a lot.",
+	"Don't expect epic loot from every barrel you smash.",
 	"When life gives you pants, shit them.",
+	"Constantly talk about the princess you couldn't save and how perfect she was.",
 	"When in danger, when in doubt, run in circles, scream and shout.",
+	"Indulge in negative self-talk regularly.",
 	"Go do that voodoo that you do so well!",
 	"May your chips always be crispy.",
+	"Magic mushrooms might give you visions, or just a bad trip.",
+	"Skip the health potions; who needs extra calories?",
+	"Remember, potions heal wounds, not hangovers.",
+	"Why walk when you can run away from your problems?",
+	"A balanced diet is a potion in each hand.",
 	"Dance like no one's watching, because they're probably not.",
 	"When in doubt, blame the lag.",
+	"Gamble your life savings, everyone will love you if you  win",
+	"Blame every maiden in the realm for not admiring your swordsmanship.",
+	"Assume moral superiority because you have bigger musclers.",
+	"Never shower or groom yourself; true love should look past that.",
 	"A hero without snacks is just a very hungry person.",
 	"If the enemy is in range, so are you. Run!",
 	"Remember: gravity is a harsh mistress.",
 	"Always carry snacks; even heroes get hungry.",
+	"Only woo maidens with ancient, clichéd love poems from dusty tomes.",
 	"If you think it's a trap, it probably is.",
 	"A knife fits their back better than yours",
 	"Never trust a treasure chest that smiles back.",
+	"You need to impress people that don't even know you exist",
+	"Refuse to leave your castle; true love should come seeking you out.",
 	"Monsters hate stairs; use them to your advantage.",
 	"Remember, the cake is always a lie.",
 	"Save your game before doing anything heroic.",
+	"The smaller muscles you have,the less valuable you are as a person",
 	"Even the mightiest warrior needs a good nap.",
-	"A sharp sword is a hero's best friend."
+	"A sharp sword is a hero's best friend.",
+	"Nobody will love you deeply and sincerely unless you get slightly bigger muscles.",
+	"Dragons are just big lizards with trust issues.",
+	"If you were just a bit taller, everyone would love you, right?",
+	"There are two wolves inside of you, both small bad, take a bath"
 ]
 var current_tip_index = 0
 
@@ -237,6 +271,21 @@ func addStackableItem(inventory_grid,item_texture,quantity):
 				elif icon.texture.get_path() == item_texture.get_path():
 					child.quantity += quantity
 					break
+
+func addIconToGrid(inventory_grid,item_texture):
+		for child in inventory_grid.get_children():
+			if child.is_in_group("Inventory") or child.is_in_group("Loot"):
+				var icon = child.get_node("Icon")
+				if icon.texture == null:
+					icon.texture = item_texture
+					break
+				elif icon.texture.get_path() == item_texture.get_path():
+					break
+func removeIconFromGrid(inventory_grid):
+		for child in inventory_grid.get_children():
+			if child.is_in_group("Inventory") or child.is_in_group("Loot"):
+				var icon = child.get_node("Icon")
+				icon.texture = null
 
 
 

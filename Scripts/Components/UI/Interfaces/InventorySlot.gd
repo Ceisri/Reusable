@@ -16,7 +16,6 @@ func _input(event:InputEvent)->void:
 	if get_parent().get_parent().get_parent().visible == true and Input and visible == true:
 		if Engine.get_physics_frames() % 3 == 0:
 			displayQuantity()
-			print("displaying quantity")
 
 
 func displayQuantity()->void:

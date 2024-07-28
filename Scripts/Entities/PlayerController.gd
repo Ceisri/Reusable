@@ -54,6 +54,7 @@ func _ready() -> void:
 	connectInventoryButtons()
 	connectSkillBarButtons()
 	connectMenuButtons()
+	connectShopButtons()
 	connectAreas()
 	action_history[OS.get_ticks_msec()] = active_action
 
@@ -65,10 +66,10 @@ func _ready() -> void:
 onready var loading_screen:TextureRect = $Canvas/LoadingScreen
 onready var load_time_label:Label = $Canvas/LoadingScreen/LooadTimeLabel
 onready var random_info_label:Label = $Canvas/LoadingScreen/RandomInfo
-var loading_time:float = 200.0
+var loading_time:float = 100.0
 
 func loadingScreen() -> void:
-	var percentage_complete = ((200.0 - loading_time) / 200.0) * 100
+	var percentage_complete = ((100.0 - loading_time) / 100.0) * 100
 	load_time_label.text = str(round(percentage_complete * 100) / 100.0) + "%"
 	loading_time -= rand_range(0.25, 1.75)
 	if loading_time <= 0:
@@ -115,6 +116,7 @@ func _physics_process(delta: float) -> void:
 	skills.comboSystem()
 	#laserRayForTesting()
 	manualTargetAssit()
+	openShop()
 	if Engine.get_physics_frames() % 2 == 0:
 		harvestGather()
 		minimapFollowPlayer()
@@ -164,10 +166,10 @@ func _physics_process(delta: float) -> void:
 		if Input:
 			displaySlotsLabel()
 			displayClock()
-			
-	if Engine.get_physics_frames() % 60 == 0:
+
+	if Engine.get_physics_frames() % 100 == 0:
 		if loading_time >0:
-			Autoload.sequenceInfo(random_info_label)
+			Autoload.randomizeInfo(random_info_label)
 		#getLoot(Items.blue_tip_grass,1,rand_range(0,100),"blue tip grass") #testing only
 
  
@@ -1006,10 +1008,12 @@ func manualTargetAssit() -> void:
 func TargetAssist() ->void:
 	if direction_assist:
 		rotateTowardsEnemy()
+
+
 #___________________________________________________________________________________________________
 #Movement and physics
 var gravity_force: float = 20
-func gravity():
+func gravity()->void:
 	if gravity_active:
 		if is_in_combat == false:
 			if not is_on_floor():
@@ -1021,7 +1025,6 @@ func gravity():
 				vertical_velocity += Vector3.DOWN * gravity_force * get_physics_process_delta_time()
 			else: 
 				vertical_velocity = -get_floor_normal() * gravity_force / 2.5
-				
 
 # Movement variables
 var direction: Vector3 = Vector3()
@@ -2060,26 +2063,6 @@ func switchButtonTextures()->void:
 
 #____________________________________GRAPHICAL INTERFACE AND SETTINGS_______________________________
 
-onready var help_menu:Control = $Canvas/Help
-
-#Skillbar 
-func connectSkillBarButtons()->void:
-	skill_button.connect("pressed", self, "openSkills")
-	quest_button.connect("pressed", self, "openQeusts")
-	char_button.connect("pressed", self, "openChar")
-	loot_button.connect("pressed", self, "openLoot")
-	inv_button.connect("pressed", self, "openInv")
-	help_button.connect("pressed", self, "openHelp")
-	
-
-func _on_Settings_pressed()-> void:
-	menu.visible = !menu.visible
-func _on_LootButton_pressed()-> void:
-	loot.visible = !loot.visible
-
-func openHelp()-> void:
-	help_menu.visible = !help_menu.visible
-	
 
 
 #Skill tree, classes and civilian section
@@ -2281,7 +2264,26 @@ func colorUI2(color: Color)-> void:
 	colorInterfaceFrames(color)
 	ui_color2 = color
 
+onready var help_menu:Control = $Canvas/Help
 
+#Skillbar 
+func connectSkillBarButtons()->void:
+	skill_button.connect("pressed", self, "openSkills")
+	quest_button.connect("pressed", self, "openQeusts")
+	char_button.connect("pressed", self, "openChar")
+	loot_button.connect("pressed", self, "openLoot")
+	inv_button.connect("pressed", self, "openInv")
+	help_button.connect("pressed", self, "openHelp")
+	
+
+func _on_Settings_pressed()-> void:
+	menu.visible = !menu.visible
+func _on_LootButton_pressed()-> void:
+	loot.visible = !loot.visible
+
+func openHelp()-> void:
+	help_menu.visible = !help_menu.visible
+	popUpUI(help_menu,skillbar_tween)
 	
 func openSkills()-> void:
 	skills_civilian.visible = !skills_civilian.visible
@@ -2535,6 +2537,100 @@ func _on_BugButton_pressed():
 	debug.visible = !debug.visible
 
 
+
+
+#Interractions with NPCs____________________________________________________________________________
+onready var shop:Control = $Canvas/Shop
+onready var buy_button:TextureButton = $Canvas/Shop/Buy/button
+onready var shop_grid:GridContainer = $Canvas/Shop/ScrollContainer/GridContainer
+func connectShopButtons()->void:
+	buy_button.connect("pressed", self, "buyItem")
+	for child in $Canvas/Shop/ScrollContainer/GridContainer.get_children():
+			var index_str = child.get_name().split("InvSlot")[1]
+			var index = int(index_str)
+			child.connect("pressed", self, "shopSlotPressed", [index])
+			child.connect("mouse_entered", self, "shopSlotEntered", [index])
+			child.connect("mouse_exited", self, "inventoryMouseExited", [index])
+
+
+func openShop()->void:
+	for body in detector_area.get_overlapping_bodies():
+		if body.is_in_group("Vendor"):
+			if Input.is_action_just_pressed("Interract"):
+				shop.visible = true
+				if randf() < 0.5:
+					Autoload.addIconToGrid(shop_grid,Items.red_potion)
+					Autoload.addIconToGrid(shop_grid,Items.empty_potion)
+				else:
+					Autoload.addIconToGrid(shop_grid,Items.blue_tip_grass)
+					Autoload.addIconToGrid(shop_grid,Items.blue_tip_grass)
+				
+	if moving:
+		Autoload.removeIconFromGrid(shop_grid)
+		shop.visible = false
+
+func buyItem()->void:
+	var icon = selected_shop_slot.get_node("Icon")
+	var icon_texture = icon.texture
+	if icon_texture.get_path() == Items.red_potion.get_path():
+		Autoload.addStackableItem(inventory_grid,Items.red_potion,1)
+	elif icon_texture.get_path() == Items.empty_potion.get_path():
+		Autoload.addStackableItem(inventory_grid,Items.empty_potion,1)
+	elif icon_texture.get_path() == Items.blue_tip_grass.get_path():
+		Autoload.addStackableItem(inventory_grid,Items.blue_tip_grass,1)
+	else:
+		pass
+		print("Unknown item path:", icon_texture.get_path())
+	
+var last_shop_pressed_index: int = -1
+var selected_shop_slot: TextureButton = null
+
+func shopSlotPressed(index) -> void:
+	print("Button pressed at index:", index)
+
+	var button = shop_grid.get_node("InvSlot" + str(index))
+	if button == null:
+		print("Button not found at index:", index)
+		return
+
+	var icon = button.get_node("Icon")
+	if icon == null:
+		print("Icon not found in button:", button.get_name())
+		return
+
+	var icon_texture = icon.texture
+	if icon_texture == null:
+		print("Icon texture is null in button:", button.get_name())
+		return
+
+	var price: int = 10000000000000
+
+
+	if icon_texture.get_path() == Items.red_potion.get_path():
+		price = 100
+	elif icon_texture.get_path() == Items.empty_potion.get_path():
+		price = 5
+	elif icon_texture.get_path() == Items.blue_tip_grass.get_path():
+		price = 1
+	else:
+		price = 0
+		print("Unknown item path:", icon_texture.get_path())
+
+	# Set the selected slot to the button that was just pressed
+	selected_shop_slot = button
+	if price != 0:
+		$Canvas/Shop/Price.text = str(price) 
+	else:
+		$Canvas/Shop/Price.text = str(price) + " index: " +str(index)
+
+
+
+
+
+
+
+
+#Inventory__________________________________________________________________________________________
 func _on_GiveMeItems_pressed():
 	Autoload.addStackableItem(inventory_grid,Items.red_potion,100)
 	Autoload.addStackableItem(inventory_grid,Items.empty_potion,100)
@@ -2549,6 +2645,7 @@ func loadInventorySlots()-> void:
 		new_slot.get_node("Icon").player = self 
 		new_slot.get_node("Icon").save_dictionary = "user://Characters/" + entity_name + "/" 
 		inventory_grid.add_child(new_slot)
+
 
 onready var skillbar_grid:GridContainer = $Canvas/Skillbar/GridContainer
 func initializeSkillbarSlots()-> void:
@@ -2924,6 +3021,4 @@ onready var resource_viewport:Viewport = $Canvas/Skillbar/AddFloatingIconsHere/V
 func getLoot(item, quantity, item_rarity, item_name)->void:
 	Autoload.addStackableItem(inventory_grid, item, quantity)
 	Autoload.addFloatingIcon(resource_viewport, item, quantity, item_rarity, item_name,self)
-
-
 
