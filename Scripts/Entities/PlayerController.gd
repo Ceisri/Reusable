@@ -66,7 +66,7 @@ func _ready() -> void:
 onready var loading_screen:TextureRect = $Canvas/LoadingScreen
 onready var load_time_label:Label = $Canvas/LoadingScreen/LooadTimeLabel
 onready var random_info_label:Label = $Canvas/LoadingScreen/RandomInfo
-var loading_time:float = 1.0
+var loading_time:float = 100.0
 
 func loadingScreen() -> void:
 	var percentage_complete = ((100.0 - loading_time) / 100.0) * 100
@@ -1662,7 +1662,7 @@ func saveData():
 		"max_health": stats.max_health,
 
 
-
+		"coins":coins,
 		"can_input_cancel":can_input_cancel,
 		"direction_assist":direction_assist,
 		"target_mode":target_mode,
@@ -1724,6 +1724,8 @@ func loadData():
 			if "max_health" in data_file:
 				stats.max_health = data_file["max_health"]
 
+			if "coins" in data_file:
+				coins = data_file["coins"]
 
 			if "can_input_cancel" in data_file:
 				can_input_cancel = data_file["can_input_cancel"]
