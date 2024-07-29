@@ -1,3 +1,19 @@
+update 29/07/2024 
+What I added/changed:
+
+-Huge performance boost to projectile shooting 
+
+-Added shop
+
+-Loading screen 
+
+-A few dozen bug fixes
+
+-Added some shaders for skills 
+
+![alt text](https://github.com/Ceisri/Reusable/blob/main/ui.png)
+
+
 
 update 16/07/2024
 
