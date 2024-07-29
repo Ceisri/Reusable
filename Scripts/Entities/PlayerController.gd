@@ -85,7 +85,7 @@ func removeBothersomeKeybinds()-> void:#Here just in case someone is using this 
 	InputMap.action_erase_events("ui_focus_prev")
 
 var max_engine_FPS:int = 24
-var max_processs_FPS:int = 28
+var max_processs_FPS:int = 19
 func setEngineTicks(ticks_per_second: int) -> void:
 	Engine.iterations_per_second = ticks_per_second
 func setProcessFPS(fps: int) -> void:
@@ -2552,11 +2552,14 @@ func _on_BugButton_pressed():
 onready var shop:Control = $Canvas/Shop
 onready var buy_button:TextureButton = $Canvas/Shop/Buy/button
 onready var sell_button:TextureButton = $Canvas/Shop/Sell/button
+onready var close_shop_button:TextureButton =  $Canvas/Shop/Close
+
 onready var shop_grid:GridContainer = $Canvas/Shop/ScrollContainer/GridContainer
 
 func connectShopButtons()->void:
 	buy_button.connect("pressed", self, "buyItem")
 	sell_button.connect("pressed", self, "sellItem")
+	close_shop_button.connect("pressed", self, "closeShop")
 	for child in $Canvas/Shop/ScrollContainer/GridContainer.get_children():
 			var index_str = child.get_name().split("InvSlot")[1]
 			var index = int(index_str)
@@ -2564,7 +2567,8 @@ func connectShopButtons()->void:
 			child.connect("mouse_entered", self, "shopSlotEntered", [index])
 			child.connect("mouse_exited", self, "inventoryMouseExited", [index])
 
-
+func closeShop() -> void:
+	shop.visible = false
 func openShop() -> void:
 	for body in detector_area.get_overlapping_bodies():
 		if body.is_in_group("Vendor"):
