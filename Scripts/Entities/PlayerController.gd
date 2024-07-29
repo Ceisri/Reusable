@@ -61,12 +61,12 @@ func _ready() -> void:
 
 	target_mode_control.visible = !keybinds_settings.visible
 	target_mode_control.visible = !gui_color_picker2.visible
-	
+	displayMoney()
 
 onready var loading_screen:TextureRect = $Canvas/LoadingScreen
 onready var load_time_label:Label = $Canvas/LoadingScreen/LooadTimeLabel
 onready var random_info_label:Label = $Canvas/LoadingScreen/RandomInfo
-var loading_time:float = 100.0
+var loading_time:float = 1.0
 
 func loadingScreen() -> void:
 	var percentage_complete = ((100.0 - loading_time) / 100.0) * 100
@@ -117,8 +117,9 @@ func _physics_process(delta: float) -> void:
 	#laserRayForTesting()
 	manualTargetAssit()
 	openShop()
-	if Engine.get_physics_frames() % 2 == 0:
+	if Input.is_action_just_pressed("harvest"):
 		harvestGather()
+	if Engine.get_physics_frames() % 2 == 0:
 		minimapFollowPlayer()
 	if Engine.get_physics_frames() % 3 == 0:
 		showEnemyStats()
@@ -656,6 +657,8 @@ func skills(slot)-> void:
 						skills.skillCancel("garrote")
 					else:returnToIdleBasedOnWeaponType()
 					
+			if slot.texture.resource_path == Icons.grab.get_path():
+					harvestGather()
 			if slot.texture.resource_path == Icons.silent_stab.get_path():
 				if slot.get_parent().get_node("CD").text != "":
 					active_action = "none"
@@ -729,7 +732,7 @@ func skills(slot)-> void:
 					else:returnToIdleBasedOnWeaponType()
 
 ##consumables________________________________________________________________________________________
-			elif slot.texture.resource_path == Items.red_potion.get_path():
+			elif slot.texture.resource_path == Items.apothecary_list["red_potion"]["icon"].get_path():
 				slot.get_parent().displayQuantity()
 				for child in inventory_grid.get_children():
 					if child.is_in_group("Inventory"):
@@ -2540,6 +2543,10 @@ func _on_BugButton_pressed():
 
 
 #Interractions with NPCs____________________________________________________________________________
+
+
+
+#Money and shopping 
 onready var shop:Control = $Canvas/Shop
 onready var buy_button:TextureButton = $Canvas/Shop/Buy/button
 onready var shop_grid:GridContainer = $Canvas/Shop/ScrollContainer/GridContainer
@@ -2553,37 +2560,151 @@ func connectShopButtons()->void:
 			child.connect("mouse_exited", self, "inventoryMouseExited", [index])
 
 
-func openShop()->void:
+func openShop() -> void:
 	for body in detector_area.get_overlapping_bodies():
 		if body.is_in_group("Vendor"):
 			if Input.is_action_just_pressed("Interract"):
 				shop.visible = true
-				if randf() < 0.5:
-					Autoload.addIconToGrid(shop_grid,Items.red_potion)
-					Autoload.addIconToGrid(shop_grid,Items.empty_potion)
-				else:
-					Autoload.addIconToGrid(shop_grid,Items.blue_tip_grass)
-					Autoload.addIconToGrid(shop_grid,Items.blue_tip_grass)
-				
+				if body.is_in_group("Apothecary"):
+					for item in Items.apothecary_list.values():
+						Autoload.addIconToGrid(shop_grid, item["icon"])
+				if body.is_in_group("Costermonger"):
+					for item in Items.costermonger_list.values():
+						Autoload.addIconToGrid(shop_grid, item["icon"])
+				if body.is_in_group("Herbalist"):
+					for item in Items.herbalist_list.values():
+						Autoload.addIconToGrid(shop_grid, item["icon"])
 	if moving:
 		Autoload.removeIconFromGrid(shop_grid)
 		shop.visible = false
 
-func buyItem()->void:
+
+var coins: int = 1000000
+
+onready var rhodium_label1: Label = $Canvas/Inventory/MoneyGrid/RhodiumLab
+onready var rhodium_label2: Label = $Canvas/Shop/MoneyGrid/RhodiumLab
+onready var iron_label1: Label = $Canvas/Inventory/MoneyGrid/IronLab
+onready var iron_label2: Label = $Canvas/Shop/MoneyGrid/IronLab
+onready var copper_label1: Label = $Canvas/Inventory/MoneyGrid/CopperLab
+onready var copper_label2: Label = $Canvas/Shop/MoneyGrid/CopperLab
+onready var tin_label1: Label = $Canvas/Inventory/MoneyGrid/TinLab
+onready var tin_label2: Label = $Canvas/Shop/MoneyGrid/TinLab
+
+# Convert coins to rhodium, iron, copper, and tin
+func convert_coins() -> Dictionary:
+	var rhodium_coins = coins / 1000000
+	var iron_coins = (coins % 1000000) / 10000
+	var copper_coins = (coins % 10000) / 100
+	var tin_coins = coins % 100
+	
+	return {
+		"rhodium": rhodium_coins,
+		"iron": iron_coins,
+		"copper": copper_coins,
+		"tin": tin_coins
+	}
+
+func displayMoney() -> void:
+	var coin_values = convert_coins()
+	
+	rhodium_label1.text = str(coin_values["rhodium"])
+	rhodium_label2.text = str(coin_values["rhodium"])
+	
+	iron_label1.text = str(coin_values["iron"])
+	iron_label2.text = str(coin_values["iron"])
+	
+	copper_label1.text = str(coin_values["copper"])
+	copper_label2.text = str(coin_values["copper"])
+	
+	tin_label1.text = str(coin_values["tin"])
+	tin_label2.text = str(coin_values["tin"])
+
+# Example of how to use the values externally
+func get_money() -> Dictionary:
+	return convert_coins()
+
+	
+	
+func buyItem() -> void:
 	var icon = selected_shop_slot.get_node("Icon")
 	var icon_texture = icon.texture
-	if icon_texture.get_path() == Items.red_potion.get_path():
-		Autoload.addStackableItem(inventory_grid,Items.red_potion,1)
-	elif icon_texture.get_path() == Items.empty_potion.get_path():
-		Autoload.addStackableItem(inventory_grid,Items.empty_potion,1)
-	elif icon_texture.get_path() == Items.blue_tip_grass.get_path():
-		Autoload.addStackableItem(inventory_grid,Items.blue_tip_grass,1)
+	var item_name: String = "Unknown"
+	var price: int = 0
+	var item_icon: Texture = null
+	var item_rarity: float = 0.0
+	var found: bool = false
+
+	# Check if the item is in the apothecary list
+	for name in Items.apothecary_list.keys():
+		if icon_texture.get_path() == Items.apothecary_list[name]["icon"].get_path():
+			price = Items.apothecary_list[name]["price"]
+			item_icon = Items.apothecary_list[name]["icon"]
+			item_name = name
+			item_rarity = Items.apothecary_list[name]["rarity"]
+			found = true
+			break
+
+	# Check if the item is in the costermonger list
+	if not found:
+		for name in Items.costermonger_list.keys():
+			if icon_texture.get_path() == Items.costermonger_list[name]["icon"].get_path():
+				price = Items.costermonger_list[name]["price"]
+				item_icon = Items.costermonger_list[name]["icon"]
+				item_name = name
+				item_rarity = Items.costermonger_list[name]["rarity"]
+				found = true
+				break
+
+	# Check if the item is in the herbalist list
+	if not found:
+		for name in Items.herbalist_list.keys():
+			if icon_texture.get_path() == Items.herbalist_list[name]["icon"].get_path():
+				price = Items.herbalist_list[name]["price"]
+				item_icon = Items.herbalist_list[name]["icon"]
+				item_name = name
+				item_rarity = Items.herbalist_list[name]["rarity"]
+				found = true
+				break
+
+	if found:
+		if coins >= price:
+			# Deduct the price from the player's coins
+			coins -= price
+			# Add the item to the inventory
+			Autoload.addStackableItem(inventory_grid, item_icon, 1)
+			# Handle loot
+			getLoot(item_icon, 1, item_rarity, item_name)
+			# Update the displayed money
+			displayMoney()
+		else:
+			print("Not enough coins to buy:", item_name)
 	else:
-		pass
 		print("Unknown item path:", icon_texture.get_path())
+
+
+	
+	
 	
 var last_shop_pressed_index: int = -1
 var selected_shop_slot: TextureButton = null
+onready var price_rhodium_label: Label =  $Canvas/Shop/PriceGrid/RhodiumLab
+onready var price_iron_label: Label = $Canvas/Shop/PriceGrid/IronLab
+onready var price_copper_label: Label =  $Canvas/Shop/PriceGrid/CopperLab
+onready var price_tin_label: Label =  $Canvas/Shop/PriceGrid/TinLab
+onready var item_name_label: Label = $Canvas/Shop/NameLab
+
+func convert_price(price: int) -> Dictionary:
+	var rhodium_coins = price / 1000000
+	var iron_coins = (price % 1000000) / 10000
+	var copper_coins = (price % 10000) / 100
+	var tin_coins = price % 100
+	
+	return {
+		"rhodium": rhodium_coins,
+		"iron": iron_coins,
+		"copper": copper_coins,
+		"tin": tin_coins
+	}
 
 func shopSlotPressed(index) -> void:
 	print("Button pressed at index:", index)
@@ -2603,37 +2724,63 @@ func shopSlotPressed(index) -> void:
 		print("Icon texture is null in button:", button.get_name())
 		return
 
-	var price: int = 10000000000000
+	var price: int = 0
+	var item_name: String = "Unknown"
+	var found: bool = false
+	
+	# Check if the item is in the apothecary list
+	for name in Items.apothecary_list.keys():
+		if icon_texture.get_path() == Items.apothecary_list[name]["icon"].get_path():
+			price = Items.apothecary_list[name]["price"]
+			item_name = name.replace("_", " ")  # Replace underscores with spaces
+			found = true
+			break
+	
+	# Check if the item is in the costermonger list
+	if not found:
+		for name in Items.costermonger_list.keys():
+			if icon_texture.get_path() == Items.costermonger_list[name]["icon"].get_path():
+				price = Items.costermonger_list[name]["price"]
+				item_name = name.replace("_", " ")  # Replace underscores with spaces
+				found = true
+				break
+	
+	# Check if the item is in the herbalist list
+	if not found:
+		for name in Items.herbalist_list.keys():
+			if icon_texture.get_path() == Items.herbalist_list[name]["icon"].get_path():
+				price = Items.herbalist_list[name]["price"]
+				item_name = name.replace("_", " ")  # Replace underscores with spaces
+				found = true
+				break
 
-
-	if icon_texture.get_path() == Items.red_potion.get_path():
-		price = 100
-	elif icon_texture.get_path() == Items.empty_potion.get_path():
-		price = 5
-	elif icon_texture.get_path() == Items.blue_tip_grass.get_path():
-		price = 1
-	else:
-		price = 0
+	if not found:
 		print("Unknown item path:", icon_texture.get_path())
+		price_iron_label.text = "0"
+		price_copper_label.text = "0"
+		price_tin_label.text = "0"
+		price_rhodium_label.text = "0"
+		item_name_label.text = "Unknown"
+	else:
+		# Convert price to rhodium, iron, copper, and tin
+		var price_values = convert_price(price)
+		
+		price_iron_label.text = str(price_values["iron"])
+		price_copper_label.text = str(price_values["copper"])
+		price_tin_label.text = str(price_values["tin"])
+		price_rhodium_label.text = str(price_values["rhodium"])
+		item_name_label.text = item_name
 
 	# Set the selected slot to the button that was just pressed
 	selected_shop_slot = button
-	if price != 0:
-		$Canvas/Shop/Price.text = str(price) 
-	else:
-		$Canvas/Shop/Price.text = str(price) + " index: " +str(index)
-
-
-
-
 
 
 
 
 #Inventory__________________________________________________________________________________________
 func _on_GiveMeItems_pressed():
-	Autoload.addStackableItem(inventory_grid,Items.red_potion,100)
-	Autoload.addStackableItem(inventory_grid,Items.empty_potion,100)
+	Autoload.addStackableItem(inventory_grid,Items.apothecary_list["red_potion"]["icon"],100)
+	Autoload.addStackableItem(inventory_grid,Items.apothecary_list["empty_potion"]["icon"],100)
 
 
 
@@ -2703,7 +2850,7 @@ func inventorySlotPressed(index)->void:
 		var current_time = OS.get_ticks_msec() / 1000.0
 		if last_pressed_index == index and current_time - last_press_time <= double_press_time_inv:
 			print("Inventory slot", index, "pressed twice")
-			if icon_texture.get_path() == Items.red_potion.get_path():
+			if icon_texture.get_path() == Items.apothecary_list["red_potion"]["icon"].get_path():
 				if stats.health  < stats.max_health:
 					Autoload.consumeRedPotion(self,button,inventory_grid,false,null)
 				if stats.health >= stats.max_health:
@@ -2992,20 +3139,27 @@ func plantAreaExited(area)-> void:
 			print("active:false")
 
 		
-func harvestGather()-> void:
-	if Input.is_action_just_pressed("harvest"):
-		for body in detector_area.get_overlapping_areas():
-			if body.is_in_group("BlueTip"):
-				var plant_size = body.get_node("Plant").size
-				body.get_node("Plant").time_invisible = 5
-				var quantity:int = 1
-				var item = Items.blue_tip_grass
-				var item_rarity:float = Items.blue_tip_grass_rarity
-				var item_name:String= "blue tip grass"
+func harvestGather() -> void:
+	for body in detector_area.get_overlapping_areas():
+		if body.is_in_group("BlueTip"):
+			var plant_size = body.get_node("Plant").size
+			body.get_node("Plant").time_invisible = 5
+			var quantity: int = 1
+			var item_name: String = "blue_tip_grass"
+			
+			# Retrieve item and rarity from the list
+			var item_data = Items.herbalist_list.get(item_name)
+			if item_data:
+				var item = item_data.icon
+				var item_rarity: float = item_data.rarity
+			
 				if plant_size > 0.5:
 					quantity += int((plant_size - 0.5) / 0.1)  # Increase quantity by 1 for every 0.1 unit above 0.5
-				getLoot(item,quantity,item_rarity,item_name)
+				
+				getLoot(item, quantity, item_rarity, item_name)
 				processTheGathering(body)
+			else:
+				print("Item not found in herbalist_list: ", item_name)
 
 func processTheGathering(body)->void:
 	debug.harvested_item_size = body.get_node("Plant").size

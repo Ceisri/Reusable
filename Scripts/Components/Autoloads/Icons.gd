@@ -1,6 +1,8 @@
 extends Node
 
 
+var grab= load("res://Game/Interface/Assets/Icons/Base_Skills/Skill_Grab.png")
+
 
 #Knight skills
 var bash = load("res://Game/Interface/Assets/Icons/Skill_Icons/Skill_ShieldBlock.png")

@@ -311,14 +311,14 @@ func consumeRedPotion(player:KinematicBody, button: TextureButton,inventory_grid
 	if skill_bar == false:
 				button.quantity -= 1
 				if inventory_grid != null:
-					player.getLoot(Items.empty_potion,1,0,"empty potion")
+					player.getLoot(Items.apothecary_list["empty_potion"]["icon"],1,0,"empty potion")
 	else:
 		if skill_slot != null:
 			skill_slot.displayQuantity()
 			skill_slot.quantity -= 1
 			if skill_slot.quantity >-1:
 				if inventory_grid != null:
-					player.getLoot(Items.empty_potion,1,0,"empty potion")
+					player.getLoot(Items.apothecary_list["empty_potion"]["icon"],1,0,"empty potion")
 
 #	if player.has_method("applyEffect"):
 #		player.applyEffect("redpotion", true)
