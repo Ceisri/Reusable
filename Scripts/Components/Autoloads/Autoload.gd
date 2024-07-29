@@ -271,6 +271,22 @@ func addStackableItem(inventory_grid,item_texture,quantity):
 				elif icon.texture.get_path() == item_texture.get_path():
 					child.quantity += quantity
 					break
+func removeStackableItem(inventory_grid, item_texture, quantity):
+	for child in inventory_grid.get_children():
+		if child.is_in_group("Inventory") or child.is_in_group("Loot"):
+			var icon = child.get_node("Icon")
+			if icon.texture != null and icon.texture.get_path() == item_texture.get_path():
+				if child.quantity > quantity:
+					child.quantity -= quantity
+					break
+				elif child.quantity == quantity:
+					child.quantity = 0
+					icon.texture = null
+					break
+				else:
+					print("Not enough items to remove")
+					break
+
 
 func addIconToGrid(inventory_grid,item_texture):
 		for child in inventory_grid.get_children():

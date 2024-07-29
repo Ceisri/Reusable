@@ -359,21 +359,21 @@ var fireball_pool: Array = []
 var arcane_bolt_pool: Array = []
 
 func _ready():#comment or uncomment this to skip loading screens and also remember to change the player's loading time
-	#pass
-	for i in range(max_fireballs):
-		var fireball_instance = fireball.instance()
-		fireball_instance.visible = false
-		fireball_instance.set_physics_process(false)
-		fireball_pool.append(fireball_instance)
-		Root.add_child(fireball_instance)
-
-	for i in range(max_arcane_bolts):
-		var arcane_bolt_instance = arcane_bolt.instance()
-		arcane_bolt_instance.visible = false
-		arcane_bolt_instance.set_physics_process(false)
-		arcane_bolt_pool.append(arcane_bolt_instance)
-		Root.add_child(arcane_bolt_instance)
-
+	pass
+#	for i in range(max_fireballs):
+#		var fireball_instance = fireball.instance()
+#		fireball_instance.visible = false
+#		fireball_instance.set_physics_process(false)
+#		fireball_pool.append(fireball_instance)
+#		Root.add_child(fireball_instance)
+#
+#	for i in range(max_arcane_bolts):
+#		var arcane_bolt_instance = arcane_bolt.instance()
+#		arcane_bolt_instance.visible = false
+#		arcane_bolt_instance.set_physics_process(false)
+#		arcane_bolt_pool.append(arcane_bolt_instance)
+#		Root.add_child(arcane_bolt_instance)
+#
 
 func get_projectile_from_pool(projectile_scene: PackedScene) -> KinematicBody:
 	var pool = get_pool_for_projectile(projectile_scene)

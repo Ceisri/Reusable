@@ -62,11 +62,12 @@ func _ready() -> void:
 	target_mode_control.visible = !keybinds_settings.visible
 	target_mode_control.visible = !gui_color_picker2.visible
 	displayMoney()
+	shop.visible  = false
 
 onready var loading_screen:TextureRect = $Canvas/LoadingScreen
 onready var load_time_label:Label = $Canvas/LoadingScreen/LooadTimeLabel
 onready var random_info_label:Label = $Canvas/LoadingScreen/RandomInfo
-var loading_time:float = 100.0
+var loading_time:float = 1.0
 
 func loadingScreen() -> void:
 	var percentage_complete = ((100.0 - loading_time) / 100.0) * 100
@@ -167,7 +168,6 @@ func _physics_process(delta: float) -> void:
 		if Input:
 			displaySlotsLabel()
 			displayClock()
-
 	if Engine.get_physics_frames() % 100 == 0:
 		if loading_time >0:
 			Autoload.randomizeInfo(random_info_label)
@@ -2551,9 +2551,12 @@ func _on_BugButton_pressed():
 #Money and shopping 
 onready var shop:Control = $Canvas/Shop
 onready var buy_button:TextureButton = $Canvas/Shop/Buy/button
+onready var sell_button:TextureButton = $Canvas/Shop/Sell/button
 onready var shop_grid:GridContainer = $Canvas/Shop/ScrollContainer/GridContainer
+
 func connectShopButtons()->void:
 	buy_button.connect("pressed", self, "buyItem")
+	sell_button.connect("pressed", self, "sellItem")
 	for child in $Canvas/Shop/ScrollContainer/GridContainer.get_children():
 			var index_str = child.get_name().split("InvSlot")[1]
 			var index = int(index_str)
@@ -2570,12 +2573,23 @@ func openShop() -> void:
 				if body.is_in_group("Apothecary"):
 					for item in Items.apothecary_list.values():
 						Autoload.addIconToGrid(shop_grid, item["icon"])
+						sell_button.get_parent().visible = false
+						buy_button.get_parent().visible = true
 				if body.is_in_group("Costermonger"):
 					for item in Items.costermonger_list.values():
 						Autoload.addIconToGrid(shop_grid, item["icon"])
+						sell_button.get_parent().visible = false
+						buy_button.get_parent().visible = true
 				if body.is_in_group("Herbalist"):
 					for item in Items.herbalist_list.values():
 						Autoload.addIconToGrid(shop_grid, item["icon"])
+						sell_button.get_parent().visible = false
+						buy_button.get_parent().visible = true
+				if body.is_in_group("Trader"):
+					sell_button.get_parent().visible = true
+					buy_button.get_parent().visible = false
+						
+						
 	if moving:
 		Autoload.removeIconFromGrid(shop_grid)
 		shop.visible = false
@@ -2605,6 +2619,19 @@ func convert_coins() -> Dictionary:
 		"copper": copper_coins,
 		"tin": tin_coins
 	}
+func convert_price(price: int) -> Dictionary:
+	var rhodium = price / 1000000
+	var iron = (price % 1000000) / 10000
+	var copper = (price % 10000) / 100
+	var tin = price % 100
+
+	return {
+		"rhodium": rhodium,
+		"iron": iron,
+		"copper": copper,
+		"tin": tin
+	}
+
 
 func displayMoney() -> void:
 	var coin_values = convert_coins()
@@ -2625,10 +2652,80 @@ func displayMoney() -> void:
 func get_money() -> Dictionary:
 	return convert_coins()
 
-	
-	
+var selected_trading_quantity: int = 1
+
+func _on_Quantity_text_changed(new_text: String) -> void:
+	var new_quantity = 1
+	if new_text.is_valid_float():  # Check if the text is a valid float (since is_valid_int() doesn't exist)
+		var converted_quantity = int(new_text)
+		if converted_quantity > 0:
+			new_quantity = converted_quantity
+
+	selected_trading_quantity = max(new_quantity, 1)  # Ensure at least 1
+
 func buyItem() -> void:
-	var icon = selected_shop_slot.get_node("Icon")
+	displaySlotsLabel()
+	if selected_shop_slot != null:
+		var icon = selected_shop_slot.get_node("Icon")
+		var icon_texture = icon.texture
+		var item_name: String = "Unknown"
+		var price: int = 0
+		var item_icon: Texture = null
+		var item_rarity: float = 0.0
+		var found: bool = false
+
+		# Check if the item is in the apothecary list
+		for name in Items.apothecary_list.keys():
+			if icon_texture != null:
+				if icon_texture.get_path() == Items.apothecary_list[name]["icon"].get_path():
+					price = Items.apothecary_list[name]["price"]
+					item_icon = Items.apothecary_list[name]["icon"]
+					item_name = name
+					item_rarity = Items.apothecary_list[name]["rarity"]
+					found = true
+					break
+
+		# Check if the item is in the costermonger list
+		if not found:
+			if icon_texture != null:
+				for name in Items.costermonger_list.keys():
+					if icon_texture.get_path() == Items.costermonger_list[name]["icon"].get_path():
+						price = Items.costermonger_list[name]["price"]
+						item_icon = Items.costermonger_list[name]["icon"]
+						item_name = name
+						item_rarity = Items.costermonger_list[name]["rarity"]
+						found = true
+						break
+
+		# Check if the item is in the herbalist list
+		if not found:
+			if icon_texture != null:
+				for name in Items.herbalist_list.keys():
+					if icon_texture.get_path() == Items.herbalist_list[name]["icon"].get_path():
+						price = Items.herbalist_list[name]["price"]
+						item_icon = Items.herbalist_list[name]["icon"]
+						item_name = name
+						item_rarity = Items.herbalist_list[name]["rarity"]
+						found = true
+						break
+
+		if found:
+			var total_price = price * selected_trading_quantity
+			if coins >= total_price:
+				# Deduct the price from the player's coins
+				coins -= total_price
+				getLoot(item_icon, selected_trading_quantity, item_rarity, item_name)
+				# Update the displayed money
+				displayMoney()
+				displaySlotsLabel()
+			else:
+				print("Not enough coins to buy:", item_name)
+		else:
+			print("Unknown item path:", icon_texture.get_path())
+
+func sellItem() -> void:
+	displaySlotsLabel()
+	var icon = selected_slot.get_node("Icon")
 	var icon_texture = icon.texture
 	var item_name: String = "Unknown"
 	var price: int = 0
@@ -2638,55 +2735,54 @@ func buyItem() -> void:
 
 	# Check if the item is in the apothecary list
 	for name in Items.apothecary_list.keys():
-		if icon_texture.get_path() == Items.apothecary_list[name]["icon"].get_path():
-			price = Items.apothecary_list[name]["price"]
-			item_icon = Items.apothecary_list[name]["icon"]
-			item_name = name
-			item_rarity = Items.apothecary_list[name]["rarity"]
-			found = true
-			break
+		if icon_texture != null:
+			if icon_texture.get_path() == Items.apothecary_list[name]["icon"].get_path():
+				price = Items.apothecary_list[name]["price"]
+				item_icon = Items.apothecary_list[name]["icon"]
+				item_name = name
+				item_rarity = Items.apothecary_list[name]["rarity"]
+				found = true
+				break
 
 	# Check if the item is in the costermonger list
 	if not found:
 		for name in Items.costermonger_list.keys():
-			if icon_texture.get_path() == Items.costermonger_list[name]["icon"].get_path():
-				price = Items.costermonger_list[name]["price"]
-				item_icon = Items.costermonger_list[name]["icon"]
-				item_name = name
-				item_rarity = Items.costermonger_list[name]["rarity"]
-				found = true
-				break
+			if icon_texture != null:
+				if icon_texture.get_path() == Items.costermonger_list[name]["icon"].get_path():
+					price = Items.costermonger_list[name]["price"]
+					item_icon = Items.costermonger_list[name]["icon"]
+					item_name = name
+					item_rarity = Items.costermonger_list[name]["rarity"]
+					found = true
+					break
 
 	# Check if the item is in the herbalist list
 	if not found:
 		for name in Items.herbalist_list.keys():
-			if icon_texture.get_path() == Items.herbalist_list[name]["icon"].get_path():
-				price = Items.herbalist_list[name]["price"]
-				item_icon = Items.herbalist_list[name]["icon"]
-				item_name = name
-				item_rarity = Items.herbalist_list[name]["rarity"]
-				found = true
-				break
+			if icon_texture != null:
+				if icon_texture.get_path() == Items.herbalist_list[name]["icon"].get_path():
+					price = Items.herbalist_list[name]["price"]
+					item_icon = Items.herbalist_list[name]["icon"]
+					item_name = name
+					item_rarity = Items.herbalist_list[name]["rarity"]
+					found = true
+					break
 
 	if found:
-		if coins >= price:
-			# Deduct the price from the player's coins
-			coins -= price
-			# Add the item to the inventory
-			Autoload.addStackableItem(inventory_grid, item_icon, 1)
-			# Handle loot
-			getLoot(item_icon, 1, item_rarity, item_name)
-			# Update the displayed money
-			displayMoney()
-		else:
-			print("Not enough coins to buy:", item_name)
-	else:
-		print("Unknown item path:", icon_texture.get_path())
+		# Calculate the total selling price (30% of original price, rounded, per item)
+		var sell_price_per_item = max(int(price * 0.3), 1)
+		var total_sell_price = sell_price_per_item * selected_trading_quantity
+
+		print("Item Name:", item_name)
+		print("Sell Price Per Item:", sell_price_per_item)
+		print("Total Sell Price:", total_sell_price)
+		print("Coins Before Sale:", coins)
+		coins += total_sell_price
+		displayMoney()
+		Autoload.removeStackableItem(inventory_grid, item_icon, selected_trading_quantity)
+		Autoload.addFloatingIcon(resource_viewport,Items.coin,total_sell_price,0,"coin",self)
 
 
-	
-	
-	
 var last_shop_pressed_index: int = -1
 var selected_shop_slot: TextureButton = null
 onready var price_rhodium_label: Label =  $Canvas/Shop/PriceGrid/RhodiumLab
@@ -2694,19 +2790,6 @@ onready var price_iron_label: Label = $Canvas/Shop/PriceGrid/IronLab
 onready var price_copper_label: Label =  $Canvas/Shop/PriceGrid/CopperLab
 onready var price_tin_label: Label =  $Canvas/Shop/PriceGrid/TinLab
 onready var item_name_label: Label = $Canvas/Shop/NameLab
-
-func convert_price(price: int) -> Dictionary:
-	var rhodium_coins = price / 1000000
-	var iron_coins = (price % 1000000) / 10000
-	var copper_coins = (price % 10000) / 100
-	var tin_coins = price % 100
-	
-	return {
-		"rhodium": rhodium_coins,
-		"iron": iron_coins,
-		"copper": copper_coins,
-		"tin": tin_coins
-	}
 
 func shopSlotPressed(index) -> void:
 	print("Button pressed at index:", index)
@@ -2764,8 +2847,11 @@ func shopSlotPressed(index) -> void:
 		price_rhodium_label.text = "0"
 		item_name_label.text = "Unknown"
 	else:
-		# Convert price to rhodium, iron, copper, and tin
-		var price_values = convert_price(price)
+		# Calculate the total price based on selected quantity
+		var total_price = price * selected_trading_quantity
+
+		# Convert total price to rhodium, iron, copper, and tin
+		var price_values = convert_price(total_price)
 		
 		price_iron_label.text = str(price_values["iron"])
 		price_copper_label.text = str(price_values["copper"])
@@ -2779,13 +2865,8 @@ func shopSlotPressed(index) -> void:
 
 
 
+
 #Inventory__________________________________________________________________________________________
-func _on_GiveMeItems_pressed():
-	Autoload.addStackableItem(inventory_grid,Items.apothecary_list["red_potion"]["icon"],100)
-	Autoload.addStackableItem(inventory_grid,Items.apothecary_list["empty_potion"]["icon"],100)
-
-
-
 onready var inventory_slot:PackedScene = load("res://Game/Interface/Scenes/InvSlot1.tscn")
 func loadInventorySlots()-> void:
 	for i in range(500):
@@ -2794,7 +2875,6 @@ func loadInventorySlots()-> void:
 		new_slot.get_node("Icon").player = self 
 		new_slot.get_node("Icon").save_dictionary = "user://Characters/" + entity_name + "/" 
 		inventory_grid.add_child(new_slot)
-
 
 onready var skillbar_grid:GridContainer = $Canvas/Skillbar/GridContainer
 func initializeSkillbarSlots()-> void:
@@ -2841,24 +2921,21 @@ func connectInventoryButtons()->void:
 var last_pressed_index: int = -1
 var last_press_time: float = 0.0
 var double_press_time_inv: float = 0.4
-func inventorySlotPressed(index)->void:
+func inventorySlotPressed(index) -> void:
 	displaySlotsLabel()
 	var button = inventory_grid.get_node("InvSlot" + str(index))
 	var icon_texture_rect = button.get_node("Icon")
 	var icon_texture = icon_texture_rect.texture
+
 	if icon_texture != null:
-#		if icon_texture.get_path() == "res://UI/graphics/SkillIcons/empty.png":
-#				button.quantity = 0
 		var current_time = OS.get_ticks_msec() / 1000.0
 		if last_pressed_index == index and current_time - last_press_time <= double_press_time_inv:
 			print("Inventory slot", index, "pressed twice")
 			if icon_texture.get_path() == Items.apothecary_list["red_potion"]["icon"].get_path():
-				if stats.health  < stats.max_health:
-					Autoload.consumeRedPotion(self,button,inventory_grid,false,null)
+				if stats.health < stats.max_health:
+					Autoload.consumeRedPotion(self, button, inventory_grid, false, null)
 				if stats.health >= stats.max_health:
 					stats.health = stats.max_health
-
-
 		else:
 			print("Inventory slot", index, "pressed once")
 		last_pressed_index = index
@@ -2867,7 +2944,59 @@ func inventorySlotPressed(index)->void:
 		# Set the selected slot to the button that was just pressed
 		selected_slot = button
 		debug.selected_slot = index
-		
+		if sell_button.get_parent().visible:
+			# Calculate sell price and display item info
+			var price: int = 0
+			var item_name: String = "Unknown"
+			var found: bool = false
+
+			# Check if the item is in the apothecary list
+			for name in Items.apothecary_list.keys():
+				if icon_texture.get_path() == Items.apothecary_list[name]["icon"].get_path():
+					price = Items.apothecary_list[name]["price"]
+					item_name = name.replace("_", " ")  # Replace underscores with spaces
+					found = true
+					break
+
+			# Check if the item is in the costermonger list
+			if not found:
+				for name in Items.costermonger_list.keys():
+					if icon_texture.get_path() == Items.costermonger_list[name]["icon"].get_path():
+						price = Items.costermonger_list[name]["price"]
+						item_name = name.replace("_", " ")  # Replace underscores with spaces
+						found = true
+						break
+
+			# Check if the item is in the herbalist list
+			if not found:
+				for name in Items.herbalist_list.keys():
+					if icon_texture.get_path() == Items.herbalist_list[name]["icon"].get_path():
+						price = Items.herbalist_list[name]["price"]
+						item_name = name.replace("_", " ")  # Replace underscores with spaces
+						found = true
+						break
+
+			if found:
+				# Calculate total sell price based on quantity (30% of original price, rounded)
+				var total_sell_price = max(int(price * 0.3 * selected_trading_quantity), 1)
+
+				# Convert total sell price to rhodium, iron, copper, and tin
+				var sell_price_values = convert_price(total_sell_price)
+
+				price_iron_label.text = str(sell_price_values["iron"])
+				price_copper_label.text = str(sell_price_values["copper"])
+				price_tin_label.text = str(sell_price_values["tin"])
+				price_rhodium_label.text = str(sell_price_values["rhodium"])
+				item_name_label.text = item_name
+			else:
+				price_iron_label.text = "0"
+				price_copper_label.text = "0"
+				price_tin_label.text = "0"
+				price_rhodium_label.text = "0"
+				item_name_label.text = "Unknown"
+
+
+			
 		
 var selected_slot:TextureButton = null
 func splitSelectedSlot()->void:
@@ -3157,7 +3286,6 @@ func harvestGather() -> void:
 			
 				if plant_size > 0.5:
 					quantity += int((plant_size - 0.5) / 0.1)  # Increase quantity by 1 for every 0.1 unit above 0.5
-				
 				getLoot(item, quantity, item_rarity, item_name)
 				processTheGathering(body)
 			else:
@@ -3177,4 +3305,34 @@ onready var resource_viewport:Viewport = $Canvas/Skillbar/AddFloatingIconsHere/V
 func getLoot(item, quantity, item_rarity, item_name)->void:
 	Autoload.addStackableItem(inventory_grid, item, quantity)
 	Autoload.addFloatingIcon(resource_viewport, item, quantity, item_rarity, item_name,self)
+
+#________________________________________LEVELING SYSTEM____________________________________________
+var experience_points: int = 0
+var level: int = 1
+var experience_to_next_level: int = 100  # Initial experience required to level up
+onready var exper_label: Label = $UI/GUI/Portrait/MinimapHolder/XPS
+var skill_points = 1
+var attribute = 1
+
+
+func takeExperience(points)->void:
+	experience_points += points * stats.intelligence
+
+	
+func experienceSystem()->void:
+	while experience_points >= experience_to_next_level:
+		experience_points -= experience_to_next_level
+		level += 1
+		skill_points += 1
+		attribute += 1
+		experience_to_next_level = int(experience_to_next_level * 1.2)
+	
+# Calculate the percentage of experience points
+	var percentage: float = (float(experience_points) / float(experience_to_next_level)) * 100.0
+	exper_label.text = "Level " + str(level) + "\nXP: " + str(experience_points) + "/" + str(experience_to_next_level) + " (" + str(round((percentage* 1)/1)) + "%)"
+
+
+func _on_levelmeup_pressed()->void:
+	experience_points += 500000000000000
+	experience_points += 500000000000000
 

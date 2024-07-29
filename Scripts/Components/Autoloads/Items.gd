@@ -1,5 +1,7 @@
 extends Node
 
+var coin = preload("res://Game/Interface/Assets/Icons/Minerals_Coins_others/TinCoin.png")
+
 var apothecary_list = {
 	"empty_potion": {
 		"price": 3,
