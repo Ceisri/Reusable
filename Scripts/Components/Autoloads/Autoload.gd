@@ -7,7 +7,7 @@ func _ready():
 
 
 
-var tips = [
+var tips:Array = [
 	"Collect waifus responsibly; they’re not just for show.",
 	"Some attacks deal more damage from the back or the sides.",
 	"Ale is great for courage, but not for clear thinking.",
@@ -36,13 +36,11 @@ var tips = [
 	"Explore every nook and cranny; hidden treasures await.",
 	"Save often; danger lurks around every corner.",
 	"Learn your enemy's weaknesses for an advantage in battle.",
-	"Rely solely on crash diets and fads.",
 	"Stock up on healing items before venturing into unknown territory.",
 	"Engage with locals; their stories may reveal hidden secrets.",
 	"Live, laugh, lurv.",
 	"They say beauty is skin deep, but a good armor set covers a lot.",
 	"Don't expect epic loot from every barrel you smash.",
-	"When life gives you pants, shit them.",
 	"Constantly talk about the princess you couldn't save and how perfect she was.",
 	"When in danger, when in doubt, run in circles, scream and shout.",
 	"Indulge in negative self-talk regularly.",
@@ -57,7 +55,7 @@ var tips = [
 	"When in doubt, blame the lag.",
 	"Gamble your life savings, everyone will love you if you  win",
 	"Blame every maiden in the realm for not admiring your swordsmanship.",
-	"Assume moral superiority because you have bigger musclers.",
+	"Assume moral superiority because you have bigger muscles.",
 	"Never shower or groom yourself; true love should look past that.",
 	"A hero without snacks is just a very hungry person.",
 	"If the enemy is in range, so are you. Run!",
@@ -80,6 +78,71 @@ var tips = [
 	"If you were just a bit taller, everyone would love you, right?",
 	"There are two wolves inside of you, both small bad, take a bath"
 ]
+
+var species:Array = [
+	"Homo Sapiens",
+	"Homo Sylvanus",
+	"Homo Sanguinus",
+	"Homo Nymphaea",
+	"Equis Biformis",
+	"Harpia Harpyus",
+	"Lamia"
+]
+
+
+var sexes:Array = [
+	"XX - Female",
+	"XY - Male",
+	"XXX - Female",
+	"XXY - Male",
+
+	"X - Female",
+	"X0 - Female",
+	"X0/XX - Female",
+	"X0/XY - Mosaic",
+
+	"XXY - Male",
+	"XXXY - Male",
+	"XXXXY - Male",
+
+	"XXYY - Male",
+
+	"XYY - Male",
+	"XYYY - Male",
+	"XYYYY - Male",
+	"XYYYYY - Male",
+]
+
+
+var names_X:Array = [
+	"Calliope",
+	"Hesperia",
+	"Kallisto",
+	"Melantha",
+	"Persephone",
+	"Rhea",
+	"Sapphira",
+	"Thalia",
+	"Zoe",
+	"Clio",
+	"Thessalia"
+]
+
+var names_Y:Array = [
+	"Adonis",
+	"Damon",
+	"Theo",
+	"Evandes",
+	"Icarus",
+	"Alex",
+	"Nestos",
+	"Orpheus",
+	"Alexis",
+	"Phineas"
+]
+
+
+
 var current_tip_index = 0
 
 func sequenceInfo(label) -> void:

@@ -16,11 +16,12 @@ export var save_data_password:String = "Nicole can be kind of a dick, especially
 var username: String
 var entity_name:String 
 var species:String = "Human"
+var sex:String = "male"
+var gender:String = "male"
 
 var is_player:bool = true 
 var online_mode:bool = true
 var is_in_combat:bool = false
-
 
 var weapon_type = Autoload.weapon_type_list.fist
 var genes
@@ -46,6 +47,9 @@ func _ready() -> void:
 	colorUI2(ui_color2)
 	update_visibility()
 	$Name.text = entity_name
+	$Sex.text = sex
+	$Gender.text = gender
+	$Species.text = species
 	menu.visible  = false
 	loot.visible  = false
 	debug.visible  = false
@@ -58,11 +62,11 @@ func _ready() -> void:
 	connectAreas()
 	action_history[OS.get_ticks_msec()] = active_action
 
-
 	target_mode_control.visible = !keybinds_settings.visible
 	target_mode_control.visible = !gui_color_picker2.visible
 	displayMoney()
 	shop.visible  = false
+	saveGame()
 
 onready var loading_screen:TextureRect = $Canvas/LoadingScreen
 onready var load_time_label:Label = $Canvas/LoadingScreen/LooadTimeLabel
@@ -1661,6 +1665,9 @@ func saveData():
 		"health": stats.health,
 		"max_health": stats.max_health,
 
+		"sex": sex,
+		"species":species,
+		"gender": gender,
 
 		"coins":coins,
 		"can_input_cancel":can_input_cancel,
@@ -1723,6 +1730,14 @@ func loadData():
 				stats.health = data_file["health"]
 			if "max_health" in data_file:
 				stats.max_health = data_file["max_health"]
+
+			if "species" in data_file:
+				species = data_file["species"]
+			if "sex" in data_file:
+				sex = data_file["sex"]
+			if "gender" in data_file:
+				gender = data_file["gender"]
+
 
 			if "coins" in data_file:
 				coins = data_file["coins"]

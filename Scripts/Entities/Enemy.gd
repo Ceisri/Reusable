@@ -40,23 +40,29 @@ var is_being_held:bool = false
 var thrower:Node = null
 
 var deadly_bleeding_duration:float = 0
-
-
+var frame_limiter:int = 100000
+var frame_limiter2:int = 100000
 func _ready() -> void:
+	frame_limiter = Autoload.rng.randi_range(2,4)
+	frame_limiter2 = Autoload.rng.randi_range(6,12)
 	loadData()
 
 func _physics_process(delta: float) -> void:
 	$Label3D2.text = str(stats.health)
 	$DebugLabel2.text = active_action
 	if is_being_held == false:
-		if Engine.get_physics_frames() % 5 == 0:
-			Autoload.entityGravity(self)
-		if Engine.get_physics_frames() % 2 == 0:  # Every 2 physics frames 
+		if Engine.get_physics_frames() % frame_limiter == 0:  
 				behaviourTree()
 				if stats.health >0:
 					threat_system.loseThreat()
 				if stats.health <0 or stats.health ==0:
 					can_be_looted = true
+		
+		if Engine.get_physics_frames() % frame_limiter2 == 0:
+			Autoload.entityGravity(self)
+			
+
+					
 		if Engine.get_physics_frames() % 5 == 0:  # Every 5 physics frames 
 				rotateShadow()
 				moveShadow()
@@ -64,14 +70,7 @@ func _physics_process(delta: float) -> void:
 			effects.effectManager()
 			letMeDie()
 			lostAndFound()
-#			if deadly_bleeding_duration > 0:
-#				stats.getHit(stored_attacker,stats.max_health * 0.2 +stats.health * 0.1,Autoload.damage_type.bleed, 100000000)
-#				deadly_bleeding_duration -= 1 
-#				if deadly_bleeding_duration <0:
-#					deadly_bleeding_duration = 0
-#				if stats.health <= 0:
-#					deadly_bleeding_duration = 0
-				
+
 	else:
 		getThrown(delta)
 		gravity()
