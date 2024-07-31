@@ -3,6 +3,7 @@ extends Control
 onready var species_button: TextureButton = $SpeciesButtonHolder/button
 onready var sex_button: TextureButton = $SexButtonHolder/button
 onready var gender_button: TextureButton = $GenderButtonHolder/button
+onready var randomize_name_button: TextureButton = $RandomizeName/button
 onready var species_label: Label = $SpeciesButtonHolder/label
 onready var sex_label: Label = $SexButtonHolder/label
 onready var sex_label_2: Label = $SexLabel
@@ -11,7 +12,7 @@ onready var character_name_line_edit: LineEdit = $LineEdit
 onready var avatar_icon: TextureRect = $Portrait/Avatar
 
 var sex_list: Array = Autoload.sexes
-var gender_list: Array = ["Male", "Female", "Non-binary"]  # Example genders
+var gender_list: Array = ["Male", "Female", "Other"] 
 var species_list: Array = Autoload.species  # List of species from Autoload
 var current_sex_index: int = 0
 var current_species_index: int = 0
@@ -23,7 +24,7 @@ func _ready() -> void:
 	sex_button.connect("pressed", self, "onSexButtonPressed")
 	gender_button.connect("pressed", self, "onGenderButtonPressed")
 	species_button.connect("pressed", self, "onSpeciesButtonPressed")
-	
+	randomize_name_button.connect("pressed", self, "changeNameBasedOnSex")
 	# Set default genes to "XX" Female and species to the first in the list or "Unknown"
 	selected_sex = "XX Female"
 	selected_gender = "Female"
@@ -33,9 +34,33 @@ func _ready() -> void:
 		selected_species = "Unknown"
 	updateLabels()
 	updatePortrait()
+	switchMeshBasedOnSex()
 
+onready var mesh_container: Node = $"../MeshContainer"
+var human_male:PackedScene = load("res://Game/World/Player/Models/Sex_Species_Meshes/MaleHuman.tscn")
+var human_female:PackedScene = load("res://Game/World/Player/Models/Sex_Species_Meshes/FemaleHuman.tscn")
+func switchMeshBasedOnSex() -> void:
+	var scene_to_instance: PackedScene = null
+	
+	if selected_sex.find("Female") != -1:
+		scene_to_instance = human_female
+	elif selected_sex.find("Male") != -1:
+		scene_to_instance = human_male
+	else:
+		print("Selected sex not recognized. No mesh will be instantiated.")
+		return
+
+	# Remove any existing mesh
+	for child in mesh_container.get_children():
+		child.queue_free()
+	
+	# Instance the correct mesh
+	if scene_to_instance:
+		var instance = scene_to_instance.instance()
+		mesh_container.add_child(instance)
 func onSexButtonPressed() -> void:
 	switchSex()
+	switchMeshBasedOnSex()
 	changeNameBasedOnSex()
 	updatePortrait()
 
@@ -68,7 +93,7 @@ func changeNameBasedOnSex() -> void:
 			names_list = Autoload.names_X
 		elif selected_gender == "Male":
 			names_list = Autoload.names_Y
-		elif selected_gender == "Non-binary":
+		elif selected_gender == "Other":
 			names_list = Autoload.names_X + Autoload.names_Y
 		else:
 			names_list = []

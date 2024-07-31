@@ -2,6 +2,7 @@ extends CanvasLayer
 
 # Buttons and Inputs for creating worlds and characters
 onready var switch_section:TextureButton =  $ChoosePlayerWorld/button
+onready var switch_world_name_button:TextureButton = $WorldPart/RandomizeName/button
 
 onready var char_part:Control = $PlayerPart
 onready var create_new_world_button:TextureButton =  $WorldPart/CreateWorld/button
@@ -36,6 +37,7 @@ func _ready():
 	create_new_world_button.connect("pressed", self, "_on_create_new_world_button_pressed")
 	create_new_character_button.connect("pressed", self, "_on_create_new_character_button_pressed")
 	sex_button.connect("pressed", self, "switchSex")
+	switch_world_name_button.connect("pressed",self, "switchWorldName")
 	
 
 onready var random_info_label:Label = $Control/RandomInfo
@@ -44,7 +46,7 @@ func _physics_process(delta: float) -> void:
 		Autoload.randomizeInfo(random_info_label)
 
 
-func switchSection() -> void:
+func switchSection()-> void:
 	char_part.visible = !char_part.visible
 	world_part.visible = !world_part.visible
 	if char_part.visible:
@@ -59,6 +61,9 @@ func _on_create_new_world_button_pressed():
 		createWorld(world_name)
 		addWorldToList(world_name)
 		world_name_line_edit.clear()
+		
+func switchWorldName()-> void:
+		Autoload.changeWorldName(world_name_line_edit)
 
 func createWorld(world_name: String):
 	var world_directory = "user://WorldList/" + world_name
@@ -108,10 +113,21 @@ func addWorldToList(world_name: String):
 
 
 func deleteWorld(world_name: String, delete_button: Control):
-	var hbox = delete_button.get_parent()
-	world_list_grid.remove_child(hbox)
-	hbox.queue_free()
-	resetWorldData(world_name)  # Reset world data (remove from file system)
+	if delete_press_count.has(world_name):
+		delete_press_count[world_name] += 1
+	else:
+		delete_press_count[world_name] = 1
+
+	if delete_press_count[world_name] >= 6:  # Replace '3' with the desired number of presses
+		var hbox = delete_button.get_parent()
+		world_list_grid.remove_child(hbox)
+		hbox.queue_free()
+		resetWorldData(world_name)  # Reset world data (remove from file system)
+		delete_press_count.erase(world_name)
+	else:
+		# Optionally, provide feedback to the user about remaining presses
+		info_label.text = "Press " + str(6 - delete_press_count[world_name]) + " more times to delete."
+
 
 var world:PackedScene = load("res://Game/World/Map/World.tscn")
 var player:PackedScene = load("res://Game/World/Player/Scenes/Player.tscn")
