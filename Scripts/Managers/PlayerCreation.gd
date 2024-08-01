@@ -39,6 +39,8 @@ func _ready() -> void:
 onready var mesh_container: Node = $"../MeshContainer"
 var human_male:PackedScene = load("res://Game/World/Player/Models/Sex_Species_Meshes/MaleHuman.tscn")
 var human_female:PackedScene = load("res://Game/World/Player/Models/Sex_Species_Meshes/FemaleHuman.tscn")
+
+
 func switchMeshBasedOnSex() -> void:
 	var scene_to_instance: PackedScene = null
 	
@@ -58,6 +60,9 @@ func switchMeshBasedOnSex() -> void:
 	if scene_to_instance:
 		var instance = scene_to_instance.instance()
 		mesh_container.add_child(instance)
+		
+		
+		
 func onSexButtonPressed() -> void:
 	switchSex()
 	switchMeshBasedOnSex()

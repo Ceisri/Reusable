@@ -46,10 +46,7 @@ func _ready() -> void:
 	colorUI(ui_color)
 	colorUI2(ui_color2)
 	update_visibility()
-	$Name.text = entity_name
-	$Sex.text = sex
-	$Gender.text = gender
-	$Species.text = species
+	$VisualDebug.text = "visual debug:" +"\n"+ entity_name +"\n"+ species +"\n"+sex+"\n"+gender
 	menu.visible  = false
 	loot.visible  = false
 	debug.visible  = false
@@ -102,9 +99,12 @@ func _physics_process(delta: float) -> void:
 	skillBarInputs()
 	if debug.visible:
 		$Label2.visible = true
+		$VisualDebug.visible = true
 		$Label2.text = "previous: " + previous_action
 	else:
 		$Label2.visible = false
+		$VisualDebug.visible = false
+		
 	gravity()
 	climbStairs()
 	climb()

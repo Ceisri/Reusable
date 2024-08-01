@@ -135,19 +135,48 @@ func _on_world_button_pressed(world_name: String):
 	if selected_player == null:
 		info_label.text = "Please select a player"
 	else:
-		info_label.text ="Entered world: " + world_name
+		info_label.text = "Entered world: " + world_name
 		var world_instance = world.instance()
 		world_instance.world_name = world_name
 		Root.add_child(world_instance)
+
+		# Load player data from the save file
+		var character_directory = "user://Characters/" + selected_player
+		var save_file_path = character_directory + "/save.dat"
+		
+		var species = ""
+		var sex = ""
+		var gender = ""
+		
+		var file = File.new()
+		if file.file_exists(save_file_path):
+			var error = file.open(save_file_path, File.READ)
+			if error == OK:
+				while not file.eof_reached():
+					var line = file.get_line().strip_edges()
+					if line.begins_with("Selected species: "):
+						species = line.replace("Selected species: ", "").strip_edges()
+					elif line.begins_with("Selected sex: "):
+						sex = line.replace("Selected sex: ", "").strip_edges()
+					elif line.begins_with("Selected gender: "):
+						gender = line.replace("Selected gender: ", "").strip_edges()
+				file.close()
+			else:
+				info_label.text = "Failed to open file: " + save_file_path + ", Error: " + str(error)
+				return
+		else:
+			info_label.text = "Save file not found: " + save_file_path
+			return
+
 		var player_instance = player.instance()
 		player_instance.entity_name = selected_player
-		player_instance.species =  char_part.selected_species
-		player_instance.sex =  char_part.selected_sex
-		player_instance.gender =  char_part.selected_gender
-
+		player_instance.species = species
+		player_instance.sex = sex
+		player_instance.gender = gender
 
 		world_instance.add_child(player_instance)
 		queue_free()
+
 
 func _on_create_new_character_button_pressed():
 	var character_name = character_name_line_edit.text
@@ -159,7 +188,7 @@ func _on_create_new_character_button_pressed():
 
 
 
-		
+
 func createCharacter(character_name: String):
 	var character_directory = "user://Characters/" + character_name
 	var dir = Directory.new()
@@ -168,8 +197,12 @@ func createCharacter(character_name: String):
 	var save_file = File.new()
 	save_file.open(character_directory + "/save.dat", File.WRITE)
 	save_file.store_line("Character name: " + character_name)
+	save_file.store_line("Selected sex: " + str(char_part.selected_sex))
+	save_file.store_line("Selected gender: " + str(char_part.selected_gender))
+	save_file.store_line("Selected species: " + str(char_part.selected_species))
 	save_file.close()
-	info_label.text = "Character created: " + character_name 
+	info_label.text = "Character created: " + character_name
+
 
 func loadCharacters():
 	for child in character_list_grid.get_children():
@@ -198,23 +231,33 @@ func addCharacterToList(character_name: String):
 	if file.file_exists(save_file_path):
 		var error = file.open(save_file_path, File.READ)
 		if error == OK:
-			var character_data = file.get_as_text()
+			var character_data = file.get_as_text().strip_edges().split("\n")
 			file.close()
-			
-			var button_scene = load("res://Game/Interface/Scenes/Button.tscn")
-			
+
+
+			var character_info = {}
+			for line in character_data:
+				if line.begins_with("Character name: "):
+					character_info["name"] = line.replace("Character name: ", "").strip_edges()
+				elif line.begins_with("Selected sex: "):
+					character_info["sex"] = line.replace("Selected sex: ", "").strip_edges()
+				elif line.begins_with("Selected species: "):
+					character_info["species"] = line.replace("Selected species: ", "").strip_edges()
+
+
 			# Character Button
-			var character_button = button_scene.instance()
-			character_button.get_node("label").text = character_name
+			var character_button = button.instance()
+			character_button.get_node("label").text = character_info["name"] 
 			character_button.get_node("button").connect("pressed", self, "selectCharacter", [character_name])
-			
+
 			# Delete Button
-			var delete_button = button_scene.instance()
+			var delete_button = button.instance()
 			delete_button.get_node("label").text = "Delete"
 			delete_button.get_node("button").connect("pressed", self, "deleteCharacter", [character_name, delete_button])
 			
 			var hbox = HBoxContainer.new()
 			hbox.add_child(character_button)
+
 			hbox.add_child(delete_button)
 			
 			character_list_grid.add_child(hbox)
@@ -225,6 +268,7 @@ func addCharacterToList(character_name: String):
 			info_label.text = "Failed to open file: " + save_file_path + ", Error: " + str(error)
 	else:
 		info_label.text = "Save file not found: " + save_file_path
+
 
 func deleteCharacter(character_name: String, delete_button: Control):
 	if not delete_press_count.has(character_name):
