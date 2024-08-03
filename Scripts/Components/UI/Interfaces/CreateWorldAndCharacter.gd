@@ -40,7 +40,7 @@ func _ready():
 	switch_world_name_button.connect("pressed",self, "switchWorldName")
 	
 
-onready var random_info_label:Label = $Control/RandomInfo
+onready var random_info_label:Label = $RandomInfo
 func _physics_process(delta: float) -> void:
 	if Engine.get_physics_frames() % 80 == 0:
 		Autoload.randomizeInfo(random_info_label)

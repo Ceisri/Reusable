@@ -315,6 +315,24 @@ var world_names:Array = [
 ]
 
 
+onready var music_volume = 0
+onready var general_volume = 0
+
+func changeVolume(value, parent) -> void:
+	for child in parent.get_children():
+		if child.is_in_group("Music"):
+			child.volume_db = value
+		for node in child.get_children():
+			if node.is_in_group("Music"):
+				node.volume_db = value
+			for node_child in node.get_children():
+				if node_child.is_in_group("Music"):
+					node_child.volume_db = value
+
+							
+						
+						
+
 func changeWorldName(line_edit) -> void:
 	if world_names.size() > 0:
 		var random_index = randi() % world_names.size()
