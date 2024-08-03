@@ -3,8 +3,11 @@ extends Spatial
 onready var player = get_parent().get_parent()
 
 func _ready()->void:
-	player.character = self
-	player.skeleton = $Armature/Skeleton
+	if player != null:
+		if player.is_in_group("Player"):
+			player.character = self
+			player.skeleton = $Armature/Skeleton
+			player.animation = $AnimationPlayer
 
 func startMoving()->void:
 	player.can_move = true

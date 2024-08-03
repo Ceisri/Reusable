@@ -34,8 +34,6 @@ func _ready() -> void:
 	loadTouchInputIcons()
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	loading_screen.visible = true
-	character = direction_control.get_node("Character")
-	skeleton = direction_control.get_node("Character").get_node("Armature").get_node("Skeleton")
 	loadData()
 	loadInventorySlots()
 	removeBothersomeKeybinds()
@@ -58,12 +56,43 @@ func _ready() -> void:
 	connectShopButtons()
 	connectAreas()
 	action_history[OS.get_ticks_msec()] = active_action
-
+	changeAppearance()
 	target_mode_control.visible = !keybinds_settings.visible
 	target_mode_control.visible = !gui_color_picker2.visible
 	displayMoney()
 	shop.visible  = false
 	saveGame()
+
+onready var human_male:PackedScene = load("res://Game/World/Player/Models/Sex_Species_Meshes/MaleHuman.tscn")
+onready var human_female:PackedScene = load("res://Game/World/Player/Models/Sex_Species_Meshes/FemaleHuman.tscn")
+
+func changeAppearance() -> void:
+	var model_instance: Node = null
+	if sex.find("Male") != -1:
+		model_instance = human_male.instance()
+	elif sex.find("Female") != -1:
+		model_instance = human_female.instance()
+	else:
+		print("Sex not recognized. No model will be instantiated.")
+		return
+	# Remove any existing model
+	for child in direction_control.get_children():
+		if child.is_in_group("Character"):
+			child.queue_free()
+	# Add the new model
+	if model_instance:
+		direction_control.add_child(model_instance)
+
+var current_sex_index: int = 0
+var sex_list: Array = Autoload.sexes
+func switchSex() -> void:
+	if Autoload.sexes.size() > 0:
+		current_sex_index = (current_sex_index + 1) % Autoload.sexes.size()
+		sex = Autoload.sexes[current_sex_index]
+		$VisualDebug.text = "visual debug:" + "\n" + entity_name + "\n" + species + "\n" + sex + "\n" + gender + "\n" + "Sexes size: " + str(Autoload.sexes.size()) + "\n" + "Current index: " + str(current_sex_index)
+	else:
+		$VisualDebug.text = "Autoload.sexes is empty"
+	changeAppearance()
 
 onready var loading_screen:TextureRect = $Canvas/LoadingScreen
 onready var load_time_label:Label = $Canvas/LoadingScreen/LooadTimeLabel
@@ -175,7 +204,6 @@ func _physics_process(delta: float) -> void:
 	if Engine.get_physics_frames() % 100 == 0:
 		if loading_time >0:
 			Autoload.randomizeInfo(random_info_label)
-		#getLoot(Items.blue_tip_grass,1,rand_range(0,100),"blue tip grass") #testing only
 
  
 func _process(delta:float) -> void:
@@ -738,19 +766,17 @@ func skills(slot)-> void:
 ##consumables________________________________________________________________________________________
 			elif slot.texture.resource_path == Items.apothecary_list["red_potion"]["icon"].get_path():
 				slot.get_parent().displayQuantity()
-				for child in inventory_grid.get_children():
-					if child.is_in_group("Inventory"):
-						var index_str = child.get_name().split("InvSlot")[1]
-						var index = int(index_str)
-						var button = inventory_grid.get_node("InvSlot" + str(index))
-						button = inventory_grid.get_node("InvSlot" + str(index))
-						if stats.health < stats.max_health:
-							Autoload.consumeRedPotion(self,button,inventory_grid,true,slot.get_parent())
-						if stats.health > stats.max_health:
-							stats.health = stats.max_health 
+				var icon_texture = slot.texture
+				useItem(icon_texture,slot.get_parent())
+							
+			elif slot.texture.resource_path  == Items.apothecary_list["sex_change_potion"]["icon"].get_path():
+				slot.get_parent().displayQuantity()
+				var icon_texture = slot.texture
+				useItem(icon_texture,slot.get_parent())
 
-			else:
-				returnToIdleBasedOnWeaponType()
+
+
+
 
 func baseAtkAnim()-> void:
 	match weapon_type:
@@ -849,17 +875,18 @@ func LiftAndThrow() -> void:
 					carried_body.is_being_held = false
 				carried_body = null
 		else:
-			var bodies = detector_area.get_overlapping_bodies()
-			for body in bodies:
-				if Input.is_action_just_pressed("pickup"):
-					if body and body != self and body.is_in_group("Liftable"):
-						var distance_to_body = body.global_transform.origin.distance_to(global_transform.origin)
-						if distance_to_body <= max_pickup_distance:
-							body.set_collision_layer(1) 
-							body.set_collision_mask(1) 
-							carried_body = body
-							if body.is_in_group("Entity"):
-								body.is_being_held = true
+			if is_instance_valid(detector_area):
+				var bodies = detector_area.get_overlapping_bodies()
+				for body in bodies:
+					if Input.is_action_just_pressed("pickup"):
+						if body and body != self and body.is_in_group("Liftable"):
+							var distance_to_body = body.global_transform.origin.distance_to(global_transform.origin)
+							if distance_to_body <= max_pickup_distance:
+								body.set_collision_layer(1) 
+								body.set_collision_mask(1) 
+								carried_body = body
+								if body.is_in_group("Entity"):
+									body.is_being_held = true
 func carryObject() -> void:
 	if carried_body != null:
 		carried_body.set_collision_layer(6) 
@@ -1317,33 +1344,34 @@ var is_swimming:bool = false
 var wall_incline
 var is_wall_in_range:bool = false
 var gravity_active:bool = true
-onready var head_ray =  $DirectionControl/HeadRay
-onready var climb_ray =  $DirectionControl/ClimbRay
+onready var head_ray = $DirectionControl/HeadRay
+onready var climb_ray = $DirectionControl/ClimbRay
 func climb()-> void:
 	if skill_bar_input == "none":
 		if carried_body == null:
-			if climb_ray.is_colliding() and is_on_wall():
-				if moving and not Input.is_action_pressed("Sprint") and not Input.is_action_pressed("Run") and not Input.is_action_pressed("Crouch")and not Input.is_action_pressed("Crawl"):
-					gravity_active = false
-					checkWallInclination()
-					active_action = "none"
-					if not head_ray.is_colliding() and not is_wall_in_range:#vaulting
-						if  not is_on_floor():
-							movement_mode = "vault"
-							animation.play("vault",blend)
+			if is_instance_valid(climb_ray) and is_instance_valid(head_ray):
+				if climb_ray.is_colliding() and is_on_wall():
+					if moving and not Input.is_action_pressed("Sprint") and not Input.is_action_pressed("Run") and not Input.is_action_pressed("Crouch")and not Input.is_action_pressed("Crawl"):
+						gravity_active = false
+						checkWallInclination()
+						active_action = "none"
+						if not head_ray.is_colliding() and not is_wall_in_range:#vaulting
+							if  not is_on_floor():
+								movement_mode = "vault"
+								animation.play("vault",blend)
+								vertical_velocity = Vector3.UP * (stats.strength * 3)
+						elif not is_wall_in_range:#normal climb
+							movement_mode = "climb"
+							animation.play("climb",blend)
 							vertical_velocity = Vector3.UP * (stats.strength * 3)
-					elif not is_wall_in_range:#normal climb
-						movement_mode = "climb"
-						animation.play("climb",blend)
-						vertical_velocity = Vector3.UP * (stats.strength * 3)
+						else:
+							movement_mode = "climb incline"
+							vertical_velocity = Vector3.UP * (stats.strength * 1.25 + (stats.agility * 0.15))
+							horizontal_velocity = direction * walk_speed
 					else:
-						movement_mode = "climb incline"
-						vertical_velocity = Vector3.UP * (stats.strength * 1.25 + (stats.agility * 0.15))
-						horizontal_velocity = direction * walk_speed
+						gravity_active = true 
 				else:
 					gravity_active = true 
-			else:
-				gravity_active = true 
 
 
 func checkWallInclination()-> void:
@@ -2950,11 +2978,7 @@ func inventorySlotPressed(index) -> void:
 		var current_time = OS.get_ticks_msec() / 1000.0
 		if last_pressed_index == index and current_time - last_press_time <= double_press_time_inv:
 			print("Inventory slot", index, "pressed twice")
-			if icon_texture.get_path() == Items.apothecary_list["red_potion"]["icon"].get_path():
-				if stats.health < stats.max_health:
-					Autoload.consumeRedPotion(self, button, inventory_grid, false, null)
-				if stats.health >= stats.max_health:
-					stats.health = stats.max_health
+			useItem(icon_texture, button)
 		else:
 			print("Inventory slot", index, "pressed once")
 		last_pressed_index = index
@@ -3014,9 +3038,22 @@ func inventorySlotPressed(index) -> void:
 				price_rhodium_label.text = "0"
 				item_name_label.text = "Unknown"
 
+func useItem(icon_texture, button)->void:
+	if icon_texture.get_path() == Items.apothecary_list["red_potion"]["icon"].get_path():
+		if stats.health < stats.max_health:
+			button.quantity -= 1
+			getLoot(Items.apothecary_list["empty_potion"]["icon"],1,0,"empty potion")
+			button.displayQuantity()
+		if stats.health >= stats.max_health:
+			stats.health = stats.max_health
 
-			
-		
+	if icon_texture.get_path() == Items.apothecary_list["sex_change_potion"]["icon"].get_path():
+		button.quantity -= 1
+		getLoot(Items.apothecary_list["empty_flask"]["icon"],1,0,"empty potion")
+		button.displayQuantity()
+		switchSex()
+
+
 var selected_slot:TextureButton = null
 func splitSelectedSlot()->void:
 	displaySlotsLabel()

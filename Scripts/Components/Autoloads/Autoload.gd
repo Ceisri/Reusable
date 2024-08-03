@@ -582,23 +582,6 @@ func addFloatingIcon(parent, texture, quantity,item_rarity,item_name,player):
 	instance.get_node("Label").modulate = rarity_color
 
 
-	
-func consumeRedPotion(player:KinematicBody, button: TextureButton,inventory_grid: GridContainer, skill_bar: bool, skill_slot: TextureButton):
-	var icon_texture_rect = button.get_node("Icon")
-	var icon_texture = icon_texture_rect.texture
-	player.stats.health += 500
-	if skill_bar == false:
-				button.quantity -= 1
-				if inventory_grid != null:
-					player.getLoot(Items.apothecary_list["empty_potion"]["icon"],1,0,"empty potion")
-	else:
-		if skill_slot != null:
-			skill_slot.displayQuantity()
-			skill_slot.quantity -= 1
-			if skill_slot.quantity >-1:
-				if inventory_grid != null:
-					player.getLoot(Items.apothecary_list["empty_potion"]["icon"],1,0,"empty potion")
-
 #	if player.has_method("applyEffect"):
 #		player.applyEffect("redpotion", true)
 func getRarityColor(rarity):

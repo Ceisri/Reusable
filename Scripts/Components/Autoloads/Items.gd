@@ -6,7 +6,12 @@ var apothecary_list = {
 	"empty_potion": {
 		"price": 3,
 		"icon": preload("res://Game/Interface/Assets/Icons/Alchemy/Alchemy_09_test_tube.png"),
-		"rarity": 10.0
+		"rarity": 3.0
+	},
+	"empty_flask": {
+		"price": 4,
+		"icon": preload("res://Game/Interface/Assets/Icons/Alchemy/Alchemy_19_little_flask.png"),
+		"rarity": 4.0
 	},
 	"red_potion": {
 		"price": 100,
@@ -23,9 +28,14 @@ var apothecary_list = {
 		"icon": preload("res://Game/Interface/Assets/Icons/Alchemy/Alchemy_18_magic_mixture.png"),
 		"rarity": 50.0
 	},
-	"magical flask": {
+	"magical_flask": {
 		"price": 500,
 		"icon": preload("res://Game/Interface/Assets/Icons/Alchemy/Alchemy_47_middlemagical_flask.png"),
+		"rarity": 80.0
+	},
+	"sex_change_potion": {
+		"price": 125,
+		"icon": preload("res://Game/Interface/Assets/Icons/Alchemy/Alchemy_25_stamina_potion.png"),
 		"rarity": 80.0
 	}
 }

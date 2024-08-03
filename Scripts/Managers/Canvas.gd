@@ -1,5 +1,6 @@
 extends CanvasLayer
-
+#set aspect to ignore and mode to disabled in the windows stretch settings,
+#sit prevents control nodes resizing and flying around 
 var resolutions = [
 	Vector2(640, 480),
 	Vector2(800, 600),
