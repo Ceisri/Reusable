@@ -11,7 +11,6 @@ onready var shadow:MeshInstance  = $shadow
 
 onready var name_label:Label3D = $Name
 onready var popup_viewport:Viewport = $Canvas/Skillbar/AddFloatingDamageHere/Viewport
-
 export var save_data_password:String = "Nicole can be kind of a dick, especially on the last days of August of 2022"
 var username: String
 var entity_name:String 
@@ -50,6 +49,8 @@ func _ready() -> void:
 	debug.visible  = false
 	skills_civilian.visible  = false
 	inventory.visible  = false
+	customization.visible = false
+	shop.visible  = false
 	connectInventoryButtons()
 	connectSkillBarButtons()
 	connectMenuButtons()
@@ -60,8 +61,9 @@ func _ready() -> void:
 	target_mode_control.visible = !keybinds_settings.visible
 	target_mode_control.visible = !gui_color_picker2.visible
 	displayMoney()
-	shop.visible  = false
 	saveGame()
+	customization.player = self 
+
 
 onready var human_male:PackedScene = load("res://Game/World/Player/Models/Sex_Species_Meshes/MaleHuman.tscn")
 onready var human_female:PackedScene = load("res://Game/World/Player/Models/Sex_Species_Meshes/FemaleHuman.tscn")
@@ -133,7 +135,7 @@ func _physics_process(delta: float) -> void:
 	else:
 		$Label2.visible = false
 		$VisualDebug.visible = false
-		
+
 	gravity()
 	climbStairs()
 	climb()
@@ -268,7 +270,10 @@ func firstLevelAnimations()-> void:
 				elif crouching:
 					animation.play("sneak", 0.3)
 				else:
-					animation.play("idle", 0.3)
+					if customization.visible:
+						animation.play("APose", 0.3)
+					else:
+						animation.play("idle", 0.3)
 			else:
 				animation.play("carry", 0.3)
 
@@ -357,7 +362,7 @@ func activeActions()->void:
 		TargetAssist()
 		moveTowardsDirection(skills.backstep_distance)
 		animation.play("dash",0.3,1.25)
-		
+
 	elif active_action ==  "garrote":
 		can_walk = false
 		directionToCamera()
@@ -773,10 +778,6 @@ func skills(slot)-> void:
 				slot.get_parent().displayQuantity()
 				var icon_texture = slot.texture
 				useItem(icon_texture,slot.get_parent())
-
-
-
-
 
 func baseAtkAnim()-> void:
 	match weapon_type:
@@ -1414,6 +1415,7 @@ func directionToCamera():#put this on attacks
 onready var camera_h: Spatial = $CameraRoot/Horizontal
 onready var camera_v: Spatial = $CameraRoot/Horizontal/Vertical
 onready var camera: Camera =  $CameraRoot/Horizontal/Vertical/Camera
+onready var camera2: Camera =  $CameraRoot/Horizontal/Vertical/Camera2
 var camrot_h: float = 0.0
 var camrot_v: float = 0.0
 var cam_v_max: float = 200.0
@@ -2226,7 +2228,10 @@ onready var loot_button:TextureButton = $Canvas/Skillbar/UI_list/LootButtonHolde
 onready var inv_button:TextureButton = $Canvas/Skillbar/UI_list/InvButtonHolder/button
 onready var map_button:TextureButton = $Canvas/Skillbar/UI_list/MapButtonHolder/button
 onready var post_button:TextureButton = $Canvas/Skillbar/UI_list/PostButtonHolder/button
+onready var customization_button:TextureButton = $Canvas/Skillbar/UI_list/CustomizationButtonHolder/button
+
 onready var elementalist_skill_grid:GridContainer= $Canvas/Skills/Elementalist/ElementalSkillList/ElementalSkillListGrid
+onready var customization:Control=  $Canvas/Customization
 
 
 func colorInterfaceFrames(color)-> void:
@@ -2322,6 +2327,7 @@ func connectSkillBarButtons()->void:
 	loot_button.connect("pressed", self, "openLoot")
 	inv_button.connect("pressed", self, "openInv")
 	help_button.connect("pressed", self, "openHelp")
+	customization_button.connect("pressed", self, "openCustomization")
 	
 
 func _on_Settings_pressed()-> void:
@@ -2343,6 +2349,9 @@ func openLoot()-> void:
 	loot.visible = !loot.visible
 	popUpUI(loot,skillbar_tween)
 
+func openCustomization()-> void:
+	customization.visible = !customization.visible
+	
 var shifting_ui_colors: bool = false
 var shifting_ui_colors2: bool = false
 var button_press_state: int = 0

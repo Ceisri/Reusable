@@ -3,6 +3,9 @@ extends Spatial
 onready var player = get_parent().get_parent()
 
 func _ready()->void:
+	$AnimationPlayer.add_animation("APose", load("res://Game/World/Player/Animations/TPose.anim"))
+	
+	
 	if player != null:
 		if player.is_in_group("Player"):
 			player.character = self
