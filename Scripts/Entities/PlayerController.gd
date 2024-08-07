@@ -1,6 +1,7 @@
 extends KinematicBody
 
 
+onready var customization:Control= $Canvas/Customization
 onready var canvas:CanvasLayer = $Canvas
 onready var stats:Node =  $Stats
 onready var effects:Node = $Effects
@@ -63,10 +64,14 @@ func _ready() -> void:
 	displayMoney()
 	saveGame()
 	customization.player = self 
-
+	customization.colorHair(customization.hair_color)
+	customization.colorHair2(customization.hair_color2)
+	customization.hairMelaninChanged(float(customization.hair_melanin_index_1))
+	customization.hairMelaninChanged2(float(customization.hair_melanin_index_2))
+	customization.skinMelaninChanged(customization.skin_melanin_value)
 
 onready var human_male:PackedScene = load("res://Game/World/Player/Models/Sex_Species_Meshes/MaleHuman.tscn")
-onready var human_female:PackedScene = load("res://Game/World/Player/Models/ImportTest/test2.tscn")
+onready var human_female:PackedScene = load("res://Game/World/Player/Models/Sex_Species_Meshes/FemaleHuman.tscn")
 
 func changeAppearance() -> void:
 	var model_instance: Node = null
@@ -1707,7 +1712,12 @@ func saveData():
 		"skillbar.visible":skillbar.visible,
 
 
-
+		"customization.skin_melanin_value":customization.skin_melanin_value,
+		"hair_color":customization.hair_color,
+		"hair_color2":customization.hair_color2,
+		"hair_melanin_index_1":customization.hair_melanin_index_1,
+		"hair_melanin_index_2":customization.hair_melanin_index_2,
+			
 		"entity_graphic_interface.rect_position":entity_graphic_interface.rect_position,
 
 
@@ -1767,6 +1777,20 @@ func loadData():
 				sex = data_file["sex"]
 			if "gender" in data_file:
 				gender = data_file["gender"]
+
+
+			if "customization.skin_melanin_value" in data_file:
+				customization.skin_melanin_value = data_file["customization.skin_melanin_value"]
+
+			if "hair_color" in data_file:
+				customization.hair_color = data_file["hair_color"]
+			if "hair_color2" in data_file:
+				customization.hair_color2 = data_file["hair_color2"]
+
+			if "hair_melanin_index_1" in data_file:
+				customization.hair_melanin_index_1 = data_file["hair_melanin_index_1"]
+			if "hair_melanin_index_2" in data_file:
+				customization.hair_melanin_index_2 = data_file["hair_melanin_index_2"]
 
 
 			if "coins" in data_file:
@@ -2231,7 +2255,7 @@ onready var post_button:TextureButton = $Canvas/Skillbar/UI_list/PostButtonHolde
 onready var customization_button:TextureButton = $Canvas/Skillbar/UI_list/CustomizationButtonHolder/button
 
 onready var elementalist_skill_grid:GridContainer= $Canvas/Skills/Elementalist/ElementalSkillList/ElementalSkillListGrid
-onready var customization:Control=  $Canvas/Customization
+
 
 
 func colorInterfaceFrames(color)-> void:

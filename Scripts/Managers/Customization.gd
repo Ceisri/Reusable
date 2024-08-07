@@ -11,12 +11,15 @@ onready var camera_body:Camera = $Fullbody/Portrait/ViewportContainer/Viewport/C
 onready var skin_melanin_slider: Slider = $Fullbody/SkinMelanin
 onready var hair_melanin_slider: Slider = $Fullbody/HairMelanin
 onready var hair_melanin_slider2: Slider = $Fullbody/HairMelanin2
+onready var switch_color_picked: TextureButton =  $SwitchColorPicked/button
+
 func _ready() -> void:
 	smile_slider.connect("value_changed", self, "smileValueChanged")
 	skin_melanin_slider.connect("value_changed", self, "skinMelaninChanged")
 	hair_melanin_slider.connect("value_changed", self, "hairMelaninChanged")
 	hair_melanin_slider2.connect("value_changed", self, "hairMelaninChanged2")
 	close_button.connect("pressed", self, "close")
+	switch_color_picked.connect("pressed", self, "switchColorPicked")
 
 	
 func _physics_process(delta: float) -> void:
@@ -58,8 +61,10 @@ func smileValueChanged(value) -> void:
 	player.character.applyBlendShapes()
 
 var human_fem_skin = load("res://Game/World/Player/Models/Humans/Female/skin.material")
+var skin_melanin_value: float = 0.0
 
 func skinMelaninChanged(value: float) -> void:
+	skin_melanin_value = value
 	var base_color = Color(1.0, 1.0, 1.0) # white as base color
 	var darkening_color = Color(77 / 255.0, 65 / 255.0, 48 / 255.0) # red 77, green 65, blue 48
 	var factor = value / 100.0
@@ -67,14 +72,15 @@ func skinMelaninChanged(value: float) -> void:
 	for child in player.skeleton.get_children():
 		if child is MeshInstance and not child.name.find("Eye") != -1 and not child.name.find("Hair") != -1:
 			var mesh = child.mesh
-			var index:int = 0
-			if mesh and mesh.get_surface_count() > index:
-				var material = mesh.surface_get_material(index) # Second material surface
+			if mesh and mesh.get_surface_count() > 0:
+				var material = mesh.surface_get_material(0) # First material surface
 				if material and material is SpatialMaterial:
 					var spatial_material := material as SpatialMaterial
 					var final_color = base_color.linear_interpolate(darkening_color, factor)
 					spatial_material.albedo_color = final_color
-					mesh.surface_set_material(index, spatial_material)
+					mesh.surface_set_material(0, spatial_material)
+
+
 var hair_melanin_levels = [
 	load("res://Game/World/Player/Textures/Hair/hairLight8.png"),
 	load("res://Game/World/Player/Textures/Hair/hairLight7.png"),
@@ -88,11 +94,13 @@ var hair_melanin_levels = [
 	load("res://Game/World/Player/Textures/Hair/hairDark3.png")
 ]
 
-var hair_material = load("res://Game/World/Player/Models/Humans/Female/Hair/hair_color_1.material")
+# External indices for saving and loading
+var hair_melanin_index_1: int = 0
+var hair_melanin_index_2: int = 0
 
 func hairMelaninChanged(value: float) -> void:
-	var index = int(value) # Convert the slider value to an integer index
-	index = clamp(index, 0, hair_melanin_levels.size() - 1) # Ensure the index is within the valid range
+	hair_melanin_index_1 = int(value) # Convert the slider value to an integer index
+	hair_melanin_index_1 = clamp(hair_melanin_index_1, 0, hair_melanin_levels.size() - 1) # Ensure the index is within the valid range
 
 	for child in player.skeleton.get_children():
 		if child is MeshInstance and child.name.find("Hair") != -1:
@@ -101,12 +109,12 @@ func hairMelaninChanged(value: float) -> void:
 				var material = mesh.surface_get_material(0) # First surface material
 				if material and material is SpatialMaterial:
 					var spatial_material := material as SpatialMaterial
-					spatial_material.albedo_texture = hair_melanin_levels[index]
+					spatial_material.albedo_texture = hair_melanin_levels[hair_melanin_index_1]
 					mesh.surface_set_material(0, spatial_material)
 
 func hairMelaninChanged2(value: float) -> void:
-	var index = int(value) # Convert the slider value to an integer index
-	index = clamp(index, 0, hair_melanin_levels.size() - 1) # Ensure the index is within the valid range
+	hair_melanin_index_2 = int(value) # Convert the slider value to an integer index
+	hair_melanin_index_2 = clamp(hair_melanin_index_2, 0, hair_melanin_levels.size() - 1) # Ensure the index is within the valid range
 
 	for child in player.skeleton.get_children():
 		if child is MeshInstance and child.name.find("Hair") != -1:
@@ -115,7 +123,7 @@ func hairMelaninChanged2(value: float) -> void:
 				var material = mesh.surface_get_material(1) # Second surface material
 				if material and material is SpatialMaterial:
 					var spatial_material := material as SpatialMaterial
-					spatial_material.albedo_texture = hair_melanin_levels[index]
+					spatial_material.albedo_texture = hair_melanin_levels[hair_melanin_index_2]
 					mesh.surface_set_material(1, spatial_material)
 
 
@@ -141,11 +149,36 @@ func changeHairMaterialColor(color: Color, surface_index: int) -> void:
 					spatial_material.albedo_color = color
 					mesh.surface_set_material(surface_index, spatial_material)
 					
-					
+
+var picking_color_for: String = "hair1"
+
+func switchColorPicked() -> void:
+	match picking_color_for:
+		"hair1":
+			picking_color_for = "hair2"
+		"hair2":
+			picking_color_for = "eye1"
+		"eye1":
+			picking_color_for = "eye2"
+		"eye2":
+			picking_color_for = "both eyes"
+		"both eyes":
+			picking_color_for = "both hair colors"
+		"both hair colors":
+			picking_color_for = "hair1"
+	$SwitchColorPicked/label.text = "Choosing color for:" + "\n" + picking_color_for
+
 func _on_ColorPicker_color_changed(color)-> void:
-	colorHair(color)
-func _on_ColorPicker2_color_changed(color):
-	colorHair2(color)
+	match picking_color_for:
+		"hair1":
+			colorHair(color)
+		"hair2":
+			colorHair2(color)
+		"both hair colors":
+			colorHair2(color)
+			colorHair(color)
+			
+		
 		
 
 func _on_BodyPositivity_value_changed(value):
