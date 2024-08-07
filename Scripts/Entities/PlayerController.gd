@@ -66,7 +66,7 @@ func _ready() -> void:
 
 
 onready var human_male:PackedScene = load("res://Game/World/Player/Models/Sex_Species_Meshes/MaleHuman.tscn")
-onready var human_female:PackedScene = load("res://Game/World/Player/Models/Sex_Species_Meshes/FemaleHuman.tscn")
+onready var human_female:PackedScene = load("res://Game/World/Player/Models/ImportTest/test2.tscn")
 
 func changeAppearance() -> void:
 	var model_instance: Node = null

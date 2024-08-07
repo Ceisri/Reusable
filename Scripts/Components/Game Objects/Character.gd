@@ -1,10 +1,10 @@
 extends Spatial
 
 onready var player = get_parent().get_parent()
-
+onready var human_female_head1 = load("res://Game/World/Player/Models/Humans/Female/Heads/Scenes/Head1.tscn")
 func _ready()->void:
+	add_to_group("Character")
 	$AnimationPlayer.add_animation("APose", load("res://Game/World/Player/Animations/TPose.anim"))
-	
 	
 	if player != null:
 		if player.is_in_group("Player"):
@@ -12,6 +12,19 @@ func _ready()->void:
 			player.skeleton = $Armature/Skeleton
 			player.animation = $AnimationPlayer
 
+	var head_instance = human_female_head1.instance()
+	$Armature/Skeleton.add_child(head_instance)
+	
+var smile = 0
+var body_positivity = 0
+func  applyBlendShapes()->void:
+	for child in $Armature/Skeleton.get_children():
+		if child.is_in_group("Head"):
+			child.set("blend_shapes/Smile",smile)
+			
+	for child in $Armature/Skeleton.get_children():
+		if child.is_in_group("Body"):
+			child.set("blend_shapes/BodyPositivity",body_positivity)
 func startMoving()->void:
 	player.can_move = true
 	
