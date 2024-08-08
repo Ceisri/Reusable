@@ -11,12 +11,20 @@ onready var face_button = $SwitchFace
 onready var skin_melanin_slider: Slider = $Fullbody/SkinMelanin
 onready var hair_melanin_slider: Slider = $Fullbody/HairMelanin
 onready var hair_melanin_slider2: Slider = $Fullbody/HairMelanin2
+onready var stretch_marks_opacity: Slider = $Fullbody/StretchOpacitySlider
+onready var stretch_marks_intesity: Slider = $Fullbody/StretchIntensitySlider
+
+
 
 onready var switch_color_picked: TextureButton =  $SwitchColorPicked/button
 
 func _ready() -> void:
 	face_button.connect("pressed", self, "faceChanged")
 	smile_slider.connect("value_changed", self, "smileValueChanged")
+	stretch_marks_opacity.connect("value_changed", self, "stretchMarkOpacityValueChanged")
+	stretch_marks_intesity.connect("value_changed", self, "stretchMarkIntensityValueChanged")
+	
+	
 	skin_melanin_slider.connect("value_changed", self, "skinMelaninChanged")
 	hair_melanin_slider.connect("value_changed", self, "hairMelaninChanged")
 	hair_melanin_slider2.connect("value_changed", self, "hairMelaninChanged2")
@@ -62,11 +70,39 @@ func faceChanged() -> void:
 	selected_face = (selected_face + 1) % Autoload.humman_fem_heads.size()
 	player.character.switchFace(selected_face)
 
+
+
+func stretchMarkIntensityValueChanged(value):
+	for child in player.skeleton.get_children():
+		if child is MeshInstance and child.name.find("Eye") == -1 and child.name.find("Hair") == -1:
+			var mesh = child.mesh
+			if mesh and mesh.get_surface_count() > 0:
+				var material = mesh.surface_get_material(0)  # First material surface
+				if material:
+					material.set("shader_param/stretch_marks_threshold", value * 0.01)
+				else:
+					print("Material not found on body mesh.")
+				return  # Assuming you want to set the material on the first match
+
+func stretchMarkOpacityValueChanged(value):
+	for child in player.skeleton.get_children():
+		if child is MeshInstance and child.name.find("Eye") == -1 and child.name.find("Hair") == -1:
+			var mesh = child.mesh
+			if mesh and mesh.get_surface_count() > 0:
+				var material = mesh.surface_get_material(0)  # First material surface
+				if material:
+					material.set("shader_param/stretch_marks_opacity", value * 0.01)
+				else:
+					print("Material not found on body mesh.")
+				return  # Assuming you want to set the material on the first match
+
+
+
 func smileValueChanged(value) -> void:
 	player.character.smile  = value / 100
 	player.character.applyBlendShapes()
 
-var human_fem_skin = load("res://Game/World/Player/Models/Humans/Female/skin.material")
+var human_fem_skin = load("res://Game/World/Player/Materials/skin.material")
 var skin_melanin_value: float = 0.0
 
 func skinMelaninChanged(value: float) -> void:
