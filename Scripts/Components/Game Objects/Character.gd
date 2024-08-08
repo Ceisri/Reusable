@@ -1,8 +1,6 @@
 extends Spatial
 
 onready var player = get_parent().get_parent()
-onready var human_female_head1 = load("res://Game/World/Player/Models/Humans/Female/Heads/Scenes/Head1.tscn")
-onready var human_female_head2 = load("res://Game/World/Player/Models/Humans/Female/Heads/Scenes/Head_Nicole.tscn")
 func _ready()->void:
 	add_to_group("Character")
 	$AnimationPlayer.add_animation("APose", load("res://Game/World/Player/Animations/TPose.anim"))
@@ -12,6 +10,7 @@ func _ready()->void:
 			player.character = self
 			player.skeleton = $Armature/Skeleton
 			player.animation = $AnimationPlayer
+#			player.loadData()
 
 	addRandomHead()
 	
@@ -28,24 +27,12 @@ func switchFace(selected_face) -> void:
 
 func addRandomHead() -> void:
 	for child in $Armature/Skeleton.get_children():
-		if child.name.begins_with("Head"):
+		if child.name.find("Head")!= -1:
 			child.queue_free()
 	var random_head = Autoload.humman_fem_heads[randi() % Autoload.humman_fem_heads.size()]
 	$Armature/Skeleton.add_child(random_head.instance())
 
-	
 
-
-var smile = 0
-var body_positivity = 0
-func  applyBlendShapes()->void:
-	for child in $Armature/Skeleton.get_children():
-		if child.is_in_group("Head"):
-			child.set("blend_shapes/Smile",smile)
-			
-	for child in $Armature/Skeleton.get_children():
-		if child.is_in_group("Body"):
-			child.set("blend_shapes/BodyPositivity",body_positivity)
 func startMoving()->void:
 	player.can_move = true
 	

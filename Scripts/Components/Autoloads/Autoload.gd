@@ -1,6 +1,9 @@
 extends Node
 
-
+var world:PackedScene = load("res://Game/World/Map/World.tscn")
+var player:PackedScene = load("res://Game/World/Player/Scenes/Player.tscn")
+onready var human_male:PackedScene = load("res://Game/World/Player/Models/Sex_Species_Meshes/MaleHuman.tscn")
+onready var human_female:PackedScene = load("res://Game/World/Player/Models/Sex_Species_Meshes/FemaleHuman.tscn")
 
 func _ready():
 	shuffle_tips()

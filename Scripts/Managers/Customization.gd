@@ -14,6 +14,8 @@ onready var hair_melanin_slider2: Slider = $Fullbody/HairMelanin2
 onready var stretch_marks_opacity: Slider = $Fullbody/StretchOpacitySlider
 onready var stretch_marks_intesity: Slider = $Fullbody/StretchIntensitySlider
 
+onready var breast_slider: Slider = $Fullbody/Breasts
+
 
 
 onready var switch_color_picked: TextureButton =  $SwitchColorPicked/button
@@ -23,7 +25,7 @@ func _ready() -> void:
 	smile_slider.connect("value_changed", self, "smileValueChanged")
 	stretch_marks_opacity.connect("value_changed", self, "stretchMarkOpacityValueChanged")
 	stretch_marks_intesity.connect("value_changed", self, "stretchMarkIntensityValueChanged")
-	
+	breast_slider.connect("value_changed", self, "breastValueChanged")
 	
 	skin_melanin_slider.connect("value_changed", self, "skinMelaninChanged")
 	hair_melanin_slider.connect("value_changed", self, "hairMelaninChanged")
@@ -33,10 +35,9 @@ func _ready() -> void:
 
 	
 func _physics_process(delta: float) -> void:
-	if Input.is_action_just_pressed("ESC"):
-		visible = false
-
 	if visible:
+		if Input.is_action_just_pressed("ESC"):
+			visible = false
 		var forward_vector = player.direction_control.global_transform.basis.z
 		var right_vector = player.direction_control.global_transform.basis.x
 		var base_position = player.direction_control.global_transform.origin
@@ -96,31 +97,38 @@ func stretchMarkOpacityValueChanged(value):
 					print("Material not found on body mesh.")
 				return  # Assuming you want to set the material on the first match
 
+func _on_BodyPositivity_value_changed(value):
+	$Fullbody/label2.text = "Body Positivity: " + str(player.body_positivity * 100)
+	player.body_positivity = value / 100
+	player.applyBlendShapes()
 
+
+
+func breastValueChanged(value) -> void:
+	player.breast_size  = -value / 100
+	player.applyBlendShapes()
 
 func smileValueChanged(value) -> void:
-	player.character.smile  = value / 100
-	player.character.applyBlendShapes()
+	player.smile  = value / 100
+	player.applyBlendShapes()
 
-var human_fem_skin = load("res://Game/World/Player/Materials/skin.material")
+
 var skin_melanin_value: float = 0.0
 
 func skinMelaninChanged(value: float) -> void:
 	skin_melanin_value = value
-	var base_color = Color(1.0, 1.0, 1.0) # white as base color
-	var darkening_color = Color(77 / 255.0, 65 / 255.0, 48 / 255.0) # red 77, green 65, blue 48
+	var base_color = Color(1.0, 1.0, 1.0) # White as base color
+	var darkening_color = Color(77 / 255.0, 65 / 255.0, 48 / 255.0) # Red 77, Green 65, Blue 48
 	var factor = value / 100.0
 
 	for child in player.skeleton.get_children():
-		if child is MeshInstance and not child.name.find("Eye") != -1 and not child.name.find("Hair") != -1:
+		if child is MeshInstance and child.name.find("Eye") == -1 and child.name.find("Hair") == -1:
 			var mesh = child.mesh
 			if mesh and mesh.get_surface_count() > 0:
 				var material = mesh.surface_get_material(0) # First material surface
-				if material and material is SpatialMaterial:
-					var spatial_material := material as SpatialMaterial
+				if material and material is ShaderMaterial:
 					var final_color = base_color.linear_interpolate(darkening_color, factor)
-					spatial_material.albedo_color = final_color
-					mesh.surface_set_material(0, spatial_material)
+					material.set_shader_param("albedo", final_color)
 
 
 var hair_melanin_levels = [
@@ -220,14 +228,4 @@ func _on_ColorPicker_color_changed(color)-> void:
 		"both hair colors":
 			colorHair2(color)
 			colorHair(color)
-			
-		
-		
-
-func _on_BodyPositivity_value_changed(value):
-	$Fullbody/label2.text = "Body Positivity: " + str(player.character.body_positivity * 100)
-	player.character.body_positivity = value / 100
-	player.character.applyBlendShapes()
-
-
 

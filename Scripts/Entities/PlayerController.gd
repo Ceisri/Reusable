@@ -70,16 +70,15 @@ func _ready() -> void:
 	customization.hairMelaninChanged2(float(customization.hair_melanin_index_2))
 	customization.skinMelaninChanged(customization.skin_melanin_value)
 	character.switchFace(customization.selected_face)
+	applyBlendShapes()
 
-onready var human_male:PackedScene = load("res://Game/World/Player/Models/Sex_Species_Meshes/MaleHuman.tscn")
-onready var human_female:PackedScene = load("res://Game/World/Player/Models/Sex_Species_Meshes/FemaleHuman.tscn")
 
 func changeAppearance() -> void:
 	var model_instance: Node = null
 	if sex.find("Male") != -1:
-		model_instance = human_male.instance()
+		model_instance = Autoload.human_male.instance()
 	elif sex.find("Female") != -1:
-		model_instance = human_female.instance()
+		model_instance = Autoload.human_female.instance()
 	else:
 		print("Sex not recognized. No model will be instantiated.")
 		return
@@ -1712,7 +1711,11 @@ func saveData():
 		"touch_screen_inputs.visible":touch_screen_inputs.visible,
 		"skillbar.visible":skillbar.visible,
 
-
+		"smile":smile,
+		"body_positivity":body_positivity,
+		"breast_size":breast_size,
+		
+		
 		"customization.skin_melanin_value":customization.skin_melanin_value,
 		"customization.selected_face":customization.selected_face,
 		"hair_color":customization.hair_color,
@@ -1779,6 +1782,12 @@ func loadData():
 				sex = data_file["sex"]
 			if "gender" in data_file:
 				gender = data_file["gender"]
+
+			if "body_positivity" in data_file:
+				body_positivity = data_file["body_positivity"]
+			if "breast_size" in data_file:
+				breast_size = data_file["breast_size"]
+
 
 			if "customization.selected_face" in data_file:
 				customization.selected_face = data_file["customization.selected_face"]
@@ -2853,18 +2862,18 @@ func sellItem() -> void:
 					break
 
 	if found:
-		# Calculate the total selling price (30% of original price, rounded, per item)
-		var sell_price_per_item = max(int(price * 0.3), 1)
-		var total_sell_price = sell_price_per_item * selected_trading_quantity
-
-		print("Item Name:", item_name)
-		print("Sell Price Per Item:", sell_price_per_item)
-		print("Total Sell Price:", total_sell_price)
-		print("Coins Before Sale:", coins)
-		coins += total_sell_price
-		displayMoney()
-		Autoload.removeStackableItem(inventory_grid, item_icon, selected_trading_quantity)
-		Autoload.addFloatingIcon(resource_viewport,Items.coin,total_sell_price,0,"coin",self)
+		if selected_slot.quantity >= selected_trading_quantity:
+			# Calculate the total selling price (30% of original price, rounded, per item)
+			var sell_price_per_item = max(int(price * 0.3), 1)
+			var total_sell_price = sell_price_per_item * selected_trading_quantity
+			print("Item Name:", item_name)
+			print("Sell Price Per Item:", sell_price_per_item)
+			print("Total Sell Price:", total_sell_price)
+			print("Coins Before Sale:", coins)
+			coins += total_sell_price
+			displayMoney()
+			Autoload.removeStackableItem(inventory_grid, item_icon, selected_trading_quantity)
+			Autoload.addFloatingIcon(resource_viewport,Items.coin,total_sell_price,0,"coin",self)
 
 
 var last_shop_pressed_index: int = -1
@@ -3429,3 +3438,16 @@ func _on_levelmeup_pressed()->void:
 	experience_points += 500000000000000
 	experience_points += 500000000000000
 
+
+
+
+var smile:float = 0
+var body_positivity:float = 0
+var breast_size:float = 0
+func  applyBlendShapes()->void:
+	for child in character.get_node("Armature/Skeleton").get_children():
+		if child.name.find("Head"):
+			child.set("blend_shapes/Smile",smile)
+		if child.name.find("Body") or child.name.find("Torso") or child.name.find("Legs"):
+			child.set("blend_shapes/BodyPositivity",body_positivity)
+			child.set("blend_shapes/Breasts",breast_size)

@@ -124,14 +124,12 @@ func deleteWorld(world_name: String, delete_button: Control):
 		info_label.text = "Press " + str(6 - delete_press_count[world_name]) + " more times to delete."
 
 
-var world:PackedScene = load("res://Game/World/Map/World.tscn")
-var player:PackedScene = load("res://Game/World/Player/Scenes/Player.tscn")
 func _on_world_button_pressed(world_name: String):
 	if selected_player == null:
 		info_label.text = "Please select a player"
 	else:
 		info_label.text = "Entered world: " + world_name
-		var world_instance = world.instance()
+		var world_instance = Autoload.world.instance()
 		world_instance.world_name = world_name
 		Root.add_child(world_instance)
 
@@ -163,7 +161,7 @@ func _on_world_button_pressed(world_name: String):
 			info_label.text = "Save file not found: " + save_file_path
 			return
 
-		var player_instance = player.instance()
+		var player_instance = Autoload.player.instance()
 		player_instance.entity_name = selected_player
 		player_instance.species = species
 		player_instance.sex = sex
