@@ -69,6 +69,7 @@ func _ready() -> void:
 	customization.hairMelaninChanged(float(customization.hair_melanin_index_1))
 	customization.hairMelaninChanged2(float(customization.hair_melanin_index_2))
 	customization.skinMelaninChanged(customization.skin_melanin_value)
+	character.switchFace(customization.selected_face)
 
 onready var human_male:PackedScene = load("res://Game/World/Player/Models/Sex_Species_Meshes/MaleHuman.tscn")
 onready var human_female:PackedScene = load("res://Game/World/Player/Models/Sex_Species_Meshes/FemaleHuman.tscn")
@@ -1713,6 +1714,7 @@ func saveData():
 
 
 		"customization.skin_melanin_value":customization.skin_melanin_value,
+		"customization.selected_face":customization.selected_face,
 		"hair_color":customization.hair_color,
 		"hair_color2":customization.hair_color2,
 		"hair_melanin_index_1":customization.hair_melanin_index_1,
@@ -1778,9 +1780,11 @@ func loadData():
 			if "gender" in data_file:
 				gender = data_file["gender"]
 
-
+			if "customization.selected_face" in data_file:
+				customization.selected_face = data_file["customization.selected_face"]
 			if "customization.skin_melanin_value" in data_file:
 				customization.skin_melanin_value = data_file["customization.skin_melanin_value"]
+
 
 			if "hair_color" in data_file:
 				customization.hair_color = data_file["hair_color"]

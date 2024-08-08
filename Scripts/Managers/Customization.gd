@@ -7,13 +7,15 @@ onready var camera_front:Camera = $FrontView/Portrait/ViewportContainer/Viewport
 onready var camera_side:Camera = $SideView/Portrait/ViewportContainer/Viewport/Camera
 onready var camera_body:Camera = $Fullbody/Portrait/ViewportContainer/Viewport/Camera
 
-
+onready var face_button = $SwitchFace
 onready var skin_melanin_slider: Slider = $Fullbody/SkinMelanin
 onready var hair_melanin_slider: Slider = $Fullbody/HairMelanin
 onready var hair_melanin_slider2: Slider = $Fullbody/HairMelanin2
+
 onready var switch_color_picked: TextureButton =  $SwitchColorPicked/button
 
 func _ready() -> void:
+	face_button.connect("pressed", self, "faceChanged")
 	smile_slider.connect("value_changed", self, "smileValueChanged")
 	skin_melanin_slider.connect("value_changed", self, "skinMelaninChanged")
 	hair_melanin_slider.connect("value_changed", self, "hairMelaninChanged")
@@ -55,6 +57,10 @@ func _physics_process(delta: float) -> void:
 func close() -> void:
 	visible = false
 
+var selected_face: int = 0
+func faceChanged() -> void:
+	selected_face = (selected_face + 1) % Autoload.humman_fem_heads.size()
+	player.character.switchFace(selected_face)
 
 func smileValueChanged(value) -> void:
 	player.character.smile  = value / 100
@@ -91,7 +97,8 @@ var hair_melanin_levels = [
 	load("res://Game/World/Player/Textures/Hair/hairLight2.png"),
 	load("res://Game/World/Player/Textures/Hair/hairDark.png"),
 	load("res://Game/World/Player/Textures/Hair/hairDark2.png"),
-	load("res://Game/World/Player/Textures/Hair/hairDark3.png")
+	load("res://Game/World/Player/Textures/Hair/hairDark3.png"),
+	load("res://Game/World/Player/Textures/Hair/hairRed.png"),
 ]
 
 # External indices for saving and loading

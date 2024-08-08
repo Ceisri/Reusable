@@ -561,3 +561,13 @@ func getRarityColor(rarity):
 		return Color(1, 1, 0).linear_interpolate(Color(1, 0, 0), (rarity - 70) / 20.0)
 	else:
 		return Color(1, 0,0)
+
+
+
+
+
+var humman_fem_heads = [
+	load("res://Game/World/Player/Models/Humans/Female/Heads/Scenes/Head1.tscn"),
+	load("res://Game/World/Player/Models/Humans/Female/Heads/Scenes/Head_Nicole.tscn"),
+	load("res://Game/World/Player/Models/Humans/Female/Heads/Scenes/Head1.tscn"),
+]

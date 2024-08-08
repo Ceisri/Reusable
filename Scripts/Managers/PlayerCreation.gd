@@ -3,6 +3,7 @@ extends Control
 onready var species_button: TextureButton = $SpeciesButtonHolder/button
 onready var sex_button: TextureButton = $SexButtonHolder/button
 onready var gender_button: TextureButton = $GenderButtonHolder/button
+
 onready var randomize_name_button: TextureButton = $RandomizeName/button
 onready var species_label: Label = $SpeciesButtonHolder/label
 onready var sex_label: Label = $SexButtonHolder/label
@@ -64,10 +65,13 @@ func switchMeshBasedOnSex() -> void:
 		
 		
 func onSexButtonPressed() -> void:
+	
 	switchSex()
 	switchMeshBasedOnSex()
 	changeNameBasedOnSex()
 	updatePortrait()
+
+
 
 func onGenderButtonPressed() -> void:
 	switchGender()
@@ -128,6 +132,8 @@ func switchSpecies() -> void:
 		current_species_index = (current_species_index + 1) % species_list.size()
 		selected_species = species_list[current_species_index]
 		updateLabels()
+
+
 
 func updateLabels() -> void:
 	if sex_list.size() > 0:

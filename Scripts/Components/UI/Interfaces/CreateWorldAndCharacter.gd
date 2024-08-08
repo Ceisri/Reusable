@@ -17,11 +17,7 @@ onready var create_new_character_button:TextureButton = $PlayerPart/CreateChar/b
 onready var character_name_line_edit:LineEdit =  $PlayerPart/LineEdit
 onready var character_list_grid:GridContainer = $PlayerPart/Scroll/Grid
 
-onready var sex_button:TextureButton = $PlayerPart/SexButtonHolder/button
-onready var sex_label:Label = $PlayerPart/SexButtonHolder/label
-onready var sex_label2:Label = $PlayerPart/SexLabel
-var sex_list:Array = Autoload.sexes
-var current_sex_index:int = 0
+
 
 var selected_player
 
@@ -36,7 +32,6 @@ func _ready():
 	switch_section.connect("pressed", self, "switchSection")
 	create_new_world_button.connect("pressed", self, "_on_create_new_world_button_pressed")
 	create_new_character_button.connect("pressed", self, "_on_create_new_character_button_pressed")
-	sex_button.connect("pressed", self, "switchSex")
 	switch_world_name_button.connect("pressed",self, "switchWorldName")
 	
 
@@ -173,7 +168,6 @@ func _on_world_button_pressed(world_name: String):
 		player_instance.species = species
 		player_instance.sex = sex
 		player_instance.gender = gender
-
 		world_instance.add_child(player_instance)
 		queue_free()
 
