@@ -1,5 +1,6 @@
 extends Spatial
 
+onready var skelton:Skeleton = $Armature/Skeleton
 onready var player = get_parent().get_parent()
 func _ready()->void:
 	add_to_group("Character")
@@ -8,29 +9,28 @@ func _ready()->void:
 	if player != null:
 		if player.is_in_group("Player"):
 			player.character = self
-			player.skeleton = $Armature/Skeleton
+			player.skeleton = skelton 
 			player.animation = $AnimationPlayer
-#			player.loadData()
 
 	addRandomHead()
 	
 	
 
 func switchFace(selected_face) -> void:
-	for child in $Armature/Skeleton.get_children():
+	for child in skelton.get_children():
 		if child.name.find("Head") != -1:
 			child.queue_free()
 	if selected_face >= 0 and selected_face < Autoload.humman_fem_heads.size():
 		var selected_head = Autoload.humman_fem_heads[selected_face]
-		$Armature/Skeleton.add_child(selected_head.instance())
+		skelton.add_child(selected_head.instance())
 
 
 func addRandomHead() -> void:
-	for child in $Armature/Skeleton.get_children():
+	for child in skelton.get_children():
 		if child.name.find("Head")!= -1:
 			child.queue_free()
 	var random_head = Autoload.humman_fem_heads[randi() % Autoload.humman_fem_heads.size()]
-	$Armature/Skeleton.add_child(random_head.instance())
+	skelton.add_child(random_head.instance())
 
 
 func startMoving()->void:

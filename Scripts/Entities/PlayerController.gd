@@ -71,8 +71,45 @@ func _ready() -> void:
 	customization.skinMelaninChanged(customization.skin_melanin_value)
 	character.switchFace(customization.selected_face)
 	applyBlendShapes()
+	customization.updateSliderValues()
+	editHeight()
 
 
+
+
+
+onready var loading_screen:TextureRect = $Canvas/LoadingScreen
+onready var load_time_label:Label = $Canvas/LoadingScreen/LooadTimeLabel
+onready var random_info_label:Label = $Canvas/LoadingScreen/RandomInfo
+var loading_time:float = 1.0
+
+func loadingScreen() -> void:
+	var percentage_complete = ((100.0 - loading_time) / 100.0) * 100
+	load_time_label.text = str(round(percentage_complete * 100) / 100.0) + "%"
+	loading_time -= rand_range(0.25, 1.75)
+	if loading_time <= 0:
+		loading_screen.visible = false
+
+
+
+func removeBothersomeKeybinds()-> void:#Here just in case someone is using this as a template
+	InputMap.action_erase_events("ui_accept")#avoids all the stupid ways you can click buttons or accept things by mistake
+	InputMap.action_erase_events("ui_select")
+	InputMap.action_erase_events("ui_focus_next")
+	InputMap.action_erase_events("ui_focus_prev")
+
+var max_engine_FPS:int = 24
+var max_processs_FPS:int = 19
+func setEngineTicks(ticks_per_second: int) -> void:
+	Engine.iterations_per_second = ticks_per_second
+func setProcessFPS(fps: int) -> void:
+	Engine.target_fps = fps
+
+
+
+
+#Character Editing__________________________________________________________________________________
+#part of character editing is her, part is in character.gd and part in customization.gd 
 func changeAppearance() -> void:
 	var model_instance: Node = null
 	if sex.find("Male") != -1:
@@ -101,32 +138,51 @@ func switchSex() -> void:
 		$VisualDebug.text = "Autoload.sexes is empty"
 	changeAppearance()
 
-onready var loading_screen:TextureRect = $Canvas/LoadingScreen
-onready var load_time_label:Label = $Canvas/LoadingScreen/LooadTimeLabel
-onready var random_info_label:Label = $Canvas/LoadingScreen/RandomInfo
-var loading_time:float = 1.0
+var smile:float = 0
+var body_positivity:float = 0
+var breast_size:float = 0
+var breast_roundness:float = 0 
+var buttocks:float = 0 
+var fat:float = 0
+var muscle:float = 0
+func applyBlendShapes()->void:
+	for child in character.get_node("Armature/Skeleton").get_children():
+		if child.name.find("Head"):
+			child.set("blend_shapes/Smile",smile)
+		if child.name.find("Body") or child.name.find("Torso") or child.name.find("Legs"):
+			child.set("blend_shapes/BodyPositivity",body_positivity)
+			child.set("blend_shapes/Breasts",breast_size)
+			child.set("blend_shapes/BreastRoudness",breast_roundness)
+			child.set("blend_shapes/Buttocks",buttocks)
+			child.set("blend_shapes/Fat",fat)
+			child.set("blend_shapes/Muscle",muscle)
 
-func loadingScreen() -> void:
-	var percentage_complete = ((100.0 - loading_time) / 100.0) * 100
-	load_time_label.text = str(round(percentage_complete * 100) / 100.0) + "%"
-	loading_time -= rand_range(0.25, 1.75)
-	if loading_time <= 0:
-		loading_screen.visible = false
+var height: float = 150.0 # Initial height, in centimetres
+var base_height: float = 150.0 # Base height of the model, in centimetres
+var previous_scale_factor: float = 1.0 # Store the previous scale factor
+
+func editHeight() -> void:
+	var scale_factor = height / base_height
+	var adjustment_factor = scale_factor - previous_scale_factor
+	
+	customization.body_distance += adjustment_factor
+	customization.body_y += adjustment_factor
+	customization.body_z += adjustment_factor
+	customization.side_distance += adjustment_factor
+	customization.face_distance += adjustment_factor
+	customization.front_height += adjustment_factor
+	customization.side_height += adjustment_factor
+	customization.side_x += adjustment_factor
+	customization.side_z += adjustment_factor
+	scale = Vector3(scale_factor, scale_factor, scale_factor)
+	previous_scale_factor = scale_factor # Update the previous scale factor
 
 
 
-func removeBothersomeKeybinds()-> void:#Here just in case someone is using this as a template
-	InputMap.action_erase_events("ui_accept")#avoids all the stupid ways you can click buttons or accept things by mistake
-	InputMap.action_erase_events("ui_select")
-	InputMap.action_erase_events("ui_focus_next")
-	InputMap.action_erase_events("ui_focus_prev")
 
-var max_engine_FPS:int = 24
-var max_processs_FPS:int = 19
-func setEngineTicks(ticks_per_second: int) -> void:
-	Engine.iterations_per_second = ticks_per_second
-func setProcessFPS(fps: int) -> void:
-	Engine.target_fps = fps
+
+
+
 
 
 
@@ -1714,6 +1770,11 @@ func saveData():
 		"smile":smile,
 		"body_positivity":body_positivity,
 		"breast_size":breast_size,
+		"breast_roundness":breast_roundness,
+		"buttocks":buttocks,
+		"fat":fat,
+		"muscle":muscle,
+		"height":height,
 		
 		
 		"customization.skin_melanin_value":customization.skin_melanin_value,
@@ -1787,7 +1848,16 @@ func loadData():
 				body_positivity = data_file["body_positivity"]
 			if "breast_size" in data_file:
 				breast_size = data_file["breast_size"]
-
+			if "breast_roundness" in data_file:
+				breast_roundness = data_file["breast_roundness"]
+			if "buttocks" in data_file:
+				buttocks = data_file["buttocks"]
+			if "fat" in data_file:
+				fat = data_file["fat"]
+			if "muscle" in data_file:
+				muscle = data_file["muscle"]
+			if "height" in data_file:
+				height = data_file["height"]
 
 			if "customization.selected_face" in data_file:
 				customization.selected_face = data_file["customization.selected_face"]
@@ -3438,16 +3508,3 @@ func _on_levelmeup_pressed()->void:
 	experience_points += 500000000000000
 	experience_points += 500000000000000
 
-
-
-
-var smile:float = 0
-var body_positivity:float = 0
-var breast_size:float = 0
-func  applyBlendShapes()->void:
-	for child in character.get_node("Armature/Skeleton").get_children():
-		if child.name.find("Head"):
-			child.set("blend_shapes/Smile",smile)
-		if child.name.find("Body") or child.name.find("Torso") or child.name.find("Legs"):
-			child.set("blend_shapes/BodyPositivity",body_positivity)
-			child.set("blend_shapes/Breasts",breast_size)

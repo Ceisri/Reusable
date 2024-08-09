@@ -15,6 +15,11 @@ onready var stretch_marks_opacity: Slider = $Fullbody/StretchOpacitySlider
 onready var stretch_marks_intesity: Slider = $Fullbody/StretchIntensitySlider
 
 onready var breast_slider: Slider = $Fullbody/Breasts
+onready var breast_roundness_slider: Slider = $Fullbody/BreastRoundness
+onready var buttocks_slider: Slider = $Fullbody/Buttocks
+onready var fat_slider: Slider = $Fullbody/Fat
+onready var muscle_slider: Slider = $Fullbody/Muscle
+onready var height_slider: Slider = $Fullbody/Heigth
 
 
 
@@ -25,7 +30,15 @@ func _ready() -> void:
 	smile_slider.connect("value_changed", self, "smileValueChanged")
 	stretch_marks_opacity.connect("value_changed", self, "stretchMarkOpacityValueChanged")
 	stretch_marks_intesity.connect("value_changed", self, "stretchMarkIntensityValueChanged")
+	height_slider.connect("value_changed", self, "heightValueChanged")
+	
+	
+	
 	breast_slider.connect("value_changed", self, "breastValueChanged")
+	breast_roundness_slider.connect("value_changed", self, "breastRoundnessValueChanged")
+	buttocks_slider.connect("value_changed", self, "buttocksValueChanged")
+	fat_slider.connect("value_changed", self, "fatValueChanged")
+	muscle_slider.connect("value_changed", self, "muscleValueChanged")
 	
 	skin_melanin_slider.connect("value_changed", self, "skinMelaninChanged")
 	hair_melanin_slider.connect("value_changed", self, "hairMelaninChanged")
@@ -33,7 +46,16 @@ func _ready() -> void:
 	close_button.connect("pressed", self, "close")
 	switch_color_picked.connect("pressed", self, "switchColorPicked")
 
-	
+
+var face_distance:float = 0.305
+var side_distance:float = 0.118
+var front_height:float = 1.32
+var side_height:float = 1.4
+var body_distance:float = 1.55
+var body_z:float = 1.044
+var body_y:float = 1.32
+var side_x:float = -0.15
+var side_z:float = 0.1
 func _physics_process(delta: float) -> void:
 	if visible:
 		if Input.is_action_just_pressed("ESC"):
@@ -43,25 +65,49 @@ func _physics_process(delta: float) -> void:
 		var base_position = player.direction_control.global_transform.origin
 
 		# Desired distances for camera positioning
-		var face_distance = 0.305
-		var side_distance = 0.118
-		var body_distance = 1.55
-		var body_height = 1.044
+
 
 		# Move and rotate camera_front to look at the player's face
-		camera_front.translation = base_position + forward_vector * face_distance + Vector3(0, 1.32, 0)
+		camera_front.translation = base_position + forward_vector * face_distance + Vector3(0,front_height, 0)
 		camera_front.look_at(base_position, Vector3.UP)  # Point at the player's position
 		camera_front.rotation.x = 0  # Reset pitch to avoid downward looking
 
 		# Move and rotate camera_side to look at the side of the player
-		camera_side.translation = base_position + right_vector * -0.2 + forward_vector * side_distance + Vector3(-0.15,1.4,0.1)
+		camera_side.translation = base_position + right_vector * -0.2 + forward_vector * side_distance + Vector3(side_x,side_height,0.1)
 		camera_side.look_at(base_position, Vector3.UP)  # Point at the player's position
 		camera_side.rotation.x = 0  # Reset pitch to avoid downward looking
 
 		# Move and rotate camera_body to capture the entire body of the player
-		camera_body.translation = base_position + forward_vector * body_distance + Vector3(0, 1.32, body_height)
+		camera_body.translation = base_position + forward_vector * body_distance + Vector3(0,body_y, body_z)
 		camera_body.look_at(base_position, Vector3.UP)  # Point at the player's position
 		camera_body.rotation.x = 0  # Reset pitch to avoid downward looking
+
+
+		$Fullbody/BreastRoundnessLabel.text = "Breast Roundness: " +  str(player.breast_roundness * 100)
+		$Fullbody/BreastSize.text = "Breast Size: " +  str(-player.breast_size * 100)
+		$Fullbody/ButtLabel.text =  "Buttocks Size: " +  str(player.buttocks * 100)
+		$Fullbody/FatLabel.text =  "Fat: " +  str(player.fat * 100)
+		$Fullbody/MuscleLabel.text =  "Muscle: " +  str(player.muscle * 100)
+		updateHeightlabel()
+
+func updateSliderValues():
+	smile_slider.value = player.smile 
+	breast_slider.value = -player.breast_size * 100
+	breast_roundness_slider.value = player.breast_roundness * 100
+	buttocks_slider.value = player.buttocks * 100
+	fat_slider.value = player.fat * 100
+	muscle_slider.value = player.muscle * 100
+	skin_melanin_slider.value = skin_melanin_value
+	hair_melanin_slider.value = hair_melanin_index_1
+	hair_melanin_slider2.value = hair_melanin_index_2
+	
+
+
+func updateHeightlabel() -> void:
+	var height_in_feet = Autoload.convertToFeet(player.height)
+	var height_in_inches = (height_in_feet - int(height_in_feet)) * 12 # Convert the remainder to inches
+	$Fullbody/HeightLabel.text = "Height: " + str(player.height) + "cm   " + str(int(height_in_feet)) + "′" + str(round(height_in_inches)) + "″"
+
 
 func close() -> void:
 	visible = false
@@ -70,8 +116,6 @@ var selected_face: int = 0
 func faceChanged() -> void:
 	selected_face = (selected_face + 1) % Autoload.humman_fem_heads.size()
 	player.character.switchFace(selected_face)
-
-
 
 func stretchMarkIntensityValueChanged(value):
 	for child in player.skeleton.get_children():
@@ -84,7 +128,6 @@ func stretchMarkIntensityValueChanged(value):
 				else:
 					print("Material not found on body mesh.")
 				return  # Assuming you want to set the material on the first match
-
 func stretchMarkOpacityValueChanged(value):
 	for child in player.skeleton.get_children():
 		if child is MeshInstance and child.name.find("Eye") == -1 and child.name.find("Hair") == -1:
@@ -107,6 +150,26 @@ func _on_BodyPositivity_value_changed(value):
 func breastValueChanged(value) -> void:
 	player.breast_size  = -value / 100
 	player.applyBlendShapes()
+func breastRoundnessValueChanged(value) -> void:
+	player.breast_roundness  = value / 100
+	player.applyBlendShapes()
+func buttocksValueChanged(value) -> void:
+	player.buttocks  = value / 100
+	player.applyBlendShapes()
+func fatValueChanged(value) -> void:
+	player.fat  = value / 100
+	player.applyBlendShapes()
+func muscleValueChanged(value) -> void:
+	player.muscle  = value / 100
+	player.applyBlendShapes()
+	
+	
+
+func heightValueChanged(value) -> void:
+	player.height = value  
+	player.editHeight()
+
+
 
 func smileValueChanged(value) -> void:
 	player.smile  = value / 100
